@@ -255,6 +255,114 @@ function evaRevealMessage(messageId) {
   requestAnimationFrame(reveal);
 }
 
+function evaConversationSearchTimestamp(value, now=Date.now()) {
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  const text=String(value||'').trim();
+  if(!text)return NaN;
+  if(/^\d{1,2}:\d{2}(?::\d{2})?$/.test(text)){
+    const [hour,minute,second='0']=text.split(':').map(Number);
+    const date=new Date(now);
+    date.setHours(hour,minute,second,0);
+    return date.getTime();
+  }
+  const parsed=Date.parse(text);
+  return Number.isFinite(parsed)?parsed:NaN;
+}
+
+function evaConversationSearchRecord(message,index,now=Date.now()) {
+  if(!message||typeof message!=='object'||message.kind==='divider'||message.kind==='system')return null;
+  const sender=message.sender&&typeof message.sender==='object'?message.sender:{};
+  const file=message.file&&typeof message.file==='object'?message.file:{};
+  const extension=String(file.extension||file.name?.split('.').pop()||'').toLowerCase();
+  const imageExtensions=new Set(['png','jpg','jpeg','gif','webp','bmp','svg','heic','avif']);
+  const videoExtensions=new Set(['mp4','mov','avi','mkv','webm','m4v']);
+  const isImage=message.kind==='image'||imageExtensions.has(extension);
+  const isVideo=message.kind==='video'||videoExtensions.has(extension);
+  const type=isImage||isVideo?'media':message.kind==='file'?'file':'message';
+  const candidates=[message.text,message.caption,message.note,message.title,message.thread?.name,message.ref?.title,message.ref?.desc,file.name];
+  const displayText=String(candidates.find(value=>typeof value==='string'&&value.trim())||({file:'未命名文件',media:'图片或视频',message:'聊天消息'}[type]));
+  const senderName=String(sender.name||'未知成员');
+  const senderKey=String(sender.uid||sender.identityId||sender.id||senderName);
+  return {message,index,type,mediaKind:isVideo?'video':isImage?'image':null,sender,senderKey,senderName,
+    displayText,searchText:(senderName+' '+candidates.filter(value=>typeof value==='string').join(' ')).toLocaleLowerCase('zh-CN'),
+    timestamp:evaConversationSearchTimestamp(message.createdAt||message.updated_at||message.date||message.time,now)};
+}
+
+function evaSearchConversationMessages(messages,filters={}) {
+  const now=Number.isFinite(filters.now)?filters.now:Date.now();
+  const keyword=String(filters.keyword||'').trim().toLocaleLowerCase('zh-CN');
+  const tab=filters.tab||'all',senders=new Set(filters.senders||[]),timeRange=filters.timeRange||'all';
+  const today=new Date(now);today.setHours(0,0,0,0);const tomorrow=today.getTime()+86400000;
+  const cutoff=timeRange==='today'?today.getTime():timeRange==='7d'?now-7*86400000:timeRange==='30d'?now-30*86400000:null;
+  return (Array.isArray(messages)?messages:[]).map((message,index)=>evaConversationSearchRecord(message,index,now)).filter(Boolean).filter(record=>{
+    if(tab!=='all'&&record.type!==tab)return false;
+    if(keyword&&!record.searchText.includes(keyword))return false;
+    if(senders.size&&!senders.has(record.senderKey))return false;
+    if(cutoff!==null&&(!Number.isFinite(record.timestamp)||record.timestamp<cutoff||record.timestamp>=tomorrow))return false;
+    return true;
+  }).sort((left,right)=>{
+    const leftTime=Number.isFinite(left.timestamp)?left.timestamp:0,rightTime=Number.isFinite(right.timestamp)?right.timestamp:0;
+    const delta=leftTime-rightTime||left.index-right.index;
+    return filters.sort==='oldest'?delta:-delta;
+  });
+}
+
+function evaRevealConversationMessage(stream,index) {
+  const node=stream?.children?.[index];
+  if(!node)return;
+  node.scrollIntoView({block:'center',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  node.classList.add('eva-conversation-search-hit');
+  setTimeout(()=>node.classList.remove('eva-conversation-search-hit'),2200);
+}
+
+function EvaConversationSearch({conversationId,conversationName,messages,onClose,onLocate}) {
+  const h=React.createElement,inputRef=reactExports.useRef(null),composing=reactExports.useRef(false);
+  const [draft,setDraft]=reactExports.useState(''),[keyword,setKeyword]=reactExports.useState(''),[tab,setTab]=reactExports.useState('all');
+  const [senders,setSenders]=reactExports.useState([]),[sort,setSort]=reactExports.useState('newest'),[timeRange,setTimeRange]=reactExports.useState('all');
+  const [filtersOpen,setFiltersOpen]=reactExports.useState(false),[limit,setLimit]=reactExports.useState(20),[activeIndex,setActiveIndex]=reactExports.useState(null);
+  const normalizedMessages=reactExports.useMemo(()=>(messages||[]).map(evaRenderableMessage),[messages]);
+  const allRecords=reactExports.useMemo(()=>normalizedMessages.map((message,index)=>evaConversationSearchRecord(message,index)).filter(Boolean),[normalizedMessages]);
+  const senderOptions=reactExports.useMemo(()=>Array.from(new Map(allRecords.map(record=>[record.senderKey,{key:record.senderKey,name:record.senderName,sender:record.sender}])).values()),[allRecords]);
+  reactExports.useEffect(()=>{inputRef.current?.focus();},[conversationId]);
+  reactExports.useEffect(()=>{if(composing.current)return;const timer=setTimeout(()=>setKeyword(draft.trim()),240);return()=>clearTimeout(timer);},[draft]);
+  reactExports.useEffect(()=>{setLimit(20);setActiveIndex(null);},[keyword,tab,senders.join('|'),sort,timeRange]);
+  reactExports.useEffect(()=>{const escape=event=>{if(event.key!=='Escape')return;if(filtersOpen){event.stopPropagation();setFiltersOpen(false);return;}onClose();requestAnimationFrame(()=>document.querySelector('.eva-chat-search-entry')?.focus());};document.addEventListener('keydown',escape);return()=>document.removeEventListener('keydown',escape);},[filtersOpen,onClose]);
+  const results=reactExports.useMemo(()=>evaSearchConversationMessages(normalizedMessages,{keyword,tab,senders,sort,timeRange}),[normalizedMessages,keyword,tab,senders,sort,timeRange]);
+  const filterCount=(senders.length?1:0)+(sort!=='newest'?1:0)+(timeRange!=='all'?1:0);
+  const shouldSearch=!!keyword||tab==='media'||tab==='file'||filterCount>0;
+  const pending=!composing.current&&draft.trim()!==keyword;
+  const close=()=>{onClose();requestAnimationFrame(()=>document.querySelector('.eva-chat-search-entry')?.focus());};
+  const resetFilters=()=>{setSenders([]);setSort('newest');setTimeRange('all');};
+  const toggleSender=key=>setSenders(value=>value.includes(key)?value.filter(item=>item!==key):[...value,key]);
+  const highlight=text=>{const value=String(text||'').replace(/\s+/g,' ').replace(/[#*_>`~\[\]]/g,' ').trim(),needle=keyword.trim();if(!needle)return value;
+    const lower=value.toLocaleLowerCase('zh-CN'),target=needle.toLocaleLowerCase('zh-CN'),parts=[];let start=0,match;
+    while((match=lower.indexOf(target,start))>=0){if(match>start)parts.push(value.slice(start,match));parts.push(h('mark',{key:'m'+match},value.slice(match,match+needle.length)));start=match+needle.length;}
+    if(start<value.length)parts.push(value.slice(start));return parts;};
+  const locate=record=>{setActiveIndex(record.index);onLocate(record.index);};
+  const tabs=[['all','全部'],['message','消息'],['media','图片/视频'],['file','文件']];
+  const visibleResults=shouldSearch?results.slice(0,limit):[];
+  return h('aside',{id:'eva-conversation-search-panel',className:'ch-right-panel ch-right-panel--search','aria-label':'查找 '+(conversationName||'当前对话')+' 的聊天内容'},
+    h('header',{className:'eva-conversation-search__head'},
+      h('label',{className:'eva-conversation-search__input'},h(Search$1,{size:20,'aria-hidden':true}),h('input',{ref:inputRef,type:'search',value:draft,placeholder:'输入关键字搜索','aria-label':'输入关键字搜索',onChange:event=>setDraft(event.target.value),onCompositionStart:()=>{composing.current=true;},onCompositionEnd:event=>{composing.current=false;setDraft(event.currentTarget.value);setKeyword(event.currentTarget.value.trim());}}),draft&&h('button',{type:'button','aria-label':'清空搜索关键字',onClick:()=>{setDraft('');setKeyword('');inputRef.current?.focus();}},h(X,{size:16,'aria-hidden':true}))),
+      h('button',{type:'button',className:'eva-conversation-search__close','aria-label':'关闭查找',onClick:close},h(X,{size:20,'aria-hidden':true}))),
+    h('div',{className:'eva-conversation-search__toolbar'},
+      h('div',{className:'eva-conversation-search__tabs',role:'tablist','aria-label':'消息类型'},tabs.map(([key,label])=>h('button',{key,type:'button',role:'tab','aria-selected':tab===key,className:tab===key?'is-active':'',onClick:()=>setTab(key)},label))),
+      h('button',{type:'button',className:'eva-conversation-search__filter'+(filtersOpen?' is-open':'')+(filterCount?' has-value':''),'aria-expanded':filtersOpen,'aria-controls':'eva-conversation-search-filters',onClick:()=>setFiltersOpen(value=>!value)},'筛选',filterCount?h('span',{className:'eva-conversation-search__filter-count','aria-label':filterCount+' 项筛选'},filterCount):h(ChevronDown,{size:15,'aria-hidden':true}))),
+    filtersOpen&&h('section',{id:'eva-conversation-search-filters',className:'eva-conversation-search__filters','aria-label':'筛选聊天记录'},
+      h('div',{className:'eva-conversation-search__filters-head'},h('strong',null,'筛选'),h('button',{type:'button',disabled:filterCount===0,onClick:resetFilters},'重置')),
+      h('fieldset',null,h('legend',null,'发送人'),h('div',{className:'eva-conversation-search__sender-options'},senderOptions.map(option=>h('label',{key:option.key,className:senders.includes(option.key)?'is-selected':''},h('input',{type:'checkbox',checked:senders.includes(option.key),onChange:()=>toggleSender(option.key)}),option.sender.identityAppearance?h(EvaAIIdentityAvatar,{appearance:option.sender.identityAppearance,size:24}):h('img',{src:window.EvaAvatar.personUri(option.sender.uid||option.key),alt:''}),h('span',null,option.name),option.sender.ai&&h(AiBadge,{size:'small'}))),!senderOptions.length&&h('span',{className:'eva-conversation-search__no-sender'},'当前对话暂无发送人'))),
+      h('fieldset',null,h('legend',null,'时间顺序'),h('div',{className:'eva-conversation-search__choice-row'},[['newest','最新优先'],['oldest','最早优先']].map(([value,label])=>h('button',{key:value,type:'button','aria-pressed':sort===value,className:sort===value?'is-selected':'',onClick:()=>setSort(value)},label)))),
+      h('fieldset',null,h('legend',null,'发送时间'),h('div',{className:'eva-conversation-search__choice-row'},[['all','全部时间'],['today','今天'],['7d','最近 7 天'],['30d','最近 30 天']].map(([value,label])=>h('button',{key:value,type:'button','aria-pressed':timeRange===value,className:timeRange===value?'is-selected':'',onClick:()=>setTimeRange(value)},label)))),
+      h('button',{type:'button',className:'eva-conversation-search__filters-done',onClick:()=>setFiltersOpen(false)},'完成')),
+    h('div',{className:'eva-conversation-search__body','aria-busy':pending},
+      pending&&h('div',{className:'eva-conversation-search__loading',role:'status'},h('span',{className:'eva-conversation-search__spinner','aria-hidden':true}),'正在查找…'),
+      !pending&&!shouldSearch&&h('div',{className:'eva-conversation-search__empty'},h('span',{className:'eva-conversation-search__empty-icon','aria-hidden':true},h(Search$1,{size:34})),h('p',null,'输入关键字或使用筛选查找消息记录')),
+      !pending&&shouldSearch&&results.length===0&&h('div',{className:'eva-conversation-search__empty'},h('span',{className:'eva-conversation-search__empty-icon','aria-hidden':true},h(Search$1,{size:34})),h('p',null,'没有找到匹配的聊天记录'),h('button',{type:'button',onClick:()=>{setDraft('');setKeyword('');setTab('all');resetFilters();inputRef.current?.focus();}},'清除条件')),
+      !pending&&visibleResults.length>0&&h(React.Fragment,null,h('div',{className:'eva-conversation-search__summary',role:'status'},'找到 '+results.length+' 条聊天记录'),h('ol',{className:'eva-conversation-search__results'},visibleResults.map(record=>h('li',{key:(record.message.id||record.message.fixtureId||record.index)+':'+record.index},h('button',{type:'button',className:'eva-conversation-search__result'+(activeIndex===record.index?' is-active':''),'aria-label':'定位到 '+record.senderName+' 的消息',onClick:()=>locate(record)},
+        h('span',{className:'eva-conversation-search__avatar'},record.sender.identityAppearance?h(EvaAIIdentityAvatar,{appearance:record.sender.identityAppearance,size:32}):h('img',{src:window.EvaAvatar.personUri(record.sender.uid||record.senderKey),alt:''})),
+        h('span',{className:'eva-conversation-search__result-main'},h('span',{className:'eva-conversation-search__result-meta'},h('span',{className:'eva-conversation-search__sender'},record.senderName),record.sender.ai&&h(AiBadge,{size:'small'}),h('time',null,record.message.time||'')),h('span',{className:'eva-conversation-search__snippet'},highlight(record.displayText)),h('span',{className:'eva-conversation-search__kind'},record.type==='file'?'文件':record.type==='media'?(record.mediaKind==='video'?'视频':'图片'):'消息')),h('span',{className:'eva-conversation-search__locate'},'定位'))))),results.length>limit&&h('button',{type:'button',className:'eva-conversation-search__more',onClick:()=>setLimit(value=>value+20)},'加载更多'))));
+}
+
 function EvaAITeamGroupEditor({visible,record,candidates,onClose,onSubmit,getContainer}) {
   const h=React.createElement;
   const avatarInput=reactExports.useRef(null);
@@ -846,6 +954,10 @@ function EvaAITeamPage() {
       'hi=(ci,Zi,Fi)=>{ci=evaRenderableMessage(ci);if(ci.kind==="divider")', '消息渲染兼容历史数据缺失字段');
     cut('avatarUri(zs,SENDERS[zs].color)',
       'avatarUri(zs,SENDERS[zs]?.color??"#8a8f99")', '子区消息兼容未知参与者');
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    cut('React.createElement("span",{className:"ops"},evaCanOpenProjectTasks&&',
+      'React.createElement("span",{className:"ops"},React.createElement("button",{type:"button",className:`op eva-chat-search-entry${Mt==="search"?" is-on":""}`,title:"查找聊天内容","aria-label":"查找聊天内容","aria-expanded":Mt==="search","aria-controls":"eva-conversation-search-panel",onClick:()=>Dt(mode=>mode==="search"?"none":"search")},React.createElement(Search$1,{size:20,color:"currentColor"})),evaCanOpenProjectTasks&&', '统一 IM 查找入口');
+    cut('Vs=Mt==="tasks"&&evaCanOpenProjectTasks?',
+      'Vs=Mt==="search"?React.createElement(EvaConversationSearch,{key:va,conversationId:va,conversationName:fa?.name||Sa.name,messages:Ta,onClose:()=>Dt("none"),onLocate:index=>evaRevealConversationMessage(da.current,index)}):Mt==="tasks"&&evaCanOpenProjectTasks?', '当前对话查找右栏');
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

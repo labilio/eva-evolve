@@ -711,6 +711,14 @@
       "file": "prototype/054-conversation-document-preview.css",
       "bytes": 2091,
       "role": "prototype"
+    },
+    {
+      "order": 89,
+      "tag": "style",
+      "name": "conversation-search",
+      "file": "prototype/055-conversation-search.css",
+      "bytes": 13391,
+      "role": "prototype"
     }
   ]
 }
