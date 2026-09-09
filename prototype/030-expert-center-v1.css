@@ -127,3 +127,32 @@
 .eva-skill-files li { overflow-wrap:anywhere; }
 .eva-skill-binary { padding:24px;font:400 14px/22px var(--eva-font-sans); }
 .eva-skill-binary a { color:var(--eva-action-primary); }
+
+/* Skill creation hierarchy: one title, primary form, quiet preview and stable actions. */
+.eva-skill-create .semi-modal-header { margin-bottom:20px; }
+.eva-skill-create .loop-nsk__head { display:grid;gap:6px; }
+.eva-skill-create .loop-nsk__head-title { font:500 18px/26px var(--eva-font-sans);color:var(--eva-text-primary); }
+.eva-skill-create .loop-nsk__head-sub { font:400 13px/20px var(--eva-font-sans);color:var(--gds-color-text-secondary-accessible); }
+.eva-skill-create .loop-nsk { height:auto; }
+.eva-skill-create .loop-nsk__body { display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:24px;min-height:360px;max-height:calc(100vh - var(--topbar-height) - 250px);overflow:auto; }
+.eva-skill-create .loop-nsk__form { box-sizing:border-box;width:auto;padding:0;gap:20px;overflow:visible; }
+.eva-skill-create .loop-nsk__tabs { flex:none;min-height:36px;box-sizing:border-box; }
+.eva-skill-create .loop-nsk__tab { font:500 13px/20px var(--eva-font-sans);padding:4px 8px; }
+.eva-skill-create .loop-nsk__fields { gap:18px; }
+.eva-skill-create .loop-nsk__field { gap:6px; }
+.eva-skill-create .loop-nsk__label { font:500 13px/20px var(--eva-font-sans);color:var(--eva-text-primary); }
+.eva-skill-create .loop-field-textarea--lg { min-height:144px;height:144px;resize:vertical;outline-offset:-2px;font:400 14px/22px var(--eva-font-sans);padding:10px 12px; }
+.eva-skill-create .loop-nsk__preview { box-sizing:border-box;width:auto;min-width:0;padding:16px;border:1px solid var(--eva-border-subtle);border-radius:12px;background:var(--eva-surface-subtle);gap:14px;overflow:visible; }
+.eva-skill-create .loop-nsk__preview-label { font:500 12px/20px var(--eva-font-sans);letter-spacing:0;color:var(--gds-color-text-secondary-accessible); }
+.eva-skill-create .loop-nsk__preview-card { padding:16px;gap:12px;border-radius:8px;box-shadow:none;border-color:var(--eva-border-subtle); }
+.eva-skill-create .loop-nsk__preview-ico { padding:6px;background:transparent; }
+.eva-skill-create .loop-nsk__preview-badge { background:transparent;padding:4px 0;font:400 12px/18px var(--eva-font-sans); }
+.eva-skill-create .loop-nsk__preview-name { font:500 15px/22px var(--eva-font-sans);overflow-wrap:anywhere; }
+.eva-skill-create .loop-nsk__preview-desc { font:400 12px/20px var(--eva-font-sans); }
+.eva-skill-create .loop-nsk__preview-file { font:400 12px/18px var(--eva-font-sans); }
+.eva-skill-create .loop-nsk__preview-note { font:400 12px/20px var(--eva-font-sans);color:var(--gds-color-text-secondary-accessible); }
+.eva-skill-create .loop-nsk__footer { margin-top:20px;padding:16px 0 20px;gap:12px;background:var(--eva-surface-primary);border-color:var(--eva-border-subtle); }
+.eva-skill-create .eva-skill-file { margin-bottom:0; }
+.eva-skill-create .eva-skill-content-preview { margin:0;padding-top:12px; }
+.eva-skill-create .eva-skill-files { margin-top:0; }
+@media(max-width:720px) { .eva-skill-create .loop-nsk__body { grid-template-columns:1fr; } }
