@@ -322,9 +322,11 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   assert.match(sider, /EVA_TEAM_NAV=Object\.freeze\(\["messages","projects","contacts","drive","sites"\]\)/);
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
-  assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:"我的Agent"/);
+  assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:rt\.collapsed\?"Agent":"我的 Agent"/);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
-  assert.match(sider, /React\.cloneElement\(bt,\{label:"我的Agent"\}\)/);
+  assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
+  assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);
+  assert.match(sider, /label:rt\.collapsed\?"数字员工":"数字员工市场"/);
   assert.doesNotMatch(sider, /label:"我的 AI"/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header'.+h\('h1',null,'我的 AI'\)/s);
   assert.match(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
