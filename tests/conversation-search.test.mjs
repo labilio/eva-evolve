@@ -89,5 +89,7 @@ test('查找右栏使用 Octo 480px 推开布局并注册到唯一入口', async
   assert.match(css, /@media \(max-width: 1099px\)[\s\S]*position:\s*absolute/);
   assert.doesNotMatch(css, /position:\s*fixed|backdrop-filter/);
   assert.match(entry, /prototype\/055-conversation-search\.css/);
-  assert.equal(JSON.parse(manifest).blocks.at(-1).file, 'prototype/055-conversation-search.css');
+  const styles = JSON.parse(manifest).blocks.filter(block => block.tag === 'style').map(block => block.file);
+  assert.equal(styles.filter(file => file === 'prototype/055-conversation-search.css').length, 1);
+  assert.deepEqual(styles.slice(-2), ['prototype/055-conversation-search.css', 'prototype/056-heading-system.css']);
 });
