@@ -112,37 +112,6 @@ body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar__btn--active::after
   display: none;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar__badge,
-body.eva-message-hierarchy-ready .eva-msg .wk-category-header__badge,
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-badge {
-  border: 0;
-  border-radius: 5px;
-  background: #e8ebee;
-  color: #4f5b64;
-  font-weight: 650;
-}
-
-/* Mentions are part of the unread state, not a separate danger alert. */
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-mention {
-  min-width: auto;
-  height: 18px;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #4f5b64;
-  font-weight: 700;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .wk-category-header__badge--mention {
-  width: auto;
-  min-width: auto;
-  padding: 0 1px;
-  border-radius: 0;
-  background: transparent;
-  color: #4f5b64;
-  font-weight: 750;
-}
-
 body.eva-message-hierarchy-ready .eva-msg .ch-list__scroll {
   padding: 3px 8px 18px;
   scrollbar-color: #c7cdd2 transparent;
@@ -516,45 +485,6 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
   line-height: 20px;
 }
 
-/* One compact status: @ and unread count inherit the color assigned to their Space. */
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-badges {
-  box-sizing: border-box;
-  min-width: 34px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 5px;
-  justify-content: center;
-  gap: 4px;
-  background: var(--eva-space-card-notice-surface);
-  color: var(--eva-space-card-notice-text);
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-mention {
-  width: auto;
-  min-width: auto;
-  height: 18px;
-  padding: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 0;
-  line-height: 18px;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-mention::before {
-  content: "@";
-  font-size: 11px;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-badge {
-  min-width: auto;
-  height: 18px;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  line-height: 18px;
-}
-
 /* 群聊名称支持双击收缩／展开子区；右侧用与“我的 AI”相同的折叠方向图标
    表达当前状态，单击图标也可完成同一操作。 */
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-thread-tag {
@@ -585,19 +515,6 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-threa
 .eva-msg .eva-space-card .wk-conv-compact-item--thread {
   margin-top: 1px;
   margin-bottom: 1px;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread .wk-conv-compact-badge {
-  min-width: 34px;
-  height: 18px;
-  padding: 0;
-  border-radius: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--eva-space-card-notice-text);
-  font-weight: 700;
 }
 
 .eva-msg .wk-conv-compact-icon--reddot::after {
@@ -809,12 +726,6 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:
   font-size: var(--gds-type-label-medium-font-size);
   line-height: var(--gds-type-label-medium-line-height);
   font-weight: var(--gds-font-weight-medium);
-}
-
-body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-badge {
-  font-size: var(--gds-type-caption-font-size);
-  line-height: var(--gds-type-caption-line-height);
-  font-weight: var(--gds-font-weight-regular);
 }
 
 /* Team / My AI: one AI identity owns multiple OpenClaw session previews. */

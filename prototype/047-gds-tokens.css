@@ -70,6 +70,8 @@
   --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);
 
   /* IM emphasis palette; neutral hover and business identity colors stay separate. */
+  --eva-unread-surface: #eef0f2;
+  --eva-unread-text: #4f5b64;
   --eva-im-accent: var(--eva-action-primary);
   --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
   --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
