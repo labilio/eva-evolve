@@ -35,9 +35,33 @@
 .eva-msg .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
 .eva-msg .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
 .eva-msg .wk-markdown th { background: var(--eva-surface-subtle); }
-.eva-msg .mention-entity { color: var(--eva-action-primary); background: var(--eva-action-primary-08); border-radius: var(--eva-radius-small); }
+.eva-msg .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-small); }
+.eva-msg .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
 .wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
 .wk-messageinput-actionitem:hover { background: var(--eva-overlay-hover); }
 .wk-contextmenus li { color: var(--eva-text-primary); line-height:22px; }
 .wk-contextmenus li:hover { background: var(--eva-overlay-hover); }
+
+/* Octo IM emphasis adapts to Eva blue at the shared conversation boundary.
+ * Do not recolor the purple primitives: project/status palettes and code syntax
+ * have independent meanings. Navigation and neutral hover tokens are untouched. */
+.eva-msg {
+  --wk-text-accent: var(--eva-im-accent);
+  --wk-text-mention-entity: var(--eva-im-accent);
+  --wk-accent-tint-06: var(--eva-im-tint-06);
+  --wk-accent-tint-08: var(--eva-im-tint-08);
+  --wk-accent-tint-10: var(--eva-im-tint-10);
+  --wk-accent-tint-12: var(--eva-im-tint-12);
+  --wk-border-glow: var(--eva-im-tint-25);
+  --wk-ai-surface: var(--eva-im-tint-03);
+  --wk-ai-border: var(--eva-im-tint-12);
+  --wk-ai-glow: var(--eva-im-tint-06);
+}
+.eva-msg .wk-thread-created-link { color: var(--eva-im-accent); }
+.eva-msg .wk-msg-row--selected { background-color: var(--eva-im-tint-08); }
+.eva-msg .wk-category-header--editing { background: var(--eva-overlay-hover); }
+.eva-msg .wk-category-header__rename-input { box-shadow: 0 0 0 2px var(--eva-im-tint-12); }
+.eva-msg .wk-conv-compact-thread-tag:hover { background: var(--eva-im-tint-12); }
+/* Keep the existing code-language syntax palette, rather than theme keywords. */
+.eva-msg .wk-code-highlight-container { --wk-text-accent: var(--wk-purple-500); }

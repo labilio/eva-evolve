@@ -65,6 +65,26 @@
   stroke-width: var(--eva-icon-stroke);
 }
 
+/* Shared route-driven navigation colors, including the compact layout.
+ * Keep runtime geometry and selection ownership; adapt its utility colors here. */
+.eva-nav-entry .box-border.cursor-pointer:hover,
+.eva-personal-entry:hover {
+  background: var(--eva-nav-hover) !important;
+}
+.eva-nav-entry .box-border.cursor-pointer:active,
+.eva-personal-entry:active,
+.eva-nav-entry .box-border.cursor-pointer.bg-fill-3,
+.eva-personal-entry.is-selected {
+  color: var(--eva-nav-accent) !important;
+  background: var(--eva-nav-selected) !important;
+}
+.eva-nav-entry .bg-fill-3 [class*="text-t-primary"],
+.eva-nav-entry .bg-fill-3 [class*="text-14px"],
+.eva-personal-entry.is-selected .eva-personal-entry__label {
+  color: var(--eva-nav-accent) !important;
+  font-weight: var(--eva-fw-medium) !important;
+}
+
 .eva-space-picker {
   position: relative;
 }
@@ -383,29 +403,6 @@
   cursor: pointer;
 }
 
-.eva-nav-section.is-collapsed .eva-nav-entry .box-border.cursor-pointer:hover {
-  background: #e2e3e5 !important;
-}
-
-.eva-nav-section.is-collapsed .eva-nav-entry .box-border.cursor-pointer:active {
-  background: var(--semi-color-fill-2, #d8dade) !important;
-}
-
-.eva-nav-section.is-collapsed .eva-nav-entry [class~="bg-fill-3"],
-.eva-nav-section.is-collapsed .eva-nav-entry [aria-current="page"] .box-border.cursor-pointer {
-  color: var(--semi-color-text-0, #1c1f23) !important;
-  background: #e2e3e5 !important;
-}
-
-.eva-nav-section.is-collapsed .eva-nav-entry [class~="bg-fill-3"] [class*="text-t-primary"],
-.eva-nav-section.is-collapsed .eva-nav-entry [class~="bg-fill-3"] [class*="text-14px"],
-.eva-nav-section.is-collapsed .eva-nav-entry [class~="bg-fill-3"] svg,
-.eva-nav-section.is-collapsed .eva-nav-entry [aria-current="page"] [class*="text-t-primary"],
-.eva-nav-section.is-collapsed .eva-nav-entry [aria-current="page"] [class*="text-14px"],
-.eva-nav-section.is-collapsed .eva-nav-entry [aria-current="page"] svg {
-  color: var(--semi-color-text-0, #1c1f23) !important;
-}
-
 .eva-nav-section.is-collapsed .eva-nav-entry [class*="size-22px"] {
   width: 22px !important;
   height: 22px !important;
@@ -463,9 +460,6 @@
   background: transparent;
 }
 
-.eva-personal-entry.is-selected {
-  background: #e2e3e5;
-}
 
 .eva-personal-entry__main {
   box-sizing: border-box;
@@ -484,9 +478,6 @@
   cursor: pointer;
 }
 
-.eva-personal-entry:hover {
-  background: #e2e3e5;
-}
 
 .eva-personal-entry__logo,
 .eva-personal-entry__logo img {
