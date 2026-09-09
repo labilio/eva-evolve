@@ -719,6 +719,14 @@
       "file": "prototype/055-search-controls.css",
       "bytes": 3262,
       "role": "prototype"
+    },
+    {
+      "order": 90,
+      "tag": "style",
+      "name": "conversation-search",
+      "file": "prototype/055-conversation-search.css",
+      "bytes": 17465,
+      "role": "prototype"
     }
   ]
 }
