@@ -398,7 +398,7 @@ function EvaAITeamPage() {
         sessions.map(s=>h('div',{key:s.id,className:'eva-ai-team__session-row'+(session?.id===s.id?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':session?.id===s.id?'true':undefined,onClick:()=>choose(i.id,s.id)},h('span',{className:'eva-ai-team__session-title',title:s.title},s.title),h('span',{className:'eva-ai-team__session-time'},new Date(s.updatedAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}))),
           h('div',{className:'eva-ai-team__session-actions'},conversationMenu(i.id,s)))),
-        sessions.length===0&&!(identity?.id===i.id&&!session)&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(i.id)},h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
+        sessions.length===0&&!(identity?.id===i.id&&!session)&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(i.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
   }
   function employeeItem(item){
     const sessions=digitalStore.sessions(item.id), expanded=collapsed[item.id]===false;
@@ -417,7 +417,7 @@ function EvaAITeamPage() {
         sessions.map(itemSession=>{const selected=employee?.id===item.id&&employeeSession?.id===itemSession.id;return h('div',{key:itemSession.id,className:'eva-ai-team__session-row'+(selected?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':selected?'true':undefined,onClick:()=>choose(item.id,itemSession.id)},h('span',{className:'eva-ai-team__session-title',title:itemSession.title},itemSession.title),h('span',{className:'eva-ai-team__session-time'},new Date(itemSession.updatedAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}))),
           h('div',{className:'eva-ai-team__session-actions'},conversationMenu(item.id,itemSession,true)));}),
-        !sessions.length&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(item.id)},h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
+        !sessions.length&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(item.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
   }
   function roleGroup(role,label,items) {
     const groupId='eva-ai-team-group-'+role, groupCollapsed=collapsedGroups[role];
@@ -641,6 +641,23 @@ function EvaAITeamPage() {
       'Octo group and direct chat settings adapter');
     source=root.__evaCut(source,'return React.createElement(I18nProvider,null,React.createElement("div",{className:"ch-layout"}',
       'return React.createElement(I18nProvider,null,evaMembershipProjectId&&React.createElement(evaMembers().ui.CreateGroup,{projectId:evaMembershipProjectId,visible:evaGroupCreateOpen,onClose:()=>setEvaGroupCreateOpen(false),onCreated:evaId=>{mt(evaPrevious=>evaMemberStore.channels(evaMembershipProjectId,evaActorId,evaPrevious));xt(evaId);Nt(null);Dt("none")}}),React.createElement("div",{className:"ch-layout"}', 'IM 创建群聊组件');
+    source=root.__evaCut(source,'ci.at?getTimeStringAutoShort2(new Date(ci.at).getTime()):""',
+      'ci.at?((value)=>{const date=new Date(value),now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),day=new Date(date.getFullYear(),date.getMonth(),date.getDate()),days=Math.round((today-day)/86400000);if(!Number.isFinite(date.getTime()))return "";if(days===0)return date.toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit",hour12:false});if(days===1)return "昨天";if(days>1&&days<7)return "周"+["日","一","二","三","四","五","六"][date.getDay()];return (date.getFullYear()===now.getFullYear()?"":date.getFullYear()+"/")+(date.getMonth()+1)+"/"+date.getDate()})(ci.at):""', '最近会话紧凑时间');
+    source=root.__evaCut(source,'className:"ch-right-panel ch-right-panel--wkthread"',
+      'className:"ch-right-panel ch-right-panel--wkthread ch-right-panel--overlay"',
+      '子区复用聊天辅助面板覆盖布局');
+    source=root.__evaCut(source,'"aria-label":"more"})))),React.createElement("div",{className:"loop-idp__body"}',
+      '"aria-label":"more"}))),mt==="panel"&&React.createElement("button",{type:"button",className:"eva-preview-close","aria-label":"关闭任务详情",onClick:ut},React.createElement(X,{size:20}))),React.createElement("div",{className:"loop-idp__body"}',
+      '聊天任务详情公共右侧关闭入口');
+    source=root.__evaCut(source,'if(!xt)return React.createElement("div",{className:"loop-idp"},React.createElement("div",{className:"loop-idp__topbar"},React.createElement(Button,{icon:React.createElement(ArrowLeft$3,{size:16}),theme:"borderless",onClick:Qa},St("loop.detail.back")))',
+      'if(!xt)return React.createElement("div",{className:mt==="panel"?"loop-idp loop-idp--panel":"loop-idp"},React.createElement("div",{className:"loop-idp__topbar"},mt==="panel"?React.createElement(React.Fragment,null,React.createElement("strong",{style:{flex:1}},"任务详情"),React.createElement("button",{type:"button",className:"eva-preview-close","aria-label":"关闭任务详情",onClick:ut},React.createElement(X,{size:20}))):React.createElement(Button,{icon:React.createElement(ArrowLeft$3,{size:16}),theme:"borderless",onClick:Qa},St("loop.detail.back")))',
+      '任务详情缺失状态沿用面板关闭合同');
+    // Apply demo flags once when the shared seed is created, before membership/user state adapters.
+    source=root.__evaCut(source,'CHANNELS_BY_SPACE=window.__EVA_CHANNELS_BY_SPACE={',
+      'CHANNELS_BY_SPACE=window.__EVA_CHANNELS_BY_SPACE=((spaces)=>{const seeds=window.__EVA_IM_DEMO.projectUnreadSeeds;const adapt=c=>({...c,unread:seeds[c.id]?.unread??0,atMe:seeds[c.id]?.atMe??false,...(c.threads?{threads:c.threads.map(adapt)}:{})});return Object.fromEntries(Object.entries(spaces).map(([id,channels])=>[id,channels.map(adapt)]))})({',
+      '稀疏项目未读演示数据初始化');
+    source=root.__evaCut(source,'"drive-design":CHANNELS_DRIVE_DESIGN},channelsOfSpace=',
+      '"drive-design":CHANNELS_DRIVE_DESIGN}),channelsOfSpace=', '项目未读演示初始化边界');
     source=root.__evaCut(source,'channelsOfSpace=rt=>CHANNELS_BY_SPACE[rt]??[]', 'channelsOfSpace=rt=>evaMembers().store.channels(rt,evaMembers().store.snapshot().actorId,CHANNELS_BY_SPACE[rt]??[])','团队消息复用项目群访问范围');
     source=root.__evaCut(source,'[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false);','[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),[evaTransferFile,setEvaTransferFile]=reactExports.useState(null);','IM 文件转存状态');
     source=root.__evaCut(source,'evaMenuItems=ci=>{if(!ci)return[];const Zi=[','evaMenuItems=ci=>{if(!ci)return[];const Zi=[];if(ci.kind==="file"&&ci.file&&evaMemberStore.canRead(Sa.id,evaActorId))Zi.push({title:"转存到项目",icon:React.createElement(FolderPlus,{size:18}),onClick:()=>setEvaTransferFile(ci.file)});Zi.push(','IM 文件转存菜单');

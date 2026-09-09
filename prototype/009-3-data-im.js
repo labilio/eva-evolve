@@ -1,6 +1,11 @@
 (function () {
   'use strict';
   window.__EVA_IM_DEMO = {
+    // Sparse initial project unread hints; conversation history and saved user state stay intact.
+    projectUnreadSeeds: {
+      "c-eva": { unread: 2, atMe: true },
+      "th-demo-route": { unread: 1, atMe: false }
+    },
     aiTeamSessions: [
   {
     "id": "team-assistant-welcome",

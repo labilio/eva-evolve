@@ -35,18 +35,18 @@
 .eva-msg .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
 .eva-msg .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
 .eva-msg .wk-markdown th { background: var(--eva-surface-subtle); }
-.eva-msg .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-small); }
-.eva-msg .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
+:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-small); }
+:is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
 .wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
 .wk-messageinput-actionitem:hover { background: var(--eva-overlay-hover); }
 .wk-contextmenus li { color: var(--eva-text-primary); line-height:22px; }
 .wk-contextmenus li:hover { background: var(--eva-overlay-hover); }
 
-/* Octo IM emphasis adapts to Eva blue at the shared conversation boundary.
+/* Octo IM emphasis adapts to Eva blue at the shared ChannelsView root, including embedded project chats.
  * Do not recolor the purple primitives: project/status palettes and code syntax
  * have independent meanings. Navigation and neutral hover tokens are untouched. */
-.eva-msg {
+:is(.eva-msg, .ch-layout) {
   --wk-text-accent: var(--eva-im-accent);
   --wk-text-mention-entity: var(--eva-im-accent);
   --wk-accent-tint-06: var(--eva-im-tint-06);
@@ -58,10 +58,57 @@
   --wk-ai-border: var(--eva-im-tint-12);
   --wk-ai-glow: var(--eva-im-tint-06);
 }
-.eva-msg .wk-thread-created-link { color: var(--eva-im-accent); }
-.eva-msg .wk-msg-row--selected { background-color: var(--eva-im-tint-08); }
-.eva-msg .wk-category-header--editing { background: var(--eva-overlay-hover); }
-.eva-msg .wk-category-header__rename-input { box-shadow: 0 0 0 2px var(--eva-im-tint-12); }
-.eva-msg .wk-conv-compact-thread-tag:hover { background: var(--eva-im-tint-12); }
+:is(.eva-msg, .ch-layout) .wk-thread-created-link { color: var(--eva-im-accent); }
+:is(.eva-msg, .ch-layout) .wk-msg-row--selected { background-color: var(--eva-im-tint-08); }
+:is(.eva-msg, .ch-layout) .wk-category-header--editing { background: var(--eva-overlay-hover); }
+:is(.eva-msg, .ch-layout) .wk-category-header__rename-input { box-shadow: 0 0 0 2px var(--eva-im-tint-12); }
+:is(.eva-msg, .ch-layout) .wk-conv-compact-thread-tag:hover { background: var(--eva-im-tint-12); }
 /* Keep the existing code-language syntax palette, rather than theme keywords. */
-.eva-msg .wk-code-highlight-container { --wk-text-accent: var(--wk-purple-500); }
+:is(.eva-msg, .ch-layout) .wk-code-highlight-container { --wk-text-accent: var(--wk-purple-500); }
+
+/* Shared unread semantics for global, project and assistant conversations. */
+.ch-layout :is(.wk-conv-compact-badge, .wk-category-header__badge, .wk-sidebar-tabbar__badge, .wk-conv-unread-num),
+.collab-tab .badge {
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--eva-unread-surface);
+  color: var(--eva-unread-text);
+  font: 500 11px/16px var(--eva-font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ch-layout .wk-conv-compact-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+  background: transparent;
+}
+.ch-layout :is(.wk-conv-compact-mention, .wk-category-header__badge--mention, .wk-conversationlist-item-indicators .wk-mention) {
+  width: auto;
+  min-width: 0;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--eva-action-primary);
+  font: 600 11px/18px var(--eva-font-sans);
+}
+/* Reserve the disclosure slot so child and parent unread counts share an edge. */
+.ch-layout .wk-conv-compact-item:not(:has(.wk-conv-compact-thread-toggle)) .wk-conv-compact-badges {
+  margin-right: 24px;
+}
+
+/* Recent conversations share unread semantics with the compact tree. */
+.ch-layout .wk-conversationlist-item-indicators { display:flex; align-items:center; gap:4px; flex:none; margin-left:8px; }
+.ch-layout .wk-conversationlist-item-name h3 { font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ch-layout .wk-conversationlist-item-unread .wk-conversationlist-item-name h3 { font-weight:600; }
+.ch-layout .wk-conversationlist-item-time { flex:none; white-space:nowrap; }

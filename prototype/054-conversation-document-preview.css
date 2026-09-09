@@ -1,5 +1,9 @@
-/* Team conversation document preview: a real sibling drawer, never a modal scrim. */
-.eva-msg .ch-right-panel--preview {
+/* Shared conversation previews overlay the chat without changing its geometry. */
+.ch-layout .ch-right-panel--preview {
+  position: absolute;
+  z-index: 84;
+  inset: 0 0 0 auto;
+  max-width: 100%;
   flex: 0 0 664px;
   width: 664px;
   min-width: 0;
@@ -8,7 +12,7 @@
   box-shadow: var(--wk-shadow-drawer);
 }
 
-.eva-msg .ch-right-panel--preview > .wk-file-preview-panel {
+.ch-layout .ch-right-panel--preview > .wk-file-preview-panel {
   position: relative;
   inset: auto;
   width: 100%;
@@ -88,14 +92,14 @@
 }
 
 @media (max-width: 1439px) {
-  .eva-msg .ch-right-panel--preview {
+  .ch-layout .ch-right-panel--preview {
     flex-basis: 380px;
     width: 380px;
   }
 }
 
 @media (max-width: 1099px) {
-  .eva-msg .ch-right-panel--preview {
+  .ch-layout .ch-right-panel--preview {
     position: absolute;
     z-index: 84;
     inset: 0 0 0 auto;
