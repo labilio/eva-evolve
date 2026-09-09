@@ -40,6 +40,8 @@ export function buildSite(root = process.cwd()) {
   fs.mkdirSync(path.join(outputRoot, 'vendor'), { recursive: true });
   fs.copyFileSync(path.join(projectRoot, 'vendor/eva-legacy.css'), path.join(outputRoot, 'vendor/eva-legacy.css'));
   fs.copyFileSync(path.join(projectRoot, 'index.html'), path.join(outputRoot, 'index.html'));
+  fs.copyFileSync(path.join(projectRoot, 'node_modules/fflate/esm/browser.js'), path.join(outputRoot, 'vendor/fflate.module.js'));
+  fs.copyFileSync(path.join(projectRoot, 'node_modules/fflate/LICENSE'), path.join(outputRoot, 'vendor/fflate.LICENSE'));
 
   const result = createPatchedRuntime(projectRoot);
   const git = (...args) => { try { return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };

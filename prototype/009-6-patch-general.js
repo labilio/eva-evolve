@@ -360,6 +360,31 @@
       return h("aside",{className:"eva-chat-task-list"},h("header",{className:"wk-thread-panel-header"},h("strong",null,"聊天任务（"+tasks.length+"）"),h(Button,{theme:"borderless",icon:h(X,{size:18}),"aria-label":"关闭聊天任务",onClick:onClose})),h("div",{className:"eva-chat-task-list-body"},h(Button,{theme:"light",icon:h(Plus$c,{size:16}),block:true,disabled:!allowed,onClick:onCreate},"新建任务"),tasks.length?tasks.map(t=>h("button",{type:"button",key:t.id,className:"eva-chat-task-card",onClick:()=>{if(!store.canRead(projectId,actor)||!store.canRead(conversationId,actor))return;onClose();window.__evaOpenWorkspaceFromTree?.(projectId,"tasks");requestAnimationFrame(()=>WKApp$1.routeRight.push(h(IssueDetailPage,{issueId:t.id,onChanged:()=>{},onClose:()=>WKApp$1.routeRight.pop()})));}},h("span",{className:"eva-chat-task-meta"},t.identifier,h("span",null,({backlog:"待规划",todo:"待办",in_progress:"进行中",in_review:"审核中",done:"已完成",blocked:"受阻",cancelled:"已取消"})[t.status])),h("strong",null,t.title),h("span",{className:"eva-chat-task-meta"},t.assignee_id?h(EvaLoopIdentityAvatar,{person:{id:t.assignee_id,name:t.assignee_name,type:t.assignee_type}}):null,h("span",null,t.assignee_name||"未指派"),h("span",null,({urgent:"紧急",high:"高优先级",medium:"中优先级",low:"低优先级",none:""})[t.priority])))):h("p",{className:"eva-members-muted"},"当前聊天暂无关联任务，在这里新建后即可查看。")));
     }
     function CreateIssueModal(props){`,'chat task list');
+    // The project skill creator owns its modal state; the legacy list keeps only open/closed.
+    const skillPageStart=source.indexOf('function SkillPage(){'),skillPageEnd=source.indexOf('function ',skillPageStart+20);
+    if(skillPageStart<0||skillPageEnd<skillPageStart)throw new Error('技能列表组件边界不匹配');
+    let skillPage=source.slice(skillPageStart,skillPageEnd);
+    const stateStart=skillPage.indexOf(',[Ht,jt]='),stateEnd=skillPage.indexOf(',Jr=reactExports.useCallback',stateStart);
+    const handlerStart=skillPage.indexOf('oa=()=>{Vt(!0)'),handlerEnd=skillPage.indexOf('pa=async ga=>',handlerStart);
+    const modalStart=skillPage.indexOf('React.createElement(Modal,{className:"loop-modal",visible:Qt');
+    if([stateStart,stateEnd,handlerStart,handlerEnd,modalStart].some(i=>i<0)||!skillPage.endsWith(')}'))throw new Error('技能创建弹窗锚点不匹配');
+    skillPage=skillPage.slice(0,modalStart)+`Qt&&window.EvaProjectSkillCreate.render({onClose:()=>Vt(!1),onCreated:(skill,imported)=>{Vt(!1);Jr();if(imported)ia(skill.id);},existingNames:ut.map(s=>s.name),projectId:currentSpaceId()},{React:reactExports,Modal,Button,LoopButton,Input:ForwardInput,FileText,Upload:Upload,Plus:Plus$c,parseFrontmatter,ensureSkillFrontmatter,setFrontmatterField,isValidSkillName,createSkill,Toast}))}`;
+    skillPage=skillPage.slice(0,handlerStart)+'oa=()=>Vt(!0),'+skillPage.slice(handlerEnd);
+    skillPage=skillPage.slice(0,stateStart)+skillPage.slice(stateEnd);
+    source=root.__evaCut(source,source.slice(skillPageStart,skillPageEnd),skillPage,'项目技能双入口');
+    source=root.__evaCut(source,'createSkill=rt=>{const ct={...SKILLS[0],...rt,id:`sk-${Date.now().toString(36)}`,name:rt.name??"新技能"};return SKILLS.push(ct),Promise.resolve(ct)}',String.raw`createSkill=rt=>{
+      if(rt.workspace_id&&rt.workspace_id!==currentSpaceId())return Promise.reject(new Error("项目已切换，请重新打开技能创建窗口"));
+      const list=skillsOf(),name=String(rt.name||"").trim();
+      if(!isValidSkillName(name))return Promise.reject(new Error("名称仅支持英文字母、数字、连字符和下划线"));
+      if(list.some(s=>s.name.toLowerCase()===name.toLowerCase()))return Promise.reject(new Error("当前项目已有同名技能，请修改名称"));
+      const now=new Date().toISOString(),skill={...rt,id:"sk-"+crypto.randomUUID(),workspace_id:currentSpaceId(),name,source_type:"workspace",created_at:now,updated_at:now};
+      list.push(skill);return Promise.resolve(skill);
+    }`,'技能创建写入当前项目');
+    source=root.__evaCut(source,'getSkill=rt=>Promise.resolve(skillsOf().find(ct=>ct.id===rt)??SKILLS[0])','getSkill=rt=>{const skill=skillsOf().find(ct=>ct.id===rt);return skill?Promise.resolve(skill):Promise.reject(new Error("当前项目找不到该技能"))}','技能详情按项目读取');
+    source=root.__evaCut(source,'updateSkill=(rt,ct)=>{const ut=skillsOf().find(pt=>pt.id===rt)??SKILLS[0];return Object.assign(ut,ct),Promise.resolve(ut)}','updateSkill=(rt,ct)=>{const ut=skillsOf().find(pt=>pt.id===rt);if(!ut)return Promise.reject(new Error("当前项目找不到该技能"));if(skillsOf().some(s=>s.id!==rt&&s.name.toLowerCase()===ct.name?.toLowerCase()))return Promise.reject(new Error("当前项目已有同名技能"));return Object.assign(ut,ct,{updated_at:new Date().toISOString()}),Promise.resolve(ut)}','技能编辑保留当前项目');
+    source=root.__evaCut(source,'deleteSkill=rt=>{const ct=SKILLS.findIndex(ut=>ut.id===rt);return ct>=0&&SKILLS.splice(ct,1),Promise.resolve()}','deleteSkill=rt=>{const list=skillsOf(),index=list.findIndex(s=>s.id===rt);if(index>=0)list.splice(index,1);return Promise.resolve()}','技能删除作用于当前项目');
+    source=root.__evaCut(source,'map(ct=>({path:ct.path,content:ct.content}))','map(ct=>({...ct}))','技能附件保留二进制元数据');
+    source=root.__evaCut(source,'React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','Qt.find(f=>f.path===Ht)?.encoding==="base64"?window.EvaProjectSkillCreate.binaryPreview(React,Qt.find(f=>f.path===Ht)):React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','二进制附件只读下载');
     return source;
   });
 })(window);

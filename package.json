@@ -19,5 +19,8 @@
   "devDependencies": {
     "linkedom": "^0.18.13",
     "playwright": "^1.63.0"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
   }
 }
