@@ -2,13 +2,13 @@
 (function(root){
 'use strict';
 root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDigitalEmployeesStore,ownerId='u-wangyilin'}={}){
- const portrait=id=>id==='u-wangyilin'?root.__EVA_CURRENT_USER_PORTRAIT:root.EvaAvatar.personUri(id);
+ const portrait=id=>root.EvaAvatar.personUri(id);
  const link=(label,url)=>({label,url});
  function resolve(ref){
   const id=typeof ref==='string'?ref:ref?.id||ref?.uid;if(!id)return null;
   const actor=store.snapshot().actorId;
   const human=store.person(id);
-  if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||'数智化中心',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
+  if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||human.dept||'',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
   const alias=team?.getSnapshot().identityAliases?.[id]||root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];
   if(alias)return resolve(alias);
   const persona=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='persona');
@@ -40,7 +40,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
  }
  function directory(){
   const s=store.snapshot();
-  return s.people.filter(p=>p.active!==false&&(!root.__EVA_MEMBER_DEMO_IDS||root.__EVA_MEMBER_DEMO_IDS.includes(p.id))).map(p=>{
+  return store.people().map(p=>{
    const ids=p.id===ownerId?team.getSnapshot().identities.filter(i=>i.role==='persona').map(i=>i.id):[...s.clones.filter(c=>c.ownerId===p.id&&c.active!==false).map(c=>c.id),...(root.__EVA_CONTACT_PERSONAS||[]).filter(c=>c.ownerId===p.id).map(c=>c.id)];
    return {person:resolve(p.id),personas:[...new Set(ids)].map(resolve).filter(Boolean)};
   });
