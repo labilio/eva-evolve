@@ -45,7 +45,7 @@
     session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
     session.draft='';session.updatedAt=now();publish();return true;
   };
-  const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT});
+  const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||'prototype/assets/project-agent-bot.svg',logo:'prototype/assets/project-agent-bot.svg'});
   const demoSession=(id,a,story,index)=>{
     const title=Array.isArray(story)?story[0]:story.title;
     const updatedAt=Array.isArray(story)?'2026-09-06T'+String(9+index).padStart(2,'0')+':10:00Z':story.updatedAt;
