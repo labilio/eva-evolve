@@ -310,11 +310,17 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   const sider = read('prototype/009-7-patch-sider.js');
   const imPatch = read('prototype/009-5-patch-im.js');
   const creator = read('prototype/047-digital-employees.js');
+  const runtime = createPatchedRuntime().source;
 
   assert.match(sider, /EVA_PERSONAL_NAV=Object\.freeze\(\["new-chat","my-ai","workboard","automation","connection-center"\]\)/);
   assert.match(sider, /EVA_TEAM_NAV=Object\.freeze\(\["messages","projects","contacts","drive","sites"\]\)/);
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
-  assert.match(sider, /label:"我的 AI"/);
+  assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
+  assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:"我的Agent"/);
+  assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
+  assert.match(sider, /React\.cloneElement\(bt,\{label:"我的Agent"\}\)/);
+  assert.doesNotMatch(sider, /label:"我的 AI"/);
+  assert.match(imPatch, /className:'eva-ai-team__sidebar-header'.+h\('h1',null,'我的 AI'\)/s);
   assert.match(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
   assert.match(sider, /returnTo=evaCreatorParams\.get\("evaReturn"\)/);
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
