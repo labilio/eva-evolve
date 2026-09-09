@@ -36,8 +36,9 @@ export function createServer(root = process.cwd()) {
     }
     response.writeHead(200, {
       'Content-Type': contentTypes.get(path.extname(resolved.path)) || 'application/octet-stream',
-      // Local prototype previews must never retain a prior runtime or CSS after a rebuild.
-      'Cache-Control': 'no-store',
+      // Content hashes invalidate changed assets; mutable local files stay fresh.
+      'Cache-Control': /\/vendor\/[^/]+\.[a-f0-9]{20}\.(js|css)$/.test(resolved.path)
+        ? 'public, max-age=31536000, immutable' : 'no-store',
       'X-Content-Type-Options': 'nosniff',
     });
     fs.createReadStream(resolved.path).pipe(response);

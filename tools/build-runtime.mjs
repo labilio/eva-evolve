@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { fingerprintVendorAssets } from './fingerprint-assets.mjs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -54,6 +55,7 @@ export function buildSite(root = process.cwd()) {
   );
   // Reject an invalid browser bundle before reporting a successful build.
   execFileSync(process.execPath, ['--check', path.join(outputRoot, 'vendor/eva-runtime.module.js')], { stdio: 'pipe' });
+  fingerprintVendorAssets(outputRoot);
   return { outputRoot, ...result };
 }
 
