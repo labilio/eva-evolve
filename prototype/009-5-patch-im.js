@@ -4,8 +4,7 @@
 function evaIdentityAppearance(identity) {
   const original = window.__EVA_MY_ASSISTANT_IDENTITY;
   if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName});
-  return {name:identity.name, sourceName:'Eva', sourceAssistantId:identity.sourceAssistantId,
-    avatar:identity.configuration?.avatar||original.logo, logo:original.logo};
+  return window.EvaAIIdentity.assistantAppearance(identity);
 }
 function EvaAIIdentityAvatar({appearance,size=32}) {
   return window.EvaAIIdentity.avatar(appearance,size,React.createElement);
