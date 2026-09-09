@@ -67,9 +67,12 @@ test('构建后的最近、关注、标题使用会话身份；真实消息适�
   for(const channel of ['ci.ch','ci','Sa'])assert.ok(source.includes('window.EvaAvatar.conversationUri('+channel+')'));
   assert.doesNotMatch(source,/EvaAvatar\.uri\(\{kind:[^}]{0,100}startsWith\("dm-"\)\?"person"/);
   const {window}=setup();
-  const begin=source.indexOf('rowProps=(rt,ct)=>('),end=source.indexOf(',FileDriveIcon=',begin);
+  const begin=source.indexOf('rowProps=(rt,ct,evaActorId)=>('),end=source.indexOf(',FileDriveIcon=',begin);
   assert.ok(begin>0&&end>begin);
   const rowProps=vm.runInNewContext(source.slice(begin+'rowProps='.length,end),{window,avatarUri:id=>window.EvaAvatar.personUri(id)});
   const message={sender:{uid:'u-qinshu',name:'秦漱'}};
+  assert.equal(rowProps(message,false,'u-qinshu').isSend,true);
+  assert.equal(rowProps(message,false,'u-wangyilin').isSend,false);
+  assert.equal(rowProps(message,false).isSend,false);
   assert.equal(rowProps(message,false).avatarUrl,window.EvaAvatar.conversationUri({id:'dm-qinshu',personId:'u-qinshu'}));
 });

@@ -230,3 +230,14 @@ test('legacy drafts and custom configs survive singleton migration and a second 
   assert.equal(snapshot.legacyPersonaConfigurations[0].configuration.identity,'保留旧配置');
  }
 });
+test('AI 私聊引用保留原会话关系，正文触发回执且其他子区不能借用引用',()=>{
+ const storage=memory(),s=make({storage}),identity=s.getSnapshot().identities[0];
+ const thread=s.createThread(identity.id),channel=context.window.EvaAIPrivateConversations.threadRecord(identity.id,{id:thread}).channel_id;
+ const reply={conversationId:channel,messageId:'original',fromName:identity.name,digest:'待确认内容'};
+ s.sendMessage(identity.id,thread,'请核对',reply);
+ const record=s.getSnapshot().sessions.find(item=>item.id===thread);
+ assert.equal(record.messages.at(-2).replyTo.messageId,'original');assert.equal(record.messages.at(-1).replyTo,undefined);
+ reply.digest='外部修改';assert.equal(record.messages.at(-2).replyTo.digest,'待确认内容');
+ assert.equal(make({storage}).getSnapshot().sessions.find(item=>item.id===thread).messages.at(-2).replyTo.conversationId,channel);
+ const other=s.createThread(identity.id);assert.throws(()=>s.sendMessage(identity.id,other,'跨区',reply));assert.equal(s.getSnapshot().sessions.find(item=>item.id===other).messages.length,0);
+});

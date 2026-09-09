@@ -73,6 +73,8 @@
   --eva-unread-surface: #eef0f2;
   --eva-unread-text: #4f5b64;
   --eva-im-accent: var(--eva-action-primary);
+  /* User-confirmed: outgoing bubbles exactly match navigation selection. */
+  --eva-im-bubble-outgoing: var(--eva-nav-selected);
   --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
   --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
   --eva-im-tint-08: color-mix(in srgb, var(--eva-im-accent) 8%, transparent);
