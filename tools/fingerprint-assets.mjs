@@ -23,5 +23,8 @@ export function fingerprintVendorAssets(outputRoot) {
     assets[source] = target;
   }
   fs.writeFileSync(entry, html);
+  // Pages reads exact generated URLs; unhashed files keep its revalidation default.
+  fs.writeFileSync(path.join(outputRoot, '_headers'), Object.values(assets)
+    .map(url => `/${url}\n  Cache-Control: public, max-age=31536000, immutable\n`).join('\n'));
   return assets;
 }

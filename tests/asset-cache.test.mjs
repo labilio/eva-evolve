@@ -17,6 +17,11 @@ test('asset URLs reuse identical bytes and change only with content; HTML preser
     assert.deepEqual(build(), first);
     fs.writeFileSync(path.join(root, 'vendor/eva-runtime.module.js'), 'export const version = 2;');
     const next = build();
+    const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+    const rules = headers.trim().split(/\n\n/).map(block => block.split('\n'));
+    assert.deepEqual(rules.map(([url]) => url), Object.values(next).map(url => '/' + url));
+    assert.ok(rules.every(([, value]) => value.trim() === 'Cache-Control: public, max-age=31536000, immutable'));
+    assert.ok(!headers.includes(first['vendor/eva-runtime.module.js']));
     assert.notEqual(next['vendor/eva-runtime.module.js'], first['vendor/eva-runtime.module.js']);
     assert.equal(next['vendor/eva-legacy.css'], first['vendor/eva-legacy.css']);
     for (const [source, target] of Object.entries(next)) assert.deepEqual(fs.readFileSync(path.join(root, source)), fs.readFileSync(path.join(root, target)));
