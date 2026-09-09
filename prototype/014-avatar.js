@@ -22,6 +22,7 @@
   ].join('');
   var cache = new Map();
   var groupAppearanceResolver = () => null;
+  var personResolver = id => root.__EVA_PEOPLE?.find(p => p.id === id);
 
   function hash(value) {
     var result = 0;
@@ -69,6 +70,8 @@
 
   function personUri(id) {
     var stableId = String(id || 'unknown-person');
+    var profile = personResolver(stableId);
+    if (profile?.avatar) return profile.avatar;
     if (/(^|:)(u-wangyilin|u-current-user(?:-[a-z-]+)?|王宜林)$/.test(stableId) && root.__EVA_CURRENT_USER_PORTRAIT) {
       return root.__EVA_CURRENT_USER_PORTRAIT;
     }
@@ -101,6 +104,13 @@
     return iconUri('automation', String(id || 'unknown-automation'), color);
   }
 
+  // A conversation ID is never a human identity. The adapter supplies the peer ID.
+  function conversationUri(channel) {
+    if (channel.personId) return personUri(channel.personId);
+    if (channel.identityAvatarUrl) return channel.identityAvatarUrl;
+    return groupUri(channel.id, channel.color);
+  }
+
   function uri(options) {
     var config = options || {};
     if (config.kind === 'squad') return squadUri(config.id);
@@ -110,8 +120,10 @@
   }
 
   root.EvaAvatar = Object.freeze({
+    setPersonResolver: function (resolve) { personResolver = resolve; },
     setGroupAppearanceResolver: function (resolve) { groupAppearanceResolver = resolve; },
     uri: uri,
+    conversationUri: conversationUri,
     personUri: personUri,
     groupUri: groupUri,
     squadUri: squadUri,
