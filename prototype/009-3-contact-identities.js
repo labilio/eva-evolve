@@ -16,7 +16,12 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   if(persona||clone){
    const p=persona||clone,owner=store.person(persona?ownerId:p.ownerId);
    const appearance=root.EvaAIIdentity.cloneAppearance(owner);
-   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',description:p.configuration?.description||p.description||'',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:persona&&actor===ownerId?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':!persona?'可在已加入的项目群中 @ 协作。':''};
+   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:persona&&actor===ownerId?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':!persona?'可在已加入的项目群中 @ 协作。':''};
+  }
+  const assistant=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='assistant');
+  if(assistant){
+   if(actor!==ownerId)return null;
+   return {id:assistant.id,name:assistant.name,kind:'assistant',subtitle:'个人助理',appearance:root.EvaAIIdentity.assistantAppearance(assistant),owner:null,action:link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(assistant.id))};
   }
   const employee=digital?.get(id);
   if(employee?.kind==='staff'){
@@ -24,12 +29,12 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
    const allowed=actor===ownerId&&(!personal||employee.by===actor)&&digital.hasInTeam(id);
    const pid=employee.projectId,project=pid&&store.canRead(pid,actor)?store.snapshot().projects[pid]:null;
    if(employee.ownership==='project'&&!project)return null;
-   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc||employee.one||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI。':'当前账号未开放个人对话。'};
+   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI。':'当前账号未开放个人对话。'};
   }
   if(id.startsWith('project-agent:')){
    const pid=id.slice('project-agent:'.length),agent=store.projectAgent(pid);
    if(!agent||!store.canRead(pid,actor))return null;
-   return {id,name:agent.name,kind:'project-agent',subtitle:'项目 AI',description:'同步项目事项、提醒与进展汇总，可以主动通知项目成员。项目群中可 @ 协作。',appearance:agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.snapshot().projects[pid],action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
+   return {id,name:agent.name,kind:'project-agent',subtitle:'项目管家',appearance:agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.snapshot().projects[pid],action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
   }
   return null;
  }

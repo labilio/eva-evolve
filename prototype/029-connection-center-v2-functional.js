@@ -40,7 +40,6 @@
 
   function icon(name) {
     var paths = {
-      search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>',
       plus: '<path d="M12 5v14M5 12h14"></path>',
       link: '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>',
       mail: '<rect width="18" height="14" x="3" y="5" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
@@ -70,7 +69,7 @@
       '<button class="eva-connection-tab" type="button" role="tab" data-center-tab="mcp">MCP <span class="eva-connection-tab__count"></span></button>',
       '</nav>',
       '<section class="eva-connection-panel"><div class="eva-connection-panel__top"><div><h2></h2><p></p></div></div>',
-      '<div class="eva-center-toolbar"><label class="eva-connection-search">' + icon('search') + '<input data-center-search type="search" placeholder="搜索"></label>',
+      '<div class="eva-center-toolbar"><label class="eva-connection-search">' + window.__evaLucide('search', { size: 16 }) + '<input data-center-search type="search" placeholder="搜索"></label>',
       '<div class="eva-center-filters"><button class="eva-center-filter" type="button" data-center-filter="all">全部</button><button class="eva-center-filter" type="button" data-center-filter="active"></button><button class="eva-center-filter" type="button" data-center-filter="inactive"></button></div>',
       '<span class="eva-center-toolbar__spacer"></span><button class="eva-center-primary" type="button" data-center-create>' + icon('plus') + '<span></span></button></div>',
       '<div class="eva-connection-grid" data-center-grid></div></section></div>',

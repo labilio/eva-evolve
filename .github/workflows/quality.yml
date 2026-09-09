@@ -37,6 +37,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install browser for search regression
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify search controls in browser
+        run: npm run test:search
+
       - name: Check manifest
         run: npm run check:manifest
 

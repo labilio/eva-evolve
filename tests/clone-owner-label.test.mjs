@@ -33,7 +33,11 @@ test('只给有真实主人的分身显示归属；HTML 和 React 文字一致�
 
 test('灰色主人展示仅存在资料卡，标题、消息、选择器无旧调用或专用样式',()=>{
  for(const file of ['009-5-patch-im.js','009-2-members-ui.js','009-2-picker-preview.js','033-contacts-redesign-v2.js'])assert.doesNotMatch(readFileSync('prototype/'+file,'utf8'),/ownerLabel|eva-identity-owner/);
- assert.match(readFileSync('prototype/009-3-identity-card.js','utf8'),/ownerLabel\(profile,h\)/);
+ const card=readFileSync('prototype/009-3-identity-card.js','utf8');
+ assert.match(card,/owner&&field\('所属人'/);
+ assert.match(card,/h\(Appearance,\{profile:owner,size:24\}\)/);
+ assert.match(card,/onClick:\(\)=>setOwnerId\(owner.id\)/);
+ assert.match(card,/'aria-label':'所属人：'\+owner.name/);
  assert.doesNotMatch(readFileSync('prototype/003-ai-identity.css','utf8'),/eva-identity-owner--(?:inline|candidate)/);
  const {window}=setup();for(const size of [22,28,32,36,56]){
   const markup=window.EvaAIIdentity.avatar(window.EvaAIIdentity.cloneAppearance({name:'林晓'}),size);

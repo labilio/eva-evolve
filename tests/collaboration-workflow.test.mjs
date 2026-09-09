@@ -9,7 +9,7 @@ test('CI 对 PR 和 main 运行完整质量门禁，但不自动合并', () => {
   const workflow = read('.github/workflows/quality.yml');
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /branches:\s*\[main\]/);
-  for (const command of ['npm test', 'npm run build', 'npm run check:manifest', 'npm run check:project', 'npm run check:collaboration', 'node docs/design-system/gds-for-ai2.0/validate.mjs']) {
+  for (const command of ['npm test', 'npm run test:search', 'npm run build', 'npm run check:manifest', 'npm run check:project', 'npm run check:collaboration', 'node docs/design-system/gds-for-ai2.0/validate.mjs']) {
     assert.ok(workflow.includes(command), `CI 缺少命令：${command}`);
   }
   assert.doesNotMatch(workflow, /gh pr merge|vercel --prod|git push origin main/);

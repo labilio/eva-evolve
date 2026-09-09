@@ -582,29 +582,7 @@
   line-height: var(--gds-type-header-line-height);
 }
 
-.eva-drive__side-search {
-  margin: 14px 14px 10px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: var(--gds-radius-chip);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--gds-color-text-secondary-accessible);
-  background: var(--gds-color-surface-primary);
-}
-
-.eva-drive__side-search input {
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--gds-color-text-primary);
-  background: transparent;
-  font: inherit;
-  font-size: var(--gds-type-label-font-size);
-  line-height: var(--gds-type-label-line-height);
-}
+.eva-drive__side-search { margin: 14px 14px 10px; }
 
 .eva-drive__tree {
   min-height: 0;
