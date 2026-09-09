@@ -74,17 +74,7 @@ body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
   background: #f6f7f8;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .ch-list-search {
-  width: 100%;
-  border-color: transparent;
-  background: #e9ecef;
-}
-
-body.eva-message-hierarchy-ready .eva-msg .ch-list-search:focus-within {
-  border-color: #6b8fa3;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgb(107 143 163 / 16%);
-}
+body.eva-message-hierarchy-ready .eva-msg .ch-list-search { width: 100%; }
 
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar {
   display: none;

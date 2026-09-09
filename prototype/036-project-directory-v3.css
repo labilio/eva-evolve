@@ -546,11 +546,7 @@
 /* Directory density: 32px page rhythm, 16px panels, 32px pin targets. */
 .eva-project-directory { background: var(--eva-surface-primary); }
 .eva-project-directory-list { border: 1px solid var(--eva-border-subtle); }
-.eva-project-directory-search .semi-input-wrapper {
-  background: var(--eva-surface-primary);
-  border: 1px solid var(--eva-border-subtle);
-  border-radius: var(--eva-radius-control);
-}
+
 .eva-project-directory .collab-btn-primary.semi-button {
   background: var(--eva-action-primary);
   border-radius: var(--eva-radius-control);
