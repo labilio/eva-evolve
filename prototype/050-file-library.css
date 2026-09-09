@@ -1653,8 +1653,8 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 }
 
 .eva-markdown-preview__toolbar button.is-active {
-  color: #5548c8;
-  background: #f0eefe;
+  color: var(--eva-action-primary);
+  background: var(--eva-action-primary-08);
   font-weight: 600;
 }
 
