@@ -1,3 +1,49 @@
+// Canonical human account fixtures. Memberships and conversations reference these IDs.
+window.__EVA_PEOPLE = [
+  {"uid":"u-gaozhiyuan","name":"高志远","color":"#1d5bd6","dept":"总经办","title":"总经理","online":true,"id":"u-gaozhiyuan","active":true,"internal":true,"activated":true},
+  {"uid":"u-qinshu","name":"秦漱","color":"#d6336c","dept":"总经办","title":"总经理助理","online":true,"id":"u-qinshu","active":true,"internal":true,"activated":true},
+  {"uid":"u-luyao","name":"陆遥","color":"#f59f00","dept":"总经办","title":"战略投资","id":"u-luyao","active":true,"internal":true,"activated":true},
+  {"uid":"u-wangyilin","name":"王宜林","color":"#4c6ef5","dept":"AI 产品共创","title":"产品负责人","online":true,"id":"u-wangyilin","active":true,"internal":true,"activated":true},
+  {"uid":"u-hejing","name":"何静","color":"#9c36b5","dept":"AI 产品共创","title":"高级产品经理","online":true,"id":"u-hejing","active":true,"internal":true,"activated":true},
+  {"uid":"u-linxiao","name":"林晓","color":"#0ca678","dept":"AI 产品共创","title":"产品经理","online":true,"id":"u-linxiao","active":true,"internal":true,"activated":true},
+  {"uid":"u-zhouyuan","name":"周远","color":"#f59f00","dept":"AI 产品共创","title":"交互设计","id":"u-zhouyuan","active":true,"internal":true,"activated":true},
+  {"uid":"u-suhang","name":"苏航","color":"#e8590c","dept":"AI 产品共创","title":"视觉设计","online":true,"id":"u-suhang","active":true,"internal":true,"activated":true},
+  {"uid":"u-tangwei","name":"唐微","color":"#0b7285","dept":"AI 产品共创","title":"用户研究","id":"u-tangwei","active":true,"internal":true,"activated":true},
+  {"uid":"u-yanbo","name":"严博","color":"#4c6ef5","dept":"AI 产品共创","title":"产品运营","online":true,"id":"u-yanbo","active":true,"internal":true,"activated":true},
+  {"uid":"u-shenke","name":"沈可","color":"#0ca678","dept":"研发中心","title":"研发总监","online":true,"id":"u-shenke","active":true,"internal":true,"activated":true},
+  {"uid":"u-wupeng","name":"吴鹏","color":"#e8590c","dept":"研发中心","title":"前端负责人","online":true,"id":"u-wupeng","active":true,"internal":true,"activated":true},
+  {"uid":"u-zhaomin","name":"赵敏","color":"#1d5bd6","dept":"研发中心","title":"后端负责人","id":"u-zhaomin","active":true,"internal":true,"activated":true},
+  {"uid":"u-hanxu","name":"韩旭","color":"#f59f00","dept":"研发中心","title":"高级工程师","online":true,"id":"u-hanxu","active":true,"internal":true,"activated":true},
+  {"uid":"u-fengyi","name":"冯毅","color":"#d6336c","dept":"研发中心","title":"工程师","id":"u-fengyi","active":true,"internal":true,"activated":true},
+  {"uid":"u-jiangnan","name":"姜楠","color":"#9c36b5","dept":"研发中心","title":"测试负责人","id":"u-jiangnan","active":true,"internal":true,"activated":true},
+  {"uid":"u-liuzhe","name":"刘喆","color":"#0b7285","dept":"研发中心","title":"运维","online":true,"id":"u-liuzhe","active":true,"internal":true,"activated":true},
+  {"uid":"u-xiehang","name":"谢航","color":"#4c6ef5","dept":"研发中心","title":"工程师","id":"u-xiehang","active":true,"internal":true,"activated":true},
+  {"uid":"u-guoxin","name":"郭昕","color":"#0ca678","dept":"数据与算法","title":"算法负责人","online":true,"id":"u-guoxin","active":true,"internal":true,"activated":true},
+  {"uid":"u-liying","name":"黎莹","color":"#e8590c","dept":"数据与算法","title":"算法工程师","id":"u-liying","active":true,"internal":true,"activated":true},
+  {"uid":"u-caodong","name":"曹东","color":"#1d5bd6","dept":"数据与算法","title":"数据工程师","online":true,"id":"u-caodong","active":true,"internal":true,"activated":true},
+  {"uid":"u-mengqi","name":"孟琪","color":"#f59f00","dept":"数据与算法","title":"数据分析","id":"u-mengqi","active":true,"internal":true,"activated":true},
+  {"uid":"u-baiyu","name":"白宇","color":"#d6336c","dept":"数据与算法","title":"算法工程师","id":"u-baiyu","active":true,"internal":true,"activated":true},
+  {"uid":"u-xuqian","name":"徐倩","color":"#9c36b5","dept":"市场部","title":"市场总监","online":true,"id":"u-xuqian","active":true,"internal":true,"activated":true},
+  {"uid":"u-dongshuo","name":"董硕","color":"#0b7285","dept":"市场部","title":"品牌","id":"u-dongshuo","active":true,"internal":true,"activated":true},
+  {"uid":"u-shiyun","name":"石昀","color":"#4c6ef5","dept":"市场部","title":"内容运营","online":true,"id":"u-shiyun","active":true,"internal":true,"activated":true},
+  {"uid":"u-pengjia","name":"彭佳","color":"#0ca678","dept":"市场部","title":"活动","id":"u-pengjia","active":true,"internal":true,"activated":true},
+  {"uid":"u-luoqiang","name":"罗强","color":"#e8590c","dept":"销售部","title":"销售总监","online":true,"id":"u-luoqiang","active":true,"internal":true,"activated":true},
+  {"uid":"u-yeting","name":"叶婷","color":"#1d5bd6","dept":"销售部","title":"大客户经理","online":true,"id":"u-yeting","active":true,"internal":true,"activated":true},
+  {"uid":"u-qiaoan","name":"乔安","color":"#f59f00","dept":"销售部","title":"解决方案","id":"u-qiaoan","active":true,"internal":true,"activated":true},
+  {"uid":"u-fangzhi","name":"方治","color":"#d6336c","dept":"销售部","title":"售前","id":"u-fangzhi","active":true,"internal":true,"activated":true},
+  {"uid":"u-wenxin","name":"温欣","color":"#9c36b5","dept":"销售部","title":"客户成功","online":true,"id":"u-wenxin","active":true,"internal":true,"activated":true},
+  {"uid":"u-duanyu","name":"段瑜","color":"#0b7285","dept":"人力资源","title":"HRBP","online":true,"id":"u-duanyu","active":true,"internal":true,"activated":true},
+  {"uid":"u-yinlan","name":"尹岚","color":"#4c6ef5","dept":"人力资源","title":"招聘","id":"u-yinlan","active":true,"internal":true,"activated":true},
+  {"uid":"u-changhe","name":"常鹤","color":"#0ca678","dept":"人力资源","title":"组织发展","id":"u-changhe","active":true,"internal":true,"activated":true},
+  {"uid":"u-qianmu","name":"钱牧","color":"#e8590c","dept":"财务","title":"财务负责人","id":"u-qianmu","active":true,"internal":true,"activated":true},
+  {"uid":"u-huiling","name":"惠玲","color":"#1d5bd6","dept":"财务","title":"成本分析","online":true,"id":"u-huiling","active":true,"internal":true,"activated":true},
+  {"uid":"u-zhangkuo","name":"张阔","color":"#f59f00","dept":"财务","title":"结算","id":"u-zhangkuo","active":true,"internal":true,"activated":true},
+  {"id":"u-kangzhixi","uid":"u-kangzhixi","name":"康执玺","color":"#4c83a5","active":true,"internal":true,"activated":true},
+  {"id":"u-haozong","uid":"u-haozong","name":"昊总","color":"#6f75a8","active":true,"internal":true,"activated":true},
+  {"id":"u-chenbo","uid":"u-chenbo","name":"陈博","color":"#8c658f","active":true,"internal":true,"activated":true},
+  {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true}
+];
+
 (function () {
   'use strict';
   var T0 = window.__EVA_DEMO_TIME.T0;
@@ -178,8 +224,7 @@ window.__EVA_SUPPLY_MEMBER_DEMO = {
   ]
 };
 
-// Small, explicit cast for the leadership prototype walkthrough.
-window.__EVA_MEMBER_DEMO_IDS=["u-wangyilin","u-hejing","u-linxiao","u-zhouyuan","u-suhang"];
+// Account eligibility comes from the shared people store, never a UI demo whitelist.
 
 // Conversation fixtures stay in the supply-chain project. Stable IDs allow additive upgrades.
 window.__EVA_SUPPLY_CHAT_CONTENT = [

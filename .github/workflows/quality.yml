@@ -43,6 +43,9 @@ jobs:
       - name: Verify search controls in browser
         run: npm run test:search
 
+      - name: Verify button states in browser
+        run: npm run test:buttons
+
       - name: Check manifest
         run: npm run check:manifest
 

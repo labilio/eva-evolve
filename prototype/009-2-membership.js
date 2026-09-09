@@ -28,7 +28,9 @@
     const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT});
     let revision=0;const listeners=new Set();
     const fail=message=>{throw new Error(message);};
-    const person=id=>state.people.find(p=>p.id===id&&p.active!==false);
+    const eligible=p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot;
+    const person=id=>state.people.find(p=>p.id===id&&eligible(p));
+    const people=()=>state.people.filter(eligible).map(p=>({...p}));
     const clone=id=>cloneView(state.clones.find(c=>c.id===canonicalId(id)&&c.active!==false));
     const scope=id=>state.projects[id]||state.groups[id]||fail('范围不存在');
     const projectId=id=>state.projects[id]?id:state.groups[id]?.projectId;
@@ -103,7 +105,7 @@
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
-      snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),person,clone,employee,manager,projectAgent:agentFor,
+      snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
       projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
       memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
       saveProjectRole(pid,uid,{id,name,description=''}){
@@ -177,7 +179,7 @@
         const id=uid==='u-wangyilin'?'dm-'+target.replace(/^u-/, ''):'dm-pair:'+JSON.stringify([uid,target].sort());
         state.directConversations[id]||={id,memberIds:[uid,target],lastAt:new Date().toISOString(),messages:[]};notify();return id;
       },
-      directChannels(uid){return Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>{const p=person(c.memberIds.find(id=>id!==uid));return p?{id:c.id,personId:p.id,name:p.name,chatType:'direct',members:2,unread:0,threads:[],lastAt:c.lastAt,identityAvatarUrl:p.id==='u-wangyilin'?root.__EVA_CURRENT_USER_PORTRAIT:root.EvaAvatar?.personUri(p.id)}:null;}).filter(Boolean);},
+      directChannels(uid){return Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>{const p=person(c.memberIds.find(id=>id!==uid));return p?{id:c.id,personId:p.id,name:p.name,chatType:'direct',members:2,unread:0,threads:[],lastAt:c.lastAt,identityAvatarUrl:root.EvaAvatar?.personUri(p.id)}:null;}).filter(Boolean);},
       canReadDirect(id,uid){
         if(!person(uid)||!String(id||'').startsWith('dm-'))return false;
         const saved=state.directConversations?.[id];
@@ -291,7 +293,7 @@
         const name=projectInfo(pid).name||'',groupName=gid.startsWith('all:')?'全员群':state.chatSettings[gid]?.name||state.groups[gid]?.name||'';
         return {projectId:pid,colorKey:root.EvaProjectAppearance?.keyFor(projectInfo(pid)),projectName:name,groupId:gid,groupName,path:state.threads[id]?[name,groupName].filter(Boolean).join(' / '):name};
       },
-      candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return state.people.filter(p=>p.active!==false&&!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
+      candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return people().filter(p=>!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
       addMember(id,uid,target){
         requireHuman(uid);requireHuman(target);const s=writable(id);
         if(!member(id,uid))fail('请先加入');
@@ -346,8 +348,8 @@
   function bootstrap(people,projects,channels,orgChannels=[],resolveProjectInfo){
     const key='eva:project-members:v1';
     let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
+    const humans=people.filter(p=>!p.robot&&!p.ai).map(p=>({...p,id:p.id||p.uid,uid:p.id||p.uid}));
     if(!saved||saved.schema!==2){
-      const humans=people.filter(p=>!p.robot&&!p.ai&&p.active!==false).map(p=>({...p,id:p.uid,active:true}));
       const seed={schema:2,actorId:'u-wangyilin',people:humans,clones:root.__EVA_MEMBERSHIP_CLONES||[],projects:{},groups:{},threads:{}};
       for(const p of projects){
         const ids=[...new Set(['u-wangyilin',...(p.members||[]).map(m=>humans.find(h=>h.name===m.name)?.id).filter(Boolean)])];
@@ -360,6 +362,13 @@
         }
       }
       saved=seed;
+    }
+    // Add account records only: preserve local profile edits, inactive flags, membership removals and drafts.
+    saved.people||=[];
+    for(const p of humans){
+      const index=saved.people.findIndex(existing=>existing.id===p.id);
+      if(index<0)saved.people.push({...p});
+      else saved.people[index]={...p,...saved.people[index]};
     }
     if(!saved.seededOrgGroups){
       saved.seededOrgGroups=true;
@@ -431,6 +440,7 @@
       saved.seededProjectRolesV1=true;
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
+    root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{
       const context=store.conversationContext(id,store.snapshot().actorId);
       const settings=store.snapshot().chatSettings[context?.groupId||id];

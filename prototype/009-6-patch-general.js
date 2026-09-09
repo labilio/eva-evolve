@@ -1,6 +1,10 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // Replace the compatibility fixture at one verified boundary; humans live in 009-2.
+    const orgPeople = source.match(/ORG_PEOPLE=\[[\s\S]*?\];new Map\(ORG_PEOPLE/);
+    if (!orgPeople) throw new Error('ORG_PEOPLE 数据边界不匹配');
+    source = root.__evaCut(source, orgPeople[0], 'ORG_PEOPLE=[...window.__EVA_PEOPLE,{uid:"b-wangyilin",name:"王宜林的分身",color:c$2(0),dept:"AI 产品共创",ai:true,online:true},{uid:"x-feedback",name:"用户反馈分析师",color:c$2(5),dept:"AI 产品共创",ai:true,online:true}];new Map(ORG_PEOPLE', '人员单一数据源');
     // Repository edition marker belongs to the shared client titlebar.
     source = root.__evaCut(source,
       'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学")',
@@ -49,7 +53,7 @@
           ['React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:mt.leader_avatar??void 0},(mt.leader_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:mt.leader_id,name:mt.leader_name,type:"agent",avatar:mt.leader_avatar}})'],
           ['React.createElement(Avatar$2,{size:"small",color:"light-blue",src:pa.member_avatar??void 0},(pa.member_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:pa.member_id,name:pa.member_name,type:pa.member_type,avatar:pa.member_avatar},size:24})'],
 
-          ['function AssigneePicker(', 'function EvaLoopIdentityAvatar({person,size=20}){const h=React.createElement;if(!person?.id)return h(User,{size:20});const store=evaMembers().store,id=person.id,human=store.person(id);if(human||person.type==="member")return h("img",{src:human?.avatar||window.EvaAvatar.personUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});if(person.type==="squad")return h("img",{src:window.EvaAvatar.squadUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});const clone=store.clone(id),employee=store.employee(id),agent=id.startsWith("project-agent:")?store.projectAgent(id.slice(14)):null,identity=agent||employee||clone||scoped(BY_SPACE.agents).find(p=>p.id===id)||person,appearance=identity.identityAppearance||{name:identity.name||person.name,avatar:identity.avatar||window.__EVA_COLLEAGUE_PORTRAIT,sourceName:"Eva"};return window.EvaAIIdentity.avatar(appearance,size,h);}\nfunction AssigneePicker('],
+          ['function AssigneePicker(', 'function EvaLoopIdentityAvatar({person,size=20}){const h=React.createElement;if(!person?.id)return h(User,{size:20});const store=evaMembers().store,id=person.id,human=store.person(id);if(human||person.type==="member")return h("img",{src:window.EvaAvatar.personUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});if(person.type==="squad")return h("img",{src:window.EvaAvatar.squadUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});const clone=store.clone(id),employee=store.employee(id),agent=id.startsWith("project-agent:")?store.projectAgent(id.slice(14)):null,identity=agent||employee||clone||scoped(BY_SPACE.agents).find(p=>p.id===id)||person,appearance=identity.identityAppearance||{name:identity.name||person.name,avatar:identity.avatar||window.__EVA_COLLEAGUE_PORTRAIT,sourceName:"Eva"};return window.EvaAIIdentity.avatar(appearance,size,h);}\nfunction AssigneePicker('],
           ['jt.type==="member"&&jt.octo_uid?React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:WKApp$1.shared.avatarUser(jt.octo_uid)},jt.name.slice(0,1)):typeIcon(jt.type)', 'React.createElement(EvaLoopIdentityAvatar,{person:jt})'],
           ['React.createElement(Avatar$2,{size:"extra-extra-small",color:ASSIGNEE_TYPE_COLOR[Nt?.type??"member"],src:Nt?.octo_uid?WKApp$1.shared.avatarUser(Nt.octo_uid):void 0},(Nt?.name??ct??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:Nt||{id:rt,name:ct}})'],
 
