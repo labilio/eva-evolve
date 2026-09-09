@@ -9,14 +9,14 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   const actor=store.snapshot().actorId;
   const human=store.person(id);
   if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||'数智化中心',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
-  const alias=root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];
+  const alias=team?.getSnapshot().identityAliases?.[id]||root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];
   if(alias)return resolve(alias);
   const persona=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='persona');
   const clone=store.clone(id)||root.__EVA_CONTACT_PERSONAS?.find(i=>i.id===id);
   if(persona||clone){
    const p=persona||clone,owner=store.person(persona?ownerId:p.ownerId);
-   const appearance={name:p.name,sourceName:'Eva',avatar:persona?.configuration?.avatar||p.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
-   return {id:p.id,name:p.name,kind:'clone',subtitle:'云端分身',description:p.configuration?.description||p.description||'',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:persona&&actor===ownerId?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':!persona?'可在已加入的项目群中 @ 协作。':''};
+   const appearance=root.EvaAIIdentity.cloneAppearance(owner);
+   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',description:p.configuration?.description||p.description||'',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:persona&&actor===ownerId?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':!persona?'可在已加入的项目群中 @ 协作。':''};
   }
   const employee=digital?.get(id);
   if(employee?.kind==='staff'){

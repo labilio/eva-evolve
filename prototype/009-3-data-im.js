@@ -104,21 +104,21 @@
       'im-delivery': [
         { kind: 'divider', text: '9月4日' },
         { kind: 'text', sender: { uid: 'u-chenbo', name: '陈博', color: '#8c658f', online: true }, time: '16:58', text: '客户演示环境已经更新，请把今天的交付风险和负责人一起收口。' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '17:02', text: '@王宜林的云端分身 请根据群内结论整理交付清单。', mentions: [{ name: '@王宜林的云端分身', uid: 'b-wangyilin' }] },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的云端分身', color: '#7567d8', ai: true, online: true }, time: '17:05', text: "### 交付前检查清单\n\n- [ ] **演示环境**：确认入口与目标版本一致。\n- [ ] **关键链路**：逐项确认消息、任务、文件之间的跳转。\n- [ ] **现场兜底**：明确异常处理人和备用演示路径。\n\n**待补充**：请各项负责人确认自己的截止时间；确认前不标记完成。" },
-        { kind: 'taskcard', sender: { uid: 'b-wangyilin', name: '王宜林的云端分身', color: '#7567d8', ai: true, online: true }, time: '17:06', note: '由群聊结论创建，负责人和截止时间已同步。' }
+        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '17:02', text: '@王宜林的 AI 分身 请根据群内结论整理交付清单。', mentions: [{ name: '@王宜林的 AI 分身', uid: 'b-wangyilin' }] },
+        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 AI 分身', color: '#7567d8', ai: true, online: true }, time: '17:05', text: "### 交付前检查清单\n\n- [ ] **演示环境**：确认入口与目标版本一致。\n- [ ] **关键链路**：逐项确认消息、任务、文件之间的跳转。\n- [ ] **现场兜底**：明确异常处理人和备用演示路径。\n\n**待补充**：请各项负责人确认自己的截止时间；确认前不标记完成。" },
+        { kind: 'taskcard', sender: { uid: 'b-wangyilin', name: '王宜林的 AI 分身', color: '#7567d8', ai: true, online: true }, time: '17:06', note: '由群聊结论创建，负责人和截止时间已同步。' }
       ],
       'im-review': [
         { kind: 'divider', text: '9月4日' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '16:35', text: '@王宜林的云端分身 读取附件，给出本次评审最需要确认的三项。', mentions: [{ name: '@王宜林的云端分身', uid: 'b-wangyilin' }] },
+        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '16:35', text: '@王宜林的 AI 分身 读取附件，给出本次评审最需要确认的三项。', mentions: [{ name: '@王宜林的 AI 分身', uid: 'b-wangyilin' }] },
         { kind: 'file', sender: { uid: 'u-chenbo', name: '陈博', color: '#8c658f', online: true }, time: '16:36', file: { name: 'EVA-OCTO融合方案评审稿.pdf', size: 2726297, extension: 'pdf' } },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的云端分身', color: '#7567d8', ai: true, online: true }, time: '16:42', text: '需要确认：一、IM 内核与 Eva 外壳的边界；二、AI 身份与权限继承；三、上线前的回归范围。文档第 6、11、18 页分别给出了对应方案。' }
+        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 AI 分身', color: '#7567d8', ai: true, online: true }, time: '16:42', text: '需要确认：一、IM 内核与 Eva 外壳的边界；二、AI 身份与权限继承；三、上线前的回归范围。文档第 6、11、18 页分别给出了对应方案。' }
       ],
       'im-meeting': [
         { kind: 'divider', text: '9月4日' },
         { kind: 'text', sender: { uid: 'u-kangzhixi', name: '康执玺', color: '#4c83a5', online: true }, time: '15:22', text: '刚才会议里有结论、有行动项，也有一个待确认风险。' },
-        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '@王宜林的云端分身 按这三类整理，并把行动项转成任务。', mentions: [{ name: '@王宜林的云端分身', uid: 'b-wangyilin' }] },
-        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的云端分身', color: '#7567d8', ai: true, online: true }, time: '15:28', text: '已完成分类：结论 2 项、行动项 3 项、待确认风险 1 项。行动项已转成任务并关联到原会议。' }
+        { kind: 'text', sender: { uid: 'u-wangyilin', name: '王宜林', color: '#557a94', online: true }, time: '15:24', text: '@王宜林的 AI 分身 按这三类整理，并把行动项转成任务。', mentions: [{ name: '@王宜林的 AI 分身', uid: 'b-wangyilin' }] },
+        { kind: 'text', sender: { uid: 'b-wangyilin', name: '王宜林的 AI 分身', color: '#7567d8', ai: true, online: true }, time: '15:28', text: '已完成分类：结论 2 项、行动项 3 项、待确认风险 1 项。行动项已转成任务并关联到原会议。' }
       ]
     }
   };
@@ -126,12 +126,10 @@
 
 // Contacts demo: additional personas of existing colleagues; no new people or projects.
 window.__EVA_CONTACT_PERSONAS = [
-  {id:'clone-zhouyuan',ownerId:'u-zhouyuan',name:'飞行员M号'},
-  {id:'clone-suhang',ownerId:'u-suhang',name:'正在休假的预言家'},
-  {id:'contact-clone:lin:quality',ownerId:'u-linxiao',name:'质量追踪员'},
-  {id:'contact-clone:lin:report',ownerId:'u-linxiao',name:'复测报告整理员'}
+  {id:'clone-zhouyuan',ownerId:'u-zhouyuan',name:'周远的 AI 分身'},
+  {id:'clone-suhang',ownerId:'u-suhang',name:'苏航的 AI 分身'}
 ];
-window.__EVA_CONTACT_IDENTITY_ALIASES = {'b-wangyilin':'persona-initial'};
+window.__EVA_CONTACT_IDENTITY_ALIASES = {'b-wangyilin':'persona-initial','clone-wangyilin-procurement':'persona-initial','contact-clone:lin:quality':'clone-linxiao','contact-clone:lin:report':'clone-linxiao'};
 
 window.__EVA_IM_MARKDOWN_UPGRADES = {
   "已归为三项：成员权限、群文件共享、入口切换。每项都补了触发条件和预期结果。\n优先验证：未入群不能读历史；转存文件不授予来源群权限；切换会话不残留上一条草稿。": "### 评审意见 → 可验收清单\n\n| 范围 | 触发条件 | 预期结果 |\n| --- | --- | --- |\n| 成员权限 | 未加入整改群的成员打开会话 | 不可读取群历史 |\n| 文件共享 | 报告转存到项目团队文件 | 可读共享文件，不获得来源群权限 |\n| 入口切换 | 消息与我的 AI 往返 | 选中态正确，草稿不串会话 |\n\n**优先级**：先核对访问边界，再检查入口状态。以上是验收标准，不表示检查已通过。",
@@ -244,7 +242,7 @@ window.__EVA_OFFICIAL_COMMUNITY_DEMO = {
         "kind": "text",
         "senderId": "u-wangyilin",
         "time": "09:12",
-        "text": "@王宜林的云端分身 根据这个现象整理排查步骤和验收清单，缺少的信息先列出来，不要猜错误原因。"
+        "text": "@王宜林的 AI 分身 根据这个现象整理排查步骤和验收清单，缺少的信息先列出来，不要猜错误原因。"
       },
       {
         "kind": "text",
@@ -311,7 +309,7 @@ window.__EVA_OFFICIAL_COMMUNITY_DEMO = {
         "kind": "text",
         "senderId": "u-wangyilin",
         "time": "10:02",
-        "text": "@王宜林的云端分身 解释文件权限与群权限的区别，给一份开发可以直接复核的权限矩阵。"
+        "text": "@王宜林的 AI 分身 解释文件权限与群权限的区别，给一份开发可以直接复核的权限矩阵。"
       },
       {
         "kind": "text",
@@ -372,7 +370,7 @@ window.__EVA_OFFICIAL_COMMUNITY_DEMO = {
         "kind": "text",
         "senderId": "u-wangyilin",
         "time": "10:32",
-        "text": "@王宜林的云端分身 给一个会议行动项模板，负责人和截止时间不明确的地方留待确认，并解释怎么转成任务。"
+        "text": "@王宜林的 AI 分身 给一个会议行动项模板，负责人和截止时间不明确的地方留待确认，并解释怎么转成任务。"
       },
       {
         "kind": "text",

@@ -158,10 +158,9 @@
 
 // Membership demo identities: clone ownership is explicit and distinct from assistants.
 window.__EVA_MEMBERSHIP_CLONES = [
-  {id:'b-wangyilin',ownerId:'u-wangyilin',name:'王宜林的云端分身',active:true},
-  {id:'clone-wangyilin-procurement',ownerId:'u-wangyilin',name:'王宜林的采购分身',active:true},
-  {id:'clone-linxiao',ownerId:'u-linxiao',name:'虾大厨',active:true},
-  {id:'clone-hejing',ownerId:'u-hejing',name:'星期二临时气象员',active:true}
+  {id:'b-wangyilin',ownerId:'u-wangyilin',name:'王宜林的 AI 分身',active:true},
+  {id:'clone-linxiao',ownerId:'u-linxiao',name:'林晓的 AI 分身',active:true},
+  {id:'clone-hejing',ownerId:'u-hejing',name:'何静的 AI 分身',active:true}
 ];
 
 // Review scenario belongs to the existing collaboration workspace (prod).

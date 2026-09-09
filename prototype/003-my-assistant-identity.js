@@ -1,6 +1,6 @@
 
 window.__EVA_MY_ASSISTANT_IDENTITY = Object.freeze({
-  name: '王宜林的云端分身',
+  name: '王宜林的 AI 分身',
   ownerName: '王宜林',
   logo: window.__EVA_COLLEAGUE_PORTRAIT
 });
@@ -23,14 +23,16 @@ window.EvaAIIdentity = (() => {
       render('img',{className:'eva-identity-avatar__logo',src,alt:''}));
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
-  // Display-only ownership: resolve profiles by stable ID before calling; never rename identities.
-  function ownerLabel(profile, render=html, placement='inline') {
+  // Fixed clone identity comes from its owner; detail retains the navigable relationship.
+  function ownerLabel(profile, render=html) {
     if(profile?.kind!=='clone'||!profile.owner?.name)return null;
-    const text=(placement==='detail'?'主人：':'@')+profile.owner.name;
-    return render('span',{className:'eva-identity-owner eva-identity-owner--'+placement,title:'主人：'+profile.owner.name},render===html?escape(text):text);
+    const text='所属人：'+profile.owner.name;
+    return render('span',{className:'eva-identity-owner',title:text},render===html?escape(text):text);
   }
+  function cloneName(owner){return String(owner?.name||'未知成员')+'的 AI 分身';}
+  function cloneAppearance(owner){return {name:cloneName(owner),sourceName:'Eva',avatar:window.__EVA_COLLEAGUE_PORTRAIT,logo:window.__EVA_COLLEAGUE_PORTRAIT};}
   function projectAgentName(project){return project?.name?String(project.name)+' · 项目管家':'项目管家';}
   function projectAgentLegacyNames(project){return ['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];}
   function projectAgentAppearance(project){return {project:project?{id:project.id,colorKey:window.EvaProjectAppearance.keyFor(project)}:undefined,name:projectAgentName(project),sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};}
-  return Object.freeze({avatar,badge,ownerLabel,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
+  return Object.freeze({avatar,badge,ownerLabel,cloneName,cloneAppearance,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
 })();

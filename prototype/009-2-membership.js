@@ -3,17 +3,40 @@
   // Business state only. React subscribes to this store; DOM is never a state source.
   function create(seed, persist, resolveProjectInfo){
     let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},memberAdditions:[],sequence:0,...seed}));
+    // Consolidate legacy records by stable owner ID. Existing memberships and
+    // messages follow the same owner's canonical identity, never another person.
+    const cloneAliases={...(state.cloneAliases||{})},byOwner=new Map();
+    const canonical=[];
+    for(const previous of state.clones){
+      const current=byOwner.get(previous.ownerId);
+      if(current){cloneAliases[previous.id]=current.id;current.active=current.active!==false||previous.active!==false;}
+      else {byOwner.set(previous.ownerId,previous);canonical.push(previous);}
+    }
+    if(canonical.length!==state.clones.length)state.legacyCloneRecords ||= JSON.parse(JSON.stringify(state.clones));
+    state.cloneAliases=cloneAliases;
+    state.clones=canonical;
+    const canonicalId=id=>cloneAliases[id]||id;
+    for(const item of [...Object.values(state.projects),...Object.values(state.groups)]){
+      item.cloneIds=[...new Set((item.cloneIds||[]).map(canonicalId))];
+      if(item.memberRoleIds){
+        const roles={};
+        for(const [id,ids] of Object.entries(item.memberRoleIds)){const target=canonicalId(id);roles[target]=[...new Set([...(roles[target]||[]),...ids])];}
+        item.memberRoleIds=roles;
+      }
+    }
+    const cloneName=c=>{const owner=state.people.find(p=>p.id===c.ownerId);return root.EvaAIIdentity?.cloneName?root.EvaAIIdentity.cloneName(owner):(owner?.name||'未知成员')+'的 AI 分身';};
+    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT});
     let revision=0;const listeners=new Set();
     const fail=message=>{throw new Error(message);};
     const person=id=>state.people.find(p=>p.id===id&&p.active!==false);
-    const clone=id=>state.clones.find(c=>c.id===id&&c.active!==false);
+    const clone=id=>cloneView(state.clones.find(c=>c.id===canonicalId(id)&&c.active!==false));
     const scope=id=>state.projects[id]||state.groups[id]||fail('范围不存在');
     const projectId=id=>state.projects[id]?id:state.groups[id]?.projectId;
     const humanRows=id=>scope(id).humans;
     const requireHuman=id=>person(id)||fail('仅已激活的内部人类用户可操作');
     const member=(id,uid)=>humanRows(id).some(m=>m.id===uid);
     const manager=(id,uid)=>{const s=scope(id);if(!member(id,uid))return false;if(s.ownerId===uid)return true;const p=state.projects[projectId(id)];return !!p&&p.humans.some(m=>m.id===uid&&['owner','admin'].includes(m.role));};
-    const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids)].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
+    const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids.map(canonicalId))].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
     const drop=(id,uid)=>{const s=scope(id);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid).forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);};
@@ -25,7 +48,28 @@
     const projectInfo=pid=>({...state.projects[pid],...resolveProjectInfo?.(pid)});
     const agentSender=pid=>{const agent=agentFor(pid);return {...agent,uid:agent.id,color:'#1563EB'};};
     // Project AI names are derived at the shared message boundary, including saved history and quotes.
+    const cloneMessage=value=>{
+      if(Array.isArray(value))return value.map(cloneMessage);
+      if(!value||typeof value!=='object')return value;
+      const result=Object.fromEntries(Object.entries(value).map(([key,item])=>[key,cloneMessage(item)]));
+      const c=clone(value.uid||value.id);
+      if(c&&typeof value.name==='string'){
+        result.name=(value.name.startsWith('@')?'@':'')+c.name;
+        if(value.uid)result.uid=c.id;if(value.id)result.id=c.id;
+        result.avatar=root.__EVA_COLLEAGUE_PORTRAIT;
+        result.identityAppearance={name:c.name,sourceName:'Eva',avatar:root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
+      }
+      if(typeof result.text==='string')for(const previous of [...state.clones,...(state.legacyCloneRecords||[])]){
+        const identity=clone(previous.id);if(identity&&previous.name&&previous.name!==identity.name)result.text=result.text.split('@'+previous.name).join('@'+identity.name);
+      }
+      for(const mention of value.mentions||[]){
+        const identity=clone(mention.uid||mention.id);
+        if(identity&&mention.name&&typeof result.text==='string')result.text=result.text.split(mention.name).join('@'+identity.name);
+      }
+      return result;
+    };
     const projectAgentMessage=(id,message)=>{
+      message=cloneMessage(message);
       const gid=state.threads[id]||id,group=state.groups[gid]||root.__EVA_IM_DEMO?.channels?.find(c=>c.id===gid);
       const projectAgent=agentIn(id),context=projectAgent?projectInfo(projectAgent.projectId):group;
       if(!context)return message;
@@ -59,7 +103,7 @@
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
-      snapshot:()=>JSON.parse(JSON.stringify(state)),person,clone,employee,manager,projectAgent:agentFor,
+      snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),person,clone,employee,manager,projectAgent:agentFor,
       projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
       memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
       saveProjectRole(pid,uid,{id,name,description=''}){
@@ -233,7 +277,7 @@
       mentionCandidates(id){return api.groupMembers(state.threads[id]||id).filter(p=>p.kind==='human');},
       members(id){const s=scope(id);return [...s.humans.map(m=>({...person(m.id),...m,kind:'human'})),...s.cloneIds.map(cid=>({...clone(cid),kind:'clone'})),...employeeRows(s),...(agentIn(id)?[agentIn(id)]:[])];},
       groupMembers(id){id=state.threads[id]||id;return api.members(id.startsWith('all:')?id.slice(4):id);},
-      canRead(id,uid){if(!id||state.threadDetails[id]?.deleted)return false;const target=state.threads[id]||id;const sid=target.startsWith('all:')?target.slice(4):target;const s=state.projects[sid]||state.groups[sid];return !!s&&(s.humans.some(m=>m.id===uid)||s.cloneIds.includes(uid)||(s.employeeIds||[]).includes(uid)||agentIn(id)?.id===uid);},
+      canRead(id,uid){if(!id||state.threadDetails[id]?.deleted)return false;const target=state.threads[id]||id;const sid=target.startsWith('all:')?target.slice(4):target;const s=state.projects[sid]||state.groups[sid];return !!s&&(s.humans.some(m=>m.id===uid)||s.cloneIds.includes(canonicalId(uid))||(s.employeeIds||[]).includes(uid)||agentIn(id)?.id===uid);},
       channels(pid,uid,base=[]){pid=pid||null;
         if(pid&&!api.canRead(pid,uid))return [];
         const p=state.projects[pid];
@@ -257,8 +301,8 @@
         state.memberAdditions.push({id:'member-add-'+(++state.sequence),scopeId:id,actorId:uid,memberId:target,addedAt:new Date().toISOString()});
         notify();return target;
       },
-      addClone(id,uid,cid){const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
-      removeClone(id,uid,cid){if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
+      addClone(id,uid,cid){cid=canonicalId(cid);const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
+      removeClone(id,uid,cid){cid=canonicalId(cid);if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
       transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
       setAdmin(id,uid,target,enabled){const s=state.projects[id]||fail('仅项目可设置管理员');if(s.ownerId!==uid||target===uid||!member(id,target))fail('无设置权限');s.humans.find(m=>m.id===target).role=enabled?'admin':'member';notify();},
       remove(id,uid,target,successors={}){if(target?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);if(!member(id,uid)||(uid!==target&&!manager(id,uid)))fail('无移除权限');if(!member(id,target))fail('成员已离开');if(s.ownerId===target)fail('请先转让负责人或群主');const groups=state.projects[id]?Object.values(state.groups).filter(g=>g.projectId===id&&member(g.id,target)):[];const owned=groups.filter(g=>g.ownerId===target);for(const g of owned){if(g.humans.length>1&&(!successors[g.id]||successors[g.id]===target||!member(g.id,successors[g.id])))fail('请为 '+g.name+' 指定群内的人类接任者');}for(const g of owned){if(g.humans.length===1)dissolve(g.id);else g.ownerId=successors[g.id];}drop(id,target);groups.filter(g=>state.groups[g.id]).forEach(g=>drop(g.id,target));notify();},

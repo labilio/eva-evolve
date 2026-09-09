@@ -25,13 +25,9 @@
 .eva-identity-name-row > .eva-identity-name-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-identity-name-row > .ai-badge { flex-shrink: 0; }
 
-/* Ownership is contextual metadata, independent from the identity name and AI badge. */
-.eva-identity-owner { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-weight: 400; }
-.eva-identity-owner--inline { flex: 0 1 auto; min-width: 3em; font-size: var(--gds-type-label-font-size); }
+/* Only the profile card displays an explicit, navigable owner relationship. */
+.eva-identity-owner { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-weight: 400; font-size: var(--gds-type-label-font-size); }
 .eva-identity-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
-.eva-identity-owner--candidate { display: block; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); text-align: left; }
-.eva-identity-owner--detail { font-size: var(--gds-type-label-font-size); }
-
-.wk-msg-row-header:has(> .eva-identity-owner) > .wk-msg-row-sender { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wk-msg-row-header:has(> .eva-identity-owner) > .ai-badge,
-.wk-msg-row-header:has(> .eva-identity-owner) > .wk-msg-row-timestamp { flex-shrink: 0; }
+.wk-msg-row-header > .wk-msg-row-sender { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wk-msg-row-header > .ai-badge,
+.wk-msg-row-header > .wk-msg-row-timestamp { flex-shrink: 0; }

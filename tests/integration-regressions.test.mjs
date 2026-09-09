@@ -44,11 +44,8 @@ test('AI名称与标记共用身份行，标题不扩大公共圆形头像', () 
   assert.doesNotMatch(hierarchy,/\.wk-chat-conversation-header-channel-avatar img\s*\{[^}]*width:\s*28px\s*!important/);
   assert.match(runtime,/EvaContactsUI\.render/);
   const contacts=read('prototype/033-contacts-redesign-v2.js');
-  // The approved redesign replaces the two-item modal with inline disclosure.
-  const context={window:{}};vm.runInNewContext(contacts,context);
-  const personas=Array.from({length:9},(_,id)=>({id,name:'分身'+id}));
-  assert.equal(context.window.EvaContactsUI.personaPreview(personas,true,'').visible.length,9);
-  assert.equal(context.window.EvaContactsUI.personaPreview(personas,false,'分身8').visible[0].id,8);
+  // Single-clone rows no longer carry obsolete multi-clone UI state.
+  assert.doesNotMatch(contacts,/personaPreview|hiddenCount|setExpanded|owner-total/);
   assert.match(contacts,/EvaAIIdentity\.badge/);
   assert.doesNotMatch(contacts,/MutationObserver|innerHTML/);
 });

@@ -11,22 +11,32 @@ function setup(){
  const model=window.EvaContactIdentities.create(store);
  return {window,people,model};
 }
-test('同名分身按身份关系显示主人，改名后重新读取，不改分身名',()=>{
+test('分身名按稳定主人身份推导，真人改名同步显示',()=>{
  const {window,people,model}=setup();
  assert.equal(typeof window.EvaAIIdentity.ownerLabel,'function');
- assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-a')),/@王宜林/);
- assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-b')),/@林晓/);
- people[1].name='林晓新名';assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-b')),/@林晓新名/);
- assert.equal(model.resolve('clone-b').name,'同名分身');
- assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('legacy')),/@王宜林/);
+ assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-a')),/所属人：王宜林/);
+ assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-b')),/所属人：林晓/);
+ people[1].name='林晓新名';assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('clone-b')),/所属人：林晓新名/);
+ assert.equal(model.resolve('clone-b').name,'林晓新名的 AI 分身');
+ assert.match(window.EvaAIIdentity.ownerLabel(model.resolve('legacy')),/所属人：王宜林/);
 });
 test('只给有真实主人的分身显示归属；HTML 和 React 文字一致且安全',()=>{
  const {window,model}=setup(),label=window.EvaAIIdentity.ownerLabel;
  assert.equal(typeof label,'function');
  for(const p of [null,model.resolve('orphan'),model.resolve('assistant'),{kind:'human',owner:{name:'人'}},{kind:'employee',owner:{name:'组织'}},{kind:'project-agent',owner:{name:'项目'}}])assert.equal(label(p),null);
  const p={kind:'clone',owner:{name:'林<晓>'}};
- assert.match(label(p),/@林&lt;晓&gt;/);
+ assert.match(label(p),/所属人：林&lt;晓&gt;/);
  const h=(tag,props,...children)=>({tag,props,children});
- assert.equal(label(p,h,'candidate').children[0],'@林<晓>');
- assert.equal(label(p,h,'detail').children[0],'主人：林<晓>');
+ assert.equal(model.resolve('clone-b').appearance.avatar,window.__EVA_COLLEAGUE_PORTRAIT);
+ assert.equal(label(p,h).children[0],'所属人：林<晓>');
+});
+
+test('灰色主人展示仅存在资料卡，标题、消息、选择器无旧调用或专用样式',()=>{
+ for(const file of ['009-5-patch-im.js','009-2-members-ui.js','009-2-picker-preview.js','033-contacts-redesign-v2.js'])assert.doesNotMatch(readFileSync('prototype/'+file,'utf8'),/ownerLabel|eva-identity-owner/);
+ assert.match(readFileSync('prototype/009-3-identity-card.js','utf8'),/ownerLabel\(profile,h\)/);
+ assert.doesNotMatch(readFileSync('prototype/003-ai-identity.css','utf8'),/eva-identity-owner--(?:inline|candidate)/);
+ const {window}=setup();for(const size of [22,28,32,36,56]){
+  const markup=window.EvaAIIdentity.avatar(window.EvaAIIdentity.cloneAppearance({name:'林晓'}),size);
+  assert.match(markup,/林晓的 AI 分身/);assert.doesNotMatch(markup,/@林晓/);
+ }
 });
