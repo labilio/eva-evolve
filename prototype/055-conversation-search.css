@@ -1,0 +1,758 @@
+/* Current-conversation search shared by 我的消息 and 我的Agent. */
+.ch-head .ops button.op {
+  appearance: none;
+  padding: 0;
+  color: var(--wk-text-tertiary, #727784);
+  background: transparent;
+  border: 0;
+  font: inherit;
+}
+
+.ch-head .ops button.eva-chat-search-entry:not(.is-on):not(:hover) {
+  color: var(--wk-text-tertiary, #727784);
+  background: transparent;
+}
+
+.ch-head .ops button.eva-chat-search-entry:focus-visible {
+  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline-offset: 2px;
+}
+
+.ch-right-panel--search {
+  position: relative;
+  inset: auto;
+  display: flex;
+  box-sizing: border-box;
+  flex: 0 0 480px;
+  flex-direction: column;
+  width: 480px;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--wk-bg-surface, #fff);
+  border-left: 1px solid var(--wk-border-subtle, #e7e9ec);
+  box-shadow: var(--wk-shadow-drawer, var(--semi-shadow-elevated));
+}
+
+.eva-conversation-search__head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--wk-border-subtle, #e7e9ec);
+}
+
+.eva-conversation-search__input {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  min-width: 0;
+  padding: 0 10px;
+  color: var(--wk-text-tertiary, #9498a8);
+  background: var(--wk-bg-base, #f6f7f8);
+  border: 1px solid transparent;
+  border-radius: var(--wk-r-input, 8px);
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.eva-conversation-search__input:hover {
+  background: var(--wk-bg-hover, #f0f1f3);
+}
+
+.eva-conversation-search__input:focus-within {
+  background: var(--wk-bg-surface, #fff);
+  border-color: var(--wk-color-accent, #1563eb);
+  box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
+}
+
+.eva-conversation-search__input input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  color: var(--wk-text-primary, #1a1c24);
+  font: inherit;
+  font-size: 14px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.eva-conversation-search__input input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.eva-conversation-search__input input::placeholder {
+  color: var(--wk-text-tertiary, #9498a8);
+}
+
+.eva-conversation-search__input button,
+.eva-conversation-search__close,
+.eva-conversation-search__filter,
+.eva-conversation-search__tabs button,
+.eva-conversation-search__filters button,
+.eva-conversation-search__result,
+.eva-conversation-search__more,
+.eva-conversation-search__empty button {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.eva-conversation-search__input button,
+.eva-conversation-search__close {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--wk-text-tertiary, #9498a8);
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__close {
+  width: 32px;
+  height: 32px;
+}
+
+.eva-conversation-search__input button:hover,
+.eva-conversation-search__close:hover {
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--wk-bg-hover, #f0f1f3);
+}
+
+.eva-conversation-search__toolbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 0 0 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 16px;
+  background: var(--wk-bg-surface, #fff);
+  border-bottom: 1px solid var(--wk-border-subtle, #e7e9ec);
+}
+
+.eva-conversation-search__tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eva-conversation-search__tabs button {
+  height: 36px;
+  padding: 0 12px;
+  color: var(--wk-text-secondary, #5c6070);
+  font-size: 14px;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__tabs button:hover {
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--wk-bg-hover, #f0f1f3);
+}
+
+.eva-conversation-search__tabs button.is-active {
+  color: var(--wk-text-inverse, #fff);
+  font-weight: 600;
+  background: var(--wk-text-primary, #1a1c24);
+}
+
+.eva-conversation-search__filter {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  color: var(--wk-color-accent, #1563eb);
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__filter:hover,
+.eva-conversation-search__filter.is-open {
+  background: var(--semi-color-primary-light-default);
+}
+
+.eva-conversation-search__filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  color: var(--wk-text-inverse, #fff);
+  font-size: 11px;
+  line-height: 18px;
+  background: var(--wk-color-accent, #1563eb);
+  border-radius: 999px;
+}
+
+.eva-conversation-search__filters {
+  position: absolute;
+  z-index: 8;
+  top: 116px;
+  right: 16px;
+  left: 16px;
+  max-height: calc(100% - 136px);
+  padding: 16px;
+  overflow: auto;
+  background: var(--wk-bg-surface, #fff);
+  border: 1px solid var(--wk-border-subtle, #e2e5e8);
+  border-radius: var(--wk-r-lg, 12px);
+  box-shadow: var(--wk-shadow-overlay, var(--semi-shadow-elevated));
+}
+
+.eva-conversation-search__filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.eva-conversation-search__filters-head strong {
+  font-size: 15px;
+}
+
+.eva-conversation-search__filters-head button,
+.eva-conversation-search__filters-done {
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--wk-color-accent, #1563eb);
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__filters-head button:hover:not(:disabled) {
+  background: var(--semi-color-primary-light-default);
+}
+
+.eva-conversation-search__filters-head button:disabled {
+  color: var(--wk-text-disabled, #b8bbc4);
+  cursor: default;
+}
+
+.eva-conversation-search__filters fieldset {
+  padding: 0;
+  margin: 0 0 16px;
+  border: 0;
+}
+
+.eva-conversation-search__filters legend {
+  margin-bottom: 8px;
+  color: var(--wk-text-secondary, #5c6070);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.eva-conversation-search__sender-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.eva-conversation-search__sender-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 8px;
+  color: var(--wk-text-secondary, #5c6070);
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid var(--wk-border-subtle, #e7e9ec);
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__sender-options label:hover,
+.eva-conversation-search__sender-options label.is-selected {
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--semi-color-primary-light-default);
+  border-color: var(--semi-color-primary-light-active);
+}
+
+.eva-conversation-search__sender-options label:has(input:focus-visible) {
+  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline-offset: 2px;
+}
+
+.eva-conversation-search__sender-options input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+.eva-conversation-search__sender-options img {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.eva-conversation-search__sender-options label > span:not(.ai-badge) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-conversation-search__no-sender {
+  grid-column: 1 / -1;
+  color: var(--wk-text-tertiary, #9498a8);
+  font-size: 13px;
+}
+
+.eva-conversation-search__choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eva-conversation-search__choice-row button {
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--wk-text-secondary, #5c6070);
+  font-size: 12px;
+  background: var(--wk-bg-base, #f6f7f8);
+  border: 1px solid transparent;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__choice-row button:hover,
+.eva-conversation-search__choice-row button.is-selected {
+  color: var(--wk-color-accent, #1563eb);
+  background: var(--semi-color-primary-light-default);
+  border-color: var(--semi-color-primary-light-active);
+}
+
+.eva-conversation-search__filters-done {
+  width: 100%;
+  min-height: 36px;
+  color: var(--wk-text-inverse, #fff);
+  font-weight: 600;
+  background: var(--wk-color-accent, #1563eb);
+}
+
+.eva-conversation-search__body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  background: var(--wk-bg-surface, #fff);
+}
+
+.eva-conversation-search__empty,
+.eva-conversation-search__loading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 260px;
+  padding: 32px;
+  color: var(--wk-text-tertiary, #9498a8);
+  font-size: 14px;
+  text-align: center;
+}
+
+.eva-conversation-search__empty p {
+  max-width: 260px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.eva-conversation-search__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  color: var(--wk-color-accent, #1563eb);
+  background: var(--semi-color-primary-light-default);
+  border-radius: 24px;
+}
+
+.eva-conversation-search__empty button,
+.eva-conversation-search__more {
+  min-height: 34px;
+  padding: 0 14px;
+  color: var(--wk-color-accent, #1563eb);
+  background: transparent;
+  border: 1px solid var(--semi-color-primary-light-active);
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__loading {
+  flex-direction: row;
+}
+
+.eva-conversation-search__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--wk-border-strong, #d2d5da);
+  border-top-color: var(--wk-color-accent, #1563eb);
+  border-radius: 50%;
+  animation: eva-conversation-search-spin 700ms linear infinite;
+}
+
+.eva-conversation-search__summary {
+  padding: 12px 16px 6px;
+  color: var(--wk-text-tertiary, #9498a8);
+  font-size: 12px;
+}
+
+.eva-conversation-search__results {
+  padding: 0 8px 8px;
+  margin: 0;
+  list-style: none;
+}
+
+.eva-conversation-search__results li {
+  margin: 0;
+}
+
+.eva-conversation-search__result {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 8px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-conversation-search__result:hover,
+.eva-conversation-search__result.is-active {
+  background: var(--wk-bg-hover, #f3f4f5);
+}
+
+.eva-conversation-search__avatar {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.eva-conversation-search__avatar > img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.eva-conversation-search__result-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eva-conversation-search__result.is-file {
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+  padding: 0;
+}
+
+.eva-conversation-search__file-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 72px;
+  padding: 10px 4px 10px 8px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.eva-conversation-search__file-open:focus-visible,
+.eva-conversation-search__file-menu:focus-visible {
+  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline-offset: -2px;
+}
+
+.eva-conversation-search__file-menu-anchor {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.eva-conversation-search__file-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--wk-text-secondary, #5c6070);
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.eva-conversation-search__result.is-file:hover .eva-conversation-search__file-menu,
+.eva-conversation-search__result.is-file:focus-within .eva-conversation-search__file-menu,
+.eva-conversation-search__result.is-file.is-active .eva-conversation-search__file-menu {
+  opacity: 1;
+}
+
+.eva-conversation-search__file-menu:hover,
+.eva-conversation-search__file-menu[aria-expanded="true"] {
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--wk-bg-selected, #e8e9eb);
+}
+
+.semi-dropdown-menu.eva-conversation-search__file-dropdown {
+  min-width: 200px;
+  padding: 4px;
+  border-radius: var(--wk-r-input, 6px);
+}
+
+.eva-conversation-search__file-dropdown .semi-dropdown-item {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--wk-r-input, 6px);
+  font-size: 14px;
+}
+
+.eva-conversation-search__file-icon {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 52px;
+  color: var(--wk-text-tertiary, #727784);
+}
+
+.eva-conversation-search__file-icon.is-archive {
+  color: var(--wk-color-accent, #1563eb);
+}
+
+.eva-conversation-search__file-icon svg {
+  width: 42px;
+  height: 42px;
+}
+
+.eva-conversation-search__file-extension {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  max-width: 34px;
+  overflow: hidden;
+  color: currentcolor;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .01em;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.eva-conversation-search__file-title {
+  display: block;
+  overflow: hidden;
+  color: var(--wk-text-primary, #1a1c24);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-conversation-search__file-title mark {
+  padding: 0 1px;
+  color: inherit;
+  background: var(--semi-color-warning-light-default);
+  border-radius: 2px;
+}
+
+.eva-conversation-search__file-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wk-text-tertiary, #727784);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.eva-conversation-search__file-sender {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eva-conversation-search__file-separator {
+  flex: none;
+  color: var(--wk-text-muted, #b5b8c0);
+}
+
+.eva-conversation-search__result-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eva-conversation-search__sender {
+  overflow: hidden;
+  color: var(--wk-text-primary, #1a1c24);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-conversation-search__result-meta time {
+  margin-left: auto;
+  color: var(--wk-text-tertiary, #9498a8);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.eva-conversation-search__snippet {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--wk-text-secondary, #5c6070);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.eva-conversation-search__snippet mark {
+  padding: 0 1px;
+  color: inherit;
+  background: var(--semi-color-warning-light-default);
+  border-radius: 2px;
+}
+
+.eva-conversation-search__kind {
+  color: var(--wk-text-tertiary, #9498a8);
+  font-size: 11px;
+}
+
+.eva-conversation-search__locate {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--wk-color-accent, #1563eb);
+  font-size: 12px;
+  opacity: 0;
+}
+
+.eva-conversation-search__result:hover .eva-conversation-search__locate,
+.eva-conversation-search__result:focus-visible .eva-conversation-search__locate,
+.eva-conversation-search__result.is-active .eva-conversation-search__locate {
+  opacity: 1;
+}
+
+.eva-conversation-search__more {
+  align-self: center;
+  margin: 2px 0 18px;
+}
+
+.eva-conversation-search__empty button:hover,
+.eva-conversation-search__more:hover {
+  background: var(--semi-color-primary-light-default);
+}
+
+.eva-conversation-search__input button:focus-visible,
+.eva-conversation-search__close:focus-visible,
+.eva-conversation-search__tabs button:focus-visible,
+.eva-conversation-search__filter:focus-visible,
+.eva-conversation-search__filters button:focus-visible,
+.eva-conversation-search__sender-options input:focus-visible + img,
+.eva-conversation-search__result:focus-visible,
+.eva-conversation-search__more:focus-visible,
+.eva-conversation-search__empty button:focus-visible {
+  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline-offset: 2px;
+}
+
+.ch-stream > .eva-conversation-search-hit {
+  animation: eva-conversation-search-highlight 2.2s ease-out;
+}
+
+@keyframes eva-conversation-search-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes eva-conversation-search-highlight {
+  0%, 36% { background: var(--semi-color-warning-light-default); }
+  100% { background: transparent; }
+}
+
+@media (max-width: 1439px) {
+  .ch-right-panel--search {
+    flex-basis: 380px;
+    width: 380px;
+  }
+
+  .eva-conversation-search__tabs button {
+    padding: 0 9px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .ch-right-panel--search {
+    position: absolute;
+    z-index: 84;
+    inset: 0 0 0 auto;
+    width: min(480px, 100%);
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eva-conversation-search__spinner,
+  .ch-stream > .eva-conversation-search-hit {
+    animation: none;
+  }
+}
