@@ -19,8 +19,6 @@
   };
   const folder=(id,spaceId,name,creator,updatedAt,parentId=0)=>({id,spaceId,projectId:spaceId,area:'project',parent_id:parentId,name,type:'folder',size:0,creator,editor:'未编辑过',createdBy:creator,updatedBy:creator,updated_at:updatedAt,description:'项目资料文件夹'});
   const file=(id,spaceId,name,size,creator,editor,updatedAt,source,description,parentId=0)=>({id,spaceId,projectId:spaceId,area:'project',parent_id:parentId,name,type:'blob',size,extension:ext(name),creator,editor,createdBy:creator,updatedBy:editor==='未编辑过'?creator:editor,updated_at:updatedAt,source:source||{type:'upload',label:'本地上传'},description:description||'项目团队文件'});
-  const sharedFolder=(id,spaceId,name,creator,updatedAt,parentId=0)=>({id,spaceId,projectId:null,area:'shared',parent_id:parentId,name,type:'folder',size:0,creator,editor:'未编辑过',createdBy:creator,updatedBy:creator,updated_at:updatedAt,source:{type:'created',label:'共享空间内创建'},description:'共享空间文件夹'});
-  const sharedFile=(id,spaceId,name,size,creator,editor,updatedAt,source,description,parentId=0)=>({id,spaceId,projectId:null,area:'shared',parent_id:parentId,name,type:'blob',size,extension:ext(name),creator,editor,createdBy:creator,updatedBy:editor==='未编辑过'?creator:editor,updated_at:updatedAt,source:source||{type:'upload',label:'本地上传'},description:description||'共享空间文件'});
   const externalProviderLabel=provider=>provider==='feishu'?'飞书':provider==='wecom'?'企业微信':'网页';
   const externalKindLabel=kind=>kind==='folder'?'文件夹':kind==='document'?'文档':kind==='sheet'?'表格':kind==='page'?'页面':'链接';
   const externalTypeLabel=external=>externalProviderLabel(external?.provider)+externalKindLabel(external?.kind)+' · 外部链接';
@@ -61,12 +59,6 @@
     try{return parseExternalLink(external?.url,{kind:external?.kind==='folder'?'folder':undefined}).resourceKey;}catch{return external?.url||'';}
   };
 
-  const DEFAULT_SHARED_SPACES=[
-    {id:'shared:brand',name:'品牌与市场共享',mark:'品',description:'沉淀品牌规范、市场素材与对外发布资料',ownerId:'u-wangyilin',createdAt:'2026-08-18T09:00:00+08:00',members:[{id:'u-wangyilin',role:'owner'},{id:'u-hejing',role:'manager'},{id:'u-linxiao',role:'editor'}]},
-    {id:'shared:partners',name:'合作伙伴协作',mark:'合',description:'与合作伙伴协作相关的方案、合同与交付材料',ownerId:'u-hejing',createdAt:'2026-08-22T10:30:00+08:00',members:[{id:'u-hejing',role:'owner'},{id:'u-wangyilin',role:'manager'},{id:'u-suhang',role:'editor'}]},
-    {id:'shared:public',name:'公司公共资料',mark:'公',description:'面向内部成员维护的制度、模板与公共资料',ownerId:'u-zhouyuan',createdAt:'2026-08-26T14:20:00+08:00',members:[{id:'u-zhouyuan',role:'owner'},{id:'u-hejing',role:'manager'},{id:'u-wangyilin',role:'editor'},{id:'u-linxiao',role:'editor'}]}
-  ];
-
   const DEFAULT_RECORDS=[
     folder('prod-folder-meeting','prod','会议纪要','王宜林','2026-09-05T11:30:00+08:00'),
     folder('prod-folder-supplier','prod','供应商资料','周远','2026-09-04T16:20:00+08:00'),
@@ -82,15 +74,7 @@
     {id:'personal-notes',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'项目复盘备忘.md',type:'blob',size:18640,extension:'md',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T16:40:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间文件'},
     {id:'personal-word-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'A-2409临时放行评审纪要.docx',type:'blob',size:28416,extension:'docx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T17:35:00+08:00',source:{type:'upload',label:'本地上传'},description:'供应商异常临时放行评审纪要'},
     {id:'personal-sheet-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'EVA-分享权限验收矩阵.xlsx',type:'blob',size:48640,extension:'xlsx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T16:20:00+08:00',source:{type:'upload',label:'本地上传'},description:'不同角色与分享范围的验收矩阵'},
-    {id:'personal-slides-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'UI设计师发展前景.pptx',type:'blob',size:2516582,extension:'pptx',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T15:45:00+08:00',source:{type:'task',label:'Eva 任务产出'},description:'管理层同步使用的六页演示文稿'},
-    sharedFolder('shared-brand-guides','shared:brand','品牌规范','王宜林','2026-09-06T16:20:00+08:00'),
-    sharedFile('shared-brand-pdf','shared:brand','品牌使用说明.pdf',806912,'何静','何静','2026-09-06T18:05:00+08:00',{type:'library-copy',label:'从私聊保存 · 何静'},'保存到共享空间后的独立副本','shared-brand-guides'),
-    sharedFile('shared-brand-assets','shared:brand','秋季发布会素材清单.xlsx',184320,'王宜林','王宜林','2026-09-07T09:15:00+08:00',{type:'upload',label:'王宜林本地上传'},'市场素材制作与发布进度'),
-    sharedFolder('shared-partner-contracts','shared:partners','合同与合规','何静','2026-09-05T15:30:00+08:00'),
-    sharedFile('shared-partner-plan','shared:partners','合作伙伴联合方案.docx',395264,'何静','何静','2026-09-07T14:20:00+08:00',{type:'library-copy',label:'从群聊保存 · 合作伙伴沟通群'},'保存到共享空间后的独立副本'),
-    sharedFile('shared-partner-check','shared:partners','合作方准入检查表.xlsx',124928,'苏航','未编辑过','2026-09-05T15:30:00+08:00',{type:'upload',label:'苏航本地上传'},'合作方准入材料检查','shared-partner-contracts'),
-    sharedFile('shared-public-policy','shared:public','信息安全管理制度.pdf',1052672,'周远','周远','2026-09-03T10:00:00+08:00',{type:'upload',label:'周远本地上传'},'内部公共制度文件'),
-    sharedFile('shared-public-template','shared:public','项目复盘模板.docx',94208,'何静','何静','2026-09-02T16:40:00+08:00',{type:'upload',label:'何静本地上传'},'供内部项目使用的公共模板')
+    {id:'personal-slides-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'UI设计师发展前景.pptx',type:'blob',size:2516582,extension:'pptx',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T15:45:00+08:00',source:{type:'task',label:'Eva 任务产出'},description:'管理层同步使用的六页演示文稿'}
   ].concat(clone(Array.isArray(root.__EVA_EXTERNAL_LINK_SAMPLES)?root.__EVA_EXTERNAL_LINK_SAMPLES:[]));
 
   const relation=(type,id,label,meta)=>({type,id,label,meta});
@@ -106,13 +90,7 @@
     'personal-notes':{tags:['复盘']},
     'personal-word-demo':{tags:['评审','纪要']},
     'personal-sheet-demo':{tags:['权限','验收']},
-    'personal-slides-demo':{tags:['汇报','设计']},
-    'shared-brand-pdf':{tags:['品牌','规范'],systemRelations:[relation('chat','dm:u-hejing','私聊 · 何静','来源文件')]},
-    'shared-brand-assets':{tags:['市场','发布会']},
-    'shared-partner-plan':{tags:['合作伙伴','方案'],systemRelations:[relation('group','partner-chat','合作伙伴沟通群','群聊 · 来源文件')]},
-    'shared-partner-check':{tags:['准入','检查']},
-    'shared-public-policy':{tags:['制度','信息安全']},
-    'shared-public-template':{tags:['模板','复盘']}
+    'personal-slides-demo':{tags:['汇报','设计']}
   };
   const normalizeRecord=item=>{
     const preset=RECORD_METADATA[item.id]||{},isFolder=item.type==='folder',normalized=clone(item);delete normalized.category;
@@ -121,32 +99,13 @@
     return {...normalized,createdAt:item.createdAt||item.created_at||item.updated_at||stamp(),tags:isFolder?[]:clone(item.tags||preset.tags||[]),systemRelations};
   };
 
-  const normalizePins=value=>{
-    const latest=new Map();
-    (Array.isArray(value)?value:[]).forEach(item=>{
-      const actorId=String(item?.actorId||''),fileId=String(item?.fileId||''),pinnedAt=String(item?.pinnedAt||'');
-      if(!actorId||!fileId||!pinnedAt)return;
-      const key=actorId+'\u0000'+fileId,old=latest.get(key);
-      if(!old||old.pinnedAt<pinnedAt)latest.set(key,{actorId,fileId,pinnedAt});
-    });
-    return Array.from(latest.values());
-  };
-
-  function create(membership,seed=[],persist,resetSeed=seed,sharedSpaceSeed=DEFAULT_SHARED_SPACES,pinSeed=[],persistPins){
-    let records=clone(seed).map(normalizeRecord),sharedSpaces=clone(sharedSpaceSeed),pins=normalizePins(pinSeed),revision=0;const listeners=new Set();
+  function create(membership,seed=[],persist,resetSeed=seed){
+    let records=clone(seed).filter(item=>item.area!=='shared'&&!String(item.spaceId||'').startsWith('shared:')).map(normalizeRecord),revision=0;const listeners=new Set();
     const actorName=actorId=>membership.person(actorId)?.name||membership.clone?.(actorId)?.name||membership.employee?.(actorId)?.name||membership.projectAgent?.(String(actorId).replace(/^project-agent:/,''))?.name||actorId;
     const snapshot=()=>membership.snapshot();
     const personalSpace=actorId=>'personal:'+actorId;
-    const sharedSpace=spaceId=>sharedSpaces.find(item=>item.id===spaceId)||null;
     const role=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'owner';
-      const shared=sharedSpace(spaceId);
-      if(shared){
-        const member=shared.members.find(item=>item.id===actorId);
-        if(!member)return null;
-        if(shared.ownerId===actorId||member.role==='owner')return'owner';
-        return member.role==='manager'?'manager':'editor';
-      }
       const project=snapshot().projects[spaceId];
       const row=project?.humans?.find(item=>item.id===actorId);
       if(!row)return membership.canRead(spaceId,actorId)?'editor':null;
@@ -163,10 +122,9 @@
     };
     const fail=message=>{throw new Error(message);};
     const requireAction=(action,spaceId,actorId)=>can(action,spaceId,actorId)||fail('当前角色无此操作权限');
-    const notify=()=>{revision++;if(persist)persist(clone(records),clone(sharedSpaces));if(persistPins)persistPins(clone(pins));listeners.forEach(fn=>fn());};
+    const notify=()=>{revision++;if(persist)persist(clone(records));listeners.forEach(fn=>fn());};
     const record=id=>records.find(item=>item.id===id)||fail('文件不存在');
-    const pinRecord=(actorId,fileId)=>pins.find(item=>item.actorId===actorId&&item.fileId===fileId)||null;
-    const areaForSpace=spaceId=>spaceId.startsWith('personal:')?'personal':spaceId.startsWith('shared:')?'shared':'project';
+    const areaForSpace=spaceId=>spaceId.startsWith('personal:')?'personal':'project';
     const projectForSpace=spaceId=>areaForSpace(spaceId)==='project'?spaceId:null;
     const ensureSameSpace=(item,targetParentId)=>{
       if(!targetParentId)return;
@@ -243,8 +201,6 @@
           value.name=status==='missing'?'源文件已失效':'无权访问的快捷方式';value.extension='';value.size=0;value.sourceAvailable=false;value.systemRelations=[];
         }
       }
-      const preference=actorId?pinRecord(actorId,item.id):null;
-      value.pinned=Boolean(preference);value.pinnedAt=preference?.pinnedAt||null;
       return value;
     };
     const normalizeTags=value=>Array.from(new Set((Array.isArray(value)?value:String(value||'').split(/[，,]/)).map(tag=>String(tag).trim()).filter(Boolean))).slice(0,8).map(tag=>tag.slice(0,20));
@@ -266,36 +222,13 @@
     };
     const spaceLabel=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'个人空间';
-      const shared=sharedSpace(spaceId);if(shared)return shared.name;
       return snapshot().projects[spaceId]?.name||'项目空间';
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot(actorId){return clone(records.map(item=>visibleRecord(item,actorId)));},role,can,personalSpace,
-      isPinned(actorId,id){return Boolean(pinRecord(actorId,id));},
-      setPinned(actorId,id,nextPinned){
-        const item=record(id);if(item.deletedAt)fail('回收站中的文件或文件夹不能置顶');requireAction('read',item.spaceId,actorId);
-        const index=pins.findIndex(pin=>pin.actorId===actorId&&pin.fileId===id),desired=Boolean(nextPinned);
-        if(desired&&index>=0)return true;if(!desired&&index<0)return false;
-        if(desired)pins.push({actorId,fileId:id,pinnedAt:stamp()});else pins.splice(index,1);
-        notify();return desired;
-      },
-      togglePinned(actorId,id){return api.setPinned(actorId,id,!api.isPinned(actorId,id));},
-      pinnedFiles(actorId,options={}){
-        const spaceId=options.spaceId||null;
-        return pins.filter(pin=>pin.actorId===actorId).sort((left,right)=>right.pinnedAt.localeCompare(left.pinnedAt)||left.fileId.localeCompare(right.fileId)).map(pin=>{
-          const item=records.find(candidate=>candidate.id===pin.fileId);
-          if(!item||item.deletedAt||!role(item.spaceId,actorId)||(spaceId&&item.spaceId!==spaceId))return null;
-          return visibleRecord(item,actorId);
-        }).filter(Boolean).map(clone);
-      },
-      sortEntries(actorId,entries,options={}){
-        const pinnedFirst=options.pinnedFirst!==false;
+      sortEntries(entries){
         return clone(entries).sort((left,right)=>{
-          const leftPin=pinnedFirst&&!left.deletedAt?pinRecord(actorId,left.id):null;
-          const rightPin=pinnedFirst&&!right.deletedAt?pinRecord(actorId,right.id):null;
-          if(Boolean(leftPin)!==Boolean(rightPin))return leftPin?-1:1;
-          if(leftPin&&rightPin){const pinOrder=rightPin.pinnedAt.localeCompare(leftPin.pinnedAt);if(pinOrder)return pinOrder;}
           if(left.type!==right.type){if(left.type==='folder')return-1;if(right.type==='folder')return 1;}
           return String(right.deletedAt||right.createdAt).localeCompare(String(left.deletedAt||left.createdAt))||String(left.id).localeCompare(String(right.id));
         });
@@ -328,7 +261,6 @@
       },
       writableSpaces(actorId,excludeSpaceId){
         const result=[{id:personalSpace(actorId),name:'个人空间',kind:'personal'}];
-        sharedSpaces.forEach(space=>{if(role(space.id,actorId))result.push({id:space.id,name:space.name,kind:'shared'});});
         Object.entries(snapshot().projects).forEach(([projectId,project])=>{if(role(projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
         return clone(result.filter(space=>space.id!==excludeSpaceId));
       },
@@ -354,33 +286,6 @@
         if(item.source?.type==='ai-conversation-copy'&&item.source.ownerId!==actorId)return'从 AI 会话保存';
         return item.source?.label||'空间内创建';
       },
-      sharedSpaces(actorId){return clone(sharedSpaces.filter(space=>space.members.some(member=>member.id===actorId)));},
-      sharedSpace(spaceId,actorId){const space=sharedSpace(spaceId);return space&&(!actorId||space.members.some(member=>member.id===actorId))?clone(space):null;},
-      sharedMembers(spaceId,actorId){if(!role(spaceId,actorId))return[];return clone(sharedSpace(spaceId)?.members||[]).map(member=>({...member,name:actorName(member.id)}));},
-      sharedMemberCandidates(spaceId,actorId){requireAction('manage-members',spaceId,actorId);const joined=new Set(sharedSpace(spaceId)?.members.map(member=>member.id)||[]);return clone(snapshot().people.filter(person=>person.active!==false&&!joined.has(person.id)).map(person=>({id:person.id,name:person.name||person.id})));},
-      addSharedMember(actorId,spaceId,memberId){requireAction('manage-members',spaceId,actorId);const space=sharedSpace(spaceId);if(!space)fail('共享空间不存在');const person=membership.person(memberId);if(!person)fail('请选择有效成员');if(space.members.some(member=>member.id===memberId))return;space.members.push({id:memberId,role:'editor'});notify();},
-      removeSharedMember(actorId,spaceId,memberId){
-        requireAction('manage-members',spaceId,actorId);const space=sharedSpace(spaceId);if(!space)fail('共享空间不存在');const member=space.members.find(item=>item.id===memberId);if(!member)fail('成员不存在');
-        if(memberId===space.ownerId)fail('请先转移空间所有权');if(memberId===actorId)fail('不能在成员管理中移除自己');if(member.role==='manager')requireAction('set-manager',spaceId,actorId);space.members=space.members.filter(item=>item.id!==memberId);notify();
-      },
-      createSharedSpace(actorId,draft={}){
-        const name=String(draft.name||'').trim();if(!name)fail('请输入共享空间名称');
-        const id='shared:'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
-        sharedSpaces.unshift({id,name,mark:String(draft.mark||name.slice(0,1)),description:String(draft.description||'团队共享文件空间').trim(),ownerId:actorId,createdAt:stamp(),members:[{id:actorId,role:'owner'}]});notify();return id;
-      },
-      updateSharedSpace(actorId,spaceId,draft={}){
-        requireAction('manage-settings',spaceId,actorId);const space=sharedSpace(spaceId);if(!space)fail('共享空间不存在');
-        const name=String(draft.name||space.name).trim();if(!name)fail('请输入共享空间名称');space.name=name;space.mark=name.slice(0,1);space.description=String(draft.description??space.description).trim();notify();
-      },
-      setSharedMemberRole(actorId,spaceId,memberId,nextRole){
-        const space=sharedSpace(spaceId);if(!space)fail('共享空间不存在');const member=space.members.find(item=>item.id===memberId);if(!member)fail('成员不存在');
-        if(nextRole==='manager'||member.role==='manager')requireAction('set-manager',spaceId,actorId);else requireAction('manage-members',spaceId,actorId);
-        if(memberId===space.ownerId)fail('请先转移空间所有权');member.role=nextRole==='manager'?'manager':'editor';notify();
-      },
-      transferSharedOwnership(actorId,spaceId,nextOwnerId){
-        requireAction('transfer-ownership',spaceId,actorId);const space=sharedSpace(spaceId);if(!space)fail('共享空间不存在');const next=space.members.find(item=>item.id===nextOwnerId);if(!next)fail('新 Owner 必须是空间成员');
-        const old=space.members.find(item=>item.id===space.ownerId);if(old)old.role='manager';next.role='owner';space.ownerId=nextOwnerId;notify();
-      },
       list(spaceId,actorId,options={}){
         if(!role(spaceId,actorId))return[];
         return clone(records.filter(item=>item.spaceId===spaceId&&(options.deleted?Boolean(item.deletedAt):!item.deletedAt)).map(item=>visibleRecord(item,actorId)));
@@ -392,7 +297,7 @@
       all(actorId){return clone(records.filter(item=>!item.deletedAt&&Boolean(role(item.spaceId,actorId))).map(item=>visibleRecord(item,actorId)));},
       createFolder(actorId,spaceId,name,parentId=0){
         requireAction('create-folder',spaceId,actorId);name=String(name||'').trim();if(!name)fail('请输入文件夹名称');
-        const now=stamp(),area=areaForSpace(spaceId),item={id:'folder-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId,projectId:projectForSpace(spaceId),area,parent_id:parentId||0,name,type:'folder',size:0,creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:[],systemRelations:[],source:{type:'created',label:'新建文件夹'},description:area==='shared'?'共享空间文件夹':'文件夹'};
+        const now=stamp(),area=areaForSpace(spaceId),item={id:'folder-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId,projectId:projectForSpace(spaceId),area,parent_id:parentId||0,name,type:'folder',size:0,creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:[],systemRelations:[],source:{type:'created',label:'新建文件夹'},description:'文件夹'};
         ensureSameSpace(item,parentId);records.unshift(item);notify();return item.id;
       },
       upload(actorId,spaceId,blob,parentId=0){
@@ -490,7 +395,7 @@
         const item=record(id);requireAction('delete-forever',item.spaceId,actorId);requireTrashRoot(item);
         const unit=trashUnitRecords(item),ids=new Set(unit.map(target=>target.id));
         for(const target of records){if(target.spaceId===item.spaceId&&!target.deletedAt&&ids.has(target.parent_id))target.parent_id=0;}
-        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));pins=pins.filter(pin=>!ids.has(pin.fileId));notify();return{removedCount:unit.length};
+        records=records.filter(target=>!(target.deletedAt&&ids.has(target.id)));notify();return{removedCount:unit.length};
       },
       resetProjectDemo(projectId){records=records.filter(r=>r.projectId!==projectId);records.push(...clone(resetSeed.filter(r=>r.projectId===projectId)).map(normalizeRecord));notify();},
       transfer(actorId,projectId,sourceFile,source){
@@ -512,26 +417,21 @@
   }
 
   function bootstrap(membership){
-    const key='eva:file-store:v6',pinKey='eva:file-pins:v1';let saved,spaces,pinSeed=[],previewDemoInitialized=false,externalLinksDemoV1=false,externalFoldersDemoV1=false;
-    try{const value=JSON.parse(root.localStorage.getItem(pinKey));if(value?.schema===1&&Array.isArray(value.pins))pinSeed=value.pins;}catch{}
-    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;previewDemoInitialized=true;externalLinksDemoV1=value.externalLinksDemoV1===true;externalFoldersDemoV1=value.externalFoldersDemoV1===true;}}catch{}
-    if(!saved){
-      try{const value=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
+    const key='eva:file-store:v7';let saved,previewDemoInitialized=false,externalLinksDemoV1=false,externalFoldersDemoV1=false;
+    for(const version of [7,6,5,4,3]){
+      if(saved)break;
+      try{
+        const value=JSON.parse(root.localStorage.getItem('eva:file-store:v'+version));
+        if(value?.schema===version&&Array.isArray(value.records)){
+          saved=value.records;
+          previewDemoInitialized=version>=6;
+          externalLinksDemoV1=value.externalLinksDemoV1===true;
+          externalFoldersDemoV1=value.externalFoldersDemoV1===true;
+        }
+      }catch{}
     }
     if(!saved){
-      saved=clone(DEFAULT_RECORDS);spaces=clone(DEFAULT_SHARED_SPACES);
-      try{
-        const legacy=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));
-        if(legacy?.schema===5&&Array.isArray(legacy.records)){saved=legacy.records;if(Array.isArray(legacy.sharedSpaces))spaces=legacy.sharedSpaces;}
-      }catch{}
-      try{
-        const legacy=JSON.parse(root.localStorage.getItem('eva:file-store:v4'));
-        if(legacy?.schema===4&&Array.isArray(legacy.records)){saved=legacy.records;if(Array.isArray(legacy.sharedSpaces))spaces=legacy.sharedSpaces;}
-      }catch{}
-      try{
-        const legacy=JSON.parse(root.localStorage.getItem('eva:file-store:v3'));
-        if(legacy?.schema===3&&Array.isArray(legacy.records)){saved=legacy.records;if(Array.isArray(legacy.sharedSpaces))spaces=legacy.sharedSpaces;}
-      }catch{}
+      saved=clone(DEFAULT_RECORDS);
       try{
         const legacy=JSON.parse(root.localStorage.getItem('eva:file-store:v2'));
         if(legacy?.schema===2&&Array.isArray(legacy.records)){
@@ -541,23 +441,17 @@
       }catch{}
       try{const legacy=JSON.parse(root.localStorage.getItem('eva:shared-files:v1'));if(Array.isArray(legacy))saved.push(...legacy.map(item=>({...item,spaceId:item.projectId,area:'project'})));}catch{}
     }
+    saved=saved.filter(item=>item.area!=='shared'&&!String(item.spaceId||'').startsWith('shared:'));
     DEFAULT_RECORDS.filter(item=>!externalLinksDemoV1&&item.type==='external_link').forEach(item=>{if(!saved.some(savedItem=>savedItem.id===item.id))saved.push(clone(item));});
     DEFAULT_RECORDS.filter(item=>!externalFoldersDemoV1&&item.type==='external_link'&&item.external?.kind==='folder').forEach(item=>{if(!saved.some(savedItem=>savedItem.id===item.id))saved.push(clone(item));});
     const previewDemoIds=new Set(['personal-word-demo','personal-sheet-demo','personal-slides-demo']);
     const existingIds=new Set(saved.map(item=>item.id));
     DEFAULT_RECORDS.filter(item=>!previewDemoInitialized&&previewDemoIds.has(item.id)&&!existingIds.has(item.id)).forEach(item=>saved.push(clone(item)));
-    const persistRecords=(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces,externalLinksDemoV1:true,externalFoldersDemoV1:true}));}catch{}};
-    persistRecords(saved,spaces||DEFAULT_SHARED_SPACES);
-    return create(
-      membership,
-      saved,
-      persistRecords,
-      DEFAULT_RECORDS,
-      spaces||DEFAULT_SHARED_SPACES,
-      pinSeed,
-      pins=>{try{root.localStorage.setItem(pinKey,JSON.stringify({schema:1,pins}));}catch{}}
-    );
+    const persistRecords=records=>{try{root.localStorage.setItem(key,JSON.stringify({schema:7,records,externalLinksDemoV1:true,externalFoldersDemoV1:true}));}catch{}};
+    persistRecords(saved);
+    try{root.localStorage.removeItem?.('eva:file-pins:v1');}catch{}
+    return create(membership,saved,persistRecords,DEFAULT_RECORDS);
   }
 
-  root.EvaFileSharing=Object.freeze({create,bootstrap,DEFAULT_RECORDS:clone(DEFAULT_RECORDS),DEFAULT_SHARED_SPACES:clone(DEFAULT_SHARED_SPACES)});
+  root.EvaFileSharing=Object.freeze({create,bootstrap,DEFAULT_RECORDS:clone(DEFAULT_RECORDS)});
 })(window);
