@@ -548,9 +548,6 @@
 .eva-project-directory-list { border: 1px solid var(--eva-border-subtle); }
 
 .eva-project-directory .collab-btn-primary.semi-button {
-  --semi-color-primary: var(--eva-action-primary);
-  --semi-color-primary-hover: var(--eva-action-primary-hover);
-  --semi-color-primary-active: var(--eva-action-primary-hover);
   background: var(--eva-action-primary);
   border-radius: var(--eva-radius-control);
   padding-inline: var(--eva-space-4);
