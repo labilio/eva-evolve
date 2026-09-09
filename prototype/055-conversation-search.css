@@ -32,7 +32,7 @@
   color: var(--wk-text-primary, #1a1c24);
   background: var(--wk-bg-surface, #fff);
   border-left: 1px solid var(--wk-border-subtle, #e7e9ec);
-  box-shadow: var(--wk-shadow-drawer, -8px 0 24px rgb(28 28 35 / 6%));
+  box-shadow: var(--wk-shadow-drawer, var(--semi-shadow-elevated));
 }
 
 .eva-conversation-search__head {
@@ -56,7 +56,7 @@
   color: var(--wk-text-tertiary, #9498a8);
   background: var(--wk-bg-base, #f6f7f8);
   border: 1px solid transparent;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
   transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
@@ -67,7 +67,7 @@
 .eva-conversation-search__input:focus-within {
   background: var(--wk-bg-surface, #fff);
   border-color: var(--wk-color-accent, #1563eb);
-  box-shadow: 0 0 0 2px rgb(21 99 235 / 12%);
+  box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
 }
 
 .eva-conversation-search__input input {
@@ -117,7 +117,7 @@
   color: var(--wk-text-tertiary, #9498a8);
   background: transparent;
   border: 0;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__close {
@@ -159,7 +159,7 @@
   white-space: nowrap;
   background: transparent;
   border: 0;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__tabs button:hover {
@@ -186,12 +186,12 @@
   font-weight: 500;
   background: transparent;
   border: 0;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__filter:hover,
 .eva-conversation-search__filter.is-open {
-  background: rgb(21 99 235 / 8%);
+  background: var(--semi-color-primary-light-default);
 }
 
 .eva-conversation-search__filter-count {
@@ -201,7 +201,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  color: #fff;
+  color: var(--wk-text-inverse, #fff);
   font-size: 11px;
   line-height: 18px;
   background: var(--wk-color-accent, #1563eb);
@@ -217,10 +217,10 @@
   max-height: calc(100% - 136px);
   padding: 16px;
   overflow: auto;
-  background: var(--wk-bg-elevated, #fff);
+  background: var(--wk-bg-surface, #fff);
   border: 1px solid var(--wk-border-subtle, #e2e5e8);
   border-radius: var(--wk-r-lg, 12px);
-  box-shadow: 0 12px 32px rgb(28 28 35 / 16%);
+  box-shadow: var(--wk-shadow-overlay, var(--semi-shadow-elevated));
 }
 
 .eva-conversation-search__filters-head {
@@ -241,11 +241,11 @@
   color: var(--wk-color-accent, #1563eb);
   background: transparent;
   border: 0;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__filters-head button:hover:not(:disabled) {
-  background: rgb(21 99 235 / 8%);
+  background: var(--semi-color-primary-light-default);
 }
 
 .eva-conversation-search__filters-head button:disabled {
@@ -275,7 +275,7 @@
 .eva-conversation-search__sender-options label {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   min-width: 0;
   min-height: 36px;
   padding: 5px 8px;
@@ -283,14 +283,14 @@
   font-size: 13px;
   cursor: pointer;
   border: 1px solid var(--wk-border-subtle, #e7e9ec);
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__sender-options label:hover,
 .eva-conversation-search__sender-options label.is-selected {
   color: var(--wk-text-primary, #1a1c24);
-  background: rgb(21 99 235 / 6%);
-  border-color: rgb(21 99 235 / 35%);
+  background: var(--semi-color-primary-light-default);
+  border-color: var(--semi-color-primary-light-active);
 }
 
 .eva-conversation-search__sender-options label:has(input:focus-visible) {
@@ -340,20 +340,20 @@
   font-size: 12px;
   background: var(--wk-bg-base, #f6f7f8);
   border: 1px solid transparent;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__choice-row button:hover,
 .eva-conversation-search__choice-row button.is-selected {
   color: var(--wk-color-accent, #1563eb);
-  background: rgb(21 99 235 / 7%);
-  border-color: rgb(21 99 235 / 25%);
+  background: var(--semi-color-primary-light-default);
+  border-color: var(--semi-color-primary-light-active);
 }
 
 .eva-conversation-search__filters-done {
   width: 100%;
   min-height: 36px;
-  color: #fff;
+  color: var(--wk-text-inverse, #fff);
   font-weight: 600;
   background: var(--wk-color-accent, #1563eb);
 }
@@ -396,7 +396,7 @@
   width: 76px;
   height: 76px;
   color: var(--wk-color-accent, #1563eb);
-  background: rgb(21 99 235 / 8%);
+  background: var(--semi-color-primary-light-default);
   border-radius: 24px;
 }
 
@@ -406,8 +406,8 @@
   padding: 0 14px;
   color: var(--wk-color-accent, #1563eb);
   background: transparent;
-  border: 1px solid rgb(21 99 235 / 25%);
-  border-radius: var(--wk-r-sm, 8px);
+  border: 1px solid var(--semi-color-primary-light-active);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__loading {
@@ -449,7 +449,7 @@
   text-align: left;
   background: transparent;
   border: 0;
-  border-radius: var(--wk-r-sm, 8px);
+  border-radius: var(--wk-r-input, 8px);
 }
 
 .eva-conversation-search__result:hover,
@@ -481,9 +481,79 @@
 
 .eva-conversation-search__result.is-file {
   align-items: center;
-  gap: 12px;
+  gap: 4px;
   min-height: 72px;
-  padding-block: 10px;
+  padding: 0;
+}
+
+.eva-conversation-search__file-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 72px;
+  padding: 10px 4px 10px 8px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.eva-conversation-search__file-open:focus-visible,
+.eva-conversation-search__file-menu:focus-visible {
+  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline-offset: -2px;
+}
+
+.eva-conversation-search__file-menu-anchor {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.eva-conversation-search__file-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--wk-text-secondary, #5c6070);
+  background: transparent;
+  border: 0;
+  border-radius: var(--wk-r-input, 8px);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.eva-conversation-search__result.is-file:hover .eva-conversation-search__file-menu,
+.eva-conversation-search__result.is-file:focus-within .eva-conversation-search__file-menu,
+.eva-conversation-search__result.is-file.is-active .eva-conversation-search__file-menu {
+  opacity: 1;
+}
+
+.eva-conversation-search__file-menu:hover,
+.eva-conversation-search__file-menu[aria-expanded="true"] {
+  color: var(--wk-text-primary, #1a1c24);
+  background: var(--wk-bg-selected, #e8e9eb);
+}
+
+.semi-dropdown-menu.eva-conversation-search__file-dropdown {
+  min-width: 200px;
+  padding: 4px;
+  border-radius: var(--wk-r-input, 6px);
+}
+
+.eva-conversation-search__file-dropdown .semi-dropdown-item {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--wk-r-input, 6px);
+  font-size: 14px;
 }
 
 .eva-conversation-search__file-icon {
@@ -536,7 +606,7 @@
 .eva-conversation-search__file-title mark {
   padding: 0 1px;
   color: inherit;
-  background: #ffe58f;
+  background: var(--semi-color-warning-light-default);
   border-radius: 2px;
 }
 
@@ -559,13 +629,13 @@
 
 .eva-conversation-search__file-separator {
   flex: none;
-  color: var(--wk-text-quaternary, #b5b8c0);
+  color: var(--wk-text-muted, #b5b8c0);
 }
 
 .eva-conversation-search__result-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -599,7 +669,7 @@
 .eva-conversation-search__snippet mark {
   padding: 0 1px;
   color: inherit;
-  background: #ffe58f;
+  background: var(--semi-color-warning-light-default);
   border-radius: 2px;
 }
 
@@ -629,7 +699,7 @@
 
 .eva-conversation-search__empty button:hover,
 .eva-conversation-search__more:hover {
-  background: rgb(21 99 235 / 7%);
+  background: var(--semi-color-primary-light-default);
 }
 
 .eva-conversation-search__input button:focus-visible,
@@ -654,7 +724,7 @@
 }
 
 @keyframes eva-conversation-search-highlight {
-  0%, 36% { background: rgb(255 229 143 / 72%); }
+  0%, 36% { background: var(--semi-color-warning-light-default); }
   100% { background: transparent; }
 }
 

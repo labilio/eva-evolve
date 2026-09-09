@@ -60,6 +60,14 @@ test('统一 IM 内核在当前 Ta 消息集合挂载唯一查找面板', async 
   assert.match(source, /messages:Ta,onClose:/);
   assert.match(source, /conversationId:va/);
   assert.match(source, /onLocate:index=>evaRevealConversationMessage\(da\.current,index\)/);
+  assert.match(source, /onPreview:file=>void \$a\(file\)/);
+  assert.match(source, /onDownload:file=>void Na\(file\)/);
+  assert.match(source, /预览文件 /);
+  assert.match(source, /定位到聊天位置/);
+  assert.match(source, /下载文件/);
+  assert.match(source, /requestAnimationFrame\(\(\)=>onLocate\(record\.index\)\)/);
+  assert.match(source, /fileMenuRefs=reactExports\.useRef\(new Map\(\)\)/);
+  assert.match(source, /restoreFileMenuFocus\(record\)/);
   assert.match(source, /aria-controls":"eva-conversation-search-panel/);
   assert.match(source, /React\.createElement\(ChannelsView/);
   assert.doesNotMatch(source, /EvaConversationSearch[\s\S]{0,1200}innerHTML/);
@@ -74,6 +82,9 @@ test('查找右栏使用 Octo 480px 推开布局并注册到唯一入口', async
   assert.match(css, /\.ch-right-panel--search[\s\S]*flex:\s*0 0 480px/);
   assert.match(css, /\.eva-conversation-search__file-title[\s\S]*font-size:\s*15px/);
   assert.match(css, /\.eva-conversation-search__file-meta[\s\S]*font-size:\s*13px/);
+  assert.match(css, /\.eva-conversation-search__file-menu[\s\S]*opacity:\s*0/);
+  assert.match(css, /\.eva-conversation-search__result\.is-file:focus-within[\s\S]*opacity:\s*1/);
+  assert.match(css, /\.semi-dropdown-menu\.eva-conversation-search__file-dropdown[\s\S]*min-width:\s*200px/);
   assert.match(css, /button\.eva-chat-search-entry:not\(\.is-on\):not\(:hover\)[\s\S]*background:\s*transparent/);
   assert.match(css, /@media \(max-width: 1099px\)[\s\S]*position:\s*absolute/);
   assert.doesNotMatch(css, /position:\s*fixed|backdrop-filter/);
