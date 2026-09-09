@@ -12,7 +12,8 @@
     "release:bump": "node scripts/release-metadata.mjs",
     "comments": "node tools/comments-cli.mjs",
     "test": "node --test tests/*.test.mjs",
-    "test:search": "node --test tests/browser/search-controls.mjs"
+    "test:search": "node --test tests/browser/search-controls.mjs",
+    "test:buttons": "node --test tests/browser/button-states.mjs"
   },
   "devDependencies": {
     "linkedom": "^0.18.13",

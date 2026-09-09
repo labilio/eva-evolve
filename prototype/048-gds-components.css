@@ -711,6 +711,8 @@
   background: var(--eva-overlay-hover);
 }
 .semi-button.semi-button-disabled {
+  --semi-color-primary-hover: var(--eva-action-disabled-fill);
+  --semi-color-primary-active: var(--eva-action-disabled-fill);
   background: var(--eva-action-disabled-fill);
   color: var(--eva-text-muted);
   cursor: not-allowed;
