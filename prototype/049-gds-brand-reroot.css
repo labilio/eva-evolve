@@ -98,6 +98,14 @@ body {
   font-family: var(--eva-font-sans);
 }
 
+/* Legacy project scopes define their own Semi palette. Adapt every scope,
+   including portalled controls, so hover/active cannot fall back to black. */
+body, .collab-frame, .collab-list-page, .collab-empty {
+  --semi-color-primary: var(--eva-action-primary);
+  --semi-color-primary-hover: var(--eva-action-primary-hover);
+  --semi-color-primary-active: var(--eva-action-primary-hover);
+}
+
 /* GDS all-page adaptation: shared semantic palette.
    Product layout, status colors and AI identity geometry retain their owners.
    Body scope also supplies the same tokens to portalled controls. */
@@ -111,8 +119,6 @@ body {
   --semi-color-border: var(--eva-border-faint);
   --semi-color-fill-0: var(--eva-surface-subtle);
   --semi-color-fill-1: var(--eva-overlay-hover);
-  --semi-color-primary: var(--eva-action-primary);
-  --semi-color-primary-hover: var(--eva-action-primary-hover);
   --semi-color-primary-light-default: var(--eva-action-primary-08);
   --semi-border-radius-small: var(--eva-radius-control);
   --semi-border-radius-medium: var(--eva-radius-control);
