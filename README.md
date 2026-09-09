@@ -1,8 +1,8 @@
-# Eva Demo
+# Eva Evolve
 
 Eva 桌面端交互原型的在线进度预览。
 
-多人、多电脑和 AI 协作请先阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。普通开发使用功能分支和 Vercel Preview；`main` 只接收经过人工确认的正式发布。
+多人、多电脑和 AI 协作请先阅读 [`CONTRIBUTING.md`](CONTRIBUTING.md)。允许小改动直接推送 `main`；复杂改动保留功能分支、Vercel Preview 和 PR。
 
 ## 当前入口
 
@@ -27,7 +27,7 @@ Eva 桌面端交互原型的在线进度预览。
 
 ## 发布流程
 
-GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit 并 push 后，由 Vercel 自动部署。日常更新不运行 `vercel deploy`；该命令只用于用户明确要求的临时预览或 CLI 排障。
+GitHub `main` 是唯一生产发布入口：小改动完成检查后直接 commit / push，由 Vercel 自动部署，无需重复确认。日常更新不运行 `vercel deploy`；该命令只用于用户明确要求的临时预览或 CLI 排障。
 
 发布前后必须分别确认状态，不能把它们混称为“已经上线”：
 
@@ -36,7 +36,7 @@ GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit �
 3. **Vercel 已部署**：生产部署成功且对应目标 commit，尚未代表页面交互已经人工检查。
 4. **浏览器已验收**：等待自动部署生效后，在目标线上地址逐入口验证，并核对页面最近更新时间。
 
-用户未授权 commit/push 时，工作停留在“本地已修改”。部署失败或浏览器未检查时，必须如实停留在相应状态。
+用户明确要求不 commit/push 时，工作停留在“本地已修改”。部署失败或浏览器未检查时，必须如实停留在相应状态。
 
 ## 三栏式页面视觉规范
 
@@ -50,3 +50,6 @@ GitHub `main` 是唯一生产发布入口：本地修改经明确授权 commit �
 - Eva 页面外壳及通用界面优先使用既有封装或 Semi UI，不重造成熟 IM 组件。
 - 图标使用 Lucide；相同语义允许并应复用同一图标，不设“每个图标只能出现一次”的限制。
 - `vendor/` 中的兼容运行时不具有产品或设计解释权；Eva 的新增功能不得参考 AionUI。
+
+
+新仓库：https://github.com/labilio/eva-evolve 。线上：https://eva-evolve.vercel.app/ 。main 禁止强推与删除；质量检查在每次推送后运行，与 Vercel 部署独立。详细流程见 CONTRIBUTING.md。

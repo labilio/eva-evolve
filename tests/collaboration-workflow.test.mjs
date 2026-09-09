@@ -5,14 +5,17 @@ import { nextReleaseMetadata } from '../scripts/release-metadata.mjs';
 
 const read = file => fs.readFileSync(file, 'utf8');
 
-test('仓库明确要求功能分支、Preview 和人工发布闸门', () => {
+test('仓库允许小改动直推并保留必要保护与复杂改动评审', () => {
   const agents = read('AGENTS.md');
   const guide = read('CONTRIBUTING.md');
   const template = read('.github/pull_request_template.md');
 
-  for (const phrase of ['禁止直接在 `main` 开发', 'Vercel Preview', '人工明确确认', '更新版本号']) {
+  for (const phrase of ['允许小改动直接推送 `main`', 'Vercel Preview', '人工明确确认', '更新版本号', '禁止强推', '删除 `main`']) {
     assert.match(`${agents}\n${guide}`, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+  assert.doesNotMatch(`${agents}\n${guide}`, /禁止直接在 `main` 开发/);
+  assert.match(guide, /同步旧仓库仍先生成同步 PR/);
+  assert.match(guide, /推送前再次 fetch/);
   assert.match(template, /Preview/);
   assert.match(template, /未更新正式版本号/);
   assert.match(template, /人工确认合并/);

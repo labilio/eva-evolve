@@ -56,8 +56,8 @@
 - 当前唯一页面入口为 `index.html`，业务模块位于 `prototype/`。`prototype-manifest.json` 是源码职责与装配顺序清单，`index.html` 是浏览器实际加载入口；两者由合同检查保持一致。仓库只维护这一套模块化页面源码。
 - `009-0` 维护时间，`009-1` 维护云盘数据，`009-2` 维护供应链数据，`009-3` 维护 IM 数据；`009-4` 是补丁注册器，`009-5` 是 IM 补丁，`009-6` 是通用补丁，`009-7` 是侧栏/路由补丁，`009-8` 是自动化补丁。`009-0` 至 `009-3` 在浏览器加载，`009-4` 至 `009-8` 只在 Node 构建阶段运行。
 - `009-5` 至 `009-8` 只能通过 `window.__evaPatch` 注册，由 `tools/build-runtime.mjs` 在构建时按固定顺序执行并生成 `dist/vendor/eva-runtime.module.js`。浏览器禁止读取、拼接、编译 `eva-legacy-runtime.js`。修改补丁链后必须运行 `node tools/patch-hash.mjs` 与 `node --check dist/vendor/eva-runtime.module.js`。
-- 项目仓库为 `https://github.com/labilio/eva-demo-progress`；线上评审入口为 `https://eva-demo-progress.vercel.app/`。本地在仓库根目录运行 `npm start`，默认访问 `http://127.0.0.1:4173/`。
-- GitHub、Vercel 和本地使用同一套模块化源码。功能分支用于并行开发和评审，GitHub `main` 是 Vercel 生产发布的唯一来源；未经明确授权不得把功能分支合并或推送到 `main`。
+- 项目仓库为 `https://github.com/labilio/eva-evolve`；线上评审入口为 `https://eva-evolve.vercel.app/`。本地在仓库根目录运行 `npm start`，默认访问 `http://127.0.0.1:4173/`。
+- GitHub、Vercel 和本地使用同一套模块化源码。GitHub `main` 是 Vercel 生产发布的唯一来源；允许小改动直接推送 `main`，复杂改动使用功能分支和评审，具体遵循 CONTRIBUTING.md。
 - `vendor/eva-legacy-runtime.js` 是当前构建兼容依赖，不是 Eva 产品或设计参照。AionUI 与 Eva 没有产品关系；新增能力不得照搬或参照 AionUI。
 - 本地预览必须通过 `npm start` 使用 HTTP，不以 `file://` 作为运行合同。
 - 项目群聊的现行结构为“大群 → 可选子区”。数据模型、标题、筛选和管理入口都必须遵循这一层级。
@@ -220,16 +220,15 @@ git diff --check
 
 ## Git、发布与验收状态
 
-- 多电脑、多人和多个 AI 的完整协作流程以根目录 `CONTRIBUTING.md` 为准。任何没有历史上下文的执行者，开始任务前必须先阅读本文件和 `CONTRIBUTING.md`。
-- 禁止直接在 `main` 开发、提交或 push。每个任务必须从最新 `origin/main` 创建独立功能分支；允许 AI 自动提交并 push 功能分支、创建 PR、获取 Vercel Preview 和执行检查。
-- “合并 `main`”与“更新版本号”是同一个正式发布动作。只有用户在当前任务中人工明确确认“合并上线”等同等语义后，AI 才能运行 `npm run release:bump`、合并 PR 并删除分支；过去授权、普通 push 或 Preview 验收不能替代本次确认。
-- 正式版本号与最近更新时间的唯一数据源是根目录 `release.json`。不得在页面、补丁、CSS 或其他数据文件维护第二份；功能分支日常提交不得修改它。
-- PR 必须等待 `.github/workflows/quality.yml` 通过，并填写 Vercel Preview、目标 commit 和验证结果。Preview 是评审环境，不得被表述为 Production。
-- 本项目生产发布链路固定为：功能分支修改与提交 → push 功能分支 → Vercel Preview 验收 → 人工确认 → 更新 `release.json` → PR 合并 `main` → Vercel 自动部署 Production。禁止默认执行 `vercel deploy`；只有用户明确要求临时部署或排查 Vercel CLI 时才允许手动部署。
-- 功能分支的 commit、push、Preview 和 PR 属于正常交付步骤，可由 AI 自动完成；用户明确要求“不 commit”或“不 push”时除外。任何情况下，功能分支权限都不能推导出合并或 push `main` 的权限。
-- 任何进度汇报都必须区分四种状态：`本地已修改`、`GitHub main 已推送`、`Vercel 已部署`、`浏览器已验收`。后一状态不能由前一状态推导，必须分别有 Git、Vercel 和浏览器证据。
-- 功能分支 push 后核对 Vercel Preview 与目标 commit；PR 合并后再核对 Vercel Production 与 `main` 的目标 commit。页面显示旧内容时先检查 commit、部署状态和缓存，不得通过额外手动部署掩盖发布链路问题。
-- 每轮交付至少运行 `node scripts/verify-project-contract.mjs` 和与本次修改相关的专项检查；若声称视觉或交互已完成，还必须提供目标版本的浏览器实测证据。
+- 本仓库采用用户 2026-09-09 确认的快速迭代规则，完整流程以 `CONTRIBUTING.md` 为准；不沿用旧仓库一律禁止直推 main 的要求。
+- 允许小改动直接推送 `main`，不强制 PR。用户要求的小范围修改默认授权在检查通过后 commit / push，无需重复确认；明确要求不 push、只预览或先评审时遵从。
+- 开工与推送前均 fetch 最新 `origin/main`。保留其他人的修改，远端前进时先整合再验证，禁止强推、删除 main 或整文件覆盖业务冲突。
+- GitHub 对所有人（含管理员）禁止强推与删除 main；不设置强制 PR 或 required status checks。main 每次推送后自动运行质量检查；CI 与 Vercel 独立，不能视为上线前阻断。
+- 跨模块重构、权限/身份调整及上游同步等复杂改动仍走功能分支、Vercel Preview 和 PR，保留人工明确确认合并。PR 应提供 Preview、目标 commit 与检查结果。
+- 正式版本与更新时间只来自 `release.json`。产品改动进入 main 前运行 `npm run release:bump` 更新版本号；纯文档、测试和开发流程配置不更新产品版本号，日常预览不更新。
+- main push 触发 Vercel Production；禁止默认手动 `vercel deploy`。检查 GitHub、部署与目标 commit，失败时修复或使用 revert 提交回退，不强推。
+- 汇报区分 `本地已修改`、`GitHub main 已推送`、`Vercel 已部署`、`浏览器已验收`；任何后续状态均须独立证据。
+- 每轮交付至少运行 `node scripts/verify-project-contract.mjs` 和相关专项检查；视觉与交互改动必须提供目标版本浏览器实测证据。
 
 ## 云端批注与评审
 
