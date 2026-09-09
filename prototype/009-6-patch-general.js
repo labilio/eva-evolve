@@ -1,6 +1,11 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // Repository edition marker belongs to the shared client titlebar.
+    source = root.__evaCut(source,
+      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学")',
+      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"Evolove"))',
+      'shared titlebar edition badge');
     // Semi imperative Modal/Toast roots use the same React 19 client entry as Eva.
     source = root.__evaCut(source, 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot}', 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot;return clientExports.createRoot}', 'Semi React 19 root adapter');
     // A queued textarea resize may run after a configuration pane unmounts.

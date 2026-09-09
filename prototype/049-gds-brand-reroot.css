@@ -127,3 +127,16 @@ body {
   --text-tertiary: var(--eva-text-muted);
   color: var(--eva-text-primary);
 }
+
+/* Repository edition identifier in the shared client titlebar. */
+.eva-edition-badge {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: var(--eva-space-0-5) var(--eva-space-2);
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-action-primary);
+  color: var(--eva-text-inverse);
+  font-weight: var(--eva-fw-semibold);
+  white-space: nowrap;
+}
