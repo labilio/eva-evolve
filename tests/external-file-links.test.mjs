@@ -185,7 +185,7 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   assert.match(samples, /prod-feishu-folder-link/);
 });
 
-test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例', () => {
+test('文件库本地数据升级到 v7 时保留 v5 文件并补入外链示例', () => {
   const values = new Map();
   values.set('eva:file-store:v5', JSON.stringify({schema: 5, records: [{id: 'legacy', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '旧文件.pdf', type: 'blob', size: 1}], sharedSpaces: []}));
   const window = {
@@ -198,7 +198,7 @@ test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例
   assert.ok(files.snapshot().some(item => item.id === 'legacy'));
   assert.ok(files.snapshot().some(item => item.id === 'sample-link'));
   files.createExternalLink('a', 'p', {name: '触发持久化', url: 'https://another.example.com'});
-  assert.equal(JSON.parse(values.get('eva:file-store:v6')).schema, 6);
+  assert.equal(JSON.parse(values.get('eva:file-store:v7')).schema, 7);
 });
 
 test('已有 v6 数据只迁移一次外部文件夹示例', () => {
@@ -215,7 +215,7 @@ test('已有 v6 数据只迁移一次外部文件夹示例', () => {
   let files = sharing.bootstrap(members);
 
   assert.ok(files.snapshot().some(item => item.id === 'sample-folder'));
-  assert.equal(JSON.parse(values.get('eva:file-store:v6')).externalFoldersDemoV1, true);
+  assert.equal(JSON.parse(values.get('eva:file-store:v7')).externalFoldersDemoV1, true);
   files.trash('a', 'sample-folder');
   files.removeForever('a', 'sample-folder');
   files = sharing.bootstrap(members);
@@ -223,26 +223,20 @@ test('已有 v6 数据只迁移一次外部文件夹示例', () => {
 });
 
 
-test('外链示例仅迁移一次，永久删除及清理置顶后刷新不复活', () => {
-  const values = new Map([['eva:file-store:v6', JSON.stringify({schema: 6, records: [], sharedSpaces: []})]]);
-  const window = {localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value)},
+test('外链示例仅迁移一次，永久删除后刷新不复活', () => {
+  const values = new Map([['eva:file-store:v7', JSON.stringify({schema: 7, records: []})]]);
+  const window = {localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key)},
     __EVA_EXTERNAL_LINK_SAMPLES: [{id: 'sample-link', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '示例链接', type: 'external_link', size: 0, external: {url: 'https://example.com/', provider: 'web', kind: 'unknown', host: 'example.com'}}]};
   const {members, sharing} = setup({window});
   let files = sharing.bootstrap(members);
   assert.ok(files.list('p', 'a').some(item => item.id === 'sample-link'));
-  assert.equal(JSON.parse(values.get('eva:file-store:v6')).externalLinksDemoV1, true);
-  files.setPinned('a', 'sample-link', true);
-  assert.equal(files.pinnedFiles('a').length, 1);
-  assert.equal(files.pinnedFiles('b').length, 0);
+  assert.equal(JSON.parse(values.get('eva:file-store:v7')).externalLinksDemoV1, true);
   files.trash('a', 'sample-link');
-  assert.equal(files.pinnedFiles('a').length, 0);
   files.restore('a', 'sample-link');
-  assert.equal(files.pinnedFiles('a').length, 1);
   files.trash('a', 'sample-link');
   files.removeForever('a', 'sample-link');
   files = sharing.bootstrap(members);
   assert.equal(files.list('p', 'a').some(item => item.id === 'sample-link'), false);
-  assert.equal(files.pinnedFiles('a').length, 0);
 });
 
 test('回收站外链不能编辑，移动外链不能造成同目录重复 URL', () => {
@@ -272,4 +266,21 @@ test('文件库更改待确认 URL 后必须重新确认，不能沿用前一个
   const state={dialog:{type:'edit-external-link',id:'link',url:'https://second.example/',confirmHostChange:true}};
   vm.runInNewContext(source.slice(start,end)+';confirmDialog();',{state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[{id:'link'}],updateExternalLink:(actor,id,draft)=>{submitted=draft;}}}),document:{getElementById:id=>id==='eva-drive-dialog-external-url'?{value:'https://third.example/'}:null},renderDrive:()=>{},showToast:()=>{}});
   assert.equal(submitted.confirmHostChange,false);
+});
+
+test('Evolve v6 升级保留自建外部文件夹且不复活已删除示例', () => {
+  const external = {url: 'https://sample.feishu.cn/drive/folder/user-folder', provider: 'feishu', kind: 'folder', host: 'sample.feishu.cn'};
+  const record = {id: 'user-folder', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '自建外部资料夹', type: 'external_link', size: 0, external};
+  const values = new Map([['eva:file-store:v6', JSON.stringify({schema: 6, records: [record], sharedSpaces: [], externalLinksDemoV1: true, externalFoldersDemoV1: true})]]);
+  const window = {
+    localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key)},
+    __EVA_EXTERNAL_LINK_SAMPLES: [{...record, id: 'deleted-demo', name: '已删除示例'}]
+  };
+  const {members, sharing} = setup({window});
+  for (let reload = 0; reload < 2; reload++) {
+    const files = sharing.bootstrap(members);
+    assert.equal(files.snapshot().some(item => item.id === 'deleted-demo'), false);
+    assert.equal(files.externalLinkInfo(files.snapshot().find(item => item.id === 'user-folder'), 'a').kind, 'folder');
+    assert.equal(JSON.parse(values.get('eva:file-store:v7')).externalFoldersDemoV1, true);
+  }
 });

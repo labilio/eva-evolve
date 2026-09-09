@@ -94,83 +94,9 @@
     });
   }
 
-  function buildDriveScopebar(root) {
-    if (!root || root.querySelector('.eva-drive-scopebar')) return;
-    var side = root.querySelector('.eva-drive__side');
-    var main = root.querySelector('.eva-drive__main');
-    var header = main && main.querySelector('.eva-drive__header');
-    if (!side || !main || !header) return;
-
-    var owned = side.querySelector('[data-drive-scope="owned"]');
-    var shared = side.querySelector('[data-drive-scope="shared-all"]');
-    var workspaceButtons = Array.from(side.querySelectorAll('[data-drive-scope="workspace"]'));
-    if (!owned || !shared || !workspaceButtons.length) return;
-
-    var bar = document.createElement('div');
-    bar.className = 'eva-drive-scopebar';
-    bar.setAttribute('aria-label', '文件范围');
-
-    var tabs = document.createElement('div');
-    tabs.className = 'eva-drive-scopebar__tabs';
-    tabs.setAttribute('role', 'tablist');
-
-    var currentScope = root.dataset.evaDriveScope || 'owned';
-    var currentWorkspaceId = root.dataset.evaWorkspaceId || '';
-    shared.dataset.driveScope = 'shared-all';
-
-    [owned, shared].forEach(function (button) {
-      button.className = 'eva-drive-scopebar__tab';
-      button.setAttribute('role', 'tab');
-      var selected = button === owned ? currentScope === 'owned' : currentScope !== 'owned';
-      button.setAttribute('aria-selected', selected ? 'true' : 'false');
-      tabs.appendChild(button);
-    });
-
-    var sources = document.createElement('div');
-    sources.className = 'eva-drive-sourcebar';
-    sources.hidden = currentScope === 'owned';
-    sources.setAttribute('aria-label', '来自共享的文件来源');
-    var sourceLabel = document.createElement('span');
-    sourceLabel.className = 'eva-drive-sourcebar__label';
-    sourceLabel.textContent = '来源';
-    var sourceOptions = document.createElement('div');
-    sourceOptions.className = 'eva-drive-sourcebar__options';
-    sourceOptions.setAttribute('role', 'radiogroup');
-
-    function sourceButton(label, scope, workspaceId) {
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'eva-drive-sourcebar__button';
-      button.dataset.driveScope = scope;
-      if (workspaceId) button.dataset.workspaceId = workspaceId;
-      button.setAttribute('role', 'radio');
-      var selected = scope === 'workspace'
-        ? currentScope === 'workspace' && currentWorkspaceId === workspaceId
-        : currentScope === scope;
-      button.setAttribute('aria-checked', selected ? 'true' : 'false');
-      button.textContent = label;
-      return button;
-    }
-
-    sourceOptions.appendChild(sourceButton('全部', 'shared-all'));
-    workspaceButtons.forEach(function (button) {
-      var icon = button.querySelector('.eva-drive-icon');
-      if (icon) icon.remove();
-      button.className = 'eva-drive-sourcebar__button';
-      button.setAttribute('role', 'radio');
-      button.setAttribute('aria-checked', currentScope === 'workspace' && button.dataset.workspaceId === currentWorkspaceId ? 'true' : 'false');
-      sourceOptions.appendChild(button);
-    });
-    sourceOptions.appendChild(sourceButton('私聊分享', 'shared'));
-    sources.append(sourceLabel, sourceOptions);
-    bar.append(tabs, sources);
-    header.insertAdjacentElement('afterend', bar);
-  }
-
   function tuneDriveView() {
     var root = document.getElementById('eva-drive-root');
     if (!root || root.hidden) return;
-    buildDriveScopebar(root);
     root.querySelectorAll('[data-drive-action="bridge"]').forEach(function (button) {
       if (!button.hidden) button.hidden = true;
       button.setAttribute('aria-hidden', 'true');

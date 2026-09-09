@@ -426,14 +426,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   gap: 14px;
 }
 
-body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__table-head,
-body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
-.eva-drive__table--pinned .eva-drive__table-head,
-.eva-drive__table--pinned .eva-drive__row {
-  min-width: 1100px;
-  grid-template-columns: minmax(230px, 1.25fr) minmax(180px, .9fr) 104px minmax(180px, 1fr) 76px 124px 72px;
-}
-
 .eva-drive__table-head {
   min-height: 38px;
   padding: 0 10px;
@@ -672,8 +664,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   font-size: 11px;
 }
 
-.eva-drive__row-more,
-.eva-drive__pin-button {
+.eva-drive__row-more {
   width: 28px;
   min-width: 32px;
   height: 32px;
@@ -692,38 +683,11 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
 }
 
-.eva-drive__row-more .eva-drive-icon,
-.eva-drive__pin-button .eva-drive-icon {
+.eva-drive__row-more .eva-drive-icon {
   width: 18px;
   height: 18px;
 }
 
-.eva-drive__pin-button {
-  opacity: 0;
-  transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
-}
-
-.eva-drive__row:hover .eva-drive__pin-button,
-.eva-drive__row:focus-within .eva-drive__pin-button,
-.eva-drive__pin-button.is-pinned,
-.eva-drive__pin-button:focus-visible {
-  opacity: 1;
-}
-
-.eva-drive__pin-button:hover,
-.eva-drive__pin-button:focus-visible {
-  background: var(--gds-color-overlay-hover);
-}
-
-.eva-drive__pin-button.is-pinned {
-  color: var(--eva-action-primary);
-}
-
-.eva-drive__pin-button.is-pinned .eva-drive-icon {
-  fill: currentColor;
-}
-
-.eva-drive__pin-button:focus-visible,
 .eva-drive__row-more:focus-visible {
   outline: 2px solid var(--eva-border-focus);
   outline-offset: 2px;
@@ -731,7 +695,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 
 .eva-drive__row-actions {
   position: relative;
-  width: 68px;
+  width: 32px;
   height: 32px;
   display: flex !important;
   align-items: center;
@@ -819,15 +783,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   color: var(--gds-color-action-primary-text, #fff);
   background: var(--gds-color-action-primary, #1563eb);
   font-weight: var(--gds-font-weight-semibold, 600);
-}
-
-.eva-drive-project-card--shared .eva-drive-project-card__mark {
-  background: #168570;
-}
-
-.eva-drive-project-card--shared:hover {
-  border-color: #9bcfc4;
-  background: #f1faf8;
 }
 
 .eva-drive-project-card__copy {
@@ -2054,208 +2009,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   font-size: 12px;
 }
 
-.eva-drive-dialog__intro {
-  margin-bottom: 12px !important;
-}
-
-.eva-drive-member-list {
-  overflow: hidden;
-  border: 1px solid var(--gds-color-border-faint, #ebebeb);
-  border-radius: var(--gds-radius-control, 8px);
-}
-
-.eva-drive-member-add {
-  margin-bottom: 12px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
-.eva-drive-member-add select {
-  min-width: 0;
-  min-height: 34px;
-  padding: 0 9px;
-  border: 1px solid var(--gds-color-border-default, #ccc);
-  border-radius: var(--gds-radius-control, 8px);
-  background: var(--gds-color-surface-primary, #fff);
-  font: inherit;
-}
-
-.eva-drive-member-add__empty {
-  margin: 0 0 12px !important;
-  color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
-  font-size: 12px !important;
-}
-
-.eva-drive-member-list__row {
-  min-height: 56px;
-  padding: 8px 10px;
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-}
-
-.eva-drive-member-list__row + .eva-drive-member-list__row {
-  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
-}
-
-.eva-drive-member-list__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: #155f54;
-  background: #def4ef;
-  font-size: 13px;
-  font-weight: var(--gds-font-weight-semibold, 600);
-}
-
-.eva-drive-member-list__row > span:nth-child(2) {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.eva-drive-member-list__row strong {
-  overflow: hidden;
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.eva-drive-member-list__row small {
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: 11px;
-}
-
-.eva-drive-member-list__row select,
-.eva-drive-member-list__role {
-  min-width: 86px;
-  min-height: 30px;
-  padding: 0 8px;
-  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
-  border-radius: var(--gds-radius-control, 8px);
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: var(--gds-color-surface-primary, #fff);
-  font: inherit;
-  font-size: 12px;
-}
-
-.eva-drive-member-list__controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.eva-drive-member-list__controls > button {
-  min-height: 30px;
-  padding: 0 7px;
-  color: #c53b3b;
-  font-size: 12px;
-}
-
-.eva-drive-member-list__role {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.eva-drive-audit {
-  display: flex;
-  flex-direction: column;
-}
-
-.eva-drive-audit > div {
-  position: relative;
-  min-height: 54px;
-  padding: 8px 0 8px 20px;
-  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.eva-drive-audit > div::before {
-  position: absolute;
-  left: 2px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #168570;
-  content: "";
-}
-
-.eva-drive-audit strong {
-  font-size: 13px;
-  font-weight: var(--gds-font-weight-medium, 500);
-}
-
-.eva-drive-audit span {
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: 12px;
-}
-
-.eva-drive-governance {
-  overflow: hidden;
-  border: 1px solid var(--gds-color-border-faint, #ebebeb);
-  border-radius: var(--gds-radius-control, 8px);
-}
-
-.eva-drive-governance > button {
-  width: 100%;
-  min-height: 60px;
-  padding: 9px 10px;
-  border: 0;
-  border-radius: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20px;
-  grid-template-rows: auto auto;
-  grid-template-areas:
-    "title arrow"
-    "description arrow";
-  align-items: center;
-  gap: 4px 8px;
-  text-align: left;
-}
-
-.eva-drive-governance > button + button {
-  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
-}
-
-.eva-drive-governance > button > span {
-  grid-area: title;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.eva-drive-governance > button small {
-  grid-area: description;
-  min-width: 0;
-  padding-left: 24px;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: 11px;
-  line-height: 18px;
-  white-space: normal;
-}
-
-.eva-drive-governance > button.is-danger strong {
-  color: #c53b3b;
-}
-
-.eva-drive-governance .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.eva-drive-governance > button > .eva-drive-icon:last-child {
-  grid-area: arrow;
-  justify-self: end;
-}
-
 .eva-drive-dialog__hint {
   margin-top: 10px !important;
   color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
@@ -2495,12 +2248,6 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
     gap: 10px;
   }
 
-  body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__table-head,
-  body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
-  .eva-drive__table--pinned .eva-drive__table-head,
-  .eva-drive__table--pinned .eva-drive__row {
-    grid-template-columns: minmax(210px, 1.25fr) minmax(160px, .9fr) 88px minmax(145px, .9fr) 62px 108px 68px;
-  }
 }
 
 /* Shared file surfaces: readable metadata, bounded scroll and keyboard targets. */
@@ -2512,4 +2259,4 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
 .eva-drive-dialog__field span { font: 500 14px/22px var(--eva-font-sans); color: var(--eva-text-primary); }
 .eva-drive-dialog__field :is(input,select,textarea):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
 .eva-drive__meta :is(dt,dd) { font: 400 12px/16px var(--eva-font-sans); }
-@media (prefers-reduced-motion: reduce) { .eva-drive__inspector, .eva-drive__pin-button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .eva-drive__inspector { transition: none; } }

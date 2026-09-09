@@ -954,112 +954,6 @@ body.eva-message-hierarchy-ready .eva-drive__main {
   grid-column: 1;
 }
 
-body.eva-message-hierarchy-ready .eva-drive-scopebar {
-  min-height: 52px;
-  padding: 8px 24px;
-  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  background: var(--gds-color-surface-primary);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tabs {
-  min-width: 0;
-  padding: 3px;
-  border-radius: var(--gds-radius-control);
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--gds-color-surface-subtle);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tab {
-  min-height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--gds-radius-control);
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--gds-color-text-secondary);
-  background: transparent;
-  font: inherit;
-  font-size: var(--gds-type-label-font-size);
-  line-height: var(--gds-type-label-line-height);
-  cursor: pointer;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tab > .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tab:hover {
-  background: var(--gds-color-surface-primary);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tab[aria-selected="true"] {
-  color: var(--gds-color-action-primary);
-  background: var(--gds-color-surface-primary);
-  box-shadow: inset 0 -2px 0 var(--gds-color-action-primary);
-  font-weight: var(--gds-font-weight-medium);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar[hidden] {
-  display: none;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__label {
-  flex: 0 0 auto;
-  color: var(--gds-color-text-secondary-accessible);
-  font-size: var(--gds-type-caption-font-size);
-  line-height: var(--gds-type-caption-line-height);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__options {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__button {
-  min-height: 30px;
-  padding: 0 11px;
-  border: 0;
-  border-radius: var(--gds-radius-chip);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gds-color-text-secondary);
-  background: var(--gds-color-surface-subtle);
-  font: inherit;
-  font-size: var(--gds-type-label-font-size);
-  line-height: var(--gds-type-label-line-height);
-  cursor: pointer;
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__button:hover {
-  background: var(--gds-color-surface-subtle);
-}
-
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__button[aria-checked="true"] {
-  color: var(--gds-color-action-primary-text);
-  background: var(--gds-color-action-primary);
-  font-weight: var(--gds-font-weight-medium);
-}
-
 body.eva-message-hierarchy-ready .eva-drive__scroll {
   padding-top: 24px;
 }
@@ -1818,19 +1712,12 @@ body.eva-message-hierarchy-ready .eva-msg .wk-message-file.eva-message-source-hi
   body.eva-message-hierarchy-ready .eva-msg .wk-message-file.eva-message-source-highlight { animation: none; }
 }
 
-body.eva-message-hierarchy-ready .eva-drive-scopebar__tab:focus-visible,
-body.eva-message-hierarchy-ready .eva-drive-sourcebar__button:focus-visible,
 body.eva-message-hierarchy-ready .eva-space-tree__item:focus-visible {
   outline: 2px solid var(--semi-color-focus-border, #4c6ef5);
   outline-offset: 1px;
 }
 
 @media (max-width: 920px) {
-  body.eva-message-hierarchy-ready .eva-drive-scopebar {
-    padding-inline: 16px;
-    overflow-x: auto;
-  }
-
   body.eva-message-hierarchy-ready .eva-drive__scroll {
     padding-inline: 18px;
   }

@@ -34,9 +34,9 @@ test('Word 显式预览地址优先于同名演示夹具',()=>{
   assert.doesNotMatch(result,/错误夹具/);
 });
 
-test('v6 文件库刷新不会重新添加已永久删除的演示文件',()=>{
-  const value=JSON.stringify({schema:6,records:[],sharedSpaces:[]});
-  const window={localStorage:{getItem:key=>key==='eva:file-store:v6'?value:null,setItem(){}}};
+test('v7 文件库刷新不会重新添加已永久删除的演示文件',()=>{
+  const value=JSON.stringify({schema:7,records:[]});
+  const window={localStorage:{getItem:key=>key==='eva:file-store:v7'?value:null,setItem(){},removeItem(){}}};
   vm.runInNewContext(read('009-2-membership.js'),{window});
   vm.runInNewContext(read('009-1-file-sharing.js'),{window});
   const members=window.EvaMembership.create({people:[{id:'u-wangyilin',name:'王宜林'}]});
