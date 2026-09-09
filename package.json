@@ -11,9 +11,11 @@
     "check:collaboration": "node scripts/verify-collaboration-contract.mjs",
     "release:bump": "node scripts/release-metadata.mjs",
     "comments": "node tools/comments-cli.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:search": "node --test tests/browser/search-controls.mjs"
   },
   "devDependencies": {
-    "linkedom": "^0.18.13"
+    "linkedom": "^0.18.13",
+    "playwright": "^1.63.0"
   }
 }

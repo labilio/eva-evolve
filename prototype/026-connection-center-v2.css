@@ -108,20 +108,8 @@
   .eva-connection-panel__top h2 { margin: 0 0 4px; font-size: 16px; }
   .eva-connection-panel__top p { margin: 0; color: var(--eva-text-secondary-accessible); font-size: 14px; line-height: 22px; }
 
-  .eva-connection-search {
-    display: flex;
-    width: 260px;
-    height: 36px;
-    align-items: center;
-    gap: 8px;
-    padding: 0 12px;
-    border: 1px solid var(--eva-border-subtle);
-    border-radius: 8px;
-    color: var(--eva-text-secondary-accessible);
-    font-size: 14px; line-height: 22px;
-  }
+  .eva-connection-search { width: 260px; }
 
-  .eva-connection-search svg,
   .eva-connection-card svg {
     width: 18px;
     height: 18px;
@@ -187,7 +175,5 @@
   .eva-connection-card__status { flex-shrink: 0; white-space: nowrap; }
   .eva-connection-card__foot { flex-wrap: wrap; gap: 8px; }
   .eva-connection-card__desc { line-height: 24px; overflow-wrap: anywhere; }
-  .eva-connection-search { box-sizing: border-box; }
-  .eva-connection-search:focus-within { border-color: var(--eva-border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--eva-action-primary) 12%, transparent); }
   .eva-connection-center button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
   @media (max-width: 760px) { .eva-connection-grid { grid-template-columns: minmax(0, 1fr); } }

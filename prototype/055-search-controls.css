@@ -1,0 +1,81 @@
+/* Shared search appearance. Semi retains input/clear behavior; native owners retain
+   query state. Match the Lucide prefix, not placeholder copy or page identity. */
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: var(--gds-space-8);
+  min-height: var(--gds-space-8);
+  padding: 0 var(--gds-space-3);
+  gap: var(--gds-space-2);
+  border: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+  border-radius: var(--gds-radius-control);
+  background: var(--gds-color-surface-primary);
+  color: var(--gds-color-text-secondary-accessible);
+  font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
+  box-shadow: none;
+  outline: none;
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search):hover {
+  border-color: var(--gds-color-border-default);
+  background: var(--gds-color-surface-primary);
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search):focus-within {
+  border-color: var(--gds-color-border-focus);
+  box-shadow: none;
+  outline: none;
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search) > .semi-input-prefix {
+  flex: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search) :is(.lucide-search, .eva-drive-icon),
+.eva-connection-search > svg {
+  flex: none;
+  width: var(--gds-icon-size-content);
+  height: var(--gds-icon-size-content);
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search) > input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  color: var(--gds-color-text-primary);
+  font: inherit;
+}
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search) > input::placeholder {
+  color: var(--gds-color-text-muted);
+  opacity: 1;
+}
+/* A trigger remains a button: no extra input, panel, or query controller. */
+button:has(> .lucide-search):not(:has(input)),
+button.eva-iconbtn[aria-label="搜索会话"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--gds-space-8);
+  min-height: var(--gds-space-8);
+  border: var(--gds-border-standard) solid transparent;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible);
+}
+button:has(> .lucide-search):not(:disabled):hover,
+button.eva-iconbtn[aria-label="搜索会话"]:not(:disabled):hover {
+  background: var(--gds-color-overlay-hover);
+}
+button:has(> .lucide-search):focus-visible,
+button.eva-iconbtn[aria-label="搜索会话"]:focus-visible {
+  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+  outline-offset: var(--gds-space-0-5);
+}

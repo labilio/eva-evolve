@@ -8,7 +8,7 @@ function setup(saved){
  loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
  const store=window.EvaMembership.create(saved||{actorId:'me',people:[{id:'me',name:'本人'},{id:'a',name:'同名'},{id:'b',name:'同名'},{id:'gone',name:'已停用',active:false}],clones:[{id:'clone-a',ownerId:'a',name:'分身'}],projects:{p:{id:'p',name:'可见项目',humans:[{id:'me'}],cloneIds:[]},secret:{id:'secret',name:'不可见项目',humans:[],cloneIds:[]}}});
  const file='prototype/009-3-contact-identities.js';if(existsSync(file))vm.runInNewContext(readFileSync(file,'utf8'),{window});
- const team={getSnapshot:()=>({identities:[{id:'mine',role:'persona',name:'我的分身',configuration:{description:'简介'}}]})},digital={get:id=>id==='staff'?{id,kind:'staff',name:'数字员工',ownership:'organization',scope:'org',desc:'岗位职责'}:null,hasInTeam:id=>id==='staff',appearance:()=>({ownerName:'组织'})};
+ const team={getSnapshot:()=>({identities:[{id:'mine',role:'persona',name:'我的分身',configuration:{description:'简介'}},{id:'assistant',role:'assistant',name:'我的助理',configuration:{avatar:'custom-avatar',identity:'私有配置',description:'不应展示'}}]})},digital={get:id=>id==='staff'?{id,kind:'staff',name:'数字员工',ownership:'organization',scope:'org',desc:'岗位职责'}:null,hasInTeam:id=>id==='staff',appearance:()=>({ownerName:'组织'})};
  return {store,model:window.EvaContactIdentities?.create(store,{team,digital,ownerId:'me'})};
 }
 test('身份按 ID 解析，同名不会串人，自己与停用账号不提供发送',()=>{
@@ -47,4 +47,17 @@ test('重复同步相同草稿不发布更新，避免路由挂载反复中断',
  const {store}=setup();const id=store.openDirect('me','a');let updates=0;store.subscribe(()=>updates++);
  store.setDirectDraft(id,'me','');assert.equal(updates,0);
  store.setDirectDraft(id,'me','草稿');store.setDirectDraft(id,'me','草稿');assert.equal(updates,1);
+});
+
+test('个人助理读取同一头像与名称，不泄漏配置或跨账号对话',()=>{
+ const {store,model}=setup();const p=model.resolve('assistant');
+ assert.equal(p.name,'我的助理');assert.equal(p.appearance.avatar,'custom-avatar');
+ assert.equal(p.description,undefined);assert.equal(p.owner,null);
+ assert.equal(p.action.url,'/messages?evaIM=my-ai&evaIdentity=assistant');
+ store.setActor('a');assert.equal(model.resolve('assistant'),null);
+});
+test('资料卡不以分身旧简介或管家固定说明补充资料，员工保留已有简介',()=>{
+ const {model}=setup();assert.equal(model.resolve('mine').description,undefined);
+ assert.equal(model.resolve('project-agent:p').description,undefined);
+ assert.equal(model.resolve('staff').description,'岗位职责');
 });

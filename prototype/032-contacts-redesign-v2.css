@@ -14,14 +14,8 @@
 .eva-contacts__title {display:flex;align-items:baseline;gap:var(--gds-space-3);white-space:nowrap}
 .eva-contacts__title strong {font-size:var(--gds-type-header-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-header-line-height)}
 .eva-contacts__result-count {font-size:var(--gds-type-caption-font-size);color:var(--gds-color-text-secondary-accessible)}
-.eva-contacts__search {
-  display:flex;align-items:center;gap:var(--gds-space-2);width:280px;min-width:0;flex:0 1 280px;
-  padding-inline:var(--gds-space-3);border-radius:var(--gds-radius-control);
-  background:var(--gds-color-surface-subtle);color:var(--gds-color-text-secondary-accessible);
-}
-.eva-contacts__search svg {flex:none}
-.eva-contacts__search .semi-input-wrapper {border:0;background:transparent;min-width:0;flex:1}
-.eva-contacts__search:focus-within {outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
+.eva-contacts__search { width:280px;min-width:0;flex:0 1 280px; }
+
 .eva-contacts__list {min-height:0;flex:1;overflow:auto;padding:0 var(--gds-space-6) var(--gds-space-6)}
 .eva-contacts__groups {list-style:none;margin:0;padding:0;width:100%}
 .eva-contacts__person {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center;gap:var(--gds-space-4);margin:0;padding:var(--gds-space-3) 0;border-bottom:var(--gds-border-standard) solid var(--gds-color-border-faint)}

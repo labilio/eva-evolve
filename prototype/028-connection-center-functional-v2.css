@@ -6,16 +6,7 @@
     margin-bottom: 18px;
   }
   .eva-center-toolbar .eva-connection-search { width: min(340px, 36vw); }
-  .eva-center-toolbar input {
-    width: 100%;
-    min-width: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--eva-text-primary);
-    font: inherit;
-  }
-  .eva-center-toolbar input::placeholder { color: #9aa0a8; }
+
   .eva-center-filters { display: flex; align-items: center; gap: 6px; }
   .eva-center-filter {
     height: 32px;
