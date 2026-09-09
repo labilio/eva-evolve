@@ -283,9 +283,26 @@ function evaConversationSearchRecord(message,index,now=Date.now()) {
   const displayText=String(candidates.find(value=>typeof value==='string'&&value.trim())||({file:'未命名文件',media:'图片或视频',message:'聊天消息'}[type]));
   const senderName=String(sender.name||'未知成员');
   const senderKey=String(sender.uid||sender.identityId||sender.id||senderName);
-  return {message,index,type,mediaKind:isVideo?'video':isImage?'image':null,sender,senderKey,senderName,
+  return {message,index,type,mediaKind:isVideo?'video':isImage?'image':null,fileExtension:extension,sender,senderKey,senderName,
     displayText,searchText:(senderName+' '+candidates.filter(value=>typeof value==='string').join(' ')).toLocaleLowerCase('zh-CN'),
     timestamp:evaConversationSearchTimestamp(message.createdAt||message.updated_at||message.date||message.time,now)};
+}
+
+function evaConversationSearchFileSize(value) {
+  const bytes=Number(value);
+  if(!Number.isFinite(bytes)||bytes<0)return '';
+  const units=['B','KB','MB','GB'];
+  let amount=bytes,unit=0;
+  while(amount>=1024&&unit<units.length-1){amount/=1024;unit+=1;}
+  const digits=unit>0&&amount<100&&!Number.isInteger(amount)?1:0;
+  return amount.toFixed(digits)+' '+units[unit];
+}
+
+function evaConversationSearchFileDate(timestamp) {
+  if(!Number.isFinite(timestamp))return '';
+  const date=new Date(timestamp);
+  if(Number.isNaN(date.getTime()))return '';
+  return String(date.getMonth()+1).padStart(2,'0')+'/'+String(date.getDate()).padStart(2,'0');
 }
 
 function evaSearchConversationMessages(messages,filters={}) {
@@ -339,6 +356,9 @@ function EvaConversationSearch({conversationId,conversationName,messages,onClose
     while((match=lower.indexOf(target,start))>=0){if(match>start)parts.push(value.slice(start,match));parts.push(h('mark',{key:'m'+match},value.slice(match,match+needle.length)));start=match+needle.length;}
     if(start<value.length)parts.push(value.slice(start));return parts;};
   const locate=record=>{setActiveIndex(record.index);onLocate(record.index);};
+  const resultButton=(record,children,label)=>h('button',{type:'button',className:'eva-conversation-search__result'+(record.type==='file'?' is-file':'')+(activeIndex===record.index?' is-active':''),'aria-label':label||'定位到 '+record.senderName+' 的消息',onClick:()=>locate(record)},...children);
+  const fileResult=record=>{const size=evaConversationSearchFileSize(record.message.file?.size),date=evaConversationSearchFileDate(record.timestamp),extension=(record.fileExtension||'FILE').slice(0,4).toUpperCase(),archive=['zip','rar','7z','tar','gz'].includes(record.fileExtension);
+    return resultButton(record,[h('span',{key:'icon',className:'eva-conversation-search__file-icon'+(archive?' is-archive':''),'aria-hidden':true},h(FileText,{size:42,strokeWidth:1.45}),h('span',{className:'eva-conversation-search__file-extension'},extension)),h('span',{key:'main',className:'eva-conversation-search__result-main'},h('span',{className:'eva-conversation-search__file-title'},highlight(record.displayText)),h('span',{className:'eva-conversation-search__file-meta'},h('span',{className:'eva-conversation-search__file-sender'},record.senderName),record.sender.ai&&h(AiBadge,{size:'small'}),size&&h(React.Fragment,null,h('span',{className:'eva-conversation-search__file-separator','aria-hidden':true},'·'),h('span',null,size)),date&&h(React.Fragment,null,h('span',{className:'eva-conversation-search__file-separator','aria-hidden':true},'·'),h('time',{dateTime:new Date(record.timestamp).toISOString()},date))))], '定位到 '+record.senderName+' 发送的文件 '+record.displayText);};
   const tabs=[['all','全部'],['message','消息'],['media','图片/视频'],['file','文件']];
   const visibleResults=shouldSearch?results.slice(0,limit):[];
   return h('aside',{id:'eva-conversation-search-panel',className:'ch-right-panel ch-right-panel--search','aria-label':'查找 '+(conversationName||'当前对话')+' 的聊天内容'},
@@ -358,9 +378,9 @@ function EvaConversationSearch({conversationId,conversationName,messages,onClose
       pending&&h('div',{className:'eva-conversation-search__loading',role:'status'},h('span',{className:'eva-conversation-search__spinner','aria-hidden':true}),'正在查找…'),
       !pending&&!shouldSearch&&h('div',{className:'eva-conversation-search__empty'},h('span',{className:'eva-conversation-search__empty-icon','aria-hidden':true},h(Search$1,{size:34})),h('p',null,'输入关键字或使用筛选查找消息记录')),
       !pending&&shouldSearch&&results.length===0&&h('div',{className:'eva-conversation-search__empty'},h('span',{className:'eva-conversation-search__empty-icon','aria-hidden':true},h(Search$1,{size:34})),h('p',null,'没有找到匹配的聊天记录'),h('button',{type:'button',onClick:()=>{setDraft('');setKeyword('');setTab('all');resetFilters();inputRef.current?.focus();}},'清除条件')),
-      !pending&&visibleResults.length>0&&h(React.Fragment,null,h('div',{className:'eva-conversation-search__summary',role:'status'},'找到 '+results.length+' 条聊天记录'),h('ol',{className:'eva-conversation-search__results'},visibleResults.map(record=>h('li',{key:(record.message.id||record.message.fixtureId||record.index)+':'+record.index},h('button',{type:'button',className:'eva-conversation-search__result'+(activeIndex===record.index?' is-active':''),'aria-label':'定位到 '+record.senderName+' 的消息',onClick:()=>locate(record)},
+      !pending&&visibleResults.length>0&&h(React.Fragment,null,h('div',{className:'eva-conversation-search__summary',role:'status'},'找到 '+results.length+' 条聊天记录'),h('ol',{className:'eva-conversation-search__results'},visibleResults.map(record=>h('li',{key:(record.message.id||record.message.fixtureId||record.index)+':'+record.index},record.type==='file'?fileResult(record):resultButton(record,[
         h('span',{className:'eva-conversation-search__avatar'},record.sender.identityAppearance?h(EvaAIIdentityAvatar,{appearance:record.sender.identityAppearance,size:32}):h('img',{src:window.EvaAvatar.personUri(record.sender.uid||record.senderKey),alt:''})),
-        h('span',{className:'eva-conversation-search__result-main'},h('span',{className:'eva-conversation-search__result-meta'},h('span',{className:'eva-conversation-search__sender'},record.senderName),record.sender.ai&&h(AiBadge,{size:'small'}),h('time',null,record.message.time||'')),h('span',{className:'eva-conversation-search__snippet'},highlight(record.displayText)),h('span',{className:'eva-conversation-search__kind'},record.type==='file'?'文件':record.type==='media'?(record.mediaKind==='video'?'视频':'图片'):'消息')),h('span',{className:'eva-conversation-search__locate'},'定位'))))),results.length>limit&&h('button',{type:'button',className:'eva-conversation-search__more',onClick:()=>setLimit(value=>value+20)},'加载更多'))));
+        h('span',{className:'eva-conversation-search__result-main'},h('span',{className:'eva-conversation-search__result-meta'},h('span',{className:'eva-conversation-search__sender'},record.senderName),record.sender.ai&&h(AiBadge,{size:'small'}),h('time',null,record.message.time||'')),h('span',{className:'eva-conversation-search__snippet'},highlight(record.displayText)),h('span',{className:'eva-conversation-search__kind'},record.type==='media'?(record.mediaKind==='video'?'视频':'图片'):'消息')),h('span',{className:'eva-conversation-search__locate'},'定位')])))),results.length>limit&&h('button',{type:'button',className:'eva-conversation-search__more',onClick:()=>setLimit(value=>value+20)},'加载更多'))));
 }
 
 function EvaAITeamGroupEditor({visible,record,candidates,onClose,onSubmit,getContainer}) {
@@ -958,6 +978,6 @@ function EvaAITeamPage() {
       'React.createElement("span",{className:"ops"},React.createElement("button",{type:"button",className:`op eva-chat-search-entry${Mt==="search"?" is-on":""}`,title:"查找聊天内容","aria-label":"查找聊天内容","aria-expanded":Mt==="search","aria-controls":"eva-conversation-search-panel",onClick:()=>Dt(mode=>mode==="search"?"none":"search")},React.createElement(Search$1,{size:20,color:"currentColor"})),evaCanOpenProjectTasks&&', '统一 IM 查找入口');
     cut('Vs=Mt==="tasks"&&evaCanOpenProjectTasks?',
       'Vs=Mt==="search"?React.createElement(EvaConversationSearch,{key:va,conversationId:va,conversationName:fa?.name||Sa.name,messages:Ta,onClose:()=>Dt("none"),onLocate:index=>evaRevealConversationMessage(da.current,index)}):Mt==="tasks"&&evaCanOpenProjectTasks?', '当前对话查找右栏');
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

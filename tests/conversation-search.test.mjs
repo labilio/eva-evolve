@@ -11,8 +11,8 @@ async function searchFunction() {
   const end = source.indexOf('\nfunction evaRevealConversationMessage', start);
   assert.ok(start >= 0 && end > start, '应能提取纯查找函数');
   const context = {};
-  vm.runInNewContext(source.slice(start, end) + '\nthis.search = evaSearchConversationMessages;', context);
-  return context.search;
+  vm.runInNewContext(source.slice(start, end) + '\nthis.search = evaSearchConversationMessages; this.fileSize = evaConversationSearchFileSize; this.fileDate = evaConversationSearchFileDate;', context);
+  return context;
 }
 
 const NOW = Date.parse('2026-09-09T12:00:00+08:00');
@@ -26,7 +26,7 @@ const records = [
 ];
 
 test('对话查找按关键字、类型、发送人与时间过滤', async () => {
-  const search = await searchFunction();
+  const {search} = await searchFunction();
   assert.equal(search(records, {keyword: '评审', now: NOW}).length, 2);
   assert.equal(search(records, {tab: 'message', keyword: '评审', now: NOW}).length, 1);
   assert.equal(search(records, {tab: 'file', now: NOW})[0].message.id, 'file-1');
@@ -38,11 +38,20 @@ test('对话查找按关键字、类型、发送人与时间过滤', async () =>
 });
 
 test('对话查找默认最新优先并支持最早优先', async () => {
-  const search = await searchFunction();
+  const {search} = await searchFunction();
   const newest = search(records, {tab: 'message', now: NOW});
   const oldest = search(records, {tab: 'message', sort: 'oldest', now: NOW});
   assert.equal(newest[0].message.id, 'text-1');
   assert.equal(oldest[0].message.id, 'old-1');
+});
+
+test('文件结果提供名称、大小与月日元数据', async () => {
+  const {search,fileSize,fileDate} = await searchFunction();
+  const [record] = search([{id:'file-meta',kind:'file',sender:{uid:'human-1',name:'王宜林'},time:'09:20',file:{name:'评审纪要.pdf',extension:'pdf',size:3146}}], {tab:'file',now:NOW});
+  assert.equal(record.displayText, '评审纪要.pdf');
+  assert.equal(record.fileExtension, 'pdf');
+  assert.equal(fileSize(record.message.file.size), '3.1 KB');
+  assert.equal(fileDate(record.timestamp), '09/09');
 });
 
 test('统一 IM 内核在当前 Ta 消息集合挂载唯一查找面板', async () => {
@@ -63,6 +72,9 @@ test('查找右栏使用 Octo 480px 推开布局并注册到唯一入口', async
     read('prototype-manifest.json')
   ]);
   assert.match(css, /\.ch-right-panel--search[\s\S]*flex:\s*0 0 480px/);
+  assert.match(css, /\.eva-conversation-search__file-title[\s\S]*font-size:\s*15px/);
+  assert.match(css, /\.eva-conversation-search__file-meta[\s\S]*font-size:\s*13px/);
+  assert.match(css, /button\.eva-chat-search-entry:not\(\.is-on\):not\(:hover\)[\s\S]*background:\s*transparent/);
   assert.match(css, /@media \(max-width: 1099px\)[\s\S]*position:\s*absolute/);
   assert.doesNotMatch(css, /position:\s*fixed|backdrop-filter/);
   assert.match(entry, /prototype\/055-conversation-search\.css/);
