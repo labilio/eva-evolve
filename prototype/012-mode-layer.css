@@ -431,24 +431,6 @@
   white-space: nowrap;
 }
 
-/* Long compact navigation labels keep their full names on two semantic lines. */
-.eva-nav-section.is-collapsed .eva-nav-entry:is([data-eva-nav-id="automation"], [data-eva-nav-id="digital-employees"]) .box-border.cursor-pointer {
-  height: 64px !important;
-  min-height: 64px;
-  padding-block: 4px !important;
-  gap: 2px !important;
-}
-.eva-nav-section.is-collapsed .eva-nav-entry:is([data-eva-nav-id="automation"], [data-eva-nav-id="digital-employees"]) [class*="text-14px"] {
-  width: 4em;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
-}
-.eva-nav-section.is-collapsed .eva-nav-entry[data-eva-nav-id="automation"] [class*="text-14px"] {
-  width: 3em;
-}
-
 .eva-personal-entry {
   box-sizing: border-box;
   width: 100%;
