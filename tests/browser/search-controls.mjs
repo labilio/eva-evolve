@@ -41,7 +41,6 @@ async function appearance(field) {
 for (const [name, route, selector] of [
   ['项目', '/collab', '.eva-project-directory-search'],
   ['通讯录', '/contacts', '.eva-contacts__search'],
-  ['消息', '/messages', '.ch-list-search'],
   ['文件库', '/drive', '.eva-drive__section-head .eva-drive__side-search'],
   ['连接中心', '/eva-stub/技能', '.eva-connection-search'],
   ['数字员工', '/eva-stub/数字员工', '.semi-input-wrapper:has(input[placeholder="搜索数字员工"])'],
@@ -162,4 +161,16 @@ test('图标按钮样式夹具：保留按钮形态、悬停、键盘焦点和�
   } finally {
     await page.locator('#search-button-fixture').evaluate(el=>el.remove());
   }
+});
+
+test('消息中栏使用标题与创建按钮，不再显示列表搜索框', async () => {
+  const header = await open('/messages', '.eva-rail-header');
+  assert.equal(await header.locator('h1').innerText(), '我的消息');
+  assert.equal(await header.locator('input').count(), 0);
+  const button = header.locator('.eva-message-invite');
+  assert.equal(await button.isVisible(), true);
+  assert.equal((await button.boundingBox()).width, 32);
+  await button.click();
+  await page.getByText('新建群聊', { exact: true }).waitFor();
+  await page.keyboard.press('Escape');
 });

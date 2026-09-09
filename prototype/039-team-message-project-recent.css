@@ -7,28 +7,13 @@
     background: #f6f7f8;
   }
 
-  body.eva-message-hierarchy-ready .eva-msg .ch-list__top { display: none; padding: 0; }
 
-  /* Restore the message toolbar without changing the project group list. */
-  body.eva-message-hierarchy-ready .eva-msg[data-eva-channel-surface="global"] .ch-list__top {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 12px 0;
-  }
   body.eva-message-hierarchy-ready .eva-msg .ch-list-search {
     flex: 1;
     min-width: 0;
     width: auto;
   }
-  body.eva-message-hierarchy-ready .eva-msg .ch-list__top .eva-message-invite {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-  }
+
 
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container {

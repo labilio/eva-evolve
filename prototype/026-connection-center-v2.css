@@ -29,16 +29,16 @@
 
   .eva-connection-center__head {
     display: flex;
-    min-height: 52px; box-sizing: border-box;
+     box-sizing: border-box;
     align-items: center;
-    gap: 16px;
-    padding: 0 24px;
+
+
     border-bottom: 1px solid var(--eva-border-faint);
   }
 
   .eva-connection-center__head h1 {
-    margin: 0;
-    font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans);
+
+
   }
 
   .eva-connection-center__head p {

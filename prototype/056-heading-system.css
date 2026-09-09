@@ -1,0 +1,100 @@
+/* One shared header contract for project chats, messages and My Agent. */
+.eva-rail-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: var(--gds-space-2);
+  height: var(--eva-page-heading-height);
+  height: var(--eva-page-heading-height);
+  min-height: var(--eva-page-heading-height);
+  padding: var(--gds-space-2) var(--gds-space-4);
+  background: var(--gds-color-surface-primary);
+  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+}
+.eva-rail-header :is(h1, .eva-personal-rail-title) {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--gds-color-text-primary);
+  font-size: var(--eva-page-heading-size);
+  line-height: var(--eva-page-heading-leading);
+  font-weight: var(--gds-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-rail-header .eva-personal-rail-new,
+.eva-rail-header .eva-message-invite,
+.eva-rail-header .eva-ai-team__create.semi-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  flex: 0 0 32px;
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: var(--gds-color-text-secondary);
+}
+.eva-rail-header .eva-personal-rail-new svg,
+.eva-rail-header .eva-message-invite svg,
+.eva-rail-header .eva-ai-team__create svg { width: 16px; height: 16px; }
+.eva-rail-header .eva-personal-rail-new:hover,
+.eva-rail-header .eva-message-invite:hover,
+.eva-rail-header .eva-ai-team__create.semi-button:hover { background: var(--eva-rail-hover); }
+
+/* Page and section typography. Components retain their own data and actions. */
+:root {
+  --eva-page-heading-height: 48px;
+  --eva-page-heading-inset: var(--gds-space-4);
+  --eva-page-heading-size: var(--gds-type-header-font-size);
+  --eva-page-heading-leading: var(--gds-type-header-line-height);
+  --eva-heading-weight: var(--gds-font-weight-medium);
+}
+:is(.eva-contacts__main-head, .eva-connection-center__head, .eva-feature-head, .eva-drive__header) {
+  box-sizing: border-box;
+  height: var(--eva-page-heading-height);
+  min-height: var(--eva-page-heading-height);
+  padding: var(--gds-space-2) var(--eva-page-heading-inset);
+  display: flex;
+  align-items: center;
+  gap: var(--gds-space-4);
+}
+:is(.eva-contacts__title strong, .eva-connection-center__head h1,
+.eva-feature-head h1, .eva-drive__header strong, .eva-drive__section-head h1,
+.eva-digital-center__head h1) {
+  margin: 0;
+  color: var(--gds-color-text-primary);
+  font-family: var(--gds-font-family-sans);
+  font-size: var(--eva-page-heading-size);
+  line-height: var(--eva-page-heading-leading);
+  font-weight: var(--eva-heading-weight);
+}
+:is(.eva-digital-center__section-head h2, .eva-digital-center__section-head h3,
+.eva-connection-panel__top h2) {
+  margin: 0;
+  font-size: var(--gds-type-label-font-size);
+  line-height: var(--gds-type-label-line-height);
+  font-weight: var(--eva-heading-weight);
+  color: var(--gds-color-text-primary);
+}
+.eva-contacts__search { margin-inline-start: auto; }
+.eva-digital-center__main > .eva-digital-center__head {
+  box-sizing: border-box;
+  min-height: var(--eva-page-heading-height);
+  align-items: center;
+  gap: var(--gds-space-4);
+}
+.eva-rail-header :is(button):focus-visible {
+  outline: var(--gds-border-focus) solid var(--gds-color-action-primary);
+  outline-offset: 2px;
+}
+
+/* Navigation-only rail heading: icon is identity, not an action. */
+.eva-drive__side-head { height: 48px; min-height: 48px; padding: 8px 16px; box-sizing: border-box; }
+.eva-drive__side-head strong { font-size: var(--eva-page-heading-size); line-height: var(--eva-page-heading-leading); font-weight: var(--eva-heading-weight); }

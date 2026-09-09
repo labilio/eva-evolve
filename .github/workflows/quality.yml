@@ -46,6 +46,9 @@ jobs:
       - name: Verify button states in browser
         run: npm run test:buttons
 
+      - name: Verify heading system in browser
+        run: npm run test:headings
+
       - name: Check manifest
         run: npm run check:manifest
 

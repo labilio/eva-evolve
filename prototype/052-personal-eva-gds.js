@@ -163,7 +163,7 @@
   function assistantRailHTML() {
     var snapshot = personalSnapshot();
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 文件夹与对话">'
-      + '<div class="eva-personal-rail-top"><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="">' + icon('pencil',18,'eva-i') + '<span>新对话</span></button></div>'
+      + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">新对话</span><button type="button" class="eva-personal-rail-new" data-eva-new-folder-chat="" aria-label="新对话" title="新对话">' + icon('pencil',16,'eva-i') + '</button></div>'
       + '<div class="eva-personal-sider-panel__body"><div class="eva-personal-rail-section"><span>文件夹</span></div>'
       + railFormHTML()
       + [{id:'',name:'默认'}].concat(snapshot.folders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {

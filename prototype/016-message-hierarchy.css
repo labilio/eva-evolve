@@ -68,11 +68,6 @@ body.eva-message-hierarchy-ready
   display: none;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .ch-list__top {
-  gap: 8px;
-  padding: 14px 14px 10px;
-  background: #f6f7f8;
-}
 
 body.eva-message-hierarchy-ready .eva-msg .ch-list-search { width: 100%; }
 
@@ -126,12 +121,6 @@ body.eva-message-hierarchy-ready
   min-width: 320px;
 }
 
-body.eva-message-hierarchy-ready
-  .eva-channel-surface[data-eva-channel-surface="project"]
-  .eva-msg
-  .ch-list__top {
-  padding: 12px 12px 8px;
-}
 
 body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-channel-surface="project"]
@@ -211,7 +200,7 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item--selected {
   background: #f0f1f2;
 }
 
-body.eva-message-hierarchy-ready .eva-msg .ch-cat-gear {
+body.eva-message-hierarchy-ready .eva-msg .ch-cat-gear:not(.eva-message-invite) {
   display: none;
 }
 
@@ -1729,3 +1718,6 @@ body.eva-message-hierarchy-ready .eva-space-tree__item:focus-visible {
 .eva-category-conversation { display: flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; }
 .eva-category-conversation img { border-radius: 50%; flex-shrink: 0; }
 .eva-category-conversation span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Chat owns the full project content surface, matching the other rails. */
+.collab-body:has(> .ch-layout) { padding-inline: 0; }

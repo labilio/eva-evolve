@@ -58,20 +58,10 @@
   background: var(--eva-conversation-rail-bg);
   border-right: 1px solid var(--eva-conversation-rail-border);
 }
-.eva-ai-team__sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--gds-space-3);
-  flex-shrink: 0;
-  min-height: 48px;
-  box-sizing: border-box;
-  padding: var(--gds-space-2) var(--gds-space-3);
-  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
-}
-.eva-ai-team__sidebar-header h1 { min-width: 0; margin: 0; overflow: hidden; color: var(--gds-color-text-primary); font-size: var(--gds-type-header-font-size); line-height: var(--gds-type-header-line-height); font-weight: var(--gds-font-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.eva-ai-team__sidebar-header .eva-ai-team__create.semi-button { width: 32px; height: 32px; min-height: 32px; padding: 0; flex: 0 0 32px; color: var(--gds-color-text-secondary); }
-.eva-ai-team__sidebar-header .eva-ai-team__create.semi-button:hover { color: var(--gds-color-text-primary); background: var(--eva-rail-hover); }
+
+
+
+
 .eva-ai-team__add-anchor { flex: 1; min-width: 0; display: flex; }
 .eva-ai-team__sidebar-header .eva-ai-team__add { width: 100%; }
 .eva-ai-team__sidebar-header .semi-button { height: 34px; font-size: var(--eva-rail-label-size); }

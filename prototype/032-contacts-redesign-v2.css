@@ -7,12 +7,12 @@
 .eva-contacts--redesigned *::before,
 .eva-contacts--redesigned *::after {box-sizing:border-box}
 .eva-contacts__main-head {
-  display:flex;align-items:center;justify-content:flex-start;gap:var(--gds-space-4);
-  flex:none;min-height:64px;padding:var(--gds-space-3) var(--gds-space-6);
+  display:flex;align-items:center;justify-content:flex-start;
+  flex:none;
   border-bottom:var(--gds-border-standard) solid var(--gds-color-border-faint);
 }
 .eva-contacts__title {display:flex;align-items:baseline;gap:var(--gds-space-3);white-space:nowrap}
-.eva-contacts__title strong {font-size:var(--gds-type-header-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-header-line-height)}
+.eva-contacts__title strong {}
 .eva-contacts__result-count {font-size:var(--gds-type-caption-font-size);color:var(--gds-color-text-secondary-accessible)}
 .eva-contacts__search { width:280px;min-width:0;flex:0 1 280px; }
 

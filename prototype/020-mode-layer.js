@@ -842,7 +842,7 @@
     var crumbs = currentSpace && state.crumbs.length ? [{ id: 0, name: copy.section }].concat(state.crumbs) : [];
     return [
       '<aside class="eva-drive__side" aria-label="文件导航">',
-      '<div class="eva-drive__side-head">' + icon('drive') + '<strong>文件库</strong></div>',
+      '<div class="eva-drive__side-head"><strong>文件库</strong></div>',
       '<nav class="eva-drive__tree">',
       '<div class="eva-drive__tree-group">文件空间</div>',
       treeButton('personal', '个人空间', 'file', false),

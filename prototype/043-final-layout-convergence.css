@@ -9,6 +9,7 @@
   }
 
   body.eva-message-hierarchy-ready .eva-msg .ch-list,
+  .collab-body > .ch-layout > .ch-list,
   .eva-personal-sider-panel,
   .eva-ai-team__sidebar {
     position: relative;
@@ -84,12 +85,12 @@
   /* 个人对话文件夹：顶部操作固定，只有列表滚动。 */
   .eva-personal-sider-panel { overflow: hidden; padding: 0; }
   .eva-personal-sider-panel__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--eva-space-2); }
-  .eva-personal-rail-top { flex: 0 0 auto; padding: var(--eva-space-3) var(--eva-space-2); border-bottom: 1px solid var(--eva-border-faint); }
+
   .eva-personal-rail-new, .eva-personal-folder__main, .eva-personal-thread__main {
     display: flex; align-items: center; gap: var(--eva-space-2); min-width: 0; border: 0; background: transparent;
     color: var(--eva-text-primary); text-align: left; cursor: pointer; font: var(--eva-fw-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--eva-font-sans);
   }
-  .eva-personal-rail-new { width: 100%; height: 36px; padding: 0 var(--eva-space-2); border-radius: var(--eva-radius-control); font-weight: var(--eva-fw-medium); }
+
   .eva-personal-rail-new:hover, .eva-personal-folder__row:hover, .eva-personal-thread:hover { background: var(--eva-overlay-hover); }
   .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-medium) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
   .eva-personal-folder { position: relative; margin-bottom: var(--eva-space-3); }

@@ -23,15 +23,15 @@ body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive .eva-drive__
 }
 
 .eva-drive__side-head {
-  height: 52px;
-  padding: 0 16px;
+
+
   border-bottom-color: var(--gds-color-border-faint, #ebebeb);
 }
 
 .eva-drive__side-head strong {
-  color: var(--gds-color-text-strong, #1e1e1e);
-  font-size: var(--gds-type-header-font-size, 16px);
-  line-height: var(--gds-type-header-line-height, 24px);
+
+
+
 }
 
 .eva-drive__side-search { margin: 12px; }
@@ -84,9 +84,9 @@ body.eva-message-hierarchy-ready .eva-drive__main,
 
 .eva-drive__header {
   box-sizing: border-box;
-  min-height: 52px;
-  height: auto;
-  padding: 4px 24px;
+
+
+
   border-bottom-color: var(--gds-color-border-faint, #ebebeb);
 }
 
@@ -97,8 +97,8 @@ body.eva-message-hierarchy-ready .eva-drive__main,
 }
 
 .eva-drive__header strong {
-  font-size: var(--gds-type-header-font-size, 16px);
-  line-height: var(--gds-type-header-line-height, 24px);
+
+
 }
 
 .eva-drive__header > div:first-child > span {

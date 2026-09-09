@@ -13,7 +13,8 @@
     "comments": "node tools/comments-cli.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:search": "node --test tests/browser/search-controls.mjs",
-    "test:buttons": "node --test tests/browser/button-states.mjs"
+    "test:buttons": "node --test tests/browser/button-states.mjs",
+    "test:headings": "node --test tests/browser/heading-system.mjs"
   },
   "devDependencies": {
     "linkedom": "^0.18.13",

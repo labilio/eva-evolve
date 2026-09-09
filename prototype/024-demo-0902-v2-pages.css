@@ -40,8 +40,6 @@
 
   /* GDS adaptation: a business board keeps its five workflow columns;
      horizontal scrolling belongs to the board, never the whole window. */
-  [data-eva-page="workboard"] .eva-feature-head { box-sizing: border-box; min-height: 52px; }
-  [data-eva-page="workboard"] .eva-feature-head h1 { font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans); }
   [data-eva-page="workboard"] .eva-feature-body { padding: 24px; }
   [data-eva-page="workboard"] .eva-ui-btn { height: 32px; gap: 8px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
   [data-eva-page="workboard"] .eva-ui-btn--primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); color: #fff; }
