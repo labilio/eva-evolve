@@ -22,18 +22,43 @@
   const sharedFolder=(id,spaceId,name,creator,updatedAt,parentId=0)=>({id,spaceId,projectId:null,area:'shared',parent_id:parentId,name,type:'folder',size:0,creator,editor:'未编辑过',createdBy:creator,updatedBy:creator,updated_at:updatedAt,source:{type:'created',label:'共享空间内创建'},description:'共享空间文件夹'});
   const sharedFile=(id,spaceId,name,size,creator,editor,updatedAt,source,description,parentId=0)=>({id,spaceId,projectId:null,area:'shared',parent_id:parentId,name,type:'blob',size,extension:ext(name),creator,editor,createdBy:creator,updatedBy:editor==='未编辑过'?creator:editor,updated_at:updatedAt,source:source||{type:'upload',label:'本地上传'},description:description||'共享空间文件'});
   const externalProviderLabel=provider=>provider==='feishu'?'飞书':provider==='wecom'?'企业微信':'网页';
-  const externalKindLabel=kind=>kind==='document'?'文档':kind==='sheet'?'表格':kind==='page'?'页面':'链接';
+  const externalKindLabel=kind=>kind==='folder'?'文件夹':kind==='document'?'文档':kind==='sheet'?'表格':kind==='page'?'页面':'链接';
   const externalTypeLabel=external=>externalProviderLabel(external?.provider)+externalKindLabel(external?.kind)+' · 外部链接';
-  const parseExternalLink=value=>{
+  const externalKindFromURL=parsed=>{
+    const locator=(parsed.pathname+'/'+String(parsed.hash||'').replace(/^#/,'')).toLowerCase();
+    const declaredKind=String(parsed.searchParams.get('type')||parsed.searchParams.get('resource_type')||'').toLowerCase();
+    if(['folder','directory','dir'].includes(declaredKind)||/(^|\/)(?:drive\/)?folders?(?:\/|$)/.test(locator)||/(^|\/)directories(?:\/|$)/.test(locator))return'folder';
+    if(/(^|\/)(?:sheets?|bitable|base|smartsheet)(?:\/|$)/.test(locator))return'sheet';
+    if(/(^|\/)(?:docx?|docs?|document)(?:\/|$)/.test(locator))return'document';
+    if(/(^|\/)(?:wiki|pages?|smartpage)(?:\/|$)/.test(locator))return'page';
+    return'unknown';
+  };
+  const externalResourceToken=(parsed,provider,kind)=>{
+    const locator=parsed.pathname+'/'+String(parsed.hash||'').replace(/^#/,'');
+    if(kind==='folder'){
+      const folderMatch=locator.match(/(?:^|\/)(?:drive\/)?folders?\/([^/?#]+)/i)||locator.match(/(?:^|\/)directories\/([^/?#]+)/i);
+      if(folderMatch)return folderMatch[1];
+      if(provider==='wecom'&&parsed.hostname.toLowerCase()==='drive.weixin.qq.com'&&/^\/s\/?$/i.test(parsed.pathname)&&parsed.searchParams.get('k'))return parsed.searchParams.get('k');
+    }
+    return'';
+  };
+  const parseExternalLink=(value,options={})=>{
     const input=String(value||'').trim();if(!input)throw new Error('请输入外部链接');if(input.length>2048)throw new Error('外部链接不能超过 2048 个字符');
     let parsed;try{parsed=new URL(input);}catch{throw new Error('请输入完整的 http 或 https 链接');}
     if(!['http:','https:'].includes(parsed.protocol))throw new Error('仅支持 http 或 https 链接');
     if(parsed.username||parsed.password)throw new Error('外部链接不能包含账号或密码');
     const host=parsed.hostname.toLowerCase().replace(/\.$/,'');
     const matchesDomain=domain=>host===domain||host.endsWith('.'+domain);
-    const provider=matchesDomain('feishu.cn')||matchesDomain('larksuite.com')?'feishu':matchesDomain('work.weixin.qq.com')||matchesDomain('wecom.work')?'wecom':'web';
-    const path=parsed.pathname.toLowerCase(),kind=/sheet|bitable|base/.test(path)?'sheet':/docx|docs|document/.test(path)?'document':/wiki|page/.test(path)?'page':'unknown';
-    return{url:parsed.toString(),provider,kind,host};
+    const provider=matchesDomain('feishu.cn')||matchesDomain('larksuite.com')?'feishu':matchesDomain('work.weixin.qq.com')||matchesDomain('wecom.work')||matchesDomain('drive.weixin.qq.com')||matchesDomain('doc.weixin.qq.com')?'wecom':'web';
+    const detectedKind=externalKindFromURL(parsed),requestedKind=options.kind||null;
+    if(requestedKind==='folder'&&detectedKind!=='unknown'&&detectedKind!=='folder')throw new Error('该地址看起来不是文件夹链接，请改用“普通外部链接”');
+    const kind=requestedKind||detectedKind,detection=requestedKind==='folder'&&detectedKind==='unknown'?'user_confirmed':detectedKind==='unknown'?'unknown':'pattern';
+    const url=parsed.toString(),resourceToken=externalResourceToken(parsed,provider,kind),resourceKey=resourceToken?[provider,kind,resourceToken].join(':'):url;
+    return{url,canonicalUrl:url,provider,kind,detectedKind,detection,host,resourceKey};
+  };
+  const externalIdentity=external=>{
+    if(external?.resourceKey)return external.resourceKey;
+    try{return parseExternalLink(external?.url,{kind:external?.kind==='folder'?'folder':undefined}).resourceKey;}catch{return external?.url||'';}
   };
 
   const DEFAULT_SHARED_SPACES=[
@@ -296,7 +321,10 @@
       externalLinkInfo(idOrRecord,actorId){
         const item=typeof idOrRecord==='string'?record(idOrRecord):record(idOrRecord.id),target=item.type==='shortcut'?api.resolveFile(item,actorId):(requireAction('read',item.spaceId,actorId),item);
         if(target.type!=='external_link')return null;
-        return{url:target.external.url,host:target.external.host,provider:target.external.provider,providerLabel:externalProviderLabel(target.external.provider),kind:target.external.kind,typeLabel:externalTypeLabel(target.external)};
+        return{url:target.external.url,canonicalUrl:target.external.canonicalUrl||target.external.url,host:target.external.host,provider:target.external.provider,providerLabel:externalProviderLabel(target.external.provider),kind:target.external.kind,kindLabel:externalKindLabel(target.external.kind),detection:target.external.detection||'unknown',resourceKey:externalIdentity(target.external),typeLabel:externalTypeLabel(target.external)};
+      },
+      inspectExternalLink(value,options={}){
+        const external=parseExternalLink(value,options);return{...clone(external),providerLabel:externalProviderLabel(external.provider),kindLabel:externalKindLabel(external.kind),typeLabel:externalTypeLabel(external)};
       },
       writableSpaces(actorId,excludeSpaceId){
         const result=[{id:personalSpace(actorId),name:'个人空间',kind:'personal'}];
@@ -374,20 +402,20 @@
       },
       createExternalLink(actorId,spaceId,draft={},parentId=0){
         requireAction('add-external-link',spaceId,actorId);const name=String(draft.name||'').trim();if(!name)fail('请输入链接名称');if(name.length>100)fail('链接名称不能超过 100 个字符');
-        const external=parseExternalLink(draft.url),targetProbe={spaceId};ensureSameSpace(targetProbe,parentId);
-        const existing=records.find(item=>!item.deletedAt&&item.type==='external_link'&&item.spaceId===spaceId&&item.parent_id===(parentId||0)&&item.external?.url===external.url);if(existing)return existing.id;
-        const now=stamp(),area=areaForSpace(spaceId),item={id:'external-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId,projectId:projectForSpace(spaceId),area,parent_id:parentId||0,name,type:'external_link',size:0,extension:'',external,creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:normalizeTags(draft.tags||[]),systemRelations:[],source:{type:'external-link',label:'手动添加外部链接'},description:'外部资源入口；内容与版本由原平台维护'};
+        const external=parseExternalLink(draft.url,{kind:draft.kind}),targetProbe={spaceId};ensureSameSpace(targetProbe,parentId);
+        const existing=records.find(item=>!item.deletedAt&&item.type==='external_link'&&item.spaceId===spaceId&&item.parent_id===(parentId||0)&&externalIdentity(item.external)===external.resourceKey);if(existing)return existing.id;
+        const isFolder=external.kind==='folder',now=stamp(),area=areaForSpace(spaceId),item={id:'external-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId,projectId:projectForSpace(spaceId),area,parent_id:parentId||0,name,type:'external_link',size:0,extension:'',external,creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:normalizeTags(draft.tags||[]),systemRelations:[],source:{type:'external-link',label:isFolder?'手动添加外部文件夹':'手动添加外部链接'},description:isFolder?'外部文件夹访问入口；内容与版本由原平台维护':'外部资源入口；内容与版本由原平台维护'};
         records.unshift(item);notify();return item.id;
       },
       updateExternalLink(actorId,id,draft={}){
         const item=record(id);if(item.type!=='external_link')fail('当前资源不是外部链接');if(item.deletedAt)fail('请先从回收站恢复外部链接');requireAction('edit-external-link',item.spaceId,actorId);
-        const name=String(draft.name??item.name).trim();if(!name)fail('请输入链接名称');if(name.length>100)fail('链接名称不能超过 100 个字符');const external=parseExternalLink(draft.url??item.external?.url);
+        const name=String(draft.name??item.name).trim();if(!name)fail('请输入链接名称');if(name.length>100)fail('链接名称不能超过 100 个字符');const external=parseExternalLink(draft.url??item.external?.url,{kind:draft.kind||(item.external?.kind==='folder'?'folder':undefined)});
         if(item.external?.host&&external.host!==item.external.host&&!draft.confirmHostChange)fail('链接域名已变更，请确认后再保存');
-        const duplicate=records.find(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===item.parent_id&&candidate.external?.url===external.url);if(duplicate)fail('当前文件夹中已存在该外部链接');
-        item.name=name;item.external=external;item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();records.filter(candidate=>candidate.type==='shortcut'&&candidate.sourceFileId===item.id&&!candidate.customName).forEach(shortcut=>{shortcut.name=name;});notify();
+        const duplicate=records.find(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===item.parent_id&&externalIdentity(candidate.external)===external.resourceKey);if(duplicate)fail('当前文件夹中已存在该外部链接');
+        item.name=name;item.external=external;item.source={type:'external-link',label:external.kind==='folder'?'手动添加外部文件夹':'手动添加外部链接'};item.description=external.kind==='folder'?'外部文件夹访问入口；内容与版本由原平台维护':'外部资源入口；内容与版本由原平台维护';item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();records.filter(candidate=>candidate.type==='shortcut'&&candidate.sourceFileId===item.id&&!candidate.customName).forEach(shortcut=>{shortcut.name=name;});notify();
       },
       rename(actorId,id,name){const item=record(id);requireAction('rename',item.spaceId,actorId);name=String(name||'').trim();if(!name)fail('请输入名称');item.name=name;if(item.type==='shortcut')item.customName=true;else records.filter(candidate=>candidate.type==='shortcut'&&candidate.sourceFileId===item.id&&!candidate.customName).forEach(shortcut=>{shortcut.name=name;});item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();notify();},
-      move(actorId,id,parentId=0){const item=record(id);requireAction('move',item.spaceId,actorId);if(id===parentId||descendants(id).has(parentId))fail('不能移动到自身或子文件夹');ensureSameSpace(item,parentId);if(item.type==='external_link'&&records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===(parentId||0)&&candidate.external?.url===item.external?.url))fail('当前文件夹中已存在该外部链接');item.parent_id=parentId||0;item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();notify();},
+      move(actorId,id,parentId=0){const item=record(id);requireAction('move',item.spaceId,actorId);if(id===parentId||descendants(id).has(parentId))fail('不能移动到自身或子文件夹');ensureSameSpace(item,parentId);if(item.type==='external_link'&&records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===(parentId||0)&&externalIdentity(candidate.external)===externalIdentity(item.external)))fail('当前文件夹中已存在该外部链接');item.parent_id=parentId||0;item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();notify();},
       updateTags(actorId,id,tags){
         const item=record(id);requireAction('edit-tags',item.spaceId,actorId);if(item.type==='folder')fail('文件夹无需设置标签');item.tags=normalizeTags(tags);notify();
       },
@@ -453,7 +481,7 @@
         const item=record(id);requireAction('restore',item.spaceId,actorId);requireTrashRoot(item,'请恢复整个文件夹');
         const unit=trashUnitRecords(item),originalParentId=item.originalParentId||0,parent=originalParentId?records.find(candidate=>candidate.id===originalParentId):null;
         const parentAvailable=Boolean(parent&&!parent.deletedAt&&parent.type==='folder'&&parent.spaceId===item.spaceId),restoreParent=parentAvailable?originalParentId:0,restoredToRoot=Boolean(originalParentId&&!parentAvailable);
-        if(item.type==='external_link'&&records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===restoreParent&&candidate.external?.url===item.external?.url))fail('恢复位置已存在该外部链接，请先整理现有入口');
+        if(item.type==='external_link'&&records.some(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===restoreParent&&externalIdentity(candidate.external)===externalIdentity(item.external)))fail('恢复位置已存在该外部链接，请先整理现有入口');
         item.name=restoredName(item,restoreParent);
         for(const target of unit){delete target.deletedAt;delete target.deletedBy;delete target.originalParentId;delete target.deletionBatchId;delete target.trashRootId;delete target.directTrash;}
         item.parent_id=restoreParent;notify();return{restoredToRoot,parentId:restoreParent,restoredCount:unit.length};
@@ -484,9 +512,9 @@
   }
 
   function bootstrap(membership){
-    const key='eva:file-store:v6',pinKey='eva:file-pins:v1';let saved,spaces,pinSeed=[],previewDemoInitialized=false,externalLinksDemoV1=false;
+    const key='eva:file-store:v6',pinKey='eva:file-pins:v1';let saved,spaces,pinSeed=[],previewDemoInitialized=false,externalLinksDemoV1=false,externalFoldersDemoV1=false;
     try{const value=JSON.parse(root.localStorage.getItem(pinKey));if(value?.schema===1&&Array.isArray(value.pins))pinSeed=value.pins;}catch{}
-    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;previewDemoInitialized=true;externalLinksDemoV1=value.externalLinksDemoV1===true;}}catch{}
+    try{const value=JSON.parse(root.localStorage.getItem(key));if(value?.schema===6&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;previewDemoInitialized=true;externalLinksDemoV1=value.externalLinksDemoV1===true;externalFoldersDemoV1=value.externalFoldersDemoV1===true;}}catch{}
     if(!saved){
       try{const value=JSON.parse(root.localStorage.getItem('eva:file-store:v5'));if(value?.schema===5&&Array.isArray(value.records)&&Array.isArray(value.sharedSpaces)){saved=value.records;spaces=value.sharedSpaces;}}catch{}
     }
@@ -514,10 +542,11 @@
       try{const legacy=JSON.parse(root.localStorage.getItem('eva:shared-files:v1'));if(Array.isArray(legacy))saved.push(...legacy.map(item=>({...item,spaceId:item.projectId,area:'project'})));}catch{}
     }
     DEFAULT_RECORDS.filter(item=>!externalLinksDemoV1&&item.type==='external_link').forEach(item=>{if(!saved.some(savedItem=>savedItem.id===item.id))saved.push(clone(item));});
+    DEFAULT_RECORDS.filter(item=>!externalFoldersDemoV1&&item.type==='external_link'&&item.external?.kind==='folder').forEach(item=>{if(!saved.some(savedItem=>savedItem.id===item.id))saved.push(clone(item));});
     const previewDemoIds=new Set(['personal-word-demo','personal-sheet-demo','personal-slides-demo']);
     const existingIds=new Set(saved.map(item=>item.id));
     DEFAULT_RECORDS.filter(item=>!previewDemoInitialized&&previewDemoIds.has(item.id)&&!existingIds.has(item.id)).forEach(item=>saved.push(clone(item)));
-    const persistRecords=(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces,externalLinksDemoV1:true}));}catch{}};
+    const persistRecords=(records,sharedSpaces)=>{try{root.localStorage.setItem(key,JSON.stringify({schema:6,records,sharedSpaces,externalLinksDemoV1:true,externalFoldersDemoV1:true}));}catch{}};
     persistRecords(saved,spaces||DEFAULT_SHARED_SPACES);
     return create(
       membership,

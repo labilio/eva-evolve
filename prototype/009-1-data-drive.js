@@ -233,4 +233,34 @@ window.__EVA_EXTERNAL_LINK_SAMPLES = [{
   systemRelations: [],
   source: {type: 'external-link', label: '手动添加外部链接'},
   description: '外部协作文档入口；内容与版本仍由飞书维护'
+}, {
+  id: 'prod-feishu-folder-link',
+  spaceId: 'prod',
+  projectId: 'prod',
+  area: 'project',
+  parent_id: 0,
+  name: '供应商飞书交付资料',
+  type: 'external_link',
+  size: 0,
+  extension: '',
+  external: {
+    url: 'https://example.feishu.cn/drive/folder/fldcnEvaSupplierDemo',
+    canonicalUrl: 'https://example.feishu.cn/drive/folder/fldcnEvaSupplierDemo',
+    provider: 'feishu',
+    kind: 'folder',
+    detectedKind: 'folder',
+    detection: 'pattern',
+    host: 'example.feishu.cn',
+    resourceKey: 'feishu:folder:fldcnEvaSupplierDemo'
+  },
+  creator: '王宜林',
+  editor: '未编辑过',
+  createdBy: '王宜林',
+  updatedBy: '王宜林',
+  createdAt: '2026-09-09T10:20:00+08:00',
+  updated_at: '2026-09-09T10:20:00+08:00',
+  tags: ['供应商', '外部协作'],
+  systemRelations: [],
+  source: {type: 'external-link', label: '手动添加外部文件夹'},
+  description: '外部文件夹访问入口；内容与版本由飞书维护'
 }];

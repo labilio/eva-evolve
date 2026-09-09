@@ -87,14 +87,14 @@
             <tr><td>浏览、搜索、查看详情</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只返回当前所属空间内的内容</td></tr>
             <tr><td>预览文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件安全扫描通过且格式支持</td></tr>
             <tr><td>下载文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>下载时重新校验项目成员身份</td></tr>
-            <tr><td>打开、复制外部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只打开资源入口；内容访问仍由原平台鉴权</td></tr>
+            <tr><td>打开、复制外部链接或文件夹入口</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只打开资源入口；内容访问仍由原平台鉴权</td></tr>
             <tr><td>复制文件内部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位文件，不授予访问权限</td></tr>
             <tr><td>查看空间信息与成员</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>项目空间显示项目成员，个人空间仅显示本人</td></tr>
             <tr><td>复制空间链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>链接只定位空间，非成员打开仍无权访问</td></tr>
 
             <tr class="matrix-group"><th colspan="5">创建与整理</th></tr>
             <tr><td>上传本地文件</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>全局上传先选择个人或有权限的项目，文件直接归属所选空间</td></tr>
-            <tr><td>添加、编辑外部链接</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅保存 http/https 入口；改域名时必须二次确认</td></tr>
+            <tr><td>添加、编辑外部链接或外部文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅保存 http/https 入口；改域名时必须二次确认</td></tr>
             <tr><td>新建文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>文件夹继承所属空间权限，不设独立权限</td></tr>
             <tr><td>重命名文件、外部链接或文件夹</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>只修改名称，不改变资源归属或内容</td></tr>
             <tr><td>在当前空间内移动</td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td><span class="cell allow">允许</span></td><td>仅调整当前空间内的目录位置</td></tr>
@@ -128,7 +128,7 @@
         <p><strong>合并：</strong>发现空间、查看空间、浏览、搜索和元数据读取，统一为“浏览、搜索、查看详情”。</p>
         <p><strong>继承：</strong>文件库不建立独立成员体系，成员治理复用项目设置；项目空间 Owner 随项目负责人同步。</p>
         <p><strong>保留：</strong>将项目群文件保存到项目文件管理，项目群内所有成员均可执行。保存后生成项目副本，但不会额外开放来源群历史或其他附件。</p>
-        <p><strong>新增：</strong>外部链接与文件共用空间权限、目录、标签和回收站；不提供内容预览、下载、创建副本或原平台权限管理。</p>
+        <p><strong>新增：</strong>外部链接与外部文件夹入口共用文件的空间权限、目录、标签和回收站；不提供内容预览、下载、创建副本、目录同步或原平台权限管理。</p>
         <p><strong>不纳入：</strong>项目之间、个人与项目之间的复制或移动；查看自身权限、权限来源、Owner 同步等系统能力；任务输入、任务产出确认等任务模块动作；以及不改变共享权限的排序、筛选和收藏。</p>
       </div>
     </details>

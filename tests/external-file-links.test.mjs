@@ -37,6 +37,68 @@ test('Editor 添加外部链接后，项目文件和文件库读取同一个资�
   assert.throws(() => files.createExternalLink('c', 'p', {name: '无权限', url: 'https://example.com'}), /操作权限/);
 });
 
+test('外部文件夹沿用 external_link 资源并识别飞书文件夹 token', () => {
+  const {files} = setup();
+  const url = 'https://sample.feishu.cn/drive/folder/fldcnDemoToken?from=share';
+  const id = files.createExternalLink('b', 'p', {name: '供应商交付资料', url, kind: 'folder'});
+  const record = files.list('p', 'b').find(item => item.id === id);
+  const info = files.externalLinkInfo(id, 'b');
+
+  assert.equal(record.type, 'external_link');
+  assert.equal(record.external.kind, 'folder');
+  assert.equal(record.source.label, '手动添加外部文件夹');
+  assert.equal(info.provider, 'feishu');
+  assert.equal(info.kindLabel, '文件夹');
+  assert.equal(info.detection, 'pattern');
+  assert.equal(info.resourceKey, 'feishu:folder:fldcnDemoToken');
+  assert.equal(files.fileTypeFor(id, 'b'), '飞书文件夹 · 外部链接');
+});
+
+test('企业微信微盘分享链接可由用户确认为外部文件夹', () => {
+  const {files} = setup();
+  const inspected = files.inspectExternalLink('https://drive.weixin.qq.com/s?k=wecom-folder-token', {kind: 'folder'});
+  const id = files.createExternalLink('a', 'p', {name: '企业微信项目资料', url: inspected.url, kind: 'folder'});
+  const info = files.externalLinkInfo(id, 'a');
+
+  assert.equal(inspected.provider, 'wecom');
+  assert.equal(inspected.kind, 'folder');
+  assert.equal(inspected.detection, 'user_confirmed');
+  assert.equal(info.resourceKey, 'wecom:folder:wecom-folder-token');
+  assert.equal(files.fileTypeFor(id, 'a'), '企业微信文件夹 · 外部链接');
+});
+
+test('添加外部文件夹会拒绝明确的文档地址，普通入口仍可自动识别文件夹', () => {
+  const {files} = setup();
+  assert.throws(() => files.createExternalLink('a', 'p', {
+    name: '误选的飞书文档',
+    url: 'https://sample.feishu.cn/docx/doc-token',
+    kind: 'folder'
+  }), /不是文件夹链接/);
+
+  const id = files.createExternalLink('a', 'p', {
+    name: '自动识别的飞书文件夹',
+    url: 'https://sample.feishu.cn/drive/folder/auto-folder-token'
+  });
+  assert.equal(files.externalLinkInfo(id, 'a').kind, 'folder');
+});
+
+test('同一外部文件夹 token 忽略分享查询参数并在同一目录去重', () => {
+  const {files} = setup();
+  const first = files.createExternalLink('a', 'p', {
+    name: '第一条入口',
+    url: 'https://sample.feishu.cn/drive/folder/fldcnSame?from=copy',
+    kind: 'folder'
+  });
+  const duplicate = files.createExternalLink('a', 'p', {
+    name: '第二条入口',
+    url: 'https://sample.feishu.cn/drive/folder/fldcnSame?from=message',
+    kind: 'folder'
+  });
+
+  assert.equal(duplicate, first);
+  assert.equal(files.list('p', 'a').filter(item => item.external?.kind === 'folder').length, 1);
+});
+
 test('外部链接仅接受无凭据的 http 或 https 地址', () => {
   const {files} = setup();
   for (const url of ['javascript:alert(1)', 'data:text/html,hello', 'ftp://example.com/file']) {
@@ -96,6 +158,8 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   const samples = fs.readFileSync(new URL('../prototype/009-1-data-drive.js', import.meta.url), 'utf8');
 
   for (const source of [drive, project]) {
+    assert.match(source, /添加外部资源/);
+    assert.match(source, /外部文件夹/);
     assert.match(source, /添加外部链接/);
     assert.match(source, /打开原链接/);
     assert.match(source, /复制外部链接/);
@@ -104,13 +168,21 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
     assert.match(source, /noopener,noreferrer/);
     assert.match(source, /!isExternal[^\n]*canOpen[^\n]*files\.can\('download'/);
   }
+  assert.match(drive, /data-drive-action="toggle-external-add"/);
+  assert.match(drive, /data-drive-action="add-external-folder"/);
   assert.match(drive, /data-drive-action="add-external-link"/);
   assert.match(drive, /#\/collab\?evaProject=/);
   assert.match(drive, /evaTab=files/);
+  assert.match(project, /type:'external-folder'/);
   assert.match(project, /type:'external-link'/);
+  assert.match(styles, /\.eva-drive__file-mark\.is-external-folder/);
+  assert.match(styles, /\.eva-drive__scroll:has\(\.eva-drive__external-add\[open\]\)[\s\S]*overflow:\s*visible/);
+  assert.match(styles, /\.eva-drive__external-add\[open\][\s\S]*z-index/);
+  assert.match(styles, /\.eva-drive__external-add-menu/);
   assert.match(styles, /\.eva-drive__file-mark\.is-external-link/);
   assert.match(samples, /__EVA_EXTERNAL_LINK_SAMPLES/);
   assert.match(samples, /prod-feishu-docs-link/);
+  assert.match(samples, /prod-feishu-folder-link/);
 });
 
 test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例', () => {
@@ -127,6 +199,27 @@ test('文件库本地数据升级到 v6 时保留 v5 文件并补入外链示例
   assert.ok(files.snapshot().some(item => item.id === 'sample-link'));
   files.createExternalLink('a', 'p', {name: '触发持久化', url: 'https://another.example.com'});
   assert.equal(JSON.parse(values.get('eva:file-store:v6')).schema, 6);
+});
+
+test('已有 v6 数据只迁移一次外部文件夹示例', () => {
+  const values = new Map();
+  values.set('eva:file-store:v6', JSON.stringify({schema: 6, records: [], sharedSpaces: [], externalLinksDemoV1: true}));
+  const window = {
+    localStorage: {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value)},
+    __EVA_EXTERNAL_LINK_SAMPLES: [{
+      id: 'sample-folder', spaceId: 'p', projectId: 'p', area: 'project', parent_id: 0, name: '示例文件夹', type: 'external_link', size: 0,
+      external: {url: 'https://sample.feishu.cn/drive/folder/sample-token', provider: 'feishu', kind: 'folder', host: 'sample.feishu.cn'}
+    }]
+  };
+  const {members, sharing} = setup({window});
+  let files = sharing.bootstrap(members);
+
+  assert.ok(files.snapshot().some(item => item.id === 'sample-folder'));
+  assert.equal(JSON.parse(values.get('eva:file-store:v6')).externalFoldersDemoV1, true);
+  files.trash('a', 'sample-folder');
+  files.removeForever('a', 'sample-folder');
+  files = sharing.bootstrap(members);
+  assert.equal(files.snapshot().some(item => item.id === 'sample-folder'), false);
 });
 
 
