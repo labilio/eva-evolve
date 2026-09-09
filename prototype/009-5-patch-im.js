@@ -1,6 +1,55 @@
 (function (root) {
   'use strict';
   root.__evaPatch('im', function (source) {
+function evaForwardTargets(actorId) {
+  const channels=messageSource('all').channels;
+  if(actorId!=='u-wangyilin')return channels;
+  const identityModel=evaMembers().ui.identityModel;
+  const item=(identityId,session)=>{const identity=identityModel.resolve(identityId);return {id:window.EvaAIPrivateConversations.threadRecord(identityId,session).channel_id,name:(identity?.name||identityId)+' / '+session.title,identityId,identityAppearance:identity?.appearance,threads:[]};};
+  const snapshot=window.EvaAITeam.getSnapshot();
+  channels.push(...snapshot.sessions.map(session=>item(session.identityId,session)));
+  const digital=window.EvaDigitalEmployeesStore;
+  channels.push(...digital.teamIds().flatMap(id=>digital.sessions(id).map(session=>item(id,session))));
+  channels.push(...window.EvaMyAITeamGroup.forwardChannels());
+  return channels;
+}
+function EvaForwardMessagesDialog({request,channels,store,actorId,onClose,onSent,getContainer}) {
+  const [host,setHost]=reactExports.useState(null),h=React.createElement,[target,setTarget]=reactExports.useState(''),[error,setError]=reactExports.useState('');
+  const candidates=channels.flatMap(channel=>[channel,...(channel.threads||[]).map(thread=>({...thread,parentName:channel.name}))]).filter(channel=>store.canReadForwardSource(channel.id,actorId));
+  const unique=[...new Map(candidates.map(channel=>[channel.id,channel])).values()];
+  const submit=()=>{try{const selected=unique.find(channel=>channel.id===target);if(!selected)throw new Error('请选择目标会话');if(selected.personId)store.openDirect(actorId,selected.personId);store.forwardMessages(request.sourceId,target,actorId,request.messages);onSent();}catch(e){setError(e.message||'转发失败');}};
+  return h('div',{ref:setHost,className:'eva-forward-host'},host&&h(Modal,{visible:true,title:'转发消息',width:520,getPopupContainer:()=>host,onCancel:onClose,footer:h('div',{className:'eva-forward-footer'},h(Button,{onClick:onClose},'取消'),h(Button,{theme:'solid',type:'primary',disabled:!target,onClick:submit},'确认转发'))},
+    h('p',null,'选择目标会话，将逐条转发 '+request.messages.length+' 条消息'),
+    h('div',{className:'eva-forward-targets',role:'radiogroup','aria-label':'目标会话'},unique.map(channel=>h('label',{key:channel.id,className:'eva-forward-target'},h('input',{type:'radio',name:'eva-forward-target',checked:target===channel.id,onChange:()=>{setTarget(channel.id);setError('');}}),channel.identityAppearance?h(EvaAIIdentityAvatar,{appearance:channel.identityAppearance,size:28}):h('img',{src:window.EvaAvatar.conversationUri(channel),width:28,height:28,alt:''}),h('span',null,channel.parentName?channel.parentName+' / '+channel.name:channel.name),channel.identityId&&h(AiBadge,{size:'small'})))),error&&h('p',{role:'alert'},error)));
+}
+// Octo ReplyBlock structure; Eva supplies the existing message snapshot.
+function EvaReplyBlock({reply,onClick}) {
+  const h=React.createElement;
+  return h("div",{className:"wk-reply-block",onClick,role:onClick?"button":undefined,tabIndex:onClick?0:undefined,onKeyDown:onClick?event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();onClick(event)}}:undefined},h("div",{className:"wk-reply-block__bar"}),h("div",{className:"wk-reply-block__content"},h("span",{className:"wk-reply-block__name-row"},h("span",{className:"wk-reply-block__name"},reply.fromName)),h("span",{className:"wk-reply-block__digest"},reply.digest)));
+}
+function evaSelectionMessageKey(scope, message, index, messages) {
+  if (message?.id || message?.fixtureId) return JSON.stringify([scope, message.id || message.fixtureId]);
+  const signature = item => JSON.stringify([item?.kind,item?.sender?.uid,item?.time,item?.text,item?.file?.id,item?.file?.name,item?.ref,item?.thread]);
+  const value = signature(message);
+  const occurrence = messages.slice(0,index).filter(item => signature(item) === value).length;
+  return JSON.stringify([scope,value,occurrence]);
+}
+function evaComposerPlainText(element) {
+  // Chromium inserts empty block placeholders; innerText counts their BR twice.
+  const read = node => {
+    if (node.nodeType === 3) return node.nodeValue || "";
+    if (node.nodeName === "BR") return "\n";
+    let result = "";
+    Array.from(node.childNodes).forEach((child, index) => {
+      const block = child.nodeType === 1 && /^(DIV|P)$/.test(child.nodeName);
+      if (block && index > 0) result += "\n";
+      const emptyBlock = block && child.childNodes.length === 1 && child.firstChild.nodeName === "BR";
+      if (!emptyBlock) result += read(child);
+    });
+    return result;
+  };
+  return read(element);
+}
 function evaIdentityAppearance(identity) {
   const original = window.__EVA_MY_ASSISTANT_IDENTITY;
   if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName});
@@ -492,7 +541,7 @@ function EvaAITeamPage() {
     source.initialDraft=snapshot.drafts[draftKey]||'';
     source.onDraftChange=text=>store.setDraft(draftKey,text);
     source.composerDisabled=identity.status==='offline';
-    source.onSend=text=>{try{const id=store.sendMessage(identity.id,session?.id||null,text);setError('');if(!session)setSelection({identityId:identity.id,sessionId:id});return true;}catch(e){setError(e.message);return false;}};
+    source.onSend=(text,channelId,reply)=>{try{const id=store.sendMessage(identity.id,session?.id||null,text,reply);setError('');if(!session)setSelection({identityId:identity.id,sessionId:id});return true;}catch(e){setError(e.message);return false;}};
   }
   if(source&&!groupSelected){
     const current=employee?employeeSession:session;
@@ -1009,6 +1058,49 @@ function EvaAITeamPage() {
       'window.EvaAvatar.conversationUri(Sa)', '会话标题复用相同身份头像');
     cut('window.EvaAvatar.uri({kind:ci.ch.id.startsWith("dm-")?"person":"group",id:ci.ch.id,color:ci.ch.color})',
       'window.EvaAvatar.conversationUri(ci.ch)', '最近会话按对方身份解析头像');
+    // Keep native table geometry; a separate container owns horizontal overflow.
+    cut('const baseComponents={a:',
+      'const baseComponents={table:({node,children,...props})=>React.createElement("div",{className:"eva-markdown-table-scroll"},React.createElement("table",props,children)),a:', 'Markdown 表格独立滚动容器');
+    // Preserve browser-created line breaks in multiline drafts and pasted Markdown.
+    cut('const text=St.currentTarget.textContent??"";pt(text);evaDraftChange?.(text)',
+      'const text=evaComposerPlainText(St.currentTarget);pt(text);evaDraftChange?.(text)', '共享输入框保留可见换行');
+    cut('onClick:()=>navigator.clipboard?.writeText(ci.text??"").catch(()=>{})',
+      'onClick:async()=>{try{if(!navigator.clipboard?.writeText)throw new Error("clipboard unavailable");await navigator.clipboard.writeText(ci.text??"");}catch{Toast.error("复制失败，请选择消息文字后手动复制");}}', '消息复制失败明确反馈');
+    cut('[evaMenuMessage,setEvaMenuMessage]=reactExports.useState(null)',
+      '[evaMenuMessage,setEvaMenuMessage]=reactExports.useState(null),[evaSelection,setEvaSelection]=reactExports.useState(null)', '共享消息多选状态');
+    cut('va=fa?fa.id:Sa.id,ca=',
+      'va=fa?fa.id:Sa.id,evaSelectionReset=reactExports.useEffect(()=>setEvaSelection(null),[va,evaActorId,Mt]),ca=', '会话切换清理多选');
+    cut('hi=(ci,Zi,Fi)=>{ci=evaRenderableMessage(ci);',
+      'hi=(ci,Zi,Fi,evaScope=va)=>{if(ci&&typeof ci==="object")ci={...ci,evaSelectionKey:evaSelectionMessageKey(evaScope,ci,Zi,Fi)};ci=evaRenderableMessage(ci);', '消息选择键限定会话');
+    cut('className:"wk-msg-row-checkbox",onClick:mr=>',
+      'className:"wk-msg-row-checkbox",role:"checkbox",tabIndex:0,"aria-checked":!!ut,"aria-label":"选择 "+gt+" 的消息",onKeyDown:event=>{if(event.key===" "||event.key==="Enter"){event.preventDefault();event.stopPropagation();Vt?.(!ut)}},onClick:mr=>', '消息多选键盘与状态语义');
+    cut('className:"wk-msg-row-body"},!ir&&rn?',
+      'className:"wk-msg-row-body",inert:ir?"":void 0},!ir&&rn?', '多选时卡片内容不接受键盘操作');
+    cut('hi(ci,Zi,Cs)', 'hi(ci,Zi,Cs,Es.id)', '子区侧栏独立选择范围');
+    cut('onClick:()=>Toast.info("已进入多选")',
+      'onClick:()=>setEvaSelection({[ci.evaSelectionKey]:ci})', '菜单进入真实多选');
+    cut('...rowProps(ci,ro),',
+      '...rowProps(ci,ro),selectionMode:evaSelection!==null,showCheckbox:evaSelection!==null,isSelected:!!evaSelection?.[ci.evaSelectionKey],onSelect:checked=>setEvaSelection(previous=>{const next={...previous};if(checked)next[ci.evaSelectionKey]=ci;else delete next[ci.evaSelectionKey];return next;}),', '复用 Octo 消息行选择合同');
+    cut('className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta))),React.createElement(EvaIMComposer,',
+      'className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta))),evaSelection!==null&&React.createElement("div",{className:"eva-im-selection-bar",role:"region","aria-label":"消息多选"},React.createElement("span",{role:"status"},"已选择 ",Object.keys(evaSelection).length," 条消息"),React.createElement("button",{type:"button",onClick:()=>setEvaSelection(null)},"退出多选")),React.createElement(EvaIMComposer,', '消息多选计数与退出');
+    cut('[evaSelection,setEvaSelection]=reactExports.useState(null)', '[evaSelection,setEvaSelection]=reactExports.useState(null),[evaReply,setEvaReply]=reactExports.useState(null)', '回复状态由共享会话持有');
+    cut('()=>setEvaSelection(null),[va,evaActorId,Mt]', '()=>{setEvaSelection(null);setEvaReply(null)},[va,evaActorId,Mt]', '回复随会话与侧栏切换清理');
+    cut('evaSelectionKey:evaSelectionMessageKey(evaScope,ci,Zi,Fi)', 'evaSelectionKey:evaSelectionMessageKey(evaScope,ci,Zi,Fi),evaConversationId:evaScope,evaMessageIndex:Zi', '引用记录来源会话');
+    cut('onClick:()=>Toast.info("已进入回复")', 'onClick:()=>setEvaReply({conversationId:ci.evaConversationId,messageId:ci.id||ci.fixtureId||ci.evaSelectionKey,fromName:ci.sender?.name||"",digest:ci.text||ci.file?.name||"消息"})', '回复菜单选择原消息');
+    cut('EvaIMComposer=({placeholder:rt,onSend:ct,', 'EvaIMComposer=({reply:evaReply,onCancelReply:evaCancelReply,placeholder:rt,onSend:ct,', '输入区回复合同');
+    cut('className:"wk-messageinput-card"},React.createElement("div",{className:"wk-messageinput-row"', 'className:"wk-messageinput-card"},evaReply&&React.createElement("div",{className:"eva-im-reply-draft"},React.createElement(EvaReplyBlock,{reply:evaReply}),React.createElement("button",{type:"button","aria-label":"取消回复",onClick:evaCancelReply},React.createElement(X,{size:16}))),React.createElement("div",{className:"wk-messageinput-row"', '输入区引用预览与取消');
+    cut('key:evaActorId+":"+va,mentionMembers:', 'key:evaActorId+":"+va,reply:evaReply?.conversationId===va?evaReply:null,onCancelReply:()=>setEvaReply(null),mentionMembers:', '主输入区回复接入');
+    cut('key:evaActorId+":"+Es.id,', 'key:evaActorId+":"+Es.id,reply:evaReply?.conversationId===Es.id?evaReply:null,onCancelReply:()=>setEvaReply(null),', '侧栏输入区回复接入');
+    cut('vi=(ci,Zi)=>{if(ct?.onSend){ct.onSend(Zi,ci);return;}', 'vi=(ci,Zi)=>{const reply=evaReply?.conversationId===ci?evaReply:undefined;if(ct?.onSend){const result=ct.onSend(Zi,ci,reply);if(result!==false)setEvaReply(null);return result;}', '侧栏发送传递引用');
+    cut('evaMemberStore.sendDirect(id,evaActorId,Zi);return;', 'evaMemberStore.sendDirect(id,evaActorId,Zi,reply);setEvaReply(null);return;', '私聊发送保存引用');
+    cut('evaMemberStore.sendMessage(ci,evaActorId,Zi);return;', 'evaMemberStore.sendMessage(ci,evaActorId,Zi,reply);setEvaReply(null);return;', '群聊发送保存引用');
+    cut('const sent=ct.onSend(Zi,va);if(sent===false)return false;', 'const sent=ct.onSend(Zi,va,evaReply?.conversationId===va?evaReply:undefined);if(sent===false)return false;setEvaReply(null);', '主输入发送传递引用');
+    cut('React.createElement("div",null,ns))},Si=', 'React.createElement("div",null,ci.replyTo&&React.createElement(EvaReplyBlock,{reply:ci.replyTo,onClick:event=>{const index=Fi.findIndex((message,index)=>(message?.id||message?.fixtureId||evaSelectionMessageKey(evaScope,message,index,Fi))===ci.replyTo.messageId);if(ci.replyTo.conversationId!==evaScope||index<0){Toast.info("原消息已不在当前记录中");return;}evaRevealConversationMessage(event.currentTarget.closest(".ch-stream"),index)}}),ns))},Si=', '消息内容前复用引用块');
+    cut('[evaReply,setEvaReply]=reactExports.useState(null)', '[evaReply,setEvaReply]=reactExports.useState(null),[evaForward,setEvaForward]=reactExports.useState(null)', '共享转发弹窗状态');
+    cut('setEvaSelection(null);setEvaReply(null)', 'setEvaSelection(null);setEvaReply(null);setEvaForward(null)', '会话切换关闭转发');
+    cut('onClick:()=>Toast.info("已打开转发")', 'onClick:()=>setEvaForward({sourceId:ci.evaConversationId,messages:[ci]})', '单条消息转发入口');
+    cut('React.createElement("button",{type:"button",onClick:()=>setEvaSelection(null)},"退出多选")', 'React.createElement(Button,{disabled:!Object.keys(evaSelection).length,onClick:()=>{const messages=Object.values(evaSelection).sort((a,b)=>a.evaMessageIndex-b.evaMessageIndex);if(new Set(messages.map(message=>message.evaConversationId)).size!==1){Toast.error("请选择同一会话中的消息");return;}setEvaForward({sourceId:messages[0].evaConversationId,messages})}},"转发"),React.createElement("button",{type:"button",onClick:()=>setEvaSelection(null)},"退出多选")', '多选消息转发入口');
+    cut('React.createElement(EvaContextMenus,{ref:evaMenuRef,', 'evaForward&&React.createElement(EvaForwardMessagesDialog,{request:evaForward,channels:evaForwardTargets(evaActorId),store:evaMemberStore,actorId:evaActorId,getContainer:()=>da.current?.closest(".ch-layout")||document.body,onClose:()=>setEvaForward(null),onSent:()=>{setEvaForward(null);setEvaSelection(null);Toast.success("已转发");}}),React.createElement(EvaContextMenus,{ref:evaMenuRef,', '共享会话挂载转发选择');
     // Presentation only: ownership comes from the current actor, never the display name.
     cut('rowProps=(rt,ct)=>({isSend:!1,',
       'rowProps=(rt,ct,evaActorId)=>({isSend:!!evaActorId&&rt.sender.uid===evaActorId,bubbleKind:rt.kind,', '气泡方向使用当前身份');
@@ -1016,6 +1108,6 @@ function EvaAITeamPage() {
     cut('rowProps(ci,ro)', 'rowProps(ci,ro,evaActorId)', '共享消息流沿用气泡方向');
     cut('function MessageRow({isSend:rt,', 'function MessageRow({bubbleKind:evaBubbleKind,isSend:rt,', '消息行展示类型');
     cut('classNames("wk-msg-row",rt&&', 'classNames("wk-msg-row",evaBubbleKind&&"eva-im-bubble-row",evaBubbleKind==="text"&&"eva-im-bubble-row--text",rt&&', '共享气泡样式边界');
-    return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    return evaForwardTargets.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

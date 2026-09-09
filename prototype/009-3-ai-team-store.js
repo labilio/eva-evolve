@@ -14,6 +14,11 @@
     return {...record, group_no: group.id, short_id: record.id,
       channel_id: group.id + '____' + record.id, channel_type: 5};
   };
+  const replySnapshot = (conversationId, reply) => {
+    if (reply == null) return undefined;
+    if (reply.conversationId !== conversationId || !reply.messageId || typeof reply.messageId !== 'string' || typeof reply.fromName !== 'string' || typeof reply.digest !== 'string') throw new Error('引用消息不属于当前会话或内容无效');
+    return {conversationId,messageId:reply.messageId,fromName:reply.fromName,digest:reply.digest};
+  };
   const threadSource = ({identityId, name, appearance, records, selectedId, messages}) => {
     const group = privateGroup(identityId);
     const rows = records.length ? records : [{id: 'draft:' + identityId, title: '新对话', messages: []}];
@@ -31,7 +36,7 @@
       cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
       scopeNameOf: {}};
   };
-  window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, source: threadSource});
+  window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, replySnapshot, source: threadSource});
   const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
   function freeze(value) {
@@ -455,7 +460,7 @@
       if (!title || Array.from(title).length > 50) throw new Error('请输入 1–100 个字符的会话名称');
       record.title = title; record.autoTitle = false; publish();
     }
-    function sendMessage(identityId, sessionId, text) {
+    function sendMessage(identityId, sessionId, text, reply) {
       if (typeof text !== 'string' || !text.trim()) return null;
       const identity = identityById(identityId);
       if (identity.status === 'offline') throw new Error('本地助理离线，请连接后重试');
@@ -468,14 +473,20 @@
         session = threadRecord(identityId, session);
         state.sessions.push(session);
       }
+      const replyTo=replySnapshot(threadRecord(identityId,session).channel_id,reply);
       if (session.autoTitle) {session.title = Array.from(body).slice(0, 20).join(''); session.autoTitle = false;}
       const base = session.id + '-' + session.messages.length;
-      session.messages.push({ id: base + '-self', kind: 'text', sender: { uid: 'self', name: '我', color: '#1563EB', ai: false }, time, text: body });
+      session.messages.push({ id: base + '-self', kind: 'text', sender: { uid: 'self', name: '我', color: '#1563EB', ai: false }, time, text: body, ...(replyTo?{replyTo}:{}) });
       session.messages.push({ id: base + '-receipt', kind: 'text', sender: { uid: identity.id, name: identity.name, color: '#1563EB', ai: true }, time, text: identity.role === 'persona' ? '收到，我会跟进这项请求。' : '收到，我会协助你整理。' });
       session.updatedAt = time;
       delete state.drafts[sessionId || 'draft:' + identityId]; publish(); return session.id;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, setSessionFlag, deleteSession });
+    function receiveForwarded(channelId,messages) {
+      const session=state.sessions.find(item=>threadRecord(item.identityId,item).channel_id===channelId);
+      if(!session)return false;
+      const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self'}})));session.updatedAt=time;publish();return true;
+    }
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的 OPT”动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
@@ -526,6 +537,11 @@
       id, getSnapshot: () => revision,
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
       groups() { return state.groups.map(publicGroup); },
+      forwardChannels(){return state.groups.map(group=>({...publicGroup(group),threads:group.threads.filter(thread=>!thread.deleted).map(thread=>({id:thread.id,name:thread.name}))}));},
+      receiveForwarded(channelId,messages){
+        const group=state.groups.find(group=>group.id===channelId||group.threads.some(thread=>!thread.deleted&&thread.id===channelId));if(!group)return false;
+        const current=target(group.id,channelId);current.messages.push(...copy(messages));current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;
+      },
       get(groupId) { return publicGroup(groupById(groupId)); },
       createGroup(record) {
         const name=String(record?.name||'').trim(),memberIds=[...new Set((record?.memberIds||[]).filter(Boolean))];
@@ -603,9 +619,10 @@
           initialDraft:target(group.id,selectedThreadId).draft,
           getDraft:channelId=>target(group.id,channelId).draft,
           onDraftChange(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(current.draft!==text){current.draft=text;publish();}},
-          onSend(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
+          onSend(text,channelId,reply){const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
+            const replyTo=replySnapshot(channelId||selectedThreadId||group.id,reply);
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
-            current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text});
+            current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,...(replyTo?{replyTo}:{})});
             unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
             current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };

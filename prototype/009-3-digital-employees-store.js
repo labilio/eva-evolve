@@ -38,11 +38,12 @@
     return newSession(id);
   };
   const setSessionDraft=(id,sessionId,draft)=>{writable(id,sessionId).draft=draft;publish();};
-  const sendSession=(id,sessionId,text)=>{
+  const sendSession=(id,sessionId,text,reply)=>{
     const a=get(id);if(!a)throw new Error('数字员工不存在');if(!text.trim())return false;
     const session=writable(id,sessionId),time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    const replyTo=privateConversations.replySnapshot(session.channel_id,reply);
     if(session.autoTitle){session.title=Array.from(text.trim()).slice(0,20).join('');session.autoTitle=false;}
-    session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
+    session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text,...(replyTo?{replyTo}:{})},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
     session.draft='';session.updatedAt=now();publish();return true;
   };
   const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||'prototype/assets/project-agent-bot.svg',logo:'prototype/assets/project-agent-bot.svg'});
@@ -104,13 +105,16 @@
     createSession(id){const session=newSession(id);publish();return session.id;},
     setSessionFlag(id,sessionId,flag,value){if(flag!=='pinned')throw new Error('不支持的会话设置');const session=readSession(id,sessionId);if(!session)return;session.pinned=!!value;publish();},
     deleteSession(id,sessionId){if(!state.chats[id])return;state.chats[id].sessions=list(id).filter(s=>s.id!==sessionId);publish();},
+    receiveForwarded(channelId,messages){
+      for(const id of state.teamIds){const session=list(id).find(item=>item.channel_id===channelId);if(!session)continue;session.messages.push(...JSON.parse(JSON.stringify(messages)));session.updatedAt=now();publish();return true;}return false;
+    },
     conversationSource(id,sessionId){
       const a=get(id);if(!a)return null;
       const selected=readSession(id,sessionId);if(sessionId&&!selected)return null;
       const c=selected||{messages:[],draft:''},targetId=selected?.id;
       const source=privateConversations.source({identityId:id,name:a.name,appearance:appearance(a),records:list(id),selectedId:targetId,
         messages:threadId=>(list(id).find(s=>s.id===threadId)?.messages||[]).map(m=>({...m,sender:m.sender.uid==='u-wangyilin'?{...m.sender,avatar:root.__EVA_CURRENT_USER_PORTRAIT}:{...m.sender,name:a.name,identityAppearance:appearance(a)}}))});
-      return {...source,initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:text=>sendSession(id,targetId,text)};
+      return {...source,initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:(text,channelId,reply)=>sendSession(id,targetId,text,reply)};
     },
     personaRequests(ownerId){return structuredClone((state.personaRequests||[]).filter(r=>r.ownerId===ownerId));},
     submitPersonaRequest(ownerId,draft){

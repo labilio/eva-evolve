@@ -61,3 +61,31 @@ test('资料卡不以分身旧简介或管家固定说明补充资料，员工�
  assert.equal(model.resolve('project-agent:p').description,undefined);
  assert.equal(model.resolve('staff').description,'岗位职责');
 });
+
+test('回复快照随群聊和私聊消息保留，跨会话引用失败且不清空草稿',()=>{
+ const {store}=setup();const direct=store.openDirect('me','a');
+ const reply={conversationId:direct,messageId:'original-1',fromName:'同名',digest:'第一行\n第二行'};
+ store.sendDirect(direct,'me','回复正文',reply);reply.digest='外部修改';
+ assert.equal(store.directMessages('me')[direct][0].replyTo.digest,'第一行\n第二行');
+ const restored=setup(store.snapshot()).store;assert.equal(restored.directMessages('me')[direct][0].replyTo.messageId,'original-1');
+ store.setDirectDraft(direct,'me','保留草稿');assert.throws(()=>store.sendDirect(direct,'me','错误回复',{...reply,conversationId:'other'}));assert.equal(store.directDraft(direct,'me'),'保留草稿');
+ store.sendMessage('all:p','me','群回复',{conversationId:'all:p',messageId:'group-original',fromName:'本人',digest:'群消息'});
+ assert.equal(store.messagesFor('all:p','me').at(-1).replyTo.messageId,'group-original');
+ assert.throws(()=>store.sendMessage('all:p','me','错误',{...reply,conversationId:direct}));
+});
+
+test('转发按顺序保留文本与附件，批次失败不部分写入且不触发 AI 回执',()=>{
+ const {store}=setup();const direct=store.openDirect('me','a');
+ const messages=[{kind:'text',text:'@所有人 **转发原文**\n第二行'},{kind:'file',file:{id:'file-1',name:'说明.md',size:12}}];
+ const ids=store.forwardMessages(direct,'all:p','me',messages);
+ const received=store.messagesFor('all:p','me');assert.equal(received.length,2);assert.equal(received[0].text,messages[0].text);assert.equal(received[1].file.name,'说明.md');assert.notEqual(ids[0],ids[1]);assert.equal(received[0].sender.uid,'me');
+ messages[1].file.name='外部修改';assert.equal(store.messagesFor('all:p','me')[1].file.name,'说明.md');
+ assert.throws(()=>store.forwardMessages(direct,'all:p','me',[messages[0],{kind:'system'}]));assert.equal(store.messagesFor('all:p','me').length,2);
+ assert.throws(()=>store.forwardMessages(direct,'all:secret','me',messages));
+ store.forwardMessages('all:p',direct,'me',[received[0]]);assert.equal(store.directMessages('me')[direct].at(-1).text,messages[0].text);
+});
+
+test('历史分身提及按稳定身份兼容旧名称，群和子区都返回提及实体',()=>{
+ const {store}=setup({actorId:'me',people:[{id:'me',name:'王宜林'}],clones:[{id:'b-wangyilin',ownerId:'me',name:'王宜林的 AI 分身'}],projects:{p:{id:'p',name:'项目',humans:[{id:'me'}],cloneIds:['b-wangyilin']}},groups:{g:{id:'g',projectId:'p',humans:[{id:'me'}],cloneIds:['b-wangyilin']}},threads:{t:'g'},messages:{g:[{kind:'text',text:'@王宜林的分身 请整理'}],t:[{kind:'text',text:'@王宜林的分身 请整理'}]}});
+ for(const id of ['g','t'])for(const message of [store.messagesFor(id,'me')[0],store.visibleMessages(id,'me',[{kind:'text',text:'@王宜林的分身 请整理'}])[0]]){assert.equal(message.text,'@王宜林的 AI 分身 请整理');assert.ok(message.mentions.some(m=>m.uid==='b-wangyilin'&&m.name==='@王宜林的 AI 分身'));}
+});
