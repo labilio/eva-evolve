@@ -60,6 +60,24 @@
   --eva-overlay-pressed: rgba(0, 0, 0, 0.09);
   --eva-overlay-dismiss: rgba(0, 0, 0, 0.2);        /* operation-card dismiss */
 
+  /* 2026-09-09 preview: monochrome brand treatment for global navigation only. */
+  --eva-nav-hover: #e2e3e5;
+  --eva-nav-selected: #dce9ff;
+  --eva-nav-accent: var(--eva-action-primary);
+
+  /* Shared IM mention states, independent from navigation selection. */
+  --eva-mention-background: color-mix(in srgb, var(--eva-action-primary) 8%, transparent);
+  --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);
+
+  /* IM emphasis palette; neutral hover and business identity colors stay separate. */
+  --eva-im-accent: var(--eva-action-primary);
+  --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
+  --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
+  --eva-im-tint-08: color-mix(in srgb, var(--eva-im-accent) 8%, transparent);
+  --eva-im-tint-10: color-mix(in srgb, var(--eva-im-accent) 10%, transparent);
+  --eva-im-tint-12: color-mix(in srgb, var(--eva-im-accent) 12%, transparent);
+  --eva-im-tint-25: color-mix(in srgb, var(--eva-im-accent) 25%, transparent);
+
   /* ---- typography ----------------------------------------- */
   --eva-font-sans: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --eva-font-display: "Praise", "Snell Roundhand", cursive; /* decorative brand voice only */
