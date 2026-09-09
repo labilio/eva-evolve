@@ -112,3 +112,45 @@
 .ch-layout .wk-conversationlist-item-name h3 { font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ch-layout .wk-conversationlist-item-unread .wk-conversationlist-item-name h3 { font-weight:600; }
 .ch-layout .wk-conversationlist-item-time { flex:none; white-space:nowrap; }
+
+/* Eva bubble trial: one presentation around the existing Octo content and events. */
+.eva-im-bubble-row {
+  --eva-bubble-incoming: var(--eva-surface-subtle);
+  --eva-bubble-outgoing: var(--eva-im-tint-12);
+  gap: var(--eva-space-3);
+}
+.eva-im-bubble-row > .wk-msg-row-content {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: calc(100% - 96px);
+  align-items: flex-start;
+}
+.eva-im-bubble-row.wk-msg-row--send { flex-direction: row-reverse; }
+.eva-im-bubble-row.wk-msg-row--send > .wk-msg-row-content { align-items: flex-end; }
+.eva-im-bubble-row > .wk-msg-row-content > .wk-msg-row-body {
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.eva-im-bubble-row--text > .wk-msg-row-content > .wk-msg-row-body {
+  box-sizing: border-box;
+  background: var(--eva-bubble-incoming);
+  border-radius: var(--eva-radius-chip);
+  padding: var(--eva-space-2_5, 10px) var(--eva-space-3);
+}
+.eva-im-bubble-row--text.wk-msg-row--send > .wk-msg-row-content > .wk-msg-row-body {
+  background: var(--eva-bubble-outgoing);
+}
+.eva-im-bubble-row .wk-msg-row-header { max-width: 100%; }
+.eva-im-bubble-row .wk-msg-row-timestamp { flex: none; }
+.eva-im-bubble-row .wk-msg-row-body > div { min-width: 0; max-width: 100%; }
+.eva-im-bubble-row :is(.wk-msg-text-content, .wk-markdown, .wk-markdown-pre-wrapper) { min-width: 0; max-width: 100%; }
+.eva-im-bubble-row .wk-markdown { overflow-wrap: anywhere; }
+.eva-im-bubble-row .wk-markdown pre { max-width: 100%; overflow-x: auto; }
+.eva-im-bubble-row .wk-markdown table { display: block; max-width: 100%; overflow-x: auto; }
+.eva-im-bubble-row .wk-markdown img { max-width: 100%; height: auto; }
+.eva-im-bubble-row .wk-msg-row-checkbox { order: 3; }
+
+.eva-im-bubble-row .wk-markdown :is(th, td) { min-width: 80px; overflow-wrap: normal; }

@@ -1009,6 +1009,13 @@ function EvaAITeamPage() {
       'window.EvaAvatar.conversationUri(Sa)', '会话标题复用相同身份头像');
     cut('window.EvaAvatar.uri({kind:ci.ch.id.startsWith("dm-")?"person":"group",id:ci.ch.id,color:ci.ch.color})',
       'window.EvaAvatar.conversationUri(ci.ch)', '最近会话按对方身份解析头像');
+    // Presentation only: ownership comes from the current actor, never the display name.
+    cut('rowProps=(rt,ct)=>({isSend:!1,',
+      'rowProps=(rt,ct,evaActorId)=>({isSend:!!evaActorId&&rt.sender.uid===evaActorId,bubbleKind:rt.kind,', '气泡方向使用当前身份');
+    cut('rowProps(ci,!1)', 'rowProps(ci,!1,evaActorId)', '子区卡片沿用气泡方向');
+    cut('rowProps(ci,ro)', 'rowProps(ci,ro,evaActorId)', '共享消息流沿用气泡方向');
+    cut('function MessageRow({isSend:rt,', 'function MessageRow({bubbleKind:evaBubbleKind,isSend:rt,', '消息行展示类型');
+    cut('classNames("wk-msg-row",rt&&', 'classNames("wk-msg-row",evaBubbleKind&&"eva-im-bubble-row",evaBubbleKind==="text"&&"eva-im-bubble-row--text",rt&&', '共享气泡样式边界');
     return EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

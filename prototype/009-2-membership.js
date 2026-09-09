@@ -397,6 +397,21 @@
       if(saved.groups['official-community']?.name==='用户反馈与开发交流')saved.groups['official-community'].name='用户使用反馈与开发交流';
       saved.officialGroupConsolidationV1=true;
     }
+    // Add the explicitly requested trial once; preserve edits, deletions and existing messages.
+    const bubbleDemo=root.__EVA_IM_BUBBLE_DEMO,bubbleProject=saved.projects.prod;
+    if(bubbleDemo&&bubbleProject&&!saved.seededIMBubbleTrialV1){
+      if(!saved.groups[bubbleDemo.id]){
+        saved.groups[bubbleDemo.id]={id:bubbleDemo.id,name:bubbleDemo.name,projectId:'prod',ownerId:bubbleProject.ownerId,humans:bubbleProject.humans.map(p=>({id:p.id,role:'member'})),cloneIds:[],employeeIds:[]};
+        saved.messages||={};saved.threadDetails||={};
+        for(const t of bubbleDemo.threads){saved.threads[t.id]=bubbleDemo.id;saved.threadDetails[t.id]={status:1,...t,created_at:root.__EVA_DEMO_TIME?.T1};}
+        for(const [id,messages] of Object.entries(bubbleDemo.messages))saved.messages[id]=messages.map((m,index)=>{
+          const {senderId,...message}=m;
+          const sender=senderId==='project-agent:prod'?{id:senderId,uid:senderId,name:root.EvaAIIdentity.projectAgentName(bubbleProject),kind:'project-agent',ai:true,projectId:'prod'}:saved.people.find(p=>p.id===senderId);
+          return {...message,fixtureId:'im-bubble-trial-v1:'+id+':'+index,...(sender?{sender:{...sender,uid:senderId}}:{})};
+        });
+      }
+      saved.seededIMBubbleTrialV1=true;
+    }
     const officialDemo=root.__EVA_OFFICIAL_COMMUNITY_DEMO,officialProject=saved.projects.official;
     if(officialDemo&&officialProject&&!saved.seededOfficialCommunityV1){
       for(const id of officialDemo.humans){if(saved.people.some(p=>p.id===id&&p.active!==false)&&!officialProject.humans.some(p=>p.id===id))officialProject.humans.push({id,role:'member'});}
