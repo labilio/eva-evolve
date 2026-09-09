@@ -1,24 +1,16 @@
 ## 本次改动
 
-- 说明改了什么，以及没有改什么。
+说明问题、最终行为和影响范围。
 
 ## 验证
 
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `npm run check:manifest`
-- [ ] `npm run check:project`
-- [ ] `npm run check:collaboration`
-- [ ] 已检查相关页面或交互
-
-## Preview
-
-- Vercel Preview：
 - 目标 commit：
+- 按 CONTRIBUTING.md 分级执行的检查与结果：
+- 本地测试地址及浏览器结果（仅 UI/交互改动）：
 
 ## 发布边界
 
-- [ ] 本 PR 尚未获得人工确认合并，未更新正式版本号
 - [ ] 已核对最新 main，未强推或覆盖他人修改
+- [ ] 已注明人工确认合并状态与产品版本号处理情况
 
-> 本模板用于选择 PR 评审的复杂改动。小改动允许直接推送 main。产品发布需更新版本号；纯文档、测试和开发流程配置不更新。
+> 小改动无需 PR。Vercel 自动部署，无需提供 Vercel Preview；流程以 CONTRIBUTING.md 为准。

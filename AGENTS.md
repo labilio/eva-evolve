@@ -8,7 +8,7 @@
 - 恢复旧代码必须同时核对 DOM、CSS、状态、路由、监听器与入口装配的兼容性；构建成功不等于恢复成功。
 - 「我的 AI」位于个人模块并紧跟 Eva 同学；中栏明确分为「AI 团队」和「AI 助理」。个人助理名称与个人 Eva 共用数据源，AI 助理使用独立 IM 两人群／子区，不复用本地聊天记录。仅个人助理身份行提供「编辑配置」，复用个人 Eva 的共享编辑器与同一数据源；云端分身和数字员工不显示该入口。AI 标紧跟名字，公共头像比例禁止业务规则覆盖。
 - 「我的 AI」中的默认团队名称为「我的 OPT」，动态包含本人及全部可用 AI，不可编辑；自定义 AI 团队保存成员快照，消息、草稿及子区按团队隔离。团队群只响应被明确 @ 的 AI，AI 助理私聊直接发送即触发当前 AI。
-- 不得通过删除或弱化测试让错误实现通过。用户未禁止测试时必须运行相关自动化和浏览器验收；禁止测试时如实标注未验收，不得声称全部功能正常。
+- 不得通过删除或弱化测试让错误实现通过。用户未禁止测试时按 CONTRIBUTING.md 的改动分级运行相关自动化及适用的本地浏览器验收；禁止测试时如实标注未验收，不得声称全部功能正常。
 
 
 ## 项目级 AI 身份视觉合同
@@ -88,14 +88,11 @@
           │    ├─ npm run build
           │    └─ dist/ ──────────────→ 本地 HTTP 预览
           │
-          └─ 用户授权后 commit / push
-                         │
-                         ▼
-                    GitHub 功能分支
-                         │ 评审通过后合入 main
+          └─ 完成本地验证后 commit / push
+                         │ 小改动直接推 main；复杂改动通过 PR
                          ▼
                     GitHub main
-                         │ Vercel 自动构建
+                         │ Vercel 自动构建（无需日常人工处理）
                          ▼
                     Vercel 生产站
 ```
@@ -167,19 +164,9 @@ EvaApp
 8. 一级页面只允许挂载在 Router Outlet 的路由宿主中；Modal、Popover、右键菜单和批注侧栏可以使用 Portal，但不能承担页面导航。
 9. 当前兼容运行时约 18.6 MB。构建时装配避免浏览器现场编译；降低首次解析时间需要继续将业务域组件化并进行代码分割。当前架构状态必须如实描述。
 
-### 改动后的最低验证门槛
+### 改动后的验证
 
-```text
-npm test
-npm run check:manifest
-npm run check:project
-node scripts/verify-message-routing-contract.mjs
-node scripts/verify-sidebar-selection-contract.mjs
-node tools/patch-hash.mjs
-git diff --check
-```
-
-涉及路由、导航、IM、弹窗或运行时装配时，还必须通过真实浏览器执行最小链路：进入目标入口 → 切换到另一个入口 → 再切回 → 确认选中态、内容、输入区和交互没有残留。静态检查通过不能代替这一步。
+按 CONTRIBUTING.md 的验证分级执行，复用当前代码状态已通过的结果。UI 与交互验收使用本地 HTTP 测试版；涉及路由、导航、IM、弹窗或运行时装配时执行受影响入口的往返切换，确认状态与交互没有残留。静态检查不能替代适用的浏览器验收。
 
 ## 客户设计规范
 
@@ -220,15 +207,7 @@ git diff --check
 
 ## Git、发布与验收状态
 
-- 本仓库采用用户 2026-09-09 确认的快速迭代规则，完整流程以 `CONTRIBUTING.md` 为准；不沿用旧仓库一律禁止直推 main 的要求。
-- 允许小改动直接推送 `main`，不强制 PR。用户要求的小范围修改默认授权在检查通过后 commit / push，无需重复确认；明确要求不 push、只预览或先评审时遵从。
-- 开工与推送前均 fetch 最新 `origin/main`。保留其他人的修改，远端前进时先整合再验证，禁止强推、删除 main 或整文件覆盖业务冲突。
-- GitHub 对所有人（含管理员）禁止强推与删除 main；不设置强制 PR 或 required status checks。main 每次推送后自动运行质量检查；CI 与 Vercel 独立，不能视为上线前阻断。
-- 跨模块重构、权限/身份调整及上游同步等复杂改动仍走功能分支、Vercel Preview 和 PR，保留人工明确确认合并。PR 应提供 Preview、目标 commit 与检查结果。
-- 正式版本与更新时间只来自 `release.json`。产品改动进入 main 前运行 `npm run release:bump` 更新版本号；纯文档、测试和开发流程配置不更新产品版本号，日常预览不更新。
-- main push 触发 Vercel Production；禁止默认手动 `vercel deploy`。检查 GitHub、部署与目标 commit，失败时修复或使用 revert 提交回退，不强推。
-- 汇报区分 `本地已修改`、`GitHub main 已推送`、`Vercel 已部署`、`浏览器已验收`；任何后续状态均须独立证据。
-- 每轮交付至少运行 `node scripts/verify-project-contract.mjs` 和相关专项检查；视觉与交互改动必须提供目标版本浏览器实测证据。
+唯一流程依据为根目录 CONTRIBUTING.md。小改动允许直接推 main；Vercel 自动部署，日常仅进行本地测试版验收，不主动处理或等待 Vercel。禁止强推、删除 main 或覆盖其他人的修改。复杂改动与上游同步的评审、版本号和验证分级按该文件执行。
 
 ## 云端批注与评审
 
