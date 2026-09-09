@@ -1,0 +1,74 @@
+name: 同步旧仓库
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: eva-upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: github.repository == 'labilio/eva-evolve' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SYNC_BRANCH: codex/sync-upstream-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 检查已有同步 PR
+        id: existing
+        run: |
+          existing=$(gh pr list --state open --base main --json url,headRefName --jq '[.[] | select(.headRefName | startswith("codex/sync-upstream-"))][0].url // empty')
+          if [ -n "$existing" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "已有待处理的同步 PR：$existing。请先处理该 PR，再同步下一批更新。" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: 拉取旧 main 并准备合并
+        if: steps.existing.outputs.found != 'true'
+        id: prepare
+        run: |
+          git fetch --no-tags https://github.com/labilio/eva-demo-progress.git main:refs/remotes/upstream/main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          node scripts/prepare-upstream-sync.mjs
+      - name: 创建同步 PR
+        if: steps.prepare.outputs.changed == 'true'
+        env:
+          BASE_SHA: ${{ steps.prepare.outputs.baseSha }}
+          UPSTREAM_SHA: ${{ steps.prepare.outputs.upstreamSha }}
+          HEAD_SHA: ${{ steps.prepare.outputs.headSha }}
+        run: |
+          git push origin "HEAD:refs/heads/$SYNC_BRANCH"
+          cat > "$RUNNER_TEMP/sync-pr.md" <<EOF_BODY
+          从 labilio/eva-demo-progress 的 main 同步更新。仅生成评审分支，不自动合并或上线。
+
+          - 新仓库基线：$BASE_SHA
+          - 旧仓库来源：$UPSTREAM_SHA
+          - 待验收提交：$HEAD_SHA
+          - release.json 保留新仓库基线，正式发布仍须人工确认后更新版本号。
+          - 请等待 Eva quality gate 和 Vercel Preview，并执行目标版本浏览器验收。
+          - 如 GitHub 显示 Approve workflows to run，请由有写权限的同事点击以启动质量检查。
+          EOF_BODY
+          pr=$(gh pr create --base main --head "$SYNC_BRANCH" --title '同步旧仓库 main 更新' --body-file "$RUNNER_TEMP/sync-pr.md")
+          echo "同步 PR：$pr" >> "$GITHUB_STEP_SUMMARY"
+      - name: 无需更新
+        if: steps.prepare.outputs.changed == 'false'
+        run: echo '新仓库已包含旧 main 的所有提交，无需创建 PR。' >> "$GITHUB_STEP_SUMMARY"
+      - name: 同步失败说明
+        if: failure()
+        run: echo '同步未完成，请查看失败步骤；没有修改 main。若合并冲突，日志列出冲突文件；若 PR 创建失败，已推送的同步分支可手动创建 PR。' >> "$GITHUB_STEP_SUMMARY"
