@@ -7,7 +7,7 @@ function setup(){
  const clones=[{id:'clone-a',name:'同名分身',ownerId:'u-wangyilin'},{id:'clone-b',name:'同名分身',ownerId:'other'},{id:'orphan',name:'无主数据',ownerId:'missing'}];
  const window={EvaAvatar:{personUri:id=>id},EvaAITeam:{getSnapshot:()=>({identities:[{id:'persona',role:'persona',name:'执剑人'},{id:'assistant',role:'assistant',name:'个人助理'}]})},EvaDigitalEmployeesStore:{get:()=>null},__EVA_CONTACT_IDENTITY_ALIASES:{'legacy':'persona'}};
  for(const f of ['003-my-assistant-identity.js','009-3-contact-identities.js'])vm.runInNewContext(readFileSync('prototype/'+f,'utf8'),{window});
- const store={snapshot:()=>({actorId:'u-wangyilin'}),person:id=>people.find(p=>p.id===id),clone:id=>clones.find(c=>c.id===id)};
+ const store={actorId:()=>'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:id=>people.find(p=>p.id===id),clone:id=>clones.find(c=>c.id===id)};
  const model=window.EvaContactIdentities.create(store);
  return {window,people,model};
 }
