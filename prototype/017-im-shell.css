@@ -35,7 +35,7 @@
 .eva-msg .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
 .eva-msg .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
 .eva-msg .wk-markdown th { background: var(--eva-surface-subtle); }
-:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-small); }
+:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); }
 :is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
 .wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
@@ -59,7 +59,7 @@
   --wk-ai-glow: var(--eva-im-tint-06);
 }
 :is(.eva-msg, .ch-layout) .wk-thread-created-link { color: var(--eva-im-accent); }
-:is(.eva-msg, .ch-layout) .wk-msg-row--selected { background-color: var(--eva-im-tint-08); }
+:is(.eva-msg, .ch-layout) .wk-msg-row--selected { background-color: var(--eva-surface-subtle); }
 :is(.eva-msg, .ch-layout) .wk-category-header--editing { background: var(--eva-overlay-hover); }
 :is(.eva-msg, .ch-layout) .wk-category-header__rename-input { box-shadow: 0 0 0 2px var(--eva-im-tint-12); }
 :is(.eva-msg, .ch-layout) .wk-conv-compact-thread-tag:hover { background: var(--eva-im-tint-12); }
@@ -114,6 +114,11 @@
 .ch-layout .wk-conversationlist-item-time { flex:none; white-space:nowrap; }
 
 /* Eva bubble trial: one presentation around the existing Octo content and events. */
+.ch-layout .ch-stream {
+  min-width: 0;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
 .eva-im-bubble-row {
   --eva-bubble-incoming: #ebebeb;
   --eva-bubble-outgoing: var(--eva-im-bubble-outgoing);
@@ -123,6 +128,16 @@
 }
 /* Retire Octo full-row hover/menu wash; selection and search highlights stay independent. */
 .eva-im-bubble-row::before { content: none; }
+/* Spacing belongs to the row so its one selection surface includes the gap.
+   Keep this geometry in normal and selection modes to avoid layout jumps. */
+.ch-stream .eva-im-bubble-row:not(.wk-msg-row--continue) {
+  margin-top: 0 !important;
+  padding-block: 12px;
+}
+.ch-stream .eva-im-bubble-row.wk-msg-row--continue {
+  margin-top: 0 !important;
+  padding-block: 6px;
+}
 .eva-im-bubble-row > .wk-msg-row-content {
   flex: 0 1 auto;
   width: fit-content;
@@ -170,8 +185,18 @@
 .eva-im-bubble-row .wk-msg-row-checkbox { order: -1; }
 .eva-im-bubble-row.wk-msg-row--send .wk-msg-row-checkbox { order: 3; margin-right: auto; }
 .eva-im-bubble-row.wk-msg-row--selection-mode .wk-msg-row-body { pointer-events: none; }
-.eva-im-selection-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-top: 1px solid var(--eva-border-subtle); color: var(--eva-text-primary); }
-.eva-im-selection-bar button { font: inherit; color: inherit; background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); padding: 6px 12px; cursor: pointer; }
+/* Independent batch workspace; keep the composer mounted to retain its draft. */
+.eva-im-batch-toolbar { flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 128px; padding: 16px 24px; box-sizing: border-box; border-top: 1px solid var(--eva-border-subtle); background: var(--eva-surface-subtle); color: var(--eva-text-primary); }
+.eva-im-batch-count { font-size: 12px; color: var(--eva-text-secondary); }
+.eva-im-batch-actions { display: flex; justify-content: center; gap: 20px; }
+.eva-im-batch-toolbar button { font: inherit; color: inherit; border: 0; cursor: pointer; background: transparent; border-radius: var(--eva-radius-control); }
+.eva-im-batch-action { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 80px; height: 92px; font-size: 12px !important; }
+.eva-im-batch-toolbar button:hover:not(:disabled) .eva-im-batch-icon, .eva-im-batch-exit:hover { background: var(--eva-overlay-hover); }
+.eva-im-batch-toolbar button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+.eva-im-batch-toolbar button:disabled { color: var(--eva-text-muted); cursor: default; }
+.eva-im-batch-exit { justify-self: end; display: grid; place-items: center; width: 36px; height: 36px; }
+.eva-im-batch-toolbar + .wk-messageinput-box { display: none; }
+
 
 
 
@@ -349,11 +374,10 @@
 .wk-reply-block__digest-link:hover {
   opacity: 0.8;
 }
-.eva-im-reply-draft { display:flex; align-items:center; gap:8px; padding:8px 12px 0; }
-.eva-im-reply-draft .wk-reply-block { flex:1; margin:0; }
+.eva-im-reply-draft { display:flex; align-items:center; gap:8px; margin:8px 12px 0; padding:6px 8px; background:var(--eva-surface-subtle); border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-small); min-width:0; }
+.eva-im-reply-draft-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--eva-text-secondary); border-left:1px solid var(--eva-border-default); padding-left:8px; }
 .eva-im-reply-draft > button { display:flex; padding:4px; border:0; background:transparent; color:var(--eva-text-secondary); cursor:pointer; }
 .wk-reply-block[role="button"]:focus-visible { outline: 2px solid var(--eva-im-accent); outline-offset: 2px; }
-.eva-im-reply-draft .wk-reply-block { cursor: default; }
 .eva-forward-targets { max-height: 320px; overflow-y: auto; }
 .eva-forward-target { display:flex; align-items:center; gap:10px; padding:10px 8px; cursor:pointer; }
 .eva-forward-target:hover { background:var(--eva-surface-subtle); }
@@ -363,3 +387,16 @@
 .eva-forward-host { position:absolute; inset:0; pointer-events:none; }
 .eva-forward-host .semi-portal { pointer-events:auto; }
 .eva-im-bubble-row .wk-msg-row-checkbox:focus-visible { outline:2px solid var(--eva-im-accent); outline-offset:3px; border-radius:4px; }
+
+.eva-im-batch-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); color: var(--eva-text-primary); }
+.eva-im-batch-action > span:last-child { color: var(--eva-text-secondary); }
+.eva-im-batch-action:disabled .eva-im-batch-icon { opacity: .4; }
+.eva-im-bubble-row .wk-msg-row-checkbox-inner { box-sizing: border-box; width: 16px; height: 16px; border-radius: var(--eva-radius-small); }
+.eva-im-bubble-row .wk-msg-row-checkbox-inner svg { width: 9px; height: 7px; }
+.eva-im-bubble-row .wk-msg-row-checkbox-inner--checked { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
+.eva-im-batch-toolbar { position: relative; }
+.eva-im-merged-history { min-width: 200px; max-width: 480px; }
+.eva-im-merged-history summary { cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.eva-im-merged-history summary span, .eva-im-merged-items header { font-size: 12px; color: var(--eva-text-secondary); }
+.eva-im-merged-items { margin-top: 12px; padding: 12px; border-radius: var(--eva-radius-control); background: var(--eva-surface-primary); }
+.eva-im-merged-items section + section { border-top: 1px solid var(--eva-border-subtle); margin-top: 12px; padding-top: 12px; }

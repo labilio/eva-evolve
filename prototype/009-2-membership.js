@@ -207,7 +207,7 @@
         const digital=root.EvaDigitalEmployeesStore;
         return !!digital?.teamIds().some(identityId=>digital.sessions(identityId).some(session=>privateConversations?.threadRecord(identityId,session).channel_id===id));
       },
-      forwardMessages(sourceId,targetId,uid,messages){
+      forwardMessages(sourceId,targetId,uid,messages,mode="individual"){
         requireHuman(uid);
         if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
         const direct=state.directConversations?.[targetId];
@@ -216,20 +216,27 @@
         if(!Array.isArray(messages)||!messages.length)fail('请选择要转发的消息');
         // Prepare the entire batch before mutation; forwarded mentions do not invoke sendMessage.
         const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-        const copies=messages.map(message=>{
+        let copies=messages.map(message=>{
           if(!message||!['text','file'].includes(message.kind))fail('该消息类型暂不支持转发');
           if(message.kind==='text'&&typeof message.text!=='string')fail('消息内容无效');
           if(message.kind==='file'&&(!message.file||typeof message.file.name!=='string'))fail('附件内容无效');
           return {kind:message.kind,sender:{...person(uid),uid},time,
             ...(message.kind==='text'?{text:message.text}:{file:JSON.parse(JSON.stringify(message.file))}),
-            forwarded:true};
+            ...(message.mergedMessages?{mergedMessages:JSON.parse(JSON.stringify(message.mergedMessages))}:{}),forwarded:true};
         });
+        if(mode==='merge')copies=[{kind:'text',sender:{...person(uid),uid},time,text:'聊天记录',forwarded:true,mergedMessages:messages.map(message=>({name:message.sender?.name||'未知成员',time:message.time||'',text:message.text||'',file:message.file?JSON.parse(JSON.stringify(message.file)):undefined}))}];
         copies.forEach(message=>{message.id='forward:'+uid+':'+(++state.sequence);});
         if(direct){direct.messages.push(...copies);direct.lastAt=new Date().toISOString();}
         else if(api.canRead(targetId,uid))(state.messages[targetId]||(state.messages[targetId]=[])).push(...copies);
         else if(![root.EvaAITeam,root.EvaMyAITeamGroup,root.EvaDigitalEmployeesStore].some(store=>store?.receiveForwarded(targetId,copies)))fail('目标会话已不可用');
         notify();return copies.map(message=>message.id);
       },
+      deleteSelectedMessages(sourceId,uid,messages){
+        requireHuman(uid);if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
+        if(!messages.length||messages.some(m=>m.evaConversationId!==sourceId||!m.evaSelectionKey))fail('请选择同一会话中的消息');
+        state.deletedMessageKeys||={};state.deletedMessageKeys[uid]=[...new Set([...(state.deletedMessageKeys[uid]||[]),...messages.map(m=>m.evaSelectionKey)])];notify();
+      },
+      isMessageDeleted(uid,key){return !!state.deletedMessageKeys?.[uid]?.includes(key);},
       sendDirect(id,uid,text,reply){
         requireHuman(uid);const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');
         if(!person(c.memberIds.find(p=>p!==uid)))fail('对方账号不可用');if(!text.trim())return false;
