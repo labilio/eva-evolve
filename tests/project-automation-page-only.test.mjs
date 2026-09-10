@@ -9,7 +9,7 @@ test('project automation uses Loop cards and native detail actions', () => {
   assert.match(patch, /className:\"loop-page eva-project-automation\"/);
   assert.match(patch, /className:\"loop-automation-cards\"/);
   assert.match(patch, /React\.createElement\(AutopilotDetailPage/);
-  assert.match(patch, /triggerAutopilot\(Dt\.id\)/);
+  assert.match(patch, /onChanged:xt/);
 });
 
 test('personal automation stays on the existing shared page', () => {
@@ -22,4 +22,12 @@ test('layout tightening is scoped to the project automation root', () => {
   assert.match(styles, /\.eva-project-automation > \.loop-page__head/);
   assert.match(styles, /padding:16px 24px 12px/);
   assert.match(styles, /\.eva-project-automation \.loop-automation-cards\{grid-template-columns:repeat\(3/);
+});
+
+test('project toolbar summarizes automation count and running state without a decorative icon', () => {
+  assert.match(patch, /className:\"eva-project-automation__total\"/);
+  assert.match(patch, /className:\"eva-project-automation__running\"/);
+  assert.match(patch, /status!==\"paused\"/);
+  assert.doesNotMatch(styles, /\.eva-project-automation__status-dot/);
+  assert.match(patch, /个已启用/);
 });

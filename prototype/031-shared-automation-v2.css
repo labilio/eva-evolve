@@ -108,6 +108,10 @@
   margin:0 auto;
   padding:0 24px 32px;
 }
+.eva-project-automation__summary{display:flex;flex:1;align-items:center;gap:12px;min-width:0}
+.eva-project-automation__total{color:var(--eva-text-primary);font:var(--eva-fw-medium) 14px/20px var(--eva-font-sans)}
+.eva-project-automation__running{display:inline-flex;align-items:center;gap:6px;color:var(--eva-text-secondary);font:var(--eva-fw-regular) 13px/20px var(--eva-font-sans)}
+.eva-project-automation__state{flex:none;color:var(--eva-text-secondary);font:var(--eva-fw-regular) 12px/20px var(--eva-font-sans)}
 .eva-project-automation .loop-automation-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .eva-project-automation .loop-automation-card{
   min-height:168px;
@@ -124,13 +128,10 @@
 .eva-project-automation .loop-automation-card:focus-visible{outline:2px solid var(--eva-border-focus);outline-offset:2px}
 .eva-project-automation .loop-automation-card__title{color:var(--eva-text-primary);font:var(--eva-fw-medium) 15px/24px var(--eva-font-sans)}
 .eva-project-automation .loop-automation-card__desc{min-height:44px;color:var(--eva-text-secondary-accessible);font:var(--eva-fw-regular) 14px/22px var(--eva-font-sans)}
-.eva-project-automation .loop-automation-card__meta{color:var(--eva-text-secondary-accessible);font:var(--eva-fw-regular) 12px/16px var(--eva-font-sans)}
+.eva-project-automation .loop-automation-card__meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;color:var(--eva-text-secondary-accessible);font:var(--eva-fw-regular) 12px/20px var(--eva-font-sans)}
 .eva-project-automation .loop-automation-card__foot{margin-top:auto;padding-top:12px;border-color:var(--eva-border-faint)}
 .eva-project-automation .loop-automation-card__assignee-name{color:var(--eva-text-secondary);font:var(--eva-fw-regular) 12px/16px var(--eva-font-sans)}
 .eva-project-automation .loop-automation-card__assignee .eva-identity-name-row{min-width:0}
-.eva-project-automation .loop-automation-card__more{right:8px;bottom:8px;border-radius:var(--eva-radius-control);background:var(--eva-surface-primary)}
-.eva-project-automation .loop-automation-card__more :is(.arco-btn,.semi-button){width:32px;height:32px;border-radius:var(--eva-radius-control);color:var(--eva-text-secondary)}
-.eva-project-automation .loop-automation-card__more :is(.arco-btn,.semi-button):hover{background:var(--eva-overlay-hover);color:var(--eva-text-primary)}
 @media(max-width:1100px){.eva-project-automation .loop-automation-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   .eva-project-automation > .loop-page__head{padding:12px 16px 10px}
