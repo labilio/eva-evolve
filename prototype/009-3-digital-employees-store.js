@@ -9,12 +9,42 @@
     ['安全测试用例生成','安全测试专家'],['安全测试用例生成专家','安全测试专家'],
     ['新人上手问答','新人入职问答专家'],['新人上手问答专家','新人入职问答专家'],
     ['汇报材料助理','汇报材料专家'],['汇报材料助理专家','汇报材料专家'],
-    ['原型批注跟进','原型批注跟进专家']
+    ['原型批注跟进','原型批注跟进专家'],
+    ['制造工厂总经理','制造工厂经营管理专家'],['质量管理中心总经理','质量管理中心经营专家'],
+    ['数智交付专家小敏','数智支付专家'],['数智交付专家小敏专家','数智支付专家'],['数智交付（小敏）专家','数智支付专家'],
+    ['问题分析智慧星_cc-api','问题分析专家'],['问题分析智慧星_cc-api专家','问题分析专家'],
+    ['降本方案智慧星_cc-api','降本方案专家'],['降本方案智慧星_cc-api专家','降本方案专家'],
+    ['开发需求和选型智慧星_cc-api','开发需求与选型专家'],['开发需求和选型智慧星_cc-api专家','开发需求与选型专家'],
+    ['流程体系智慧星_cc-api','流程体系专家'],['流程体系智慧星_cc-api专家','流程体系专家'],
+    ['项目管理智慧星_cc-api','项目管理专家'],['项目管理智慧星_cc-api专家','项目管理专家'],
+    ['涂一版电驱标准学习专家','电驱标准学习专家'],
+    ['客诉质量分析专家-王维豪版','客诉质量分析专家'],['客诉质量分析-王维豪版专家','客诉质量分析专家'],['客诉质量分析（王维豪版）专家','客诉质量分析专家'],
+    ['ESOW偏差表专家-周宁版','ESOW 偏差分析专家'],['ESOW偏差表-周宁版专家','ESOW 偏差分析专家'],['ESOW 偏差表（周宁版）专家','ESOW 偏差分析专家'],
+    ['星驱PPT专家-专家版','星驱 PPT 设计专家'],['星驱PPT-版专家','星驱 PPT 设计专家'],['星驱 PPT（专业版）专家','星驱 PPT 设计专家'],
+    ['PPT制作专家-星驱','星驱 PPT 制作专家'],['PPT制作-星驱专家','星驱 PPT 制作专家'],['PPT 制作（星驱）专家','星驱 PPT 制作专家'],
+    ['石琦版专业PPT制作专家','专业 PPT 制作专家'],['石琦版专业 PPT 制作专家','专业 PPT 制作专家'],
+    ['总经理办公室专家','总经理办公室事务专家']
   ]);
+  const mixedSpacing=value=>String(value||'').trim()
+    .replace(/([\p{Script=Han}])([A-Za-z0-9])/gu,'$1 $2')
+    .replace(/([A-Za-z0-9])([\p{Script=Han}])/gu,'$1 $2')
+    .replace(/\s+/g,' ');
   const expertName=value=>{
     const name=String(value||'').trim();
-    const aliased=expertAliases.get(name)||name;
-    return (aliased.endsWith('专家')?aliased:aliased.replace(/专家/g,'')+'专家').replace(/\s+专家$/,'专家');
+    let normalized=expertAliases.get(name)||mixedSpacing(name).replace(/^星驱-(?=[A-Za-z])/u,'星驱 ');
+    normalized=expertAliases.get(normalized)||normalized;
+    const qualifier=normalized.match(/^(.+?)(?:专家)?[-—](王维豪版|周宁版|吉利|极氪|领克|星驱)$/u)
+      ||normalized.match(/^(.+?)[-—](王维豪版|周宁版|吉利|极氪|领克|星驱)专家$/u);
+    if(qualifier){
+      const base=qualifier[1].trim().replace(/客服专员$/u,'客服服务').replace(/销售总监$/u,'销售管理');
+      normalized=['吉利','极氪','领克','星驱'].includes(qualifier[2])?qualifier[2]+base+'专家':base+'（'+qualifier[2]+'）专家';
+    }
+    normalized=normalized
+      .replace(/客服专员(?=（[^）]+）专家$)/u,'客服服务')
+      .replace(/销售总监(?=（[^）]+）专家$)/u,'销售管理')
+      .replace(/工程师专家$/u,'工程专家')
+      .replace(/机器人专家$/u,'专家');
+    return mixedSpacing(normalized.endsWith('专家')?normalized:normalized+'专家');
   };
   let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
   let state={agents:seed.agents, drafts:{}, personaRequests:[], chats:{}, teamIds:[],...saved};

@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 const source=readFileSync(new URL('../prototype/009-3-digital-employees-store.js',import.meta.url),'utf8');
 const aiTeamSource=readFileSync(new URL('../prototype/009-3-ai-team-store.js',import.meta.url),'utf8');
+const dataSource=readFileSync(new URL('../prototype/009-3-digital-employees-data.js',import.meta.url),'utf8');
 function load(saved,seedOverrides={}){
   let persisted=saved?JSON.stringify(saved):null;
   class FixedDate extends Date {constructor(...args){super(...(args.length?args:['2026-09-06T12:00:00.000Z']));}}
@@ -54,12 +55,30 @@ test('creation preserves configuration and draft data without aliasing caller ob
 });
 
 test('all digital employee names use the expert suffix for seeds, saved state and new records',()=>{
-  const savedState={agents:[{id:'saved',kind:'staff',name:'客服专员专家-吉利'},{id:'old-copy',kind:'staff',name:'取数小工专家'}],drafts:{},personaRequests:[],chats:{},teamIds:[]};
+  const savedState={agents:[{id:'saved',kind:'staff',name:'客服专员专家-吉利'},{id:'old-copy',kind:'staff',name:'取数小工专家'},{id:'broken-edition',kind:'staff',name:'星驱PPT-版专家'},{id:'nickname',kind:'staff',name:'数智交付专家小敏专家'}],drafts:{},personaRequests:[],chats:{},teamIds:[]};
   const {store}=load(savedState);
-  assert.equal(store.get('saved').name,'客服专员-吉利专家');
+  assert.equal(store.get('saved').name,'吉利客服服务专家');
   assert.equal(store.get('old-copy').name,'数据提取专家');
-  const created=store.create('dify',{name:'会议纪要清洗'});
-  assert.equal(created.name,'会议纪要专家');
+  assert.equal(store.get('broken-edition').name,'星驱 PPT 设计专家');
+  assert.equal(store.get('nickname').name,'数智支付专家');
+  const created=store.create('dify',{name:'智能仿真AI'});
+  assert.equal(created.name,'智能仿真 AI 专家');
+});
+
+test('all seeded employee display names satisfy the Chinese typography and naming contract',()=>{
+  const context=vm.createContext({window:{}});vm.runInContext(dataSource,context);
+  const staff=context.window.__EVA_DIGITAL_EMPLOYEES_DATA.agents.filter(agent=>agent.kind==='staff');
+  const names=staff.map(agent=>agent.name);
+  assert.equal(names.length,345);
+  for(const name of names){
+    assert.equal(name,name.trim(),name+' 不应包含首尾空格');
+    assert.doesNotMatch(name,/\s{2,}/u,name+' 不应包含连续空格');
+    assert.match(name,/专家$/u,name+' 必须以“专家”结尾');
+    assert.doesNotMatch(name,/[A-Za-z0-9][\p{Script=Han}]|[\p{Script=Han}][A-Za-z0-9]/u,name+' 的中英数字边界需要半角空格');
+    assert.doesNotMatch(name,/专员专家|工程师专家|总监专家|专家版专家|机器人专家|专家[-—]|_cc-api|[（）]|王维豪|周宁|小敏|石琦版/u,name+' 包含重复职业后缀、个人版本、异常限定或内部标识');
+  }
+  assert.equal(new Set(names).size,names.length,'数字员工展示名不应重复');
+  for(const expected of ['星驱 EVA 同学专家','NVH AI 智能分析专家','国际 2C 销售专家','客诉质量分析专家','数智支付专家','星驱 PPT 设计专家'])assert.ok(names.includes(expected),expected);
 });
 
 test('HR onboarding employee and rich file conversation migrate once for existing users',()=>{
