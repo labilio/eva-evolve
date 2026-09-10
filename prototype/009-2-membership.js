@@ -110,7 +110,7 @@
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
-      snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
+      snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
       projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
       memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
       saveProjectRole(pid,uid,{id,name,description=''}){
@@ -478,6 +478,20 @@
       }
       saved.seededIMBubbleFilesV1=true;
     }
+    // Replace only known demo fixtures; preserve user messages, drafts and removed subzones.
+    if(bubbleDemo&&saved.groups[bubbleDemo.id]&&!saved.seededIMShowcaseV2){
+      for(const t of bubbleDemo.threads){
+        if(!saved.threads[t.id])continue;
+        saved.threadDetails[t.id]={...saved.threadDetails[t.id],name:t.name};
+      }
+      for(const [id,messages] of Object.entries(bubbleDemo.messages)){
+        if(id!==bubbleDemo.id&&!saved.threads[id])continue;
+        const custom=(saved.messages[id]||[]).filter(m=>!/^im-bubble-(trial|layout|files)-v1:/.test(m.fixtureId||''));
+        const seeded=messages.map(({senderId,...message},index)=>{const sender=senderId==='project-agent:prod'?{name:root.EvaAIIdentity.projectAgentName(bubbleProject),kind:'project-agent',ai:true,projectId:'prod'}:saved.people.find(p=>p.id===senderId);return {...message,fixtureId:'im-showcase-v2:'+id+':'+index,...(sender?{sender:{...sender,uid:senderId}}:{})};});
+        saved.messages[id]=[...seeded,...custom];
+      }
+      saved.seededIMShowcaseV2=true;
+    }
     const officialDemo=root.__EVA_OFFICIAL_COMMUNITY_DEMO,officialProject=saved.projects.official;
     if(officialDemo&&officialProject&&!saved.seededOfficialCommunityV1){
       for(const id of officialDemo.humans){if(saved.people.some(p=>p.id===id&&p.active!==false)&&!officialProject.humans.some(p=>p.id===id))officialProject.humans.push({id,role:'member'});}
@@ -523,8 +537,8 @@
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{
-      const context=store.conversationContext(id,store.snapshot().actorId);
-      const settings=store.snapshot().chatSettings[context?.groupId||id];
+      const context=store.conversationContext(id,store.actorId());
+      const settings=store.chatSettings(context?.groupId||id);
       return {avatar:settings?.avatar,project:context};
     });
     store.seedSupplyChatContent();store.seedProjectAgents();return store;

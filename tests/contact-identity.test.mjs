@@ -89,3 +89,20 @@ test('历史分身提及按稳定身份兼容旧名称，群和子区都返回�
  const {store}=setup({actorId:'me',people:[{id:'me',name:'王宜林'}],clones:[{id:'b-wangyilin',ownerId:'me',name:'王宜林的 AI 分身'}],projects:{p:{id:'p',name:'项目',humans:[{id:'me'}],cloneIds:['b-wangyilin']}},groups:{g:{id:'g',projectId:'p',humans:[{id:'me'}],cloneIds:['b-wangyilin']}},threads:{t:'g'},messages:{g:[{kind:'text',text:'@王宜林的分身 请整理'}],t:[{kind:'text',text:'@王宜林的分身 请整理'}]}});
  for(const id of ['g','t'])for(const message of [store.messagesFor(id,'me')[0],store.visibleMessages(id,'me',[{kind:'text',text:'@王宜林的分身 请整理'}])[0]]){assert.equal(message.text,'@王宜林的 AI 分身 请整理');assert.ok(message.mentions.some(m=>m.uid==='b-wangyilin'&&m.name==='@王宜林的 AI 分身'));}
 });
+
+test('身份渲染不复制全量聊天状态，切换账号后仍实时更新',()=>{
+ const {store,model}=setup();
+ const original=store.snapshot;
+ store.snapshot=()=>{throw new Error('身份渲染不应读取全量快照');};
+ assert.equal(store.actorId(),'me');
+ assert.equal(model.resolve('me').action,null);
+ assert.equal(model.resolve('a').action.personId,'a');
+ store.setActor('a');
+ assert.equal(store.actorId(),'a');
+ assert.equal(model.resolve('a').action,null);
+ assert.equal(model.resolve('me').action.personId,'me');
+ assert.equal(model.resolve('assistant'),null);
+ store.snapshot=original;
+ const detached=store.snapshot();detached.actorId='b';
+ assert.equal(store.actorId(),'a','快照仍与真实状态隔离');
+});

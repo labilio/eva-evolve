@@ -451,12 +451,28 @@ window.__EVA_IM_BUBBLE_DEMO = (()=>{
     '| 左对齐 | 居中 | 右对齐 |\n| :--- | :---: | ---: |\n| 示例 | 12 | 99.50 |\n| 多行说明会根据空间自然换行 | 3 | 1,234.00 |',
     '🙂 👍 🎉\n\n[短链接](https://example.com) 与 https://example.com/'+ 'long-path-'.repeat(35)
   ];
-  return {id:group,name:'IM 气泡验证',threads:[{id:basic,name:'01 普通对话与连续消息'},{id:md,name:'02 Markdown 与宽内容'},{id:files,name:'03 图片与文件卡片'},{id:layout,name:'04 排版与边界'},{id:'im-bubble-file-gallery',name:'05 文件样式展示'}],messages:{
-    [group]:[text(me,'09:00','这里专门验收左右气泡。请依次打开各个子区，检查阅读、发送、草稿、右键菜单和文件预览。'),text(other,'09:01','收到。本人消息应在右侧，其他人和 AI 在左侧；时间、头像与正文不要混在一起。'),text(me,'09:02','@供应链运营协同 · 项目管家 请说明这次演示的边界。'),text(agent,'09:03','**本群是预置演示内容。**\n\n- 后端接口与消息格式不变。\n- 气泡复用现有 Markdown 和文件组件。\n- 本次不代表真实 AI 执行或生产验收。')],
-    [basic]:[{kind:'divider',text:'今天'},text(other,'09:10','可以看看'),text(me,'09:11','我来试试'),text(me,'09:12','这是一条连续发送的消息。'),text(other,'09:13','🙂 👍'),text(other,'09:14','中文 English 123 混排，短消息不要铺满整行。'),text(me,'09:15','一段较长的正文，用于确认消息自然换行。'.repeat(10)),{kind:'system',text:'以下消息用于验证历史分隔与新消息位置。'},text(other,'09:16','请在这里输入一条新消息，再切换子区检查草稿。')],
-    [md]:[text(me,'10:00','@供应链运营协同 · 项目管家 请用 Markdown 列出复核清单，并展示代码与宽表格样本。'),text(agent,'10:01',rich),text(agent,'10:02',code),text(me,'10:03',rich),text(me,'10:04',code),text(other,'10:05','长链接边界：https://example.com/'+ 'long-segment-'.repeat(45))],
-    [layout]:typography.flatMap((sample,i)=>[text(other,'14:'+String(i*2).padStart(2,'0'),sample),text(me,'14:'+String(i*2+1).padStart(2,'0'),sample)]),
-    ['im-bubble-file-gallery']:['A-2409现场复核清单.md','A-2409排产影响测算.html','A-2409临时放行评审纪要.docx','A-2409来料异常分析报告.pdf'].flatMap((name,i)=>[other,me].map((senderId,j)=>({kind:'file',senderId,time:'15:'+String(i*2+j).padStart(2,'0'),file:{name,size:[4812,12800,28467,41984][i],extension:name.split('.').pop()}}))),
-    [files]:[text(me,'11:00','先检查图片与文字混排，再打开下面的真实演示文件。'),text(other,'11:01','图片样本（现有 Eva 素材）：\n\n![Eva]('+ (window.location?.origin||'http://localhost') +'/prototype/assets/eva-wave.png)\n\n点击图片可检查放大查看。'),...['A-2409现场复核清单.md','A-2409排产影响测算.html','A-2409临时放行评审纪要.docx','A-2409来料异常分析报告.pdf'].map((name,i)=>({kind:'file',senderId:i%2?me:other,time:'11:0'+(i+2),file:{name,size:[4812,12800,28467,41984][i],extension:name.split('.').pop()}})),text(me,'11:07','文件卡使用统一气泡底色和圆角，左右位置随发送者变化；“存到文件库”和预览仍走现有流程。')]
+  const gallery='im-bubble-file-gallery';
+  const image='!['+'Eva 项目资料插图'+']('+(window.location?.origin||'http://localhost')+'/prototype/assets/eva-wave.png)';
+  const names=['A-2409现场复核清单.md','A-2409排产影响测算.html','A-2409临时放行评审纪要.docx','A-2409来料异常分析报告.pdf'];
+  const attachment=(senderId,time,i)=>({kind:'file',senderId,time,file:{name:names[i],size:[4812,12800,28467,41984][i],extension:names[i].split('.').pop()}});
+  const intro=body=>({kind:'system',text:body});
+  return {id:group,name:'IM 气泡验证',threads:[{id:basic,name:'01 日常聊天与连续消息'},{id:layout,name:'02 AI 协作与回复提及'},{id:md,name:'03 Markdown 与长内容'},{id:files,name:'04 图片与文件'},{id:gallery,name:'05 消息操作演示'}],messages:{
+    [group]:[text(me,'09:00','本次演示：A-2409 来料异常，从现场沟通到复核决策。请按 01 → 05 浏览：日常聊天、AI 协作、富文本、附件和消息操作。'),text(other,'09:01','各子区开头有演示提示。内容为预置业务场景；转发和删除仅演示本地行为。')],
+    [basic]:[intro('看点：左右气泡、双方连续发言、长短交替、多人交错与时间分隔。'),{kind:'divider',text:'今天 · 现场反馈'},
+      text(other,'09:10','A-2409 到货复核发现异常。'),text(other,'09:10','涉及供应商甲的关键件，已单独隔离。'),text(other,'09:10','现有合格库存能支撑到今天下班。'),text(other,'09:10','我先把现场信息补齐，暂不申请放行。'),
+      text(me,'09:11','收到。'),text(me,'09:11','先保持隔离。'),text(me,'09:11','请把批次、照片与检验记录关联起来。'),text(me,'09:11','我来协调质量复核和备选排产，确认之前不对外承诺时间。'),
+      text('u-zhouyuan','09:12','备选排产已准备，可以先保留原计划。'),text(other,'09:13','本次有两个需要区分的问题：材料是否齐备，以及质量是否满足放行条件。现场照片只能说明隔离和标识情况，不能替代检验结论。我们会逐项核对批次、数量、检验时间和责任人；缺失证据单独列出，避免把“已收到材料”误读为“可以放行”。'),
+      text(me,'09:14','明白 👍'),{kind:'divider',text:'今天 · 复核进展'},text(other,'10:20','补充报告已收到。'),text(other,'10:20','还缺最后一项检验签字。'),text(me,'10:21','继续保持待确认。')],
+    [layout]:[intro('看点：人类与 AI 身份、真实提及标签、长名称、引用回复。可在输入框键入 @ 筛选成员。'),
+      text(other,'10:00','质量复核还缺一项签字，排产结论也未确认。'),
+      text(me,'10:01','@供应链运营协同 · 项目管家 请把目前缺口整理成待办，区分材料齐备与允许放行。'),
+      text(agent,'10:02','**待确认事项**\n\n1. 林晓：补齐检验签字。\n2. 周远：确认备选排产影响。\n3. 王宜林：收到两项结论后组织人工决策。\n\n> 材料齐备不等于批准放行。'),
+      {...text(me,'10:03','@林晓 @周远 请分别补充质量与排产结论。'),id:'im-showcase-request'},
+      {...text(other,'10:04','收到，我先补齐签字。'),replyTo:{conversationId:layout,messageId:'im-showcase-request',fromName:'王宜林',digest:'请分别补充质量与排产结论。'}},
+      text(me,'10:05','@所有人 本批次保持隔离，最终决定以人工确认结果为准。')],
+    [md]:[intro('看点：同样内容在左右气泡中的可读性；代码和宽表内部滚动，聊天页不横向滚动。'),text(me,'10:00','@供应链运营协同 · 项目管家 请整理复核清单、数据示例和长文阅读样本。'),text(agent,'10:01',rich),text(agent,'10:02',code),text(me,'10:03',rich),text(me,'10:04',code),...typography.flatMap((sample,i)=>[text(other,'10:'+String(i+10).padStart(2,'0'),sample),text(me,'10:'+String(i+10).padStart(2,'0'),sample)]),text(other,'10:30',Array.from({length:8},(_,i)=>'### '+(i+1)+'. 复核记录\n\n核对批次与证据来源，保留原始结论。若存在缺口，记录责任人与下一步，不把待确认事项写成已经完成。').join('\n\n'))],
+    [files]:[intro('看点：纯图片、图文混排、连续图片、左右文件卡。图片是现有 Eva 素材，不冒充现场照片。'),text(other,'11:00',image),text(other,'11:00','项目资料使用的插图如下：\n\n'+image+'\n\n点击图片放大查看。'),text(me,'11:01',image),text(me,'11:01',image),...names.flatMap((_,i)=>[attachment(other,'11:10',i),attachment(me,'11:11',i)]),text(me,'11:12','四类文件均复用现有预览与保存入口。')],
+    [gallery]:[intro('现场演示：右键回复 → 输入 @ 筛选 → 多选以下消息 → 逐条或合并转发到 01 → Esc 退出。删除会移除本地记录，建议最后演示。'),attachment(other,'15:00',0),attachment(me,'15:01',0),text(other,'15:02','现场复核清单已补充，仍待人工确认。'),text(me,'15:03','收到，先保留原排产。'),text(other,'15:04',image),text(me,'15:05','**交接摘要**\n\n- 已隔离异常批次。\n- 待补质量签字。\n- 待确认备选排产。\n\n> 请先回复这条消息，再尝试选择不连续的消息进行转发。'),attachment(other,'15:06',3)]
   }};
+
 })();
