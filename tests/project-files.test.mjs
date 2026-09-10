@@ -12,7 +12,7 @@ test('文件库在当前空间新建文件夹时不再选择所属空间',()=>{
   const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const dialogStart=source.indexOf('  function dialogHTML()'),dialogEnd=source.indexOf('  function filePreviewFixture(',dialogStart);
   const state={dialog:{type:'new-folder',spaceId:'p'},parentId:'folder-a',selectedId:null};
-  const sandbox={state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[]}})};
+  const sandbox={state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[]}}),icon:()=>'<svg class="lucide"></svg>'};
   const html=vm.runInNewContext(source.slice(dialogStart,dialogEnd)+';dialogHTML();',sandbox);
   assert.match(html,/文件夹名称/);
   assert.doesNotMatch(html,/所属空间|eva-drive-dialog-space/);

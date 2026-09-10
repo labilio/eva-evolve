@@ -6,24 +6,8 @@
   var pageTuneQueued = false;
 
   function icon(name) {
-    var paths = {
-      refresh: '<path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"></path>',
-      bolt: '<path d="m13 2-9 12h8l-1 8 9-12h-8z"></path>',
-      plus: '<path d="M12 5v14M5 12h14"></path>',
-      grid: '<rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect>',
-      check: '<circle cx="12" cy="12" r="9"></circle><path d="m9 12 2 2 4-4"></path>',
-      play: '<path d="m9 7 8 5-8 5z"></path>',
-      shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>',
-      clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
-      search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>',
-      file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h5"></path>',
-      briefcase: '<rect width="18" height="14" x="3" y="7" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"></path>',
-      calendar: '<rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path>',
-      chart: '<path d="M3 3v18h18M7 16v-5M12 16V8M17 16v-9"></path>',
-      bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path>',
-      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>'
-    };
-    return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.grid) + '</svg>';
+    var aliases = { refresh: 'rotate-ccw', bolt: 'zap', grid: 'layout-grid', check: 'circle-check', file: 'file-text', briefcase: 'briefcase-business', calendar: 'calendar-clock', chart: 'chart-column' };
+    return window.__evaLucide(aliases[name] || name);
   }
 
   function isTeamMode() {
@@ -49,7 +33,7 @@
   }
 
   function taskCard(title, desc, time) {
-    return '<article class="eva-auto-task"><div class="eva-auto-task__top"><strong>' + title + '</strong><span class="eva-auto-task__spacer"></span><button class="eva-auto-switch" type="button" role="switch" aria-checked="false" aria-label="启用或暂停"></button><button class="eva-auto-more" type="button" aria-label="更多">⋮</button></div><p class="eva-auto-task__desc">' + desc + '</p><div class="eva-auto-task__meta">' + icon('clock') + time + '<span class="eva-auto-status">● 已暂停</span></div></article>';
+    return '<article class="eva-auto-task"><div class="eva-auto-task__top"><strong>' + title + '</strong><span class="eva-auto-task__spacer"></span><button class="eva-auto-switch" type="button" role="switch" aria-checked="false" aria-label="启用或暂停"></button><button class="eva-auto-more" type="button" aria-label="更多">' + icon('ellipsis') + '</button></div><p class="eva-auto-task__desc">' + desc + '</p><div class="eva-auto-task__meta">' + icon('clock') + time + '<span class="eva-auto-status">已暂停</span></div></article>';
   }
 
   function templateCard(iconName, title, desc, time) {

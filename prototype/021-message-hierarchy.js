@@ -10,21 +10,6 @@
 
   var spaceTreeExpanded = true;
 
-  var MESSAGE_ACTION_ICONS = {
-    reply: '<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path><path d="M8 10h.01M12 10h.01M16 10h.01"></path>',
-    copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>',
-    forward: '<path d="m15 17 5-5-5-5"></path><path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>',
-    multi: '<path d="M11 12H3M16 6H3M16 18H3"></path><path d="m16 12 2 2 4-4"></path>',
-    revoke: '<path d="M9 14 4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5H9"></path>',
-    createThread: '<path d="M8 12h.01M12 12h.01M16 12h.01"></path><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path><path d="M19 2v4M17 4h4"></path>',
-    driveNav: '<path d="M10 16h.01"></path><path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><path d="M21.946 12.013H2.054"></path><path d="M6 16h.01"></path>'
-  };
-
-  function messageActionIcon(name, className) {
-    var iconBody = window.EvaFileMessage.iconBody(name) || MESSAGE_ACTION_ICONS[name] || '';
-    return '<svg class="' + (className || '') + '" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + iconBody + '</svg>';
-  }
-
   function directText(element) {
     if (!element) return '';
     return String(element.textContent || '').trim();
