@@ -35,7 +35,7 @@
 .eva-msg .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
 .eva-msg .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
 .eva-msg .wk-markdown th { background: var(--eva-surface-subtle); }
-:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); }
+:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); padding:2px 6px; font-weight:500; font-size:inherit; line-height:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 :is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
 .wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
@@ -138,6 +138,9 @@
   margin-top: 0 !important;
   padding-block: 6px;
 }
+/* The first message shares the same bottom spacing as its continuations. */
+.ch-stream .eva-im-bubble-row:has(+ .eva-im-bubble-row.wk-msg-row--continue) { padding-bottom:6px; }
+
 .eva-im-bubble-row > .wk-msg-row-content {
   flex: 0 1 auto;
   width: fit-content;
@@ -374,9 +377,9 @@
 .wk-reply-block__digest-link:hover {
   opacity: 0.8;
 }
-.eva-im-reply-draft { display:flex; align-items:center; gap:8px; margin:8px 12px 0; padding:6px 8px; background:var(--eva-surface-subtle); border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-small); min-width:0; }
-.eva-im-reply-draft-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--eva-text-secondary); border-left:1px solid var(--eva-border-default); padding-left:8px; }
-.eva-im-reply-draft > button { display:flex; padding:4px; border:0; background:transparent; color:var(--eva-text-secondary); cursor:pointer; }
+.eva-im-reply-draft { display:flex; align-items:center; gap:8px; margin:0 0 8px; padding:6px 8px; background:var(--eva-surface-subtle); border:0; border-radius:var(--eva-radius-small); min-width:0; }
+.eva-im-reply-draft-text { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--eva-text-secondary); border-left:1px solid var(--eva-border-default); padding-left:8px; }
+.eva-im-reply-draft > button { display:flex; flex-shrink:0; padding:4px; border:0; background:transparent; color:var(--eva-text-secondary); cursor:pointer; }
 .wk-reply-block[role="button"]:focus-visible { outline: 2px solid var(--eva-im-accent); outline-offset: 2px; }
 .eva-forward-targets { max-height: 320px; overflow-y: auto; }
 .eva-forward-target { display:flex; align-items:center; gap:10px; padding:10px 8px; cursor:pointer; }
@@ -400,3 +403,34 @@
 .eva-im-merged-history summary span, .eva-im-merged-items header { font-size: 12px; color: var(--eva-text-secondary); }
 .eva-im-merged-items { margin-top: 12px; padding: 12px; border-radius: var(--eva-radius-control); background: var(--eva-surface-primary); }
 .eva-im-merged-items section + section { border-top: 1px solid var(--eva-border-subtle); margin-top: 12px; padding-top: 12px; }
+
+/* Reply mode reserves separate rows for the excerpt, editable text and controls. */
+.wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-row { flex-direction:column; align-items:stretch; gap:8px; }
+.wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-inputbox { flex:none; width:100%; margin-right:0; }
+.wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-actionbox { align-self:flex-end; max-width:100%; flex-wrap:wrap; }
+
+.eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:360px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-default,#fff); box-shadow:0 8px 24px var(--eva-overlay-hover); z-index:30; color:var(--eva-text-primary); }
+.eva-im-mention-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:500; }
+.eva-im-mention-heading button { border:0; background:transparent; color:var(--eva-text-secondary); padding:4px; display:flex; cursor:pointer; }
+.eva-im-mention-options { max-height:240px; overflow-y:auto; }
+.eva-im-mention-options > button { display:flex; align-items:center; gap:10px; width:100%; height:48px; box-sizing:border-box; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-primary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
+.eva-im-mention-options > button.is-active { background:var(--eva-nav-selected); outline:none; }
+.eva-im-mention-broadcast-copy { display:flex; align-items:center; gap:8px; min-width:0; white-space:nowrap; }
+.eva-im-mention-options small { color:var(--eva-text-secondary); font-size:12px; overflow:hidden; text-overflow:ellipsis; }
+.eva-im-mention-all { width:32px; height:32px; display:grid; place-items:center; border-radius:var(--eva-radius-full); background:var(--eva-mention-background); color:var(--eva-action-primary); font-size:20px; flex-shrink:0; }
+.eva-im-mention-empty { padding:12px 8px; color:var(--eva-text-secondary); font-size:13px; }
+
+.eva-im-mention-group { padding:10px 8px 4px; color:var(--eva-text-secondary); font-size:12px; line-height:18px; }
+
+/* Delete confirmation belongs to the client content area, never to the batch bar. */
+.eva-im-delete-portal { position:fixed; inset:var(--topbar-height) 0 0; z-index:1100; pointer-events:none; }
+.eva-im-delete-portal :is(.semi-modal-mask,.semi-modal-wrap) { position:absolute; inset:0; height:100%; pointer-events:auto; }
+.eva-im-delete-portal .semi-modal-wrap { display:flex; align-items:center; justify-content:center; padding:24px; box-sizing:border-box; }
+.eva-im-delete-portal .semi-modal { margin:0; padding:0; max-width:100%; max-height:100%; }
+.eva-im-delete-dialog .semi-modal-content { border-radius:var(--eva-radius-panel); max-height:calc(100dvh - var(--topbar-height) - 48px); overflow:auto; }
+.eva-im-delete-dialog .semi-modal-header { margin:0; padding:0; }
+.eva-im-delete-dialog .semi-modal-content { padding:24px; }
+.eva-im-delete-dialog .semi-modal-title { font-size:16px; line-height:24px; font-weight:600; }
+.eva-im-delete-dialog .semi-modal-body { margin:16px 0 24px; padding:0; font-size:14px; line-height:22px; }
+.eva-im-delete-dialog .semi-modal-body p { margin:0; }
+.eva-im-delete-dialog .semi-modal-footer { margin:0; padding:0; }

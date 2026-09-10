@@ -6,7 +6,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
  const link=(label,url)=>({label,url});
  function resolve(ref){
   const id=typeof ref==='string'?ref:ref?.id||ref?.uid;if(!id)return null;
-  const actor=store.snapshot().actorId;
+  const actor=store.actorId();
   const human=store.person(id);
   if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||human.dept||'',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
   const alias=team?.getSnapshot().identityAliases?.[id]||root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];

@@ -44,6 +44,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  }
  await page.setViewportSize({width:1200,height:800});await sent.scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/eva-bubble-markdown.png'});
  await sent.click({button:'right'});await page.locator('.wk-contextmenus-open').waitFor();await page.locator('.wk-contextmenus-open').getByText('复制',{exact:true}).click();
+ await page.getByText('已复制',{exact:true}).waitFor();
  assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),markdown,'复制保留完整 Markdown 原文及换行');
  await page.evaluate(()=>{window.__evaClipboardWrite=Object.getOwnPropertyDescriptor(navigator.clipboard,'writeText');Object.defineProperty(navigator.clipboard,'writeText',{configurable:true,value:()=>Promise.reject(new DOMException('Denied','NotAllowedError'))});});
  await sent.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('复制',{exact:true}).click();await page.getByText('复制失败，请选择消息文字后手动复制',{exact:true}).waitFor();
@@ -80,7 +81,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  await replied.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('转发',{exact:true}).click();
  await page.getByRole('button',{name:'取消',exact:true}).click();assert.equal(await page.getByRole('radiogroup',{name:'目标会话'}).count(),0);
  await replied.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('转发',{exact:true}).click();
- await page.getByRole('radio',{name:'IM 气泡验证 / 01 普通对话与连续消息',exact:true}).check();
+ await page.getByRole('radio',{name:'IM 气泡验证 / 01 日常聊天与连续消息',exact:true}).check();
  await page.getByRole('button',{name:'确认转发',exact:true}).click();await page.getByRole('radiogroup',{name:'目标会话'}).waitFor({state:'detached'});
  assert.ok(await page.evaluate(()=>window.EvaMembership&&JSON.parse(localStorage.getItem('eva:project-members:v1')).messages['im-bubble-basic'].some(m=>m.forwarded&&m.text==='引用测试正文')));
  await editor.fill('未发送的草稿');await page.getByRole('button',{name:'聊天信息',exact:true}).click();assert.equal(await editor.innerText(),'未发送的草稿');await page.locator('.eva-chat-settings-head button').first().click();
@@ -92,8 +93,8 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  await page.locator('.eva-im-bubble-row').last().getByText('团队引用回归',{exact:true}).waitFor();assert.equal(await page.locator('.eva-im-bubble-row').last().locator('.wk-reply-block').count(),1);
  await page.getByRole('button',{name:'供应商整改',exact:true}).click();await page.getByRole('textbox',{name:'发送给 供应商整改'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row').count()>0);
  await page.locator('[data-eva-nav-id="messages"]').click();await page.locator('.eva-im-bubble-row').first().waitFor();
- await page.getByRole('button',{name:'02 Markdown 与宽内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 02 Markdown 与宽内容'}).waitFor();
- assert.equal(await page.locator('.eva-im-bubble-row pre').count(),2);assert.equal(await page.locator('.eva-im-bubble-row table').count(),4);
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 03 Markdown 与长内容'}).waitFor();
+ assert.equal(await page.locator('.eva-im-bubble-row pre').count(),6);assert.equal(await page.locator('.eva-im-bubble-row table').count(),6);
  const palettes=await page.locator('.eva-im-bubble-row pre [class*="hljs-"]').evaluateAll(nodes=>nodes.map(e=>({fg:getComputedStyle(e).color,bg:getComputedStyle(e.closest('.wk-markdown-pre-wrapper')).backgroundColor})));
  const luminance=rgb=>rgb.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=rgb.startsWith("color(srgb")?1:255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
  assert.ok(palettes.length>0);for(const {fg,bg} of palettes){const a=luminance(fg),b=luminance(bg);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,fg+' on '+bg);}
@@ -101,29 +102,29 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  for(const t of tables){assert.ok(Math.abs(t.right-t.cellRight)<=2,'表头铺齐表格');assert.equal(t.bg,'rgb(255, 255, 255)');}
  await page.screenshot({path:'/tmp/eva-bubble-lab-markdown.png'});
  await page.locator('.eva-im-bubble-row.wk-msg-row--send').filter({hasText:'代码与宽表格'}).last().scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/eva-bubble-code-refined.png'});
- await page.getByRole('button',{name:'03 图片与文件卡片',exact:true}).click();await page.locator('.wk-markdown-img').waitFor();await page.waitForFunction(()=>document.querySelector('.wk-markdown-img')?.naturalWidth>0);
+ await page.getByRole('button',{name:'04 图片与文件',exact:true}).click();await page.locator('.wk-markdown-img').first().waitFor();await page.waitForFunction(()=>document.querySelector('.wk-markdown-img')?.naturalWidth>0);
  await page.locator('.wk-message-file').first().click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('多选',{exact:true}).click();
  await page.locator('.eva-im-bubble-row').filter({has:page.locator('.wk-message-file')}).nth(1).click();await page.getByRole('region',{name:'消息多选'}).getByText('已选择 2 条消息',{exact:true}).waitFor();
  assert.equal(await page.locator('.wk-file-preview-panel').count(),0,'多选文件不打开预览');
  await page.getByRole('button',{name:'退出多选',exact:true}).click();
  const fileRows=page.locator('.eva-im-bubble-row').filter({has:page.locator('.wk-message-file')});
- await fileRows.nth(1).click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('多选',{exact:true}).click();await fileRows.nth(0).click();
+ await fileRows.nth(2).click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('多选',{exact:true}).click();await fileRows.nth(0).click();
  await page.getByRole('region',{name:'消息多选'}).getByRole('button',{name:'逐条转发',exact:true}).click();
- await page.getByRole('radio',{name:'IM 气泡验证 / 01 普通对话与连续消息',exact:true}).check();assert.ok(await page.locator('.ch-main').evaluate(e=>e.getBoundingClientRect().width)>600,'转发弹窗不挤压聊天区');await page.screenshot({path:'/tmp/eva-bubble-forward-dialog.png'});
+ await page.getByRole('radio',{name:'IM 气泡验证 / 01 日常聊天与连续消息',exact:true}).check();assert.ok(await page.locator('.ch-main').evaluate(e=>e.getBoundingClientRect().width)>600,'转发弹窗不挤压聊天区');await page.screenshot({path:'/tmp/eva-bubble-forward-dialog.png'});
  await page.getByRole('button',{name:'确认转发',exact:true}).click();await page.getByRole('radiogroup',{name:'目标会话'}).waitFor({state:'detached'});
  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('eva:project-members:v1')).messages['im-bubble-basic'].filter(m=>m.forwarded&&m.kind==='file').map(m=>m.file.name)),['A-2409现场复核清单.md','A-2409排产影响测算.html']);
  assert.equal(await page.locator('.wk-msg-row--selection-mode').count(),0,'转发成功后退出多选');
  await fileRows.nth(0).click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('多选',{exact:true}).click();
- await page.getByRole('button',{name:'02 Markdown 与宽内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 02 Markdown 与宽内容'}).waitFor();
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 03 Markdown 与长内容'}).waitFor();
  assert.equal(await page.locator('.wk-msg-row--selection-mode').count(),0,'切换会话清理多选');
- await page.getByRole('button',{name:'03 图片与文件卡片',exact:true}).click();await page.locator('.wk-message-file').first().waitFor();
- assert.equal(await page.locator('.wk-message-file').count(),4);await page.screenshot({path:'/tmp/eva-bubble-lab-files.png'});
- await page.locator('.wk-markdown-img').click();await page.locator('.yarl__portal_open').waitFor();await page.keyboard.press('Escape');await page.locator('.yarl__portal_open').waitFor({state:'detached'});
+ await page.getByRole('button',{name:'04 图片与文件',exact:true}).click();await page.locator('.wk-message-file').first().waitFor();
+ assert.equal(await page.locator('.wk-message-file').count(),8);await page.screenshot({path:'/tmp/eva-bubble-lab-files.png'});
+ await page.locator('.wk-markdown-img').first().click();await page.locator('.yarl__portal_open').waitFor();await page.keyboard.press('Escape');await page.locator('.yarl__portal_open').waitFor({state:'detached'});
  await page.locator('.wk-message-file').first().click();await page.locator('.wk-file-preview-panel').waitFor();await page.locator('.wk-file-preview-content').getByText('A-2409', {exact:false}).first().waitFor();await page.screenshot({path:'/tmp/eva-bubble-file-preview.png'});await page.keyboard.press('Escape');await page.locator('.wk-file-preview-panel').waitFor({state:'detached'});
 
- await page.getByRole('button',{name:'01 普通对话与连续消息',exact:true}).click();await page.getByRole('textbox',{name:'发送给 01 普通对话与连续消息'}).waitFor();await page.locator('.eva-im-bubble-row').getByText('引用测试正文',{exact:true}).waitFor();await page.screenshot({path:'/tmp/eva-bubble-lab-basic.png'});
- await page.getByRole('button',{name:'04 排版与边界',exact:true}).click();await page.getByRole('textbox',{name:'发送给 04 排版与边界'}).waitFor();
- assert.equal(await page.locator('.eva-im-bubble-row').count(),16);
+ await page.getByRole('button',{name:'01 日常聊天与连续消息',exact:true}).click();await page.getByRole('textbox',{name:'发送给 01 日常聊天与连续消息'}).waitFor();await page.locator('.eva-im-bubble-row').getByText('引用测试正文',{exact:true}).waitFor();await page.screenshot({path:'/tmp/eva-bubble-lab-basic.png'});
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 03 Markdown 与长内容'}).waitFor();
+ assert.equal(await page.locator('.eva-im-bubble-row').count(),22);
  const quotes=await page.locator('.eva-im-bubble-row .wk-markdown blockquote').evaluateAll(nodes=>nodes.map(e=>({bg:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderInlineStartWidth,radius:getComputedStyle(e).borderRadius})));
  assert.ok(quotes.length>=4);for(const q of quotes){assert.equal(q.bg,'rgba(0, 0, 0, 0)');assert.equal(q.border,'3px');assert.equal(q.radius,'0px');}
  const separators=await page.locator('.eva-im-bubble-row .wk-markdown hr').evaluateAll(nodes=>nodes.map(e=>({fg:getComputedStyle(e).borderTopColor,bg:getComputedStyle(e.closest('.wk-msg-row-body')).backgroundColor,width:getComputedStyle(e).borderTopWidth,style:getComputedStyle(e).borderTopStyle})));
@@ -148,9 +149,9 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  const employeeReply=page.locator('.eva-im-bubble-row').filter({hasText:'数字员工引用回归'});await employeeReply.locator('.wk-reply-block').waitFor();
  await page.reload();await employeeReply.locator('.wk-reply-block').waitFor();assert.notEqual(await employeeReply.locator('.wk-reply-block__bar').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','引用竖线有可见底色');await employeeReply.scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/eva-bubble-employee-reply.png'});
  await employeeReply.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('转发',{exact:true}).click();
- await page.getByRole('radio',{name:'IM 气泡验证 / 01 普通对话与连续消息',exact:true}).check();await page.getByRole('button',{name:'确认转发',exact:true}).click();await page.getByRole('radiogroup',{name:'目标会话'}).waitFor({state:'detached'});
+ await page.getByRole('radio',{name:'IM 气泡验证 / 01 日常聊天与连续消息',exact:true}).check();await page.getByRole('button',{name:'确认转发',exact:true}).click();await page.getByRole('radiogroup',{name:'目标会话'}).waitFor({state:'detached'});
  await page.goto(origin+'/#/messages');await page.locator('.ch-layout').waitFor();
- await page.getByRole('button',{name:'01 普通对话与连续消息',exact:true}).click();await page.locator('.eva-im-bubble-row').getByText('数字员工引用回归',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'01 日常聊天与连续消息',exact:true}).click();await page.locator('.eva-im-bubble-row').getByText('数字员工引用回归',{exact:true}).waitFor();
  const aiTarget=await page.evaluate(()=>{const snapshot=window.EvaAITeam.getSnapshot();const session=snapshot.sessions[0],identity=snapshot.identities.find(item=>item.id===session.identityId);return {identityId:identity.id,sessionId:session.id,name:identity.name+' / '+session.title,count:session.messages.length};});
  await page.locator('.eva-im-bubble-row').filter({hasText:'数字员工引用回归'}).click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('转发',{exact:true}).click();
  await page.locator('.eva-forward-target').filter({hasText:aiTarget.name}).locator('input').check();await page.getByRole('button',{name:'确认转发',exact:true}).click();await page.getByRole('radiogroup',{name:'目标会话'}).waitFor({state:'detached'});
