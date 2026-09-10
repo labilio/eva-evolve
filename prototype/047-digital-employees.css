@@ -117,6 +117,12 @@
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__identity strong { font: 500 14px/22px var(--eva-font-sans); }
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__identity small { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__actions { min-width: 0; flex-wrap: nowrap; justify-content: flex-end; gap: 4px 8px; }
+.eva-market-workspace .eva-digital-center__team-action { width: 100px; display: inline-flex; justify-content: center; align-items: center; }
+.eva-market-workspace .eva-digital-center__joined-status { color: var(--eva-text-primary); font: 400 12px/16px var(--eva-font-sans); }
+.eva-market-workspace .semi-button.eva-digital-center__market-action { background: transparent; color: var(--eva-action-primary); }
+.eva-market-workspace .semi-button.eva-digital-center__market-action:hover { background: var(--eva-action-primary-08); }
+.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 4px; }
+.eva-market-workspace .eva-digital-center__domain-filters .semi-button { flex: none; }
 .eva-market-workspace .eva-digital-center__table .semi-button { min-height: 32px; padding: 0 8px; font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace :is(.eva-digital-center__table,.semi-table-row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 .eva-market-workspace .eva-digital-dialog .semi-modal-body { font: 400 15px/24px var(--eva-font-sans); }

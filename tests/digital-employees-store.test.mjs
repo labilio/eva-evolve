@@ -53,6 +53,15 @@ test('creation preserves configuration and draft data without aliasing caller ob
   const restored=load(saved()).store;assert.equal(restored.get(created.id).name,'接入专家');assert.equal(restored.get(created.id).scope,'org');assert.equal(restored.get(created.id).configuration.conn[0],'mcp-1');assert.equal(restored.draft('dify'),undefined);
 });
 
+test('all digital employee names use the expert suffix for seeds, saved state and new records',()=>{
+  const savedState={agents:[{id:'saved',kind:'staff',name:'客服专员专家-吉利'},{id:'old-copy',kind:'staff',name:'取数小工专家'}],drafts:{},personaRequests:[],chats:{},teamIds:[]};
+  const {store}=load(savedState);
+  assert.equal(store.get('saved').name,'客服专员-吉利专家');
+  assert.equal(store.get('old-copy').name,'数据提取专家');
+  const created=store.create('dify',{name:'会议纪要清洗'});
+  assert.equal(created.name,'会议纪要专家');
+});
+
 test('HR onboarding employee and rich file conversation migrate once for existing users',()=>{
   const baseAgents=[{id:'staff-1',kind:'staff',name:'专家',ownership:'organization'},{id:'project-1',kind:'team',name:'项目助手'}];
   const hr={id:'a_hr_onboarding',kind:'staff',name:'HR 助手',ownership:'organization',presence:'online'};
@@ -64,7 +73,7 @@ test('HR onboarding employee and rich file conversation migrate once for existin
   const oldState={agents:baseAgents,drafts:{},personaRequests:[],chats:{},teamIds:[],professionalDemoV1:true,compactDemoV1:true};
   const overrides={agents:[...baseAgents,hr],demoConversations:{a_hr_onboarding:[story]}};
   const {store,saved}=load(oldState,overrides);
-  assert.equal(store.get(hr.id).name,'HR 助手');
+  assert.equal(store.get(hr.id).name,'HR 入职服务专家');
   assert.equal(store.teamIds()[0],hr.id);
   const sessions=store.sessions(hr.id);
   assert.equal(sessions.length,1);

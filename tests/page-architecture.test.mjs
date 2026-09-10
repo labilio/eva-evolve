@@ -334,6 +334,26 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
 });
 
+test('其他菜单只保留数字员工市场，市场身份统一展示公共 AI 标且没有接入配置', () => {
+  const sider = read('prototype/009-7-patch-sider.js');
+  const market = read('prototype/047-digital-employees.js');
+  const css = read('prototype/047-digital-employees.css');
+  assert.match(sider, /EVA_COMMON_NAV=Object\.freeze\(\["digital-employees"\]\)/);
+  assert.match(sider, /rt==="数字员工"\?"其他"/);
+  assert.match(market, /render:\(_,a\)=>identity\(a,true,false\)/);
+  assert.match(market, /dialog\.kind==='detail'.+identity\(a,true\)/s);
+  assert.doesNotMatch(market, /接入配置|dialog\.kind==='intake'|open\('intake'/);
+  assert.match(market, /joined\?h\('span',\{className:'eva-digital-center__joined-status',onClick:e=>e\.stopPropagation\(\)\},'已加入'\):btn\('加入我的 Agent'/);
+  assert.match(market, /theme:'borderless',type:'primary',className:'eva-digital-center__market-action eva-digital-center__join-action'/);
+  assert.match(market, /theme:'borderless',type:'primary',className:'eva-digital-center__market-action eva-digital-center__project-action'/);
+  assert.match(css, /\.semi-button\.eva-digital-center__market-action\s*\{\s*background:\s*transparent;\s*color:\s*var\(--eva-action-primary\);\s*\}/);
+  assert.match(css, /\.eva-digital-center__joined-status\s*\{\s*color:\s*var\(--eva-text-primary\);\s*font:\s*400 12px\/16px var\(--eva-font-sans\);\s*\}/);
+  assert.doesNotMatch(market, /const addIcon=|icon:addIcon\(\)/);
+  assert.match(market, /eva-digital-center__domain-filters/);
+  assert.doesNotMatch(market, /加入 AI 团队|已加入 AI 团队/);
+  assert.doesNotMatch(market.match(/const columns=\[[\s\S]*?function creator/)[0], /disabled:store\.hasInTeam/);
+});
+
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {
   const files = [
     'prototype/020-mode-layer.js',
