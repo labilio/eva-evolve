@@ -6,11 +6,6 @@
   var listeners = new Map();
   var openDriveHandler = function () {};
   var saveRequestHandler = function () {};
-  var ICONS = Object.freeze({
-    saveDrive: '<path d="M12 2v8"></path><path d="m16 6-4 4-4-4"></path><rect width="20" height="8" x="2" y="14" rx="2"></rect><path d="M6 18h.01"></path><path d="M10 18h.01"></path>',
-    viewDrive: '<path d="M10 16h.01"></path><path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><path d="M21.946 12.013H2.054"></path><path d="M6 16h.01"></path>'
-  });
-
   function normalizeFile(file) {
     return typeof file === 'string' ? {name: file} : (file || {});
   }
@@ -36,10 +31,6 @@
       title: saved ? '前往文件库查看' : '存到文件库',
       saved: saved
     };
-  }
-
-  function iconBody(actionKey) {
-    return ICONS[actionKey] || '';
   }
 
   function notify(key) {
@@ -97,7 +88,6 @@
   global.EvaFileMessage = Object.freeze({
     action: action,
     activate: activate,
-    iconBody: iconBody,
     isSaved: isSaved,
     keyFor: keyFor,
     markSaved: markSaved,

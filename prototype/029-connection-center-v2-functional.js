@@ -39,19 +39,8 @@
   }
 
   function icon(name) {
-    var paths = {
-      plus: '<path d="M12 5v14M5 12h14"></path>',
-      link: '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"></path>',
-      mail: '<rect width="18" height="14" x="3" y="5" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
-      folder: '<path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>',
-      sparkles: '<path d="m12 3-1.4 3.6L7 8l3.6 1.4L12 13l1.4-3.6L17 8l-3.6-1.4z"></path><path d="m5 15-.8 2.2L2 18l2.2.8L5 21l.8-2.2L8 18l-2.2-.8z"></path>',
-      chart: '<path d="M3 3v18h18M7 16v-5M12 16V8M17 16v-9"></path>',
-      file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h5"></path>',
-      browser: '<rect width="18" height="16" x="3" y="4" rx="2"></rect><path d="M3 9h18M8 4v5"></path>',
-      database: '<ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path>',
-      git: '<circle cx="6" cy="6" r="2"></circle><circle cx="18" cy="18" r="2"></circle><path d="M6 8v8a2 2 0 0 0 2 2h8M14 6h4v4"></path>'
-    };
-    return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.link) + '</svg>';
+    var aliases = { link: 'link-2', chart: 'list-checks', file: 'file-text', browser: 'globe', git: 'git-branch' };
+    return window.__evaLucide(aliases[name] || name);
   }
 
   function ensureShell() {
@@ -160,7 +149,7 @@
   }
 
   function modalHead(title) {
-    return '<header class="eva-center-modal__head"><h2 id="eva-center-modal-title">' + esc(title) + '</h2><button class="eva-center-modal__close" type="button" data-center-close aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></header>';
+    return '<header class="eva-center-modal__head"><h2 id="eva-center-modal-title">' + esc(title) + '</h2><button class="eva-center-modal__close" type="button" data-center-close aria-label="关闭">' + icon('x') + '</button></header>';
   }
 
   function showToast(message) {

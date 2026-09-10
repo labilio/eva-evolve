@@ -1078,6 +1078,25 @@ function EvaAITeamPage() {
       'return React.createElement("div",{className:"wk-message-file wk-message-file--clickable"+(new URLSearchParams(String(window.location?.hash||"").split("?")[1]||"").get("evaMessage")===evaSaveContext?.messageId?" eva-message-source-highlight":""),title:"预览","data-eva-message-id":evaSaveContext?.messageId,role:"button"', '文件消息提供来源定位锚点');
     cut('onClick:xt=>{xt.preventDefault(),xt.stopPropagation(),window.EvaFileMessage.activate(rt.name)}',
       'onClick:xt=>{xt.preventDefault(),xt.stopPropagation(),evaActivate()}', '文件卡保存按钮打开统一弹窗');
+    const evaFileDriveIconStart=source.indexOf('FileDriveIcon=({action:rt})=>');
+    const evaFileDriveIconEnd=source.indexOf(',FileCard=',evaFileDriveIconStart);
+    if(evaFileDriveIconStart<0||evaFileDriveIconEnd<evaFileDriveIconStart)throw new Error('IM 文件库动作图标边界不匹配');
+    cut(source.slice(evaFileDriveIconStart,evaFileDriveIconEnd),
+      'FileDriveIcon=({action:rt})=>React.createElement(rt==="saveDrive"?Save:EvaDriveIcon,{size:18,"aria-hidden":true})', '文件库动作复用 Lucide');
+    const evaFileCardStart=source.indexOf('FileCard=({file:rt');
+    const evaFileCardEnd=source.indexOf(')} ,REF_LABEL=',evaFileCardStart);
+    if(evaFileCardStart<0||evaFileCardEnd<evaFileCardStart)throw new Error('IM 文件卡图标边界不匹配');
+    const evaFileCardSource=source.slice(evaFileCardStart,evaFileCardEnd);
+    const evaFileDownloadStart=evaFileCardSource.lastIndexOf('React.createElement("svg",');
+    if(evaFileDownloadStart<0)throw new Error('IM 文件下载图标不存在');
+    const evaFileDownloadTail=evaFileCardSource.slice(evaFileDownloadStart);
+    cut(evaFileDownloadTail,
+      'React.createElement(Download$5,{size:18,"aria-hidden":true})))', '文件下载复用 Lucide');
+    const evaEllipsisStart=source.indexOf('EllipsisIcon=()=>');
+    const evaEllipsisEnd=source.indexOf(',InfoRow=',evaEllipsisStart);
+    if(evaEllipsisStart<0||evaEllipsisEnd<evaEllipsisStart)throw new Error('IM 更多图标边界不匹配');
+    cut(source.slice(evaEllipsisStart,evaEllipsisEnd),
+      'EllipsisIcon=({size:rt=20})=>React.createElement(Ellipsis,{size:rt,"aria-hidden":true})', '更多操作复用 Lucide');
     cut('evaMemberStore=evaMembers().store,evaMemberRevision=reactExports.useSyncExternalStore(evaMemberStore.subscribe,evaMemberStore.getSnapshot)',
       'evaMemberContext=evaMembers(),evaMemberStore=evaMemberContext.store,evaMemberFiles=evaMemberContext.files,evaFileRevision=reactExports.useSyncExternalStore(evaMemberFiles.subscribe,evaMemberFiles.getSnapshot),evaMemberRevision=reactExports.useSyncExternalStore(evaMemberStore.subscribe,evaMemberStore.getSnapshot)', '会话订阅文件库状态');
     cut('[evaTransferFile,setEvaTransferFile]=reactExports.useState(null),',

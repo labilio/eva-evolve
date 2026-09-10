@@ -499,7 +499,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   color: var(--gds-color-action-primary, #1563eb);
 }
 
-.eva-drive__file-mark.is-shortcut::after {
+.eva-drive__file-mark.is-shortcut .eva-drive__shortcut-badge {
   position: absolute;
   right: -3px;
   bottom: -3px;
@@ -511,9 +511,12 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   place-items: center;
   color: #fff;
   background: var(--gds-color-action-primary, #1563eb);
-  content: "↗";
-  font-size: 10px;
-  line-height: 1;
+}
+
+.eva-drive__file-mark.is-shortcut .eva-drive__shortcut-badge svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 2.25;
 }
 
 .eva-drive__name-copy strong {
