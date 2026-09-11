@@ -2,19 +2,12 @@
 .ch-head .ops button.op {
   appearance: none;
   padding: 0;
-  color: var(--wk-text-tertiary, #727784);
-  background: transparent;
   border: 0;
   font: inherit;
 }
 
-.ch-head .ops button.eva-chat-search-entry:not(.is-on):not(:hover) {
-  color: var(--wk-text-tertiary, #727784);
-  background: transparent;
-}
-
 .ch-head .ops button.eva-chat-search-entry:focus-visible {
-  outline: 2px solid var(--wk-color-accent, #1563eb);
+  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
   outline-offset: 2px;
 }
 
@@ -22,10 +15,9 @@
   position: relative;
   inset: auto;
   display: flex;
-  box-sizing: border-box;
-  flex: 0 0 480px;
+  flex: 0 0 380px;
   flex-direction: column;
-  width: 480px;
+  width: 380px;
   min-width: 0;
   height: 100%;
   overflow: hidden;
@@ -35,14 +27,9 @@
   box-shadow: var(--wk-shadow-drawer, var(--semi-shadow-elevated));
 }
 
-.eva-conversation-search__head {
-  display: flex;
+.eva-conversation-search__query {
   flex: 0 0 auto;
-  align-items: center;
-  gap: 10px;
-  min-height: 68px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--wk-border-subtle, #e7e9ec);
+  padding: 16px 20px 12px;
 }
 
 .eva-conversation-search__input {
@@ -50,24 +37,24 @@
   flex: 1;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  box-sizing: border-box;
+  height: 32px;
   min-width: 0;
-  padding: 0 10px;
-  color: var(--wk-text-tertiary, #9498a8);
-  background: var(--wk-bg-base, #f6f7f8);
-  border: 1px solid transparent;
-  border-radius: var(--wk-r-input, 8px);
+  padding: 0 12px;
+  color: var(--gds-color-text-secondary-accessible);
+  background: var(--gds-color-surface-primary);
+  border: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+  border-radius: var(--gds-radius-control);
   transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
 .eva-conversation-search__input:hover {
-  background: var(--wk-bg-hover, #f0f1f3);
+  border-color: var(--gds-color-border-default);
 }
 
 .eva-conversation-search__input:focus-within {
-  background: var(--wk-bg-surface, #fff);
-  border-color: var(--wk-color-accent, #1563eb);
-  box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
+  border-color: var(--gds-color-border-focus);
+  box-shadow: none;
 }
 
 .eva-conversation-search__input input {

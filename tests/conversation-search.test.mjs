@@ -73,19 +73,22 @@ test('统一 IM 内核在当前 Ta 消息集合挂载唯一查找面板', async 
   assert.doesNotMatch(source, /EvaConversationSearch[\s\S]{0,1200}innerHTML/);
 });
 
-test('查找右栏使用 Octo 480px 推开布局并注册到唯一入口', async () => {
+test('查找右栏复用现有 380px 右侧弹窗与公共搜索控件合同', async () => {
   const [css, entry, manifest] = await Promise.all([
     read('prototype/055-conversation-search.css'),
     read('index.html'),
     read('prototype-manifest.json')
   ]);
-  assert.match(css, /\.ch-right-panel--search[\s\S]*flex:\s*0 0 480px/);
+  assert.match(css, /\.ch-right-panel--search[\s\S]*flex:\s*0 0 380px/);
+  assert.match(css, /\.eva-conversation-search__input[\s\S]*height:\s*32px[\s\S]*padding:\s*0 12px/);
+  assert.match(css, /\.eva-conversation-search__input[\s\S]*background:\s*var\(--gds-color-surface-primary\)[\s\S]*border:\s*var\(--gds-border-standard\) solid var\(--gds-color-border-subtle\)/);
+  assert.match(css, /\.eva-conversation-search__input:focus-within[\s\S]*border-color:\s*var\(--gds-color-border-focus\)[\s\S]*box-shadow:\s*none/);
   assert.match(css, /\.eva-conversation-search__file-title[\s\S]*font-size:\s*15px/);
   assert.match(css, /\.eva-conversation-search__file-meta[\s\S]*font-size:\s*13px/);
   assert.match(css, /\.eva-conversation-search__file-menu[\s\S]*opacity:\s*0/);
   assert.match(css, /\.eva-conversation-search__result\.is-file:focus-within[\s\S]*opacity:\s*1/);
   assert.match(css, /\.semi-dropdown-menu\.eva-conversation-search__file-dropdown[\s\S]*min-width:\s*200px/);
-  assert.match(css, /button\.eva-chat-search-entry:not\(\.is-on\):not\(:hover\)[\s\S]*background:\s*transparent/);
+  assert.doesNotMatch(css, /button\.eva-chat-search-entry:not\(\.is-on\):not\(:hover\)/);
   assert.match(css, /@media \(max-width: 1099px\)[\s\S]*position:\s*absolute/);
   assert.doesNotMatch(css, /position:\s*fixed|backdrop-filter/);
   assert.match(entry, /prototype\/055-conversation-search\.css/);
