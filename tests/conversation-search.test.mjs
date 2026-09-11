@@ -63,6 +63,8 @@ test('统一 IM 内核在当前 Ta 消息集合挂载唯一查找面板', async 
   assert.match(source, /onPreview:file=>void \$a\(file\)/);
   assert.match(source, /onDownload:file=>void Na\(file\)/);
   assert.match(source, /预览文件 /);
+  assert.match(source, /h\(FileTypeIcon,\{extension:record\.fileExtension,name:record\.displayText\}\)/);
+  assert.doesNotMatch(source, /eva-conversation-search__file-extension/);
   assert.match(source, /定位到聊天位置/);
   assert.match(source, /下载文件/);
   assert.match(source, /requestAnimationFrame\(\(\)=>onLocate\(record\.index\)\)/);

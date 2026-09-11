@@ -581,29 +581,9 @@
   color: var(--wk-text-tertiary, #727784);
 }
 
-.eva-conversation-search__file-icon.is-archive {
-  color: var(--wk-color-accent, #1563eb);
-}
-
 .eva-conversation-search__file-icon svg {
   width: 42px;
   height: 42px;
-}
-
-.eva-conversation-search__file-extension {
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  max-width: 34px;
-  overflow: hidden;
-  color: currentcolor;
-  font-size: 8px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: .01em;
-  text-overflow: ellipsis;
-  transform: translateX(-50%);
-  white-space: nowrap;
 }
 
 .eva-conversation-search__file-title {
