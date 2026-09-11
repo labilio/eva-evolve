@@ -47,6 +47,12 @@ test('原版创建布局保留外层项目路径且没有旧 Loop 项目选择�
   assert.deepEqual(h.all().filter(n=>n.type==='LoopPropertyPill').map(n=>n.props.ariaLabel),['状态','优先级']);
   assert.equal(h.find('所属项目'),undefined);
 });
+test('新建子任务显示完整父任务上下文并提交稳定父任务 ID',async()=>{
+  const h=harness();h.props.parentIssueId='supply-1';h.props.parentIssue={id:'supply-1',identifier:'SC-101',title:'完成间接采购需求归集'};h.render();h.render();
+  assert.ok(h.all().some(n=>n.props.className==='loop-ci__crumb-parent'&&n.children.includes('SC-101')));
+  assert.ok(h.all().some(n=>n.props.className==='loop-ci__crumb-cur'&&n.children.includes('新建子任务')));
+  h.fill();await h.button('创建').props.onClick();assert.equal(h.calls[0].parent_issue_id,'supply-1');
+});
 test('任务标签可在下拉框内直接新建，初始状态不再显示',async()=>{
   const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();const tags=h.find('添加或编辑任务标签');assert.equal(tags.props.placeholder,'选择或输入任务标签');tags.props.onChange('风险');h.render();await h.find('添加或编辑任务标签').props.onEnterPress();h.render();
   assert.ok(h.all().some(n=>n.props['aria-label']==='移除标签 风险'));assert.equal(h.find('新建标签'),undefined);assert.equal(h.button('添加'),undefined);assert.equal(h.all().some(n=>n.children.includes?.('初始状态')),false);

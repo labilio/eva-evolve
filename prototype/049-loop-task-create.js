@@ -4,7 +4,7 @@
   root.EvaLoopTaskCreateUI={render(props,deps){Component||=create(deps.React);return deps.React.createElement(Component,{...props,deps});}};
   function create(R){
     const h=R.createElement;
-    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,deps}){
+    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,deps}){
       const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
@@ -77,6 +77,8 @@
             h('div',{className:'loop-ci__head'},h('div',{className:'loop-ci__crumb'},
               h('span',{className:'loop-ci__crumb-ws'},project?.name||project?.title||''),
               h(icons.ChevronRight,{size:13,className:'loop-ci__crumb-sep'}),
+              parentIssueId&&h('span',{className:'loop-ci__crumb-parent',title:parentIssue?.title||parentIssue?.identifier||''},parentIssue?.identifier||'父任务'),
+              parentIssueId&&h(icons.ChevronRight,{size:13,className:'loop-ci__crumb-sep'}),
               h('span',{className:'loop-ci__crumb-cur'},parentIssueId?'新建子任务':'新建任务')),
               h('button',{type:'button',className:'loop-ci__close',onClick:close,disabled:busy,'aria-label':'关闭'},h(icons.X,{size:16}))),
             h('input',{autoFocus:true,className:'loop-ci__title',value:form.title,maxLength:200,disabled,'aria-label':'任务标题',placeholder:'输入标题…',onChange:e=>patch('title',e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();submit();}}}),
