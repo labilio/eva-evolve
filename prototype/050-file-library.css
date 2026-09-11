@@ -426,6 +426,14 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   gap: 14px;
 }
 
+body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__table-head,
+body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
+.eva-drive__table--pinned .eva-drive__table-head,
+.eva-drive__table--pinned .eva-drive__row {
+  min-width: 1100px;
+  grid-template-columns: minmax(230px, 1.25fr) minmax(180px, .9fr) 104px minmax(180px, 1fr) 76px 124px 72px;
+}
+
 .eva-drive__table-head {
   min-height: 38px;
   padding: 0 10px;
@@ -667,7 +675,8 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   font-size: 11px;
 }
 
-.eva-drive__row-more {
+.eva-drive__row-more,
+.eva-drive__pin-button {
   width: 28px;
   min-width: 32px;
   height: 32px;
@@ -686,11 +695,38 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
   background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
 }
 
-.eva-drive__row-more .eva-drive-icon {
+.eva-drive__row-more .eva-drive-icon,
+.eva-drive__pin-button .eva-drive-icon {
   width: 18px;
   height: 18px;
 }
 
+.eva-drive__pin-button {
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.eva-drive__row:hover .eva-drive__pin-button,
+.eva-drive__row:focus-within .eva-drive__pin-button,
+.eva-drive__pin-button.is-pinned,
+.eva-drive__pin-button:focus-visible {
+  opacity: 1;
+}
+
+.eva-drive__pin-button:hover,
+.eva-drive__pin-button:focus-visible {
+  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-drive__pin-button.is-pinned {
+  color: var(--eva-action-primary);
+}
+
+.eva-drive__pin-button.is-pinned .eva-drive-icon {
+  fill: currentColor;
+}
+
+.eva-drive__pin-button:focus-visible,
 .eva-drive__row-more:focus-visible {
   outline: 2px solid var(--eva-border-focus);
   outline-offset: 2px;
@@ -698,7 +734,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__row,
 
 .eva-drive__row-actions {
   position: relative;
-  width: 32px;
+  width: 68px;
   height: 32px;
   display: flex !important;
   align-items: center;
@@ -2251,6 +2287,13 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
     gap: 10px;
   }
 
+  body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__table-head,
+  body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
+  .eva-drive__table--pinned .eva-drive__table-head,
+  .eva-drive__table--pinned .eva-drive__row {
+    grid-template-columns: minmax(210px, 1.25fr) minmax(160px, .9fr) 88px minmax(145px, .9fr) 62px 108px 68px;
+  }
+
 }
 
 /* Shared file surfaces: readable metadata, bounded scroll and keyboard targets. */
@@ -2262,4 +2305,4 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
 .eva-drive-dialog__field span { font: 500 14px/22px var(--eva-font-sans); color: var(--eva-text-primary); }
 .eva-drive-dialog__field :is(input,select,textarea):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
 .eva-drive__meta :is(dt,dd) { font: 400 12px/16px var(--eva-font-sans); }
-@media (prefers-reduced-motion: reduce) { .eva-drive__inspector { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .eva-drive__inspector, .eva-drive__pin-button { transition: none; } }
