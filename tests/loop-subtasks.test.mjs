@@ -6,6 +6,7 @@ import vm from 'node:vm';
 import { createPatchedRuntime } from '../tools/build-runtime.mjs';
 
 const runtime = createPatchedRuntime().source;
+const taskStyles = fs.readFileSync('prototype/034-project-task-toolbar-v3.css','utf8');
 
 function assignment(name, next) {
   const start = runtime.indexOf(`${name}=`);
@@ -73,10 +74,16 @@ test('供应链演示数据提供两级和三级子任务链，且不复制项�
   for(const id of ['SC-109','SC-110','SC-111','SC-112'])assert.equal(byIdentifier(id).project_id,'p-supply');
 });
 
-test('层级视图、详情常驻子任务区和完成前确认均接入统一运行时',()=>{
+test('层级视图、看板子任务树、详情常驻子任务区和完成前确认均接入统一运行时',()=>{
   assert.ok(runtime.includes('["board","grouped","list","hierarchy"]'));
   assert.ok(runtime.includes('className:"eva-loop-subtasks__empty"'));
   assert.ok(runtime.includes('父任务完成不会自动完成子任务，子任务状态保持不变。'));
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rt})'));
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
+  assert.ok(runtime.includes('function EvaBoardSubtaskTree('));
+  assert.ok(runtime.includes('className:"eva-board-subtask__children"'));
+  assert.ok(runtime.includes('className:"eva-board-col-count"'));
+  assert.ok(runtime.includes('showSubtasks:!0'));
+  assert.match(taskStyles,/\.eva-board-subtasks__tree[\s\S]*border-left:/);
+  assert.match(taskStyles,/\.eva-board-subtask__row[\s\S]*grid-template-columns:/);
 });
