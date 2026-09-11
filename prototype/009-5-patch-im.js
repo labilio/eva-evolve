@@ -1,6 +1,9 @@
 (function (root) {
   'use strict';
   root.__evaPatch('im', function (source) {
+    source=root.__evaCut(source,
+      ',\n    {kind:"text",sender:{uid:"u-director-wang",name:"供应链负责人王总",color:"#b49f35",online:!0},time:"17:02",text:"@王宜林 今天 18:00 前确认高风险需求，明早进入招投标评审。"}',
+      '', '移除未登记的职务型临时身份消息');
 function evaForwardTargets(actorId) {
   const channels=messageSource('all').channels;
   if(actorId!=='u-wangyilin')return channels;

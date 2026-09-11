@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import {readFileSync} from 'node:fs';
+import {readFileSync, readdirSync} from 'node:fs';
 import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 function setup(saved){
   const storage=new Map(saved?[['eva:project-members:v1',JSON.stringify(saved)]]:[]);
@@ -25,6 +25,22 @@ test('完整人类目录覆盖所有演示消息作者及提及，ID 唯一且�
     Object.values(value).forEach(walk);
   }
   walk(window.__EVA_IM_DEMO);
+});
+
+test('全部浏览器运行时引用的人类 ID 均登记到公共通讯录',async()=>{
+  const {window}=setup(),registered=new Set(window.__EVA_PEOPLE.map(person=>person.id));
+  const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');
+  const sources=[
+    ['构建后的兼容运行时',createPatchedRuntime().source],
+    ...readdirSync('prototype')
+      .filter(file=>file.endsWith('.js')&&!/^009-[4-8]-/.test(file))
+      .map(file=>['prototype/'+file,readFileSync('prototype/'+file,'utf8')]),
+  ];
+  for(const [file,source] of sources){
+    const references=[...source.matchAll(/["'](u-[a-z0-9][a-z0-9-]*)["']/g)].map(match=>match[1]);
+    for(const id of references)assert.ok(registered.has(id),file+' 引用了通讯录未登记的人类身份 '+id);
+  }
+  assert.doesNotMatch(sources[0][1],/u-director-wang|供应链负责人王总/);
 });
 test('同一人从预置私聊、双方新私聊和通讯录获得相同头像；同名账号不合并',()=>{
   const {window,store,model}=setup();
