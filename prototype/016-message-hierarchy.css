@@ -504,7 +504,8 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:focus-v
   outline-offset: 1px;
 }
 body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle > svg { display: block; }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle { transform: none; }
+body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle,
+body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle.is-collapsed { transform: none; }
 
 .eva-msg .eva-space-card .wk-conv-compact-item--thread {
   margin-top: 1px;
