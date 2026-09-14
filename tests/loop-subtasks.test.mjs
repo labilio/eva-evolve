@@ -83,11 +83,11 @@ test('层级视图、看板子任务树、详情常驻子任务区和完成前�
   assert.ok(runtime.includes('function EvaBoardSubtaskTree('));
   assert.ok(runtime.includes('className:"eva-board-subtask__children"'));
   assert.ok(runtime.includes('className:"eva-board-subtask__meta"'));
-  assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:Nt,size:18})'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:Nt,size:16})'));
   assert.ok(runtime.includes('className:"eva-board-col-count"'));
   assert.ok(runtime.includes('showSubtasks:!0'));
   assert.match(taskStyles,/\.eva-board-subtasks__tree[\s\S]*border-left:/);
-  assert.match(taskStyles,/\.eva-board-subtask__row[\s\S]*grid-template-columns:/);
-  assert.match(taskStyles,/\.eva-board-subtask__row[\s\S]*grid-template-rows:\s*minmax\(24px, auto\) 24px/);
-  assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*3 \/ 5/);
+  assert.match(taskStyles,/\.eva-loop-board--nested\s*\{\s*grid-auto-columns:\s*336px/);
+  assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto auto/);
+  assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*5/);
 });
