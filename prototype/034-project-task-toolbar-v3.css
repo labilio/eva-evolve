@@ -545,6 +545,12 @@
 
 /* Detail page exposes decomposition even before the first child exists. */
 .loop-idp .eva-loop-subtasks__head { min-height: 32px; }
+.loop-idp .eva-loop-subtasks__actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 2px;
+}
 .loop-idp .eva-loop-subtasks__progress {
   width: 100%;
   height: 4px;
@@ -623,6 +629,367 @@
   cursor: pointer;
 }
 
+/* Contextual decomposition: a focused descendant tree opened from task detail. */
+.eva-task-breakdown {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-primary);
+  font: 400 14px/22px var(--eva-font-sans);
+}
+.eva-task-breakdown__topbar {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--eva-topbar-h);
+  padding: 0 20px;
+  gap: 12px;
+  border-bottom: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+}
+.eva-task-breakdown__back,
+.eva-task-breakdown__tool,
+.eva-task-breakdown__create,
+.eva-task-breakdown__icon-btn,
+.eva-task-breakdown__zoom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.eva-task-breakdown__back {
+  min-height: 32px;
+  padding: 0 8px;
+  gap: 6px;
+  border-radius: var(--eva-radius-control);
+  color: var(--eva-text-secondary-accessible);
+}
+.eva-task-breakdown__back:hover,
+.eva-task-breakdown__tool:hover,
+.eva-task-breakdown__icon-btn:hover,
+.eva-task-breakdown__zoom button:hover:not(:disabled) {
+  background: var(--eva-overlay-hover);
+  color: var(--eva-action-primary);
+}
+.eva-task-breakdown__divider {
+  width: var(--eva-border-hairline-w);
+  height: 20px;
+  flex: none;
+  background: var(--eva-border-subtle);
+}
+.eva-task-breakdown__heading {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+.eva-task-breakdown__heading > svg { flex: none; color: var(--eva-action-primary); }
+.eva-task-breakdown__heading > div {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 10px;
+}
+.eva-task-breakdown__heading strong {
+  flex: none;
+  font: 500 16px/24px var(--eva-font-sans);
+}
+.eva-task-breakdown__heading span {
+  min-width: 0;
+  max-width: min(32vw, 360px);
+  overflow: hidden;
+  color: var(--eva-text-secondary-accessible);
+  font: 400 12px/16px var(--eva-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-task-breakdown__actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 6px;
+}
+.eva-task-breakdown__tool,
+.eva-task-breakdown__create {
+  min-height: 32px;
+  padding: 0 12px;
+  gap: 6px;
+  border-radius: var(--eva-radius-control);
+  white-space: nowrap;
+}
+.eva-task-breakdown__tool { color: var(--eva-text-secondary-accessible); }
+.eva-task-breakdown__create {
+  background: var(--eva-action-primary);
+  color: var(--eva-action-primary-text);
+  font-weight: 500;
+}
+.eva-task-breakdown__create:hover { background: var(--eva-action-primary-hover); }
+.eva-task-breakdown__body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--eva-surface-subtle);
+}
+.eva-task-breakdown__summary {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 24px;
+  gap: 14px;
+  border-bottom: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-secondary-accessible);
+  font: 400 12px/16px var(--eva-font-sans);
+}
+.eva-task-breakdown__summary strong {
+  color: var(--eva-text-primary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.eva-task-breakdown__hint {
+  margin-left: auto;
+  color: var(--eva-text-muted);
+}
+.eva-task-breakdown__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.eva-task-breakdown__canvas {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  padding: 56px 72px 92px;
+}
+.eva-task-breakdown__tree {
+  width: max-content;
+  min-width: min-content;
+  margin: auto;
+  transform-origin: left center;
+}
+.eva-task-breakdown__branch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  min-width: 0;
+}
+.eva-task-breakdown__node-wrap {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+.eva-task-breakdown__node {
+  position: relative;
+  box-sizing: border-box;
+  width: 248px;
+  height: 122px;
+  overflow: hidden;
+  border: var(--eva-border-standard-w) solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-chip);
+  background: var(--eva-surface-primary);
+  box-shadow: var(--eva-shadow-hairline);
+}
+.eva-task-breakdown__node:hover {
+  border-color: var(--eva-border-default);
+  box-shadow: var(--eva-shadow-canvas);
+}
+.eva-task-breakdown__node.is-root {
+  border-color: var(--eva-action-primary);
+  box-shadow: 0 0 0 var(--eva-border-hairline-w) var(--eva-action-primary), var(--eva-shadow-canvas);
+}
+.eva-task-breakdown__node-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 14px 50px 12px 14px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.eva-task-breakdown__node-top,
+.eva-task-breakdown__node-foot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.eva-task-breakdown__node-top { gap: 6px; }
+.eva-task-breakdown__node-id {
+  color: var(--eva-text-secondary-accessible);
+  font: 500 12px/16px var(--eva-font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.eva-task-breakdown__node-status {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--eva-text-secondary-accessible);
+  font: 400 12px/16px var(--eva-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-task-breakdown__node-title {
+  display: block;
+  min-width: 0;
+  margin-top: 14px;
+  overflow: hidden;
+  color: var(--eva-text-primary);
+  font: 500 14px/22px var(--eva-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-task-breakdown__node-foot {
+  margin-top: auto;
+  justify-content: space-between;
+  gap: 8px;
+}
+.eva-task-breakdown__node-progress {
+  overflow: hidden;
+  color: var(--eva-text-muted);
+  font: 400 11px/16px var(--eva-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-task-breakdown__node-actions {
+  position: absolute;
+  top: 9px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  gap: 2px;
+}
+.eva-task-breakdown__icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--eva-radius-control);
+  color: var(--eva-text-secondary-accessible);
+}
+.eva-task-breakdown__icon-btn svg { transition: transform 160ms ease; }
+.eva-task-breakdown__icon-btn svg.is-open { transform: rotate(90deg); }
+.eva-task-breakdown__children {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  margin-left: 48px;
+  gap: 24px;
+}
+.eva-task-breakdown__children::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -24px;
+  width: var(--eva-border-hairline-w);
+  background: var(--eva-border-default);
+  content: "";
+}
+.eva-task-breakdown__branch > .eva-task-breakdown__children::after,
+.eva-task-breakdown__children > .eva-task-breakdown__branch::before {
+  position: absolute;
+  top: 50%;
+  height: var(--eva-border-hairline-w);
+  background: var(--eva-border-default);
+  content: "";
+}
+.eva-task-breakdown__branch > .eva-task-breakdown__children::after {
+  left: -48px;
+  width: 24px;
+}
+.eva-task-breakdown__children > .eva-task-breakdown__branch::before {
+  left: -24px;
+  width: 24px;
+}
+.eva-task-breakdown__zoom {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 2px;
+  overflow: hidden;
+  border: var(--eva-border-hairline-w) solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-control);
+  background: var(--eva-surface-primary);
+  box-shadow: var(--eva-shadow-floating);
+}
+.eva-task-breakdown__zoom button {
+  width: 32px;
+  height: 30px;
+  border-radius: var(--eva-radius-key);
+  color: var(--eva-text-secondary-accessible);
+}
+.eva-task-breakdown__zoom button:disabled {
+  color: var(--eva-text-muted);
+  cursor: default;
+  opacity: .45;
+}
+.eva-task-breakdown__zoom output {
+  min-width: 44px;
+  color: var(--eva-text-secondary-accessible);
+  font: 400 11px/16px var(--eva-font-sans);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.eva-task-breakdown__detail-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--eva-surface-primary);
+}
+.eva-task-breakdown__detail-overlay > .loop-idp {
+  width: 100%;
+  height: 100%;
+}
+.eva-task-breakdown__detail-overlay .loop-idp__boardbtn { display: none; }
+.eva-task-breakdown__detail-overlay .eva-task-breakdown__detail-back {
+  width: auto;
+  min-width: 88px;
+  padding: 0 8px;
+  gap: 6px;
+  color: var(--eva-text-secondary-accessible);
+  font: 400 14px/22px var(--eva-font-sans);
+}
+.eva-task-breakdown :is(button,[role="treeitem"]):focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: -2px;
+}
+
 @media (max-width: 980px) {
   .eva-issue-hierarchy__head,
   .eva-issue-hierarchy__row { grid-template-columns: minmax(320px, 1fr) 112px 72px 36px; }
@@ -632,10 +999,29 @@
   .loop-idp .loop-subissue > .eva-issue-assignee { display: none; }
 }
 
+@media (max-width: 760px) {
+  .eva-task-breakdown__topbar { padding-inline: 10px; gap: 6px; }
+  .eva-task-breakdown__back span,
+  .eva-task-breakdown__divider,
+  .eva-task-breakdown__heading span,
+  .eva-task-breakdown__tool { display: none; }
+  .eva-task-breakdown__heading > div { gap: 0; }
+  .eva-task-breakdown__create { padding-inline: 10px; }
+  .eva-task-breakdown__summary { padding-inline: 14px; gap: 10px; }
+  .eva-task-breakdown__hint { display: none; }
+  .eva-task-breakdown__canvas { padding: 40px 32px 84px; }
+  .eva-task-breakdown__node { width: 224px; }
+  .eva-task-breakdown__children { margin-left: 36px; }
+  .eva-task-breakdown__children::before { left: -18px; }
+  .eva-task-breakdown__branch > .eva-task-breakdown__children::after { left: -36px; width: 18px; }
+  .eva-task-breakdown__children > .eva-task-breakdown__branch::before { left: -18px; width: 18px; }
+}
+
 @media (prefers-reduced-motion: reduce) { .loop-page .loop-card { transition: none; } }
 @media (prefers-reduced-motion: reduce) {
   .eva-board-subtasks__toggle svg,
   .eva-board-subtask__toggle svg,
   .eva-issue-hierarchy__toggle svg,
+  .eva-task-breakdown__icon-btn svg,
   .loop-idp .eva-loop-subtasks__progress > span { transition: none; }
 }

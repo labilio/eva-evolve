@@ -104,3 +104,24 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);
   assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
 });
+
+test('任务分解树从任务详情进入并复用同一父子关系',()=>{
+  assert.ok(runtime.includes('function EvaIssueBreakdownPage('));
+  assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,St)'));
+  assert.ok(runtime.includes('"查看分解"'));
+  assert.ok(runtime.includes('"查看任务分解"'));
+  assert.ok(runtime.includes('"开始分解"'));
+  assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
+  assert.ok(runtime.includes('onClick:()=>pt(kr)'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown__detail-overlay"'));
+  assert.ok(runtime.includes('presentation:"panel"'));
+  assert.ok(runtime.includes('breakdownContext:!0'));
+  assert.ok(runtime.includes('"返回任务分解"'));
+  assert.ok(runtime.includes('evaSetSelectedIssue(null);return !1'));
+  assert.equal(runtime.includes('["board","grouped","list","hierarchy","breakdown"]'),false);
+  assert.match(taskStyles,/\.eva-task-breakdown\s*\{[\s\S]*height:\s*100%;[\s\S]*overflow:\s*hidden/);
+  assert.match(taskStyles,/\.eva-task-breakdown__children::before\s*\{[\s\S]*background:\s*var\(--eva-border-default\)/);
+  assert.match(taskStyles,/\.eva-task-breakdown__node-title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
+  assert.match(taskStyles,/\.eva-task-breakdown__detail-overlay\s*\{[\s\S]*position:\s*absolute;[\s\S]*inset:\s*0/);
+  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*224px/);
+});
