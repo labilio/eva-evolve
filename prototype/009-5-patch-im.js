@@ -763,7 +763,7 @@ function EvaAITeamPage() {
       const items=React.Children.toArray(children);
       if(!enabled)return React.createElement(React.Fragment,null,children);
       items[0]=React.cloneElement(items[0],{dragHandleProps:{...drag.attributes,...drag.listeners,ref:drag.setActivatorNodeRef,'aria-label':'拖动排序：'+items[0].props.name}});
-      return React.createElement('div',{ref:drag.setNodeRef,className:'eva-follow-channel'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform),transition:drag.transition}},items);
+      return React.createElement('div',{ref:drag.setNodeRef,className:'eva-follow-channel'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform?{...drag.transform,scaleX:1,scaleY:1}:null),transition:drag.transition}},items);
     }
     function EvaConversationCategoryEditor({store,actorId,record,channels,onClose,onSaved}){
       const h=React.createElement, [name,setName]=reactExports.useState(record.name||''),[error,setError]=reactExports.useState('');
@@ -780,7 +780,7 @@ function EvaAITeamPage() {
     function EvaFollowCategory({categoryId,sortableItems,children,title,extra}){
       const drag=useSortable({id:'category:'+categoryId,data:{type:'category'}});
       const project=categoryId.startsWith('space:')?loadSpaces().find(p=>p.id===categoryId.slice(6)):null;
-      return React.createElement('section',{ref:drag.setNodeRef,className:'eva-follow-category'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform),transition:drag.transition},'aria-label':title.props.name},
+      return React.createElement('section',{ref:drag.setNodeRef,className:'eva-follow-category'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform?{...drag.transform,scaleX:1,scaleY:1}:null),transition:drag.transition},'aria-label':title.props.name},
         React.createElement('div',{className:'eva-follow-category-title'},
           React.createElement('button',{type:'button',className:'eva-follow-category-handle',...drag.attributes,...drag.listeners,ref:drag.setActivatorNodeRef,'aria-label':'拖动分组：'+title.props.name,onClick:e=>e.stopPropagation()},React.createElement(EvaFollowGrip)),title,project&&extra?React.cloneElement(extra,{icon:React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(project).accent},"aria-hidden":true})}):extra),
         React.createElement(SortableContext,{items:sortableItems.map(id=>'item:'+id),strategy:verticalListSortingStrategy},children));
