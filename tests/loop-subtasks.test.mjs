@@ -96,8 +96,9 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-loop-board--nested\s*\{\s*grid-auto-columns:\s*336px/);
   assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto 20px/);
   assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*5/);
-  assert.match(taskStyles,/\.eva-board-subtask__title\s*\{[\s\S]*-webkit-line-clamp:\s*2/);
+  assert.match(taskStyles,/\.eva-board-subtask__title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
   assert.match(taskStyles,/\.eva-board-subtask__meta > \.eva-issue-assignee\.is-compact\s*\{[\s\S]*width:\s*20px/);
+  assert.match(taskStyles,/\.eva-board-subtasks__tree,[\s\S]*margin-left:\s*6px;[\s\S]*padding-left:\s*6px/);
   assert.match(taskStyles,/\.loop-card \.eva-issue-relation\s*\{[\s\S]*background:\s*var\(--eva-surface-subtle\)/);
   assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);

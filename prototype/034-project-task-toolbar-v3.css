@@ -310,8 +310,8 @@
 .eva-board-subtask__toggle svg.is-open { transform: rotate(90deg); }
 .eva-board-subtasks__tree,
 .eva-board-subtask__children {
-  margin-left: 9px;
-  padding-left: 9px;
+  margin-left: 6px;
+  padding-left: 6px;
   border-left: var(--eva-border-hairline-w) solid var(--eva-border-subtle);
 }
 .eva-board-subtasks__tree { margin-top: 7px; }
@@ -320,8 +320,8 @@
 .eva-board-subtask__children > .eva-board-subtask__node > .eva-board-subtask__row::before {
   position: absolute;
   top: 50%;
-  left: -9px;
-  width: 7px;
+  left: -6px;
+  width: 4px;
   height: var(--eva-border-hairline-w);
   background: var(--eva-border-subtle);
   content: "";
@@ -332,7 +332,7 @@
   grid-template-columns: 20px 15px minmax(0, 1fr) auto 20px;
   align-items: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 34px;
   margin: 1px 0;
   padding: 3px 4px;
   border-radius: var(--eva-radius-control);
@@ -352,7 +352,7 @@
   grid-row: 1;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
-  align-items: start;
+  align-items: center;
   min-width: 0;
   gap: 6px;
   padding: 2px 0;
@@ -364,16 +364,14 @@
   font-variant-numeric: tabular-nums;
 }
 .eva-board-subtask__title {
-  display: -webkit-box;
+  display: block;
   min-width: 0;
-  max-height: 40px;
+  max-height: 20px;
   overflow: hidden;
   color: var(--eva-text-primary);
   font: 500 13px/20px var(--eva-font-sans);
-  white-space: normal;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .eva-board-subtask__count {
   grid-column: 4;
