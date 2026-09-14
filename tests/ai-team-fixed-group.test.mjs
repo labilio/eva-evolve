@@ -63,3 +63,34 @@ test('custom AI teams keep a member snapshot and isolate group data',()=>{
  assert.throws(()=>restored.updateGroup(restored.id,{name:'不可修改'}),/默认团队不可编辑/);
  assert.throws(()=>restored.createGroup({name:'空团队',memberIds:[]}),/至少选择/);
 });
+test('team groups expose exact child unread counts and aggregate only unread presence',()=>{
+ let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};
+ const group=window.EvaMyAITeamGroup.createStore({storage});
+ const customId=group.createGroup({name:'未读验证组',memberIds:['assistant']});
+ const threadId=group.createThread(customId,{id:'status',name:'状态更新'});
+ const state=JSON.parse(saved),record=state.groups.find(item=>item.id===customId),thread=record.threads.find(item=>item.id===threadId);
+ record.messages=[{id:'group-ai',sender:{uid:'assistant',name:'通用助理',ai:true},text:'团队消息'}];
+ record.readAiMessageCount=0;record.teamUnreadNotificationsV1=true;
+ thread.messages=[
+  {id:'thread-ai-1',sender:{uid:'assistant',name:'通用助理',ai:true},text:'第一条'},
+  {id:'thread-user',sender:{uid:'u-wangyilin',name:'王宜林'},text:'收到'},
+  {id:'thread-ai-2',sender:{uid:'assistant',name:'通用助理',ai:true},text:'第二条'}
+ ];
+ thread.readAiMessageCount=1;saved=JSON.stringify(state);
+ const restored=window.EvaMyAITeamGroup.createStore({storage}),source=restored.source(customId,members,threadId);
+ assert.equal(source.channels[0].unread,1);assert.equal(source.channels[0].threads[0].unread,1);
+ assert.equal(restored.unreadCount(customId,threadId),1);assert.equal(restored.hasUnread(customId),true);assert.equal(restored.hasUnread(),true);
+ assert.equal(restored.markRead(customId,customId),true);assert.equal(restored.hasUnread(customId),true);
+ assert.equal(restored.markRead(customId,threadId),true);assert.equal(restored.markRead(customId,threadId),false);assert.equal(restored.hasUnread(customId),false);
+ restored.source(customId,members,threadId).onSend('@通用助理 继续',threadId);
+ assert.equal(restored.unreadCount(customId,threadId),0);
+ const reloaded=window.EvaMyAITeamGroup.createStore({storage});assert.equal(reloaded.hasUnread(customId),false);
+});
+test('forwarded AI content is authored by the current user and does not create team unread',()=>{
+ let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};
+ const group=window.EvaMyAITeamGroup.createStore({storage}),threadId=group.createThread({id:'forward',name:'转发'});
+ group.receiveForwarded(threadId,[{id:'forwarded-ai',kind:'text',sender:{uid:'assistant',name:'通用助理',ai:true},time:'10:00',text:'转发内容'}]);
+ assert.equal(group.unreadCount(group.id,threadId),0);
+ const message=group.source(members,threadId).threadMessages[threadId].at(-1);
+ assert.equal(message.sender.uid,'self');assert.equal(message.sender.ai,false);
+});

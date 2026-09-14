@@ -1,0 +1,117 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { chromium } from 'playwright';
+import { createServer } from '../../tools/serve.mjs';
+import { fileURLToPath } from 'node:url';
+
+test('我的 Agent：默认层级、分层未读与已读回收保持一致', async () => {
+  const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.platform === 'darwin' ? { channel: 'msedge' } : {});
+  try {
+    const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin
+      ? route.continue() : route.abort());
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${origin}/#/messages?evaIM=my-ai`);
+    await page.locator('.eva-ai-team').waitFor();
+
+    assert.equal(await page.locator('.eva-ai-team__section-count').count(), 0, '顶层分类不显示数量或未读');
+    assert.equal(await page.getByRole('button', { name: 'AI 团队', exact: true }).getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.getByRole('button', { name: 'AI 助理', exact: true }).getAttribute('aria-expanded'), 'true');
+
+    const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
+    const identityButtons = page.locator('.eva-ai-team__identity-button');
+    assert.ok(await identityButtons.count() > 0);
+    assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
+
+    const fixture = await page.evaluate(() => {
+      const groupStore = window.EvaMyAITeamGroup;
+      const defaultGroup = groupStore.groups().find(group => group.system);
+      const identityId = window.EvaAITeam.getSnapshot().identities[0].id;
+      const customGroupId = groupStore.createGroup({ name: '层级回归团队', memberIds: [identityId] });
+      const extraThreadId = groupStore.createThread(defaultGroup.id, { id: 'hierarchy-regression', name: '额外验收子区' });
+      return { customGroupId, extraThreadId };
+    });
+    const customTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 层级回归团队"])`);
+    await customTeam.waitFor();
+    assert.equal(await customTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
+    await page.waitForFunction(() => document.querySelector('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-threads-more'));
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3, '系统团队默认仅展示最新三个子区');
+    const more = systemTeam.locator('.eva-ai-team__team-threads-more');
+    await more.click();
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 4);
+    await more.click();
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3);
+
+    assert.ok(await page.locator('.eva-my-ai-collaboration-icon__unread').count() > 0, '左侧导航聚合未读红点');
+    assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '团队父级聚合红点');
+    await systemTeam.locator('.eva-ai-team__team-button').click();
+    assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '主会话已读后仍聚合未读子区');
+    const unreadTeamThread = systemTeam.locator('.eva-ai-team__team-thread-row:has(.wk-conv-compact-badge)').first();
+    const unreadTeamThreadName = await unreadTeamThread.locator('.wk-conv-compact-name').innerText();
+    const selectedTeamThread = systemTeam.locator('.wk-conv-compact-item').filter({ hasText: unreadTeamThreadName }).first();
+    await selectedTeamThread.click();
+    await selectedTeamThread.locator('.wk-conv-compact-badge').waitFor({ state: 'detached' });
+    assert.equal(await systemTeam.locator('.eva-ai-team__unread-dot').count(), 0, '主会话与唯一未读子区均已读后团队红点清零');
+
+    const selectedTeamButton = systemTeam.locator('.eva-ai-team__team-button');
+    assert.equal(await selectedTeamButton.getAttribute('aria-current'), null, '进入子区后父团队不伪装为当前主会话');
+    const selectedThreadState = await selectedTeamThread.getAttribute('aria-current');
+    const unreadIdentity = page.locator('.eva-ai-team__identity:has(.eva-ai-team__unread-dot)').first();
+    const unreadIdentityButton = unreadIdentity.locator('.eva-ai-team__identity-button');
+    const unreadIdentityControls = await unreadIdentityButton.getAttribute('aria-controls');
+    const selectedIdentity = page.locator(`.eva-ai-team__identity:has(.eva-ai-team__identity-button[aria-controls="${unreadIdentityControls}"])`);
+    await unreadIdentityButton.click();
+    assert.equal(await unreadIdentityButton.getAttribute('aria-expanded'), 'true', '点击身份行只展开会话');
+    assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '展开身份不切换当前子区');
+
+    const unreadSessionRow = selectedIdentity.locator('.eva-ai-team__session-row:has(.eva-ai-team__session-unread)').first();
+    const unreadBadge = unreadSessionRow.locator('.eva-ai-team__session-unread');
+    assert.ok(await unreadBadge.count() > 0, '会话叶子显示精确未读数');
+    assert.equal(await unreadBadge.innerText(), '1');
+    await unreadSessionRow.hover();
+    await page.waitForTimeout(200);
+    assert.equal(await unreadBadge.evaluate(node => getComputedStyle(node).opacity), '0', '悬停操作替换未读数字');
+    assert.equal(await unreadSessionRow.locator('.eva-ai-team__session-actions').evaluate(node => getComputedStyle(node).opacity), '1');
+    await unreadSessionRow.locator('.eva-ai-team__session').click();
+    await unreadBadge.waitFor({ state: 'detached' });
+    assert.equal(await selectedIdentity.locator('.eva-ai-team__unread-dot').count(), 0, '进入唯一未读会话后身份红点清零');
+
+    await page.evaluate(() => {
+      const direct = window.EvaAITeam;
+      direct.getSnapshot().sessions.forEach(session => direct.markRead(session.id));
+      const digital = window.EvaDigitalEmployeesStore;
+      digital.teamIds().forEach(id => digital.sessions(id).forEach(session => digital.markRead(id, session.id)));
+      const groups = window.EvaMyAITeamGroup;
+      groups.groups().forEach(group => {
+        groups.markRead(group.id, group.id);
+        groups.source(group.id, []).channels[0].threads.forEach(thread => groups.markRead(group.id, thread.id));
+      });
+    });
+    await page.locator('.eva-my-ai-collaboration-icon__unread').waitFor({ state: 'detached' });
+
+    const editor = page.getByRole('textbox', { name: /^发送给 / });
+    await editor.fill('当前会话未读回归');
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    await page.locator('.eva-im-bubble-row').getByText('当前会话未读回归', { exact: true }).waitFor();
+    assert.equal(await page.locator('.eva-my-ai-collaboration-icon__unread').count(), 0, '当前会话同步回复不会产生幽灵未读');
+    assert.equal(await page.locator('.eva-ai-team__session-unread').count(), 0);
+    const viewport = await page.evaluate(() => ({
+      scrollX: window.scrollX,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    }));
+    assert.deepEqual(viewport, { scrollX: 0, overflow: 0 }, '展开长会话名后页面不得横向滚动或溢出');
+    assert.deepEqual(errors, []);
+
+    await page.screenshot({ path: '/tmp/eva-my-ai-hierarchy-unread-1200.png' });
+    assert.ok(fixture.customGroupId && fixture.extraThreadId);
+  } finally {
+    await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});

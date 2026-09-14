@@ -42,6 +42,34 @@ test('independent sessions keep drafts, title, pinning and deleted callbacks iso
   store.deleteSession('staff-1',first);assert.equal(store.conversationSource('staff-1',first),null);assert.throws(()=>a.onSend('不能恢复已删会话'));
   assert.equal(store.sessions('staff-1').length,1);
 });
+test('digital employee unread counts aggregate only after joining My Agent and clear on open conversations',()=>{
+  const {store,saved}=load();
+  const session=store.createSession('staff-1');
+  store.send('staff-1','后台回复');
+  assert.equal(store.unreadCount('staff-1',session),1);
+  assert.equal(store.hasUnread('staff-1'),true);
+  assert.equal(store.hasUnread(),false);
+  store.addToTeam('staff-1');
+  assert.equal(store.hasUnread(),true);
+  assert.equal(store.sessions('staff-1')[0].unreadCount,1);
+  assert.equal(store.markRead('staff-1',session),true);
+  assert.equal(store.markRead('staff-1',session),false);
+  assert.equal(load(saved()).store.unreadCount('staff-1',session),0);
+  const source=store.conversationSource('staff-1',session);
+  source.onSend('当前会话回复',source.selectedThreadId,{conversationId:source.selectedThreadId,messageId:'original',fromName:'专家',digest:'原内容'});
+  assert.equal(store.unreadCount('staff-1',session),0);
+  assert.equal(store.chat('staff-1').messages.at(-2).replyTo.messageId,'original');
+});
+test('legacy digital history and forwarded AI content stay read',()=>{
+  const savedState={agents:[{id:'staff-1',kind:'staff',name:'专家'}],drafts:{},personaRequests:[],chats:{'staff-1':{messages:[{sender:{uid:'u-wangyilin'},text:'历史消息'}],draft:''}},teamIds:['staff-1']};
+  const {store}=load(savedState);
+  assert.equal(store.sessions('staff-1')[0].unreadCount,0);
+  assert.equal(store.hasUnread(),false);
+  const session=store.sessions('staff-1')[0],source=store.conversationSource('staff-1',session.id);
+  store.receiveForwarded(source.selectedThreadId,[{kind:'text',sender:{uid:'another-ai',name:'其他 AI',ai:true},time:'10:00',text:'转发内容'}]);
+  assert.equal(store.unreadCount('staff-1',session.id),0);
+  assert.equal(store.chat('staff-1').messages.at(-1).sender.ai,false);
+});
 test('market compatibility chooses newly created session even in the same millisecond',()=>{
   const {store}=load();store.createSession('staff-1');const newest=store.createSession('staff-1');
   store.setDraft('staff-1','给最新会话');assert.equal(store.conversationSource('staff-1',newest).initialDraft,'给最新会话');
