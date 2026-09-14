@@ -152,6 +152,7 @@ test('任务分解画布内嵌于任务详情并可在固定分解根内切换�
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-fields"'));
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-due"'));
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-labels"'));
+  assert.equal(runtime.includes('className:"eva-task-breakdown__node-label-empty"'),false);
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-priority"'));
   assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:kr,size:18})'));
   assert.ok(runtime.includes('React.createElement(LabelChips,{labels:kr.labels,max:2})'));
@@ -197,9 +198,11 @@ test('任务分解画布内嵌于任务详情并可在固定分解根内切换�
   assert.equal(runtime.includes('["board","grouped","list","hierarchy","breakdown"]'),false);
   assert.match(taskStyles,/\.eva-task-breakdown\s*\{[\s\S]*height:\s*440px;[\s\S]*border:\s*var\(--eva-border-standard-w\) solid var\(--eva-border-subtle\)/);
   assert.match(taskStyles,/\.eva-task-breakdown__children::before\s*\{[\s\S]*background:\s*var\(--eva-border-default\)/);
-  assert.match(taskStyles,/\.eva-task-breakdown__node\s*\{[\s\S]*width:\s*292px;[\s\S]*height:\s*178px/);
+  assert.match(taskStyles,/\.eva-task-breakdown__canvas\s*\{[\s\S]*padding:\s*24px 32px 56px/);
+  assert.match(taskStyles,/\.eva-task-breakdown__node\s*\{[\s\S]*width:\s*264px;[\s\S]*min-height:\s*112px/);
+  assert.match(taskStyles,/\.eva-task-breakdown__children\s*\{[\s\S]*margin-left:\s*28px;[\s\S]*gap:\s*10px/);
   assert.match(taskStyles,/\.eva-task-breakdown__node\.is-selected\s*\{[\s\S]*border-color:\s*var\(--eva-action-primary\)/);
   assert.match(taskStyles,/\.eva-task-breakdown__node-main:focus-visible\s*\{[\s\S]*outline:\s*2px solid var\(--eva-action-primary\)/);
   assert.match(taskStyles,/\.eva-task-breakdown__node-title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
-  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*270px;\s*height:\s*174px/);
+  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*244px;\s*min-height:\s*108px/);
 });
