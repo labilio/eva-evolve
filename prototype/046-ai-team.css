@@ -39,14 +39,16 @@
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 28px;
   --eva-rail-level-indent: 12px;
-  /* Group chevrons use a 22px slot for a centered 12px icon. Keep an
-     identity avatar's visible left edge aligned to that icon. */
-  --eva-rail-identity-content-inset: 13px;
+  /* AI identity avatars align with their role-group label column. Team
+     subzones keep their own deeper inset relative to the team avatar. */
+  --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
+  --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4) + var(--eva-rail-level-indent));
+  --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + 14px + var(--gds-space-1-5));
+  --eva-rail-identity-avatar-trailing: 2px;
   box-sizing: border-box;
-  /* Group title → assistant label → session label advances by 12px.
-     The session has no leading avatar, so its start includes the 22px avatar
-     and 8px icon/text gap that precede an assistant label. */
-  --eva-rail-session-indent: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-level-indent));
+  /* Assistant sessions have no leading avatar, so their labels reuse the
+     assistant-name column, including the avatar's trailing margin. */
+  --eva-rail-session-indent: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-identity-avatar-trailing));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
   width: var(--eva-conversation-rail-current);
@@ -98,16 +100,18 @@
 }
 .eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__section + .eva-ai-team__section { margin-top: var(--gds-space-4); padding-top: var(--gds-space-3); border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-.eva-ai-team__section-title { display: flex; min-height: 40px; box-sizing: border-box; align-items: center; justify-content: space-between; gap: var(--gds-space-2); margin-bottom: var(--gds-space-1); padding: 0 var(--gds-space-2); background: transparent; color: var(--eva-rail-primary); }
+.eva-ai-team__section-title { display: flex; min-height: 40px; box-sizing: border-box; align-items: center; justify-content: space-between; gap: var(--gds-space-2); margin-bottom: var(--gds-space-1); padding: 0 var(--gds-space-2); border-radius: var(--gds-radius-key); background: transparent; color: var(--eva-rail-primary); }
+.eva-ai-team__section-title:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__section-title:has(.eva-ai-team__section-toggle:active) { background: var(--eva-rail-selected); }
 .eva-ai-team__section-title h2 { min-width: 0; flex: 1; margin: 0; color: inherit; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-semibold); }
 .eva-ai-team__section-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-medium); text-align: right; }
 .eva-ai-team__section-toggle { display: flex; width: 100%; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); border: 0; border-radius: var(--gds-radius-key); background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
-.eva-ai-team__section-toggle:hover { background: var(--gds-color-overlay-hover); }
+.eva-ai-team__section-toggle:hover { background: transparent; }
 .eva-ai-team__section-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team__section-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__section-chevron { flex: 0 0 12px; color: var(--gds-color-text-secondary); transition: transform 120ms ease; }
 .eva-ai-team__section-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__section-icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; color: var(--gds-color-text-secondary); }
-.eva-ai-team__section-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-ai-team__section-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
 .eva-ai-team__team-heading:hover,
@@ -136,7 +140,12 @@
 .eva-ai-team__team-heading:hover .eva-ai-team__team-menu,
 .eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
 .eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
-.eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent)); min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__team-threads .wk-conv-compact-item--thread { padding-left: var(--eva-rail-team-thread-inset); min-height: var(--eva-rail-identity-height); }
+.eva-ai-team__team-threads-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
+.eva-ai-team__team-threads-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
+.eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
 .eva-ai-team__direct-groups { margin-top: var(--gds-space-1); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
@@ -536,7 +545,7 @@
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
 
 /* One avatar/text grid and one trailing disclosure column for all identities. */
-.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: 2px; }
+.eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
 .eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
   position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
@@ -564,7 +573,7 @@
    Anchor at the parent group avatar's left edge, then advance one shared 12px
    hierarchy level so the nested relationship is visible at a glance. */
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread {
-  padding-left: calc(var(--eva-rail-identity-content-inset) + var(--eva-rail-level-indent));
+  padding-left: var(--eva-rail-team-thread-inset);
   min-height: var(--eva-rail-identity-height);
 }
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }

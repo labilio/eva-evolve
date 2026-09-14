@@ -543,20 +543,24 @@ function EvaAITeamPage() {
     ...teamIdentities.map(item=>({...item,kind:'ai-direct',identityAppearance:evaIdentityAppearance(item)})),
     ...digitalEmployees.map(item=>({...item,kind:'ai-direct',identityAppearance:digitalStore.appearance(item)}))];
   const teamGroups=groupStore.groups(),groupIds=new Set(teamGroups.map(group=>group.id));
+  const teamThreadTime=item=>String(item.updated_at||item.updatedAt||item.created_at||item.createdAt||'');
+  const orderedTeamThreads=items=>[...items].filter(item=>item.status!==2).sort((a,b)=>teamThreadTime(b).localeCompare(teamThreadTime(a)));
   const requestedIdentity=groupIds.has(requestedIdentityId)?{id:requestedIdentityId}:availableIdentities.find(i=>i.id===requestedIdentityId);
-  const sessionsFor=id=>groupIds.has(id)?groupStore.source(id,fixedMembers).channels[0].threads:snapshot.sessions.filter(session=>session.identityId===id).concat(digitalStore.sessions(id));
+  const sessionsFor=id=>groupIds.has(id)?orderedTeamThreads(groupStore.source(id,fixedMembers).channels[0].threads):snapshot.sessions.filter(session=>session.identityId===id).concat(digitalStore.sessions(id));
   const requestedSelection=id=>{const sessions=sessionsFor(id),explicit=requestedSessionId&&!groupIds.has(requestedSessionId)?sessions.find(session=>session.id===requestedSessionId):null;return{identityId:id,sessionId:explicit?.id||(requestedSessionId?null:sessions[0]?.id)}};
   const [selection, setSelection] = reactExports.useState(() => requestedSelection(requestedIdentity?.id||groupStore.id));
   const [rename,setRename]=reactExports.useState(null),[renameTitle,setRenameTitle]=reactExports.useState(''),[renameError,setRenameError]=reactExports.useState('');
   const openRename=(identityId,record)=>{setRename({identityId,id:record.id});setRenameTitle(record.title);setRenameError('');};
   const saveRename=()=>{try{(digitalEmployees.some(i=>i.id===rename.identityId)?digitalStore:store).renameThread(rename.identityId,rename.id,renameTitle);setRename(null);}catch(e){setRenameError(e.message);}};
-  const [collapsed,setCollapsed] = reactExports.useState(()=>({[groupStore.id]:false,...(requestedIdentity?{[requestedIdentity.id]:false}:{})}));
+  const [collapsed,setCollapsed] = reactExports.useState(()=>Object.fromEntries([...teamGroups.map(group=>[group.id,!group.system]),...availableIdentities.map(item=>[item.id,true]),...(requestedIdentity?[[requestedIdentity.id,false]]:[])]));
+  const [showAllTeamThreads,setShowAllTeamThreads]=reactExports.useState(()=>requestedIdentity&&groupIds.has(requestedIdentity.id)&&requestedSessionId?{[requestedIdentity.id]:true}:{});
   reactExports.useEffect(()=>{
     if(!requestedIdentity)return;
     const next=requestedSelection(requestedIdentity.id);
     setSelection(next);
     if(requestedSessionId&&!groupIds.has(requestedSessionId)&&!next.sessionId)setError('原会话已删除或当前不可访问');else setError('');
     setCollapsed(value=>({...value,[requestedIdentity.id]:false}));
+    if(groupIds.has(requestedIdentity.id)&&requestedSessionId)setShowAllTeamThreads(value=>({...value,[requestedIdentity.id]:true}));
   },[teamSearch,requestedIdentity?.id]);
   const [collapsedGroups,setCollapsedGroups]=reactExports.useState({assistant:false,persona:false,digital:false});
   const [sectionCollapsed,setSectionCollapsed]=reactExports.useState({teams:false,assistants:false});
@@ -616,7 +620,7 @@ function EvaAITeamPage() {
     const expanded=collapsed[i.id]===false, abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced');
     return h('section',{className:'eva-ai-team__identity',key:i.id},
       h('div',{className:'eva-ai-team__identity-heading'},
-        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-expanded':expanded,'aria-controls':'ai-sessions-'+i.id,onClick:()=>{setCollapsed(value=>({...value,[i.id]:expanded}));if(identity?.id!==i.id)choose(i.id,sessions[0]?.id||null);}},
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-expanded':expanded,'aria-controls':'ai-sessions-'+i.id,onClick:()=>setCollapsed(value=>({...value,[i.id]:expanded}))},
           h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'})),
           h(ChevronRight,{size:12,className:'eva-ai-team__chevron'+(expanded?' is-expanded':'')})),
@@ -633,7 +637,7 @@ function EvaAITeamPage() {
     const sessions=digitalStore.sessions(item.id), expanded=collapsed[item.id]===false;
     return h('section',{className:'eva-ai-team__identity',key:item.id},
       h('div',{className:'eva-ai-team__identity-heading'},
-        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-expanded':expanded,'aria-controls':'ai-sessions-'+item.id,onClick:()=>{setCollapsed(value=>({...value,[item.id]:expanded}));if(employee?.id!==item.id)choose(item.id,sessions[0]?.id||null);}},
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-expanded':expanded,'aria-controls':'ai-sessions-'+item.id,onClick:()=>setCollapsed(value=>({...value,[item.id]:expanded}))},
           window.EvaAIIdentity.avatar(digitalStore.appearance(item),22,h),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'})),
           h(ChevronRight,{size:12,className:'eva-ai-team__chevron'+(expanded?' is-expanded':'')})),
@@ -656,9 +660,9 @@ function EvaAITeamPage() {
         h('span',{className:'eva-ai-team__group-title'},label),h('span',{className:'eva-ai-team__group-count'},items.length)),
       !groupCollapsed&&h('div',{className:'eva-ai-team__group-content',id:groupId},items.map(role==='digital'?employeeItem:identityItem)));
   }
-  function sectionTitle(section,label,count,contentId,titleId,Icon){const collapsed=sectionCollapsed[section];return h('div',{className:'eva-ai-team__section-title'},h('h2',{id:titleId},h('button',{type:'button',className:'eva-ai-team__section-toggle','aria-expanded':!collapsed,'aria-controls':contentId,onClick:()=>setSectionCollapsed(value=>({...value,[section]:!value[section]}))},h(ChevronRight,{size:12,className:'eva-ai-team__section-chevron'+(collapsed?'':' is-expanded'),'aria-hidden':true}),h('span',{className:'eva-ai-team__section-icon','aria-hidden':true},h(Icon,{size:15,strokeWidth:1.75})),h('span',{className:'eva-ai-team__section-label'},label))),h('span',{className:'eva-ai-team__section-count','aria-label':label+'数量 '+count},count));}
+  function sectionTitle(section,label,count,contentId,titleId,Icon){const collapsed=sectionCollapsed[section];return h('div',{className:'eva-ai-team__section-title'},h('h2',{id:titleId},h('button',{type:'button',className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed,'aria-controls':contentId,onClick:()=>setSectionCollapsed(value=>({...value,[section]:!value[section]}))},h('span',{className:'eva-ai-team__section-icon','aria-hidden':true},h(Icon,{size:15,strokeWidth:1.75})),h('span',{className:'eva-ai-team__section-label'},label),h('span',{className:'eva-ai-team__section-count','aria-hidden':true},count),h(ChevronRight,{size:12,className:'eva-ai-team__section-chevron'+(collapsed?'':' is-expanded'),'aria-hidden':true}))));}
   function teamGroupItem(group){
-    const groupSource=groupStore.source(group.id,fixedMembers),channel=groupSource.channels[0],expanded=collapsed[group.id]===false,selected=selection.identityId===group.id,threadsId='ai-team-threads-'+group.id;
+    const groupSource=groupStore.source(group.id,fixedMembers),channel=groupSource.channels[0],threads=orderedTeamThreads(channel.threads),expanded=collapsed[group.id]===false,selected=selection.identityId===group.id,threadsId='ai-team-threads-'+group.id,showAll=showAllTeamThreads[group.id]===true,visibleThreads=group.system&&!showAll?threads.slice(0,3):threads,hasMore=group.system&&threads.length>3;
     return h('section',{className:'eva-ai-team__team',key:group.id},
       h('div',{className:'eva-ai-team__team-heading'+(selected&&!selection.sessionId?' is-selected':'')},
         h('button',{type:'button',className:'eva-ai-team__team-toggle','aria-label':(expanded?'收起':'展开')+' '+group.name+' 子区','aria-expanded':expanded,'aria-controls':threadsId,onClick:()=>setCollapsed(value=>({...value,[group.id]:expanded}))},
@@ -668,7 +672,7 @@ function EvaAITeamPage() {
           h('span',{className:'eva-ai-team__team-name',title:group.name},group.name),
           group.system&&h('span',{className:'eva-ai-team__team-default'},'默认')),
         !group.system&&h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,h(Dropdown.Item,{onClick:()=>setGroupEditor({mode:'edit',record:group})},'编辑团队'))},h('span',{className:'eva-ai-team__team-menu',onFocus:event=>{groupEditorOpener.current=event.target;}},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon,{size:16}),'aria-label':group.name+'的团队操作'})))),
-      expanded&&h('div',{className:'eva-ai-team__team-threads',id:threadsId},channel.threads.filter(item=>item.status!==2).map(item=>h(ConvCompactItem,{key:item.id,isThread:true,name:item.name,selected:selected&&selection.sessionId===item.id,onClick:()=>choose(group.id,item.id)}))));
+      expanded&&h('div',{className:'eva-ai-team__team-threads',id:threadsId},visibleThreads.map(item=>h(ConvCompactItem,{key:item.id,isThread:true,name:item.name,selected:selected&&selection.sessionId===item.id,onClick:()=>choose(group.id,item.id)})),hasMore&&h('button',{type:'button',className:'eva-ai-team__team-threads-more','aria-expanded':showAll,'aria-label':(showAll?'收起 ':'展开查看 ')+group.name+' 子区',onClick:()=>setShowAllTeamThreads(value=>({...value,[group.id]:!showAll}))},h('span',null,showAll?'收起':'展开查看'),h(ChevronDown,{size:12,className:'eva-ai-team__team-threads-more-chevron'+(showAll?' is-expanded':''),'aria-hidden':true}))));
   }
   const personas=snapshot.identities.filter(i=>i.role==='persona');
   const groupCandidates=[...teamIdentities.map(item=>({id:item.id,name:item.name,kind:item.role,appearance:evaIdentityAppearance(item)})),...digitalEmployees.map(item=>({id:item.id,name:item.name,kind:'digital',appearance:digitalStore.appearance(item)}))];

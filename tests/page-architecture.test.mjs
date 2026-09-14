@@ -81,7 +81,9 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__edit-config'/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
-  assert.match(imPatch, /if\(identity\?\.id!==i\.id\)choose\(i\.id,sessions\[0\]\?\.id\|\|null\)/);
+  assert.match(imPatch, /onClick:\(\)=>setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:expanded\}\)\)/);
+  assert.match(imPatch, /onClick:\(\)=>setCollapsed\(value=>\(\{\.\.\.value,\[item\.id\]:expanded\}\)\)/);
+  assert.doesNotMatch(imPatch, /identity\?\.id!==i\.id\)choose\(i\.id/);
   assert.match(imPatch, /collapsedGroups/);
   assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
@@ -228,11 +230,14 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*13px[^}]*line-height:\s*1\.5[^}]*font-weight:\s*var\(--gds-font-weight-semibold\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(aiTeamCss, /--eva-rail-level-indent:\s*12px/);
-  assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*13px/);
+  assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-4\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*2px/);
   assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-rail-identity-content-inset\)/s);
-  assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--eva-rail-level-indent\)\)/s);
+  assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*var\(--eva-rail-team-thread-inset\)/s);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-size:\s*22px/);
-  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-level-indent\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-identity-avatar-trailing\)\)/);
+  assert.match(aiTeamCss, /eva-ai-team__identity-button > \.eva-identity-avatar\s*\{[^}]*margin-right:\s*var\(--eva-rail-identity-avatar-trailing\)/s);
   assert.match(aiTeamCss, /--eva-rail-secondary:\s*var\(--gds-color-text-secondary\)/);
   assert.match(aiTeamCss, /--eva-rail-hover:\s*var\(--gds-color-overlay-hover\)/);
   assert.match(aiTeamCss, /--eva-rail-selected:\s*var\(--gds-color-surface-hover\)/);
@@ -256,12 +261,33 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
 });
 
-test('我的 AI 顶层分区标题与角色分组使用不同视觉层级', () => {
+test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分组', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
-  assert.match(aiTeamCss, /\.eva-ai-team__section-title\s*\{[^}]*min-height:\s*40px[^}]*background:\s*transparent/s);
-  assert.doesNotMatch(aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'', /box-shadow|border-radius/);
+  const sectionTitleRule = aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'';
+  const sectionTitleStart = imPatch.indexOf('function sectionTitle(');
+  const sectionTitleEnd = imPatch.indexOf('function teamGroupItem(', sectionTitleStart);
+  const sectionTitle = imPatch.slice(sectionTitleStart, sectionTitleEnd);
+  const sectionIcon = sectionTitle.indexOf("className:'eva-ai-team__section-icon'");
+  const sectionLabel = sectionTitle.indexOf("className:'eva-ai-team__section-label'");
+  const sectionCount = sectionTitle.indexOf("className:'eva-ai-team__section-count'");
+  const sectionChevron = sectionTitle.indexOf("className:'eva-ai-team__section-chevron'");
+
+  assert.ok(sectionTitleStart >= 0 && sectionTitleEnd > sectionTitleStart, '未找到我的 AI 顶层分区标题渲染函数');
+  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionChevron, '顶层分区应按图标、标题、数量、右侧箭头排列');
+  assert.match(sectionTitle, /className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed/);
+  assert.match(sectionTitle, /className:'eva-ai-team__section-count','aria-hidden':true/);
+  assert.match(sectionTitleRule, /min-height:\s*40px/);
+  assert.match(sectionTitleRule, /border-radius:\s*var\(--gds-radius-key\)/);
+  assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
+  assert.match(sectionTitleRule, /background:\s*transparent/);
+  assert.match(aiTeamCss, /\.eva-ai-team__section-title:hover\s*\{[^}]*background:\s*var\(--eva-rail-hover\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__section-title:has\(\.eva-ai-team__section-toggle:active\)\s*\{[^}]*background:\s*var\(--eva-rail-selected\)/s);
+  assert.doesNotMatch(sectionTitleRule, /box-shadow/);
   assert.match(aiTeamCss, /\.eva-ai-team__section-icon\s*\{[^}]*width:\s*20px[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__section-count\s*\{[^}]*color:\s*var\(--eva-rail-time\)[^}]*text-align:\s*right/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__section-chevron\s*\{[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__section-label\s*\{[^}]*flex:\s*1[^}]*text-overflow:\s*ellipsis/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
 });
@@ -290,6 +316,26 @@ test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘�
   assert.doesNotMatch(conversationButton, /'aria-expanded'|setCollapsed/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*min-height:\s*var\(--eva-rail-identity-height\)[^}]*cursor:\s*pointer/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle:focus-visible,[\s\S]*\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
+});
+
+test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新三条', () => {
+  const imPatch = read('prototype/009-5-patch-im.js');
+  const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
+
+  assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.availableIdentities\.map\(item=>\[item\.id,true\]\)/);
+  assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
+  assert.match(imPatch, /if\(groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
+  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2\)\.sort\(\(a,b\)=>teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)\)/);
+  assert.match(imPatch, /visibleThreads=group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
+  assert.match(imPatch, /className:'eva-ai-team__team-threads-more','aria-expanded':showAll/);
+  assert.match(imPatch, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+group\.name\+' 子区'/);
+  assert.match(imPatch, /h\('span',null,showAll\?'收起':'展开查看'\),h\(ChevronDown,\{size:12,className:'eva-ai-team__team-threads-more-chevron'\+\(showAll\?' is-expanded':''\)/);
+  assert.doesNotMatch(imPatch, /展开查看（|其余 '\+\(threads\.length-3\)/);
+  assert.match(imPatch, /className:'eva-ai-team__identity-button'[^}]*onClick:\(\)=>setCollapsed/);
+  assert.doesNotMatch(imPatch.match(/function identityItem\(i\)[\s\S]*?function employeeItem/)[0], /onClick:\(\)=>\{setCollapsed[^}]*choose\(/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-team-thread-label-inset\)[^}]*background:\s*transparent/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more:focus-visible\s*\{[^}]*outline:/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more-chevron\.is-expanded\s*\{[^}]*transform:\s*rotate\(180deg\)/s);
 });
 
 test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标', () => {
