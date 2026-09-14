@@ -40,7 +40,10 @@ test('完整编号连续且详情按内部ID或完整编号可取，不回落到
  const s=setup();const a=await s.ctx.createIssue({title:'新任务'}),b=await s.ctx.createIssue({title:'新任务2'});assert.equal(a.identifier,'SC-102');assert.equal(b.identifier,'SC-103');assert.equal(await s.ctx.getIssue(a.id),a);assert.equal(await s.ctx.getIssue(a.identifier),a);await assert.rejects(s.ctx.getIssue('102'),/找不到/);s.setCurrent('q');await assert.rejects(s.ctx.getIssue(a.identifier),/找不到/);
 });
 test('新任务不继承旧mock运行标签与描述，记录当前创建者和时间',async()=>{
- const s=setup();const a=await s.ctx.createIssue({title:'任务'});assert.equal(a.run_id,undefined);assert.equal(a.labels,undefined);assert.equal(a.description,'');assert.equal(a.creator_id,'member');assert.equal(a.creator_name,'当前成员');assert.ok(!Number.isNaN(Date.parse(a.created_at)));assert.equal(a.status,'todo');
+ const s=setup();const a=await s.ctx.createIssue({title:'任务'});assert.equal(a.run_id,undefined);assert.equal(a.labels,undefined);assert.equal(a.description,'');assert.equal(a.creator_id,'member');assert.equal(a.creator_name,'当前成员');assert.ok(!Number.isNaN(Date.parse(a.created_at)));assert.equal(a.status,'todo');assert.equal(a.due_date,null);
+});
+test('新任务保存明确截止日期',async()=>{
+ const s=setup();const a=await s.ctx.createIssue({title:'任务',due_date:'2026-09-20'});assert.equal(a.due_date,'2026-09-20');
 });
 test('附件解析成详情引用与附件对象，未知ID不会复制旧附件',async()=>{
  const s=setup();const attachment={id:'f',name:'规格[最新版].pdf',url:'blob:example'};s.ctx.evaLoopTaskAttachments.set('f',attachment);const a=await s.ctx.createIssue({title:'任务',description:'需求',attachment_ids:['f','missing']});assert.equal(a.attachments.length,1);assert.equal(a.attachments[0],attachment);assert.match(a.description,/需求/);assert.match(a.description,/规格最新版.pdf/);assert.match(a.description,/blob:example/);

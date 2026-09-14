@@ -23,7 +23,7 @@ test('Edge：合并状态后看板、详情、创建、旧筛选与跨项目往�
   const supply='供应链运营协同 协同推进间接采购、供应商质量与合规风控工作';
   await project(supply);
   assert.deepEqual(await page.locator('.loop-board__col-name').allTextContents(),['待办','进行中','审核中','已完成','受阻','已取消']);
-  assert.equal(await page.locator('.loop-board__cards > *').count(),8);
+  assert.equal(await page.locator('.loop-board__col [draggable="true"]').count(),8);
   const todo=page.locator('.loop-board__col').first();assert.match(await todo.innerText(),/SC-108/);
   await page.screenshot({path:'/tmp/eva-task-status-merged.png'});
   const card=todo.locator('[draggable="true"]').filter({hasText:'SC-104'});
@@ -49,14 +49,14 @@ test('Edge：合并状态后看板、详情、创建、旧筛选与跨项目往�
   await page.getByText('待办',{exact:true}).last().click();
   await modal.getByRole('button',{name:'创建',exact:true}).click();
   await todo.getByText('合并状态验收任务',{exact:true}).waitFor();
-  assert.equal(await page.locator('.loop-board__cards > *').count(),9);
+  assert.equal(await page.locator('.loop-board__col [draggable="true"]').count(),9);
   await project('客户联合交付 内部交付团队与客户成员在独立权限下共同推进工作');
-  assert.equal(await page.locator('.loop-board__cards > *').count(),5);
+  assert.equal(await page.locator('.loop-board__col [draggable="true"]').count(),5);
   assert.equal(await page.getByText('合并状态验收任务',{exact:true}).count(),0);
   await project(supply);await todo.getByText('合并状态验收任务',{exact:true}).waitFor();
   await page.evaluate(()=>localStorage.setItem('loop.issue.filters:collab-tasks:workspace:prod',JSON.stringify({filters:{statuses:['backlog','todo']},scope:'all'})));
-  await page.reload();await todo.getByText('收集下一季度供应商协同需求',{exact:true}).waitFor();
-  assert.equal(await page.locator('.loop-board__cards > *').count(),4,'旧筛选只显示待办，不退化成全部任务');
+  await page.reload();await todo.getByText('收集下一季度供应商协同需求',{exact:true}).waitFor();await page.getByText('完成本季度间接采购需求归集',{exact:true}).waitFor();
+  assert.equal(await page.locator('.loop-board__col [draggable="true"]').count(),5,'旧筛选显示四个待办顶层任务，并保留一个匹配子任务的父级上下文');
   assert.equal(await page.getByText('待规划',{exact:true}).count(),0);
   await page.getByText('列表',{exact:true}).click();
   await page.getByText('收集下一季度供应商协同需求',{exact:true}).waitFor();

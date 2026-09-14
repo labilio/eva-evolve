@@ -4,12 +4,12 @@
   root.EvaLoopTaskCreateUI={render(props,deps){Component||=create(deps.React);return deps.React.createElement(Component,{...props,deps});}};
   function create(R){
     const h=R.createElement;
-    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,deps}){
-      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
+    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,deps}){
+      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
-      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',labels:[]});
+      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
       const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
       R.useEffect(()=>{
@@ -42,7 +42,7 @@
           const attachmentIds=[];
           for(const file of files){if(!uploaded.current.has(file)){const result=await uploadAttachment(file);if(token!==generation.current)return;if(!result?.id)throw new Error('附件上传失败');uploaded.current.set(file,result.id);}attachmentIds.push(uploaded.current.get(file));}
           if(token!==generation.current)return;
-          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
+          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
           if(!created.current?.id)throw new Error('任务创建未返回任务编号，请重试。');
           for(const id of form.labels){if(!attached.current.has(id)){await attachLabel(created.current.id,id);if(token!==generation.current)return;attached.current.add(id);}}
           if(token===generation.current){onCreated?.(created.current);onClose();}
@@ -77,6 +77,8 @@
             h('div',{className:'loop-ci__head'},h('div',{className:'loop-ci__crumb'},
               h('span',{className:'loop-ci__crumb-ws'},project?.name||project?.title||''),
               h(icons.ChevronRight,{size:13,className:'loop-ci__crumb-sep'}),
+              parentIssueId&&h('span',{className:'loop-ci__crumb-parent',title:parentIssue?.title||parentIssue?.identifier||''},parentIssue?.identifier||'父任务'),
+              parentIssueId&&h(icons.ChevronRight,{size:13,className:'loop-ci__crumb-sep'}),
               h('span',{className:'loop-ci__crumb-cur'},parentIssueId?'新建子任务':'新建任务')),
               h('button',{type:'button',className:'loop-ci__close',onClick:close,disabled:busy,'aria-label':'关闭'},h(icons.X,{size:16}))),
             h('input',{autoFocus:true,className:'loop-ci__title',value:form.title,maxLength:200,disabled,'aria-label':'任务标题',placeholder:'输入标题…',onChange:e=>patch('title',e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();submit();}}}),
@@ -85,6 +87,7 @@
             h('div',{className:'loop-ci__toolbar'},
               h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
               h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
+              h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||'')}),
               h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')})),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),
