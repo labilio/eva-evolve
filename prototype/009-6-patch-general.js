@@ -400,6 +400,23 @@
     source=root.__evaCut(source,'deleteSkill=rt=>{const ct=SKILLS.findIndex(ut=>ut.id===rt);return ct>=0&&SKILLS.splice(ct,1),Promise.resolve()}','deleteSkill=rt=>{const list=skillsOf(),index=list.findIndex(s=>s.id===rt);if(index>=0)list.splice(index,1);return Promise.resolve()}','技能删除作用于当前项目');
     source=root.__evaCut(source,'map(ct=>({path:ct.path,content:ct.content}))','map(ct=>({...ct}))','技能附件保留二进制元数据');
     source=root.__evaCut(source,'React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','Qt.find(f=>f.path===Ht)?.encoding==="base64"?window.EvaProjectSkillCreate.binaryPreview(React,Qt.find(f=>f.path===Ht)):React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','二进制附件只读下载');
+    // Loop task status compatibility belongs to the shared data adapter, not a view.
+    source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
+    function evaNormalizeTaskStatus(status){return status==='backlog'?'todo':status}
+    function evaNormalizeTaskList(issues){for(const issue of issues)issue.status=evaNormalizeTaskStatus(issue.status);return issues}
+    function groupIssuesByAssignee`,'旧任务状态兼容');
+    source=root.__evaCut(source,'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues,official:window.__EVA_OFFICIAL_TASKS,lab:window.__EVA_CLIENT_TASKS}',
+      'ISSUES_BY_SPACE={prod:evaNormalizeTaskList(window.__EVA_SUPPLY_CHAIN_DEMO.issues),"drive-design":evaNormalizeTaskList(window.__EVA_DRIVE_DEMO.issues),official:evaNormalizeTaskList(window.__EVA_OFFICIAL_TASKS),lab:evaNormalizeTaskList(window.__EVA_CLIENT_TASKS)}','所有项目初始任务状态兼容');
+    for(const name of ['ISSUE_STATUS_ORDER','STATUSES'])source=root.__evaCut(source,`${name}=["backlog","todo","in_progress","in_review","done","blocked","cancelled"]`,`${name}=["todo","in_progress","in_review","done","blocked","cancelled"]`,'合并任务状态枚举 '+name);
+    source=root.__evaCut(source,'status:rt.status||"todo"','status:evaNormalizeTaskStatus(rt.status)||"todo"','创建任务旧状态兼容');
+    source=root.__evaCut(source,'ut.status=ct.status','ut.status=evaNormalizeTaskStatus(ct.status)','更新任务旧状态兼容');
+    source=root.__evaCut(source,'pt&&Object.assign(pt,ct)}),Promise.resolve({updated:rt.length}))','pt&&Object.assign(pt,ct,ct.status?{status:evaNormalizeTaskStatus(ct.status)}:{})}),Promise.resolve({updated:rt.length}))','批量任务旧状态兼容');
+    source=root.__evaCut(source,'statuses:enumList(rt.statuses,STATUSES)','statuses:enumList(Array.isArray(rt.statuses)?rt.statuses.map(evaNormalizeTaskStatus):rt.statuses,STATUSES)','保存筛选状态兼容');
+    source=root.__evaCut(source,'ct.statuses.includes(pt.status)','ct.statuses.map(evaNormalizeTaskStatus).includes(evaNormalizeTaskStatus(pt.status))','查询旧状态兼容');
+    source=root.__evaCut(source,'function needsConfirm(rt){return isAgentAssignee(rt.assigneeType,rt.assigneeId)&&rt.status!=="backlog"}','function needsConfirm(){return false}','指派AI不等于启动执行');
+    source=root.__evaCut(source,'function statusMightTrigger(rt,ct){return isAgentAssignee(rt.assignee_type,rt.assignee_id)&&rt.status==="backlog"&&ct!=="backlog"&&ct!=="done"&&ct!=="cancelled"}','function statusMightTrigger(){return false}','任务状态不触发执行');
+    // Compatibility labels remain for historical activity/snapshots only; no new backlog option.
+    for(let index=0;index<3;index++)source=root.__evaCut(source,'backlog:"待规划"','backlog:"待办"','历史任务状态文案 '+index);
     return source;
   });
 })(window);

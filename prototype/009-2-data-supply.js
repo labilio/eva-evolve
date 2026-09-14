@@ -522,7 +522,7 @@ window.__EVA_CLIENT_TASKS = [
     "number": 105,
     "title": "收集第二批客户场景需求",
     "description": "先归集反馈和业务价值，范围未确认前不承诺排期。",
-    "status": "backlog",
+    "status": "todo",
     "priority": "medium",
     "assignee_type": "member",
     "assignee_id": "u-hejing",
@@ -539,10 +539,10 @@ window.__EVA_CLIENT_TASKS = [
 
 window.__EVA_OFFICIAL_TASKS.push(
   {...window.__EVA_OFFICIAL_TASKS[0],id:'official-104',number:104,identifier:'EVA-104',position:104,title:'发布用户反馈信息收集模板',status:'done',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'演示记录：已整理版本号、复现步骤、期望结果及脱敏要求，供用户反馈时参考。'},
-  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'backlog',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
+  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'todo',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
 );
 window.__EVA_SUPPLY_CHAIN_DEMO.issues.push({
-  ...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'backlog',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'
+  ...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'
 });
 window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});
 

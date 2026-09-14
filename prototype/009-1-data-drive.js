@@ -116,7 +116,7 @@
       description: '由“每周文件权限回归检查”自动化任务生成，核对个人、项目、群聊和分享链接四类文件权限。',
       automation_id: 'ap-drive-permission'
     }),
-    task(5, '补齐云盘空状态与错误提示', 'backlog', 'low', 'agent', 'ag-drive-product', '云盘产品专家', {
+    task(5, '补齐云盘空状态与错误提示', 'todo', 'low', 'agent', 'ag-drive-product', '云盘产品专家', {
       description: '统一空文件夹、无权限、文件不存在和网络失败时的提示与下一步操作。'
     }),
     task(6, '每日云盘设计进展汇总', 'done', 'low', 'squad', 'sq-drive-delivery', '云盘功能交付团', {
