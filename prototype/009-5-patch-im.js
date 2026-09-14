@@ -777,7 +777,7 @@ function EvaAITeamPage() {
     const evaThreadIconEnd=source.indexOf(';function ConvCompactItem',evaThreadIconStart);
     if(evaThreadIconStart<0||evaThreadIconEnd<evaThreadIconStart)throw new Error('IM 统一子区图标边界不匹配');
     cut(source.slice(evaThreadIconStart,evaThreadIconEnd),
-      'ThreadIcon=createLucideIcon("message-circle-arrow-down-right",[["path",{d:"M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719",key:"thread-bubble"}],["path",{d:"M8.5 8.5V11a3 3 0 0 0 3 3h5",key:"thread-turn"}],["path",{d:"m14 11.5 2.5 2.5-2.5 2.5",key:"thread-arrow"}]])',
+      'ThreadIcon=createLucideIcon("corner-down-right",[["path",{d:"m15 10 5 5-5 5",key:"1mk7zo"}],["path",{d:"M4 4v7a4 4 0 0 0 4 4h12",key:"zqzwo1"}]])',
       '统一子区图标');
     cut('title:"创建子区",icon:React.createElement(MessageSquare,{size:18})',
       'title:"创建子区",icon:React.createElement(ThreadIcon,{size:18})', '创建子区菜单共享图标');

@@ -170,16 +170,15 @@ test('消息关注中的群聊可双击收缩子区并显示状态指示', () =>
   assert.match(hierarchyCss, /padding-inline-start:\s*calc\(var\(--eva-space-group-indent\) - var\(--gds-space-0-5\)\)/);
 });
 
-test('所有子区入口统一使用圆形气泡折角箭头图标', () => {
+test('所有子区入口统一使用 Lucide CornerDownRight 图标', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const { source } = createPatchedRuntime();
 
   assert.match(imPatch, /统一子区图标/);
-  assert.match(source, /ThreadIcon=createLucideIcon\("message-circle-arrow-down-right"/);
+  assert.match(source, /ThreadIcon=createLucideIcon\("corner-down-right"/);
   for (const path of [
-    'M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719',
-    'M8.5 8.5V11a3 3 0 0 0 3 3h5',
-    'm14 11.5 2.5 2.5-2.5 2.5',
+    'm15 10 5 5-5 5',
+    'M4 4v7a4 4 0 0 0 4 4h12',
   ]) assert.ok(source.includes(`d:"${path}"`), `统一子区图标缺少路径 ${path}`);
   assert.doesNotMatch(source, /ThreadIcon=\(\{size:/);
   assert.match(source, /title:"创建子区",icon:React\.createElement\(ThreadIcon,\{size:18\}\)/);
