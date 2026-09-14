@@ -82,7 +82,10 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__edit-config'/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
-  assert.match(imPatch, /onClick:\(\)=>setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:expanded\}\)\)/);
+  assert.match(imPatch, /emptyPersona=i\.role==='persona'&&sessions\.length===0/);
+  assert.match(imPatch, /onClick:\(\)=>\{setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:emptyPersona\?false:expanded\}\)\);if\(emptyPersona\)choose\(i\.id,null\);\}/);
+  assert.match(imPatch, /expanded&&h\('div',\{className:'eva-ai-team__sessions'.+!emptyPersona&&identity\?\.id===i\.id&&!session/s);
+  assert.match(imPatch, /!emptyPersona&&sessions\.length===0/);
   assert.match(imPatch, /onClick:\(\)=>setCollapsed\(value=>\(\{\.\.\.value,\[item\.id\]:expanded\}\)\)/);
   assert.doesNotMatch(imPatch, /identity\?\.id!==i\.id\)choose\(i\.id/);
   assert.match(imPatch, /collapsedGroups/);
@@ -367,8 +370,11 @@ test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新�
   assert.match(imPatch, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+group\.name\+' 子区'/);
   assert.match(imPatch, /h\('span',null,showAll\?'收起':'展开查看'\),h\(ChevronDown,\{size:12,className:'eva-ai-team__team-threads-more-chevron'\+\(showAll\?' is-expanded':''\)/);
   assert.doesNotMatch(imPatch, /展开查看（|其余 '\+\(threads\.length-3\)/);
-  assert.match(imPatch, /className:'eva-ai-team__identity-button'[^}]*onClick:\(\)=>setCollapsed/);
-  assert.doesNotMatch(imPatch.match(/function identityItem\(i\)[\s\S]*?function employeeItem/)[0], /onClick:\(\)=>\{setCollapsed[^}]*choose\(/);
+  const identityItem=imPatch.match(/function identityItem\(i\)[\s\S]*?function employeeItem/)[0];
+  assert.match(identityItem, /emptyPersona=i\.role==='persona'&&sessions\.length===0/);
+  assert.match(identityItem, /onClick:\(\)=>\{setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:emptyPersona\?false:expanded\}\)\);if\(emptyPersona\)choose\(i\.id,null\);\}/);
+  assert.match(identityItem, /!emptyPersona&&identity\?\.id===i\.id&&!session/);
+  assert.match(identityItem, /!emptyPersona&&sessions\.length===0/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-team-thread-label-inset\)[^}]*background:\s*transparent/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more:focus-visible\s*\{[^}]*outline:/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more-chevron\.is-expanded\s*\{[^}]*transform:\s*rotate\(180deg\)/s);

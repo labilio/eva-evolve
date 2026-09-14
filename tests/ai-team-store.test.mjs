@@ -44,6 +44,21 @@ test('one persona per owner: concurrent creation, fixed name, and failure recove
 test('send creates only nonempty sessions, isolates drafts, and refuses offline assistant',()=>{
  const s=make(); const n=s.getSnapshot().sessions.length; assert.equal(s.sendMessage('ai-general',null,'  '),null); assert.equal(s.getSnapshot().sessions.length,n); s.setDraft('draft:ai-general','send'); s.setDraft('draft:persona-initial','keep'); const id=s.sendMessage('ai-general',null,'  hello world  '); const session=s.getSnapshot().sessions.find(x=>x.id===id); assert.equal(session.title,'hello world'); assert.equal(session.messages[0].text,'hello world'); assert.equal(session.messages[1].text,'收到，我会协助你整理。'); assert.equal(s.getSnapshot().drafts['draft:ai-general'],undefined); assert.equal(s.getSnapshot().drafts['draft:persona-initial'],'keep'); assert.throws(()=>s.sendMessage('persona-initial',id,'wrong identity')); s.setLocalOnline('assistant-general',false); assert.throws(()=>s.sendMessage('ai-general',id,'offline')); assert.ok(s.sendMessage('persona-initial',null,'route'));
 });
+test('empty persona keeps only a transient draft target and creates its first visible session on send',()=>{
+ const storage=memory(),s=make({storage}),persona=s.getSnapshot().identities.find(identity=>identity.role==='persona');
+ s.getSnapshot().sessions.filter(session=>session.identityId===persona.id).forEach(session=>s.deleteSession(session.id));
+ assert.equal(s.getSnapshot().sessions.filter(session=>session.identityId===persona.id).length,0);
+ const source=context.window.EvaAIPrivateConversations.source({identityId:persona.id,name:persona.name,appearance:{},records:[],selectedId:null,messages:()=>[]});
+ assert.equal(source.channels[0].threads.length,1,'右侧统一 IM 保留未持久化的草稿通道');
+ assert.equal(source.channels[0].threads[0].short_id,'draft:'+persona.id);
+ assert.equal(source.threadMessages[source.selectedThreadId].length,0);
+ s.setDraft('draft:'+persona.id,'待发送内容');
+ const created=s.sendMessage(persona.id,null,'第一次发送创建会话');
+ const sessions=s.getSnapshot().sessions.filter(session=>session.identityId===persona.id);
+ assert.equal(sessions.length,1);assert.equal(sessions[0].id,created);assert.equal(sessions[0].title,'第一次发送创建会话');
+ assert.equal(s.getSnapshot().drafts['draft:'+persona.id],undefined);
+ assert.equal(make({storage}).getSnapshot().sessions.filter(session=>session.identityId===persona.id).length,1);
+});
 test('unread counts only incoming AI messages, aggregates by identity, clears and persists',()=>{
  const storage=memory(),s=make({storage});
  const session=s.getSnapshot().sessions.find(item=>item.id==='team-assistant-welcome');
