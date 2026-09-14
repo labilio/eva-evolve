@@ -65,6 +65,23 @@
   --eva-nav-selected: #dce9ff;
   --eva-nav-accent: var(--eva-action-primary);
 
+  /* 2026-09-14 navigation shell: scoped tokens keep IM emphasis unchanged. */
+  --eva-nav-canvas-gap: 6px;
+  --eva-nav-secondary-inset: 12px;
+  --eva-nav-secondary-block-trim: 24px;
+  --eva-nav-secondary-blur: 28px;
+  --eva-nav-shell-outline: #eaebec;
+  --eva-nav-shell-background: linear-gradient(212.729deg, #f2f4f8 19.562%, #f7f7f8 59.04%, #faf9f9 94.383%);
+  --eva-nav-shell-shadow: 0 1px 2px rgba(30, 30, 30, 0.018);
+  --eva-nav-secondary-surface: #f6f7f8;
+  --eva-nav-secondary-outline: #dfe3e8;
+  --eva-nav-secondary-shadow: 0 1px 2px rgba(30, 30, 30, 0.018), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  --eva-nav-primary-hover: rgba(30, 30, 30, 0.045);
+  --eva-nav-primary-pressed: rgba(30, 30, 30, 0.075);
+  --eva-nav-primary-selected: var(--eva-surface-primary);
+  --eva-nav-primary-selected-outline: #e8eaec;
+  --eva-nav-primary-text: var(--eva-text-primary);
+
   /* Shared IM mention states, independent from navigation selection. */
   --eva-mention-background: color-mix(in srgb, var(--eva-action-primary) 8%, transparent);
   --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);

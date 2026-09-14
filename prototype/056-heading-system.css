@@ -10,8 +10,8 @@
   height: var(--eva-page-heading-height);
   min-height: var(--eva-page-heading-height);
   padding: var(--gds-space-2) var(--gds-space-4);
-  background: var(--gds-color-surface-primary);
-  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+  background: transparent;
+  border-bottom: 0;
 }
 .eva-rail-header :is(h1, .eva-personal-rail-title) {
   flex: 1;
@@ -108,7 +108,7 @@
 }
 
 /* Navigation-only rail heading: icon is identity, not an action. */
-.eva-drive__side-head { height: 64px; min-height: 64px; padding: 8px 16px; box-sizing: border-box; }
+.eva-drive__side-head { height: 64px; min-height: 64px; padding: 8px 16px; box-sizing: border-box; border-bottom: 0; background: transparent; }
 .eva-drive__side-head strong { font-size: var(--eva-page-heading-size); line-height: var(--eva-page-heading-leading); font-weight: var(--eva-heading-weight); }
 
 /* Only the standalone file library adopts the 64px content heading.
