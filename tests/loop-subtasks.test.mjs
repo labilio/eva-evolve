@@ -132,6 +132,8 @@ test('任务详情递归展示全部后代并按整棵子任务树统计进度',
 
 test('任务分解画布内嵌于任务详情并可在固定分解根内切换节点详情',()=>{
   assert.ok(runtime.includes('function EvaIssueBreakdownCanvas('));
+  assert.ok(runtime.includes('createLucideIcon("Maximize2"'));
+  assert.ok(runtime.includes('createLucideIcon("Minimize2"'));
   assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,gt)'));
   assert.ok(runtime.includes('"查看分解"'));
   assert.ok(runtime.includes('"查看任务分解"'));
@@ -152,7 +154,14 @@ test('任务分解画布内嵌于任务详情并可在固定分解根内切换�
   assert.ok(runtime.includes('breakdownRootIssueId:evaRoot.id'));
   assert.ok(runtime.includes('evaReturnContext?.parentIssueId===evaParentIssue.id?Qa():Ea(evaParentIssue.id,evaReturnContext?.origin==="breakdown"?"breakdown":"parent")'));
   assert.ok(runtime.includes('[evaSelectedIssueId,evaSetSelectedIssueId]'));
+  assert.ok(runtime.includes('[evaFullscreen,evaSetFullscreen]'));
   assert.ok(runtime.includes('selectedIssueId:evaSelectedIssueId'));
+  assert.ok(runtime.includes('fullscreen:evaFullscreen'));
+  assert.ok(runtime.includes('document.addEventListener("keydown",kr)'));
+  assert.ok(runtime.includes('document.querySelector(".semi-modal-wrap")'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown"+(evaFullscreen?" is-fullscreen":"")'));
+  assert.ok(runtime.includes('"aria-label":evaFullscreen?"退出全屏编辑":"全屏编辑任务分解"'));
+  assert.ok(runtime.includes('"aria-pressed":evaFullscreen'));
   assert.ok(runtime.includes('canvas:{...no.canvas,selectedIssueId:evaBreakdownRootId}'));
   assert.ok(runtime.includes('"aria-label":"选择任务 "+kr.identifier'));
   assert.ok(runtime.includes('"aria-selected":evaIsSelected'));
@@ -163,6 +172,7 @@ test('任务分解画布内嵌于任务详情并可在固定分解根内切换�
   assert.ok(runtime.includes('onSelect:ki=>Ea(ki,"breakdown")'));
   assert.ok(runtime.includes('if(ki===evaRoot.id&&evaReturnContext?.origin==="breakdown")'));
   assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"&&WKApp$1.routeRight.pop()'));
+  assert.match(taskStyles,/\.eva-task-breakdown\.is-fullscreen\s*\{[\s\S]*position:\s*fixed;[\s\S]*inset:\s*var\(--topbar-height, 37px\) 0 0;[\s\S]*z-index:\s*950;[\s\S]*height:\s*auto;/);
   assert.ok(runtime.includes('onChanged:evaIsBreakdown?ct:'));
   assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
   assert.equal(runtime.includes('返回任务分解'),false);

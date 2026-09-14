@@ -702,6 +702,7 @@
   background: var(--eva-surface-primary);
 }
 .eva-task-breakdown__tool,
+.eva-task-breakdown__fullscreen,
 .eva-task-breakdown__icon-btn,
 .eva-task-breakdown__zoom button {
   display: inline-flex;
@@ -715,6 +716,7 @@
   cursor: pointer;
 }
 .eva-task-breakdown__tool:hover,
+.eva-task-breakdown__fullscreen:hover,
 .eva-task-breakdown__icon-btn:hover,
 .eva-task-breakdown__zoom button:hover:not(:disabled) {
   background: var(--eva-overlay-hover);
@@ -760,6 +762,14 @@
   font: 400 12px/16px var(--eva-font-sans);
   white-space: nowrap;
 }
+.eva-task-breakdown__fullscreen {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex: none;
+  border-radius: var(--eva-radius-control);
+  color: var(--eva-text-secondary-accessible);
+}
 .eva-task-breakdown__viewport {
   position: relative;
   flex: 1 1 auto;
@@ -782,6 +792,28 @@
   min-width: min-content;
   margin: auto;
   transform-origin: left center;
+}
+.eva-task-breakdown.is-fullscreen {
+  position: fixed;
+  inset: var(--topbar-height, 37px) 0 0;
+  z-index: 950;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--eva-surface-subtle);
+}
+.eva-task-breakdown.is-fullscreen .eva-task-breakdown__toolbar {
+  min-height: 52px;
+  padding-inline: 20px;
+}
+.eva-task-breakdown.is-fullscreen .eva-task-breakdown__canvas {
+  padding: 48px 64px 88px;
+}
+.eva-task-breakdown.is-fullscreen .eva-task-breakdown__zoom {
+  right: 20px;
+  bottom: 20px;
 }
 .eva-task-breakdown__branch {
   position: relative;
