@@ -30,6 +30,14 @@
   border: 1px solid var(--semi-color-border); border-radius: 999px;
   background: transparent;
 }
+.eva-loop-task-create__due.semi-datepicker {
+  width: 144px;
+  min-width: 132px;
+}
+.eva-loop-task-create__due .semi-datepicker-input {
+  height: 32px;
+  border-radius: var(--eva-radius-full);
+}
 .eva-loop-task-create__identity { display: inline-flex; align-items: center; gap: 4px; }
 .eva-loop-task-create__attachments { padding: 0 16px 12px; }
 .eva-loop-task-create__attachment { display: flex; align-items: center; gap: 8px; }
@@ -59,6 +67,10 @@
 .eva-loop-task-create .loop-ci__labels { padding: 0 24px 16px; }
 .eva-loop-task-create .loop-ci__footer { padding: 16px 24px; }
 .eva-loop-task-create .loop-ci__close { width: 32px; height: 32px; border-radius: var(--eva-radius-control); }
+.eva-loop-task-create .loop-ci__crumb-ws,
+.eva-loop-task-create .loop-ci__crumb-parent,
+.eva-loop-task-create .loop-ci__crumb-cur { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-loop-task-create .loop-ci__crumb-parent { color: var(--eva-text-secondary-accessible); }
 .eva-loop-task-create .loop-ci__toolbar button { min-height: 32px; }
 .eva-loop-task-create__tag-menu { border-radius: var(--eva-radius-panel); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
 .eva-loop-task-create__tag-menu button { font: 400 14px/22px var(--eva-font-sans); min-height: 36px; padding: 6px 12px; }

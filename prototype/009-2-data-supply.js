@@ -147,12 +147,13 @@ window.__EVA_PEOPLE = [
     issue_count: 7, done_count: 1, created_at: T0, updated_at: T1, lead_name: '王宜林'
   }];
 
-  function supplyTask(number, title, status, priority, assigneeType, assigneeId, assigneeName, description) {
+  function supplyTask(number, title, status, priority, assigneeType, assigneeId, assigneeName, dueDate, description) {
     return {
       id: 'supply-' + number, workspace_id: 'prod', number: number,
       identifier: 'SC-' + (100 + number), title: title, description: description, status: status,
       priority: priority, assignee_type: assigneeType, assignee_id: assigneeId,
       assignee_name: assigneeName, creator_id: 'u-wangyilin', creator_name: '王宜林',
+      due_date: dueDate,
       creator_avatar: window.__EVA_CURRENT_USER_PORTRAIT,
       issuer_role_id: 'supply-role-product', issuer_role_name: '产品',
       project_id: 'p-supply', project_name: '供应链运营协同', position: number,
@@ -161,13 +162,13 @@ window.__EVA_PEOPLE = [
   }
 
   var supplyIssues = [
-    supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'squad', 'sq-supply-procurement', '采购与招投标专家团', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
-    supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'agent', 'ag-supply-tender', '招投标管理专家', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
-    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'agent', 'ag-supply-sqe', 'SQE运营专家', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。'),
-    supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'agent', 'ag-supply-cost', '供应链成本运营专家', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
-    supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'agent', 'ag-supply-kd', '供应链KD排产专家', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
-    supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'squad', 'sq-supply-risk', '履约与风险专家团', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
-    supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'agent', 'ag-supply-contract', '供应链合同管理专家', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
+    supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'squad', 'sq-supply-procurement', '采购与招投标专家团', '2026-09-18', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
+    supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'agent', 'ag-supply-tender', '招投标管理专家', '2026-09-19', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
+    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'agent', 'ag-supply-sqe', 'SQE运营专家', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。'),
+    supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'agent', 'ag-supply-cost', '供应链成本运营专家', '2026-09-21', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
+    supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'agent', 'ag-supply-kd', '供应链KD排产专家', '2026-09-17', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
+    supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'squad', 'sq-supply-risk', '履约与风险专家团', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
+    supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'agent', 'ag-supply-contract', '供应链合同管理专家', '2026-09-10', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
   ];
 
   var supplyTaskLabels = [
@@ -522,7 +523,7 @@ window.__EVA_CLIENT_TASKS = [
     "number": 105,
     "title": "收集第二批客户场景需求",
     "description": "先归集反馈和业务价值，范围未确认前不承诺排期。",
-    "status": "backlog",
+    "status": "todo",
     "priority": "medium",
     "assignee_type": "member",
     "assignee_id": "u-hejing",
@@ -539,11 +540,15 @@ window.__EVA_CLIENT_TASKS = [
 
 window.__EVA_OFFICIAL_TASKS.push(
   {...window.__EVA_OFFICIAL_TASKS[0],id:'official-104',number:104,identifier:'EVA-104',position:104,title:'发布用户反馈信息收集模板',status:'done',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'演示记录：已整理版本号、复现步骤、期望结果及脱敏要求，供用户反馈时参考。'},
-  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'backlog',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
+  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'todo',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
 );
-window.__EVA_SUPPLY_CHAIN_DEMO.issues.push({
-  ...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'backlog',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'
-});
+window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'agent',assignee_id:'ag-supply-procurement',assignee_name:'间接采购专家',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'agent',assignee_id:'ag-supply-contract',assignee_name:'供应链合同管理专家',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-12',number:12,identifier:'SC-112',position:12,parent_issue_id:'supply-11',title:'补齐维保预算与到期清单',status:'todo',priority:'medium',due_date:'2026-09-18',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'逐项补齐设备维保预算、合同到期日和业务负责人，供续约计划复核。'}
+);
 window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});
 
 window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
