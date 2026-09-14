@@ -71,7 +71,7 @@ test('批量完成父任务前要求先处理未完成子任务', async()=>{
   assert.equal(issues.find(issue=>issue.id==='root').status,'done');
 });
 
-test('供应链演示数据提供两级和三级子任务链，且不复制项目',()=>{
+test('供应链演示数据提供超过默认展示深度的四级子任务链，且不复制项目',()=>{
   const window={};
   for(const name of ['009-0-demo-time','009-1-data-drive','009-2-data-supply'])vm.runInNewContext(fs.readFileSync(`prototype/${name}.js`,'utf8'),{window});
   const issues=window.__EVA_SUPPLY_CHAIN_DEMO.issues,byIdentifier=id=>issues.find(issue=>issue.identifier===id);
@@ -79,8 +79,24 @@ test('供应链演示数据提供两级和三级子任务链，且不复制项�
   assert.equal(byIdentifier('SC-110').parent_issue_id,byIdentifier('SC-101').id);
   assert.equal(byIdentifier('SC-111').parent_issue_id,byIdentifier('SC-101').id);
   assert.equal(byIdentifier('SC-112').parent_issue_id,byIdentifier('SC-111').id);
-  for(const id of ['SC-109','SC-110','SC-111','SC-112'])assert.equal(byIdentifier(id).project_id,'p-supply');
+  assert.equal(byIdentifier('SC-113').parent_issue_id,byIdentifier('SC-112').id);
+  assert.equal(byIdentifier('SC-114').parent_issue_id,byIdentifier('SC-113').id);
+  for(const id of ['SC-109','SC-110','SC-111','SC-112','SC-113','SC-114'])assert.equal(byIdentifier(id).project_id,'p-supply');
   for(const issue of issues)assert.match(issue.due_date,/^2026-09-\d{2}$/);
+});
+
+test('任务详情默认展示前三层，并只折叠仍有后代的第三层节点',()=>{
+  const {ctx}=setup(),issues=[
+    {id:'root',parent_issue_id:null},
+    {id:'level-1',parent_issue_id:'root'},
+    {id:'level-2',parent_issue_id:'level-1'},
+    {id:'level-3',parent_issue_id:'level-2'},
+    {id:'level-4',parent_issue_id:'level-3'},
+    {id:'level-5',parent_issue_id:'level-4'},
+    {id:'level-3-leaf',parent_issue_id:'level-2'},
+  ];
+  assert.deepEqual([...ctx.evaIssueDefaultCollapsedIds('root',issues)],['level-3']);
+  assert.deepEqual([...ctx.evaIssueDefaultCollapsedIds('level-2',issues)],[]);
 });
 
 test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
@@ -125,10 +141,19 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
 
 test('任务详情递归展示全部后代并按整棵子任务树统计进度',()=>{
   assert.ok(runtime.includes('function EvaIssueDetailSubtaskTree('));
+  assert.ok(runtime.includes('function evaIssueDefaultCollapsedIds('));
+  assert.ok(runtime.includes('evaIssueDefaultCollapsedIds(rt.id,mt)'));
+  assert.ok(runtime.includes('[rt.id,evaTreeSignature]'));
+  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__depth-note"'));
+  assert.ok(runtime.includes('"第 4 层及更深任务已收起"'));
+  assert.ok(runtime.includes('"展开全部层级"'));
+  assert.ok(runtime.includes('onClick:()=>evaSetCollapsedIds(new Set)'));
+  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__toggle"'));
+  assert.ok(runtime.includes('"aria-expanded":Pt.length?evaExpanded:void 0'));
   assert.ok(runtime.includes('className:"loop-subissues eva-loop-subtask-tree",role:"tree","aria-label":rt.identifier+" 的全部子任务"'));
   assert.ok(runtime.includes('className:"eva-loop-subtask-tree__item",role:"treeitem","aria-level":Ct+1'));
   assert.ok(runtime.includes('className:"eva-loop-subtask-tree__children",role:"group"'));
-  assert.ok(runtime.includes('Pt.map(Ft=>gt(Ft,Ct+1,Dt))'));
+  assert.ok(runtime.includes('evaExpanded&&Pt.length>0&&React.createElement("div",{className:"eva-loop-subtask-tree__children"'));
   assert.ok(runtime.includes('onClick:ut?void 0:()=>ct(St.id)'));
   assert.ok(runtime.includes('evaDetailSubtaskIds=evaIssueDescendantIds(xt.id,issuesOf())'));
   assert.ok(runtime.includes('evaDetailSubtasks=issuesOf().filter(ki=>evaDetailSubtaskIds.has(ki.id))'));
@@ -138,6 +163,8 @@ test('任务详情递归展示全部后代并按整棵子任务树统计进度',
   assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
   assert.match(taskStyles,/\.eva-loop-subtask-tree__children\s*\{[\s\S]*margin-left:\s*8px;[\s\S]*padding-left:\s*12px;[\s\S]*border-left:/);
   assert.match(taskStyles,/\.eva-loop-subtask-tree__children > \.eva-loop-subtask-tree__branch::before\s*\{[\s\S]*left:\s*-12px;[\s\S]*border-top:/);
+  assert.match(taskStyles,/\.eva-loop-subtask-tree__item\s*\{[\s\S]*grid-template-columns:\s*24px minmax\(0, 1fr\)/);
+  assert.match(taskStyles,/\.eva-loop-subtask-tree__depth-note\s*\{[\s\S]*justify-content:\s*flex-end/);
 });
 
 test('任务分解画布内嵌于任务详情并可在固定分解根内切换节点详情',()=>{

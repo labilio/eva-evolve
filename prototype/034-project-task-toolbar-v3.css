@@ -651,6 +651,43 @@
 .loop-idp .eva-loop-subtask-tree__branch,
 .loop-idp .eva-loop-subtask-tree__item { min-width: 0; }
 .loop-idp .eva-loop-subtask-tree__branch { position: relative; }
+.loop-idp .eva-loop-subtask-tree__item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+}
+.loop-idp .eva-loop-subtask-tree__toggle,
+.loop-idp .eva-loop-subtask-tree__toggle-spacer {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 32px;
+}
+.loop-idp .eva-loop-subtask-tree__toggle {
+  padding: 0;
+  border: 0;
+  border-radius: var(--eva-radius-control);
+  background: transparent;
+  color: var(--eva-text-secondary-accessible);
+  cursor: pointer;
+}
+.loop-idp .eva-loop-subtask-tree__toggle:hover { background: var(--eva-surface-subtle); }
+.loop-idp .eva-loop-subtask-tree__toggle:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: -2px;
+}
+.loop-idp .eva-loop-subtask-tree__toggle svg { transition: transform 160ms ease; }
+.loop-idp .eva-loop-subtask-tree__toggle svg.is-open { transform: rotate(90deg); }
+.loop-idp .eva-loop-subtask-tree__depth-note {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 32px;
+  color: var(--eva-text-secondary-accessible);
+  font: 400 12px/16px var(--eva-font-sans);
+}
+.loop-idp .eva-loop-subtask-tree__expand-all { flex: none; }
 .loop-idp .eva-loop-subtask-tree__children {
   display: grid;
   gap: 4px;
