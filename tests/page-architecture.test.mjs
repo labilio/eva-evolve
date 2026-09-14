@@ -543,8 +543,12 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
   assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*order:\s*1;[^}]*height:\s*102px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__welcome-avatar\s*\{[^}]*width:\s*218px;[^}]*height:\s*292px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__rail\s*\{[^}]*order:\s*2;[^}]*width:\s*calc\(100% - 236px\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*order:\s*3;[^}]*margin-top:\s*var\(--eva-space-3\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat\s*\{\s*height:148px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat \.eva-composer\s*\{\s*height:104px;/s);
 });
 
 test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏', () => {
