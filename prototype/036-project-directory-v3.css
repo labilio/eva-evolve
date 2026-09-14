@@ -2,10 +2,11 @@
   body.eva-message-hierarchy-ready .eva-project-directory {
     box-sizing: border-box;
     width: 100%;
-    max-width: 1180px;
+    max-width: none;
     min-width: 0;
     margin-inline: auto;
-    padding: var(--eva-space-8) var(--eva-space-12) 56px;
+    --eva-project-directory-gutter: var(--eva-space-8);
+    padding: 0 var(--eva-project-directory-gutter) var(--eva-space-12);
   }
 
   .eva-project-directory-actions {
@@ -116,12 +117,12 @@
   .eva-project-card-description {
     display: -webkit-box;
     overflow: hidden;
-    min-height: 40px;
+    min-height: 0;
     margin: 0;
     color: var(--gds-color-text-secondary);
     font-family: var(--gds-font-family-sans);
-    font-size: var(--gds-type-label-font-size);
-    line-height: var(--gds-type-label-line-height);
+    font-size: var(--gds-type-caption-font-size);
+    line-height: 18px;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
@@ -148,9 +149,9 @@
     position: relative;
     display: flex;
     gap: var(--eva-space-4);
-    min-height: 76px;
-    padding: var(--eva-space-4) 64px var(--eva-space-4) var(--eva-space-5);
-    align-items: flex-start;
+    min-height: 72px;
+    padding: var(--eva-space-3-5) 56px var(--eva-space-3-5) var(--eva-space-4);
+    align-items: center;
     cursor: pointer;
     transition: background-color 120ms ease;
   }
@@ -164,14 +165,18 @@
   }
 
   .eva-project-list-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--eva-space-0-5);
     min-width: 0;
   }
 
   .eva-project-list-description {
     overflow: hidden;
-    margin-top: 4px;
+    margin-top: 0;
     color: var(--gds-color-text-secondary);
-    font: var(--gds-font-weight-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--gds-font-family-sans);
+    font: var(--gds-font-weight-regular) var(--gds-type-caption-font-size)/18px var(--gds-font-family-sans);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -210,8 +215,9 @@
 
   .eva-project-list-item > .eva-project-pin-button {
     position: absolute;
-    top: 13px;
-    right: 16px;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
   }
 
   .eva-project-list-empty {
@@ -229,7 +235,8 @@
 
   @media (max-width: 900px) {
     body.eva-message-hierarchy-ready .eva-project-directory {
-      padding-inline: 24px;
+      --eva-project-directory-gutter: var(--eva-space-6);
+      padding-inline: var(--eva-project-directory-gutter);
     }
 
     .eva-project-pinned-grid {
@@ -545,7 +552,7 @@
 
 /* Directory density: 32px page rhythm, 16px panels, 32px pin targets. */
 .eva-project-directory { background: var(--eva-surface-primary); }
-.eva-project-directory-list { border: 1px solid var(--eva-border-subtle); }
+.eva-project-directory-list { border: 1px solid var(--eva-border-faint); }
 
 .eva-project-directory .collab-btn-primary.semi-button {
   background: var(--eva-action-primary);
@@ -555,20 +562,22 @@
 .eva-project-directory .collab-btn-primary.semi-button:hover { background: var(--eva-action-primary-hover); }
 .eva-project-directory-icon svg { width: var(--eva-icon-content); height: var(--eva-icon-content); }
   .eva-project-pinned-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 420px));
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
     align-items: stretch;
   }
   .eva-project-pinned-card {
     min-height: 112px;
-    border-color: var(--eva-border-subtle);
+    border-color: var(--eva-border-faint);
     border-radius: var(--eva-radius-panel);
     box-shadow: none;
   }
-  .eva-project-pinned-card .semi-card-header {
-    min-height: 56px;
-    padding: var(--eva-space-3) var(--eva-space-4);
+  .eva-project-pinned-card :is(.semi-card-header, .arco-card-header) {
+    min-height: 0;
+    padding: var(--eva-space-4) var(--eva-space-4) var(--eva-space-1-5);
+    height: auto;
+    border-bottom: 0;
   }
-  .eva-project-pinned-card .semi-card-body { padding: 0 var(--eva-space-4) var(--eva-space-4); }
+  .eva-project-pinned-card :is(.semi-card-body, .arco-card-body) { padding: 0 var(--eva-space-4) var(--eva-space-4) calc(var(--eva-space-4) + 34px + 10px); }
   .eva-project-pinned-card:hover {
     border-color: var(--eva-border-default);
     background: var(--eva-surface-subtle);
@@ -581,3 +590,5 @@
 .eva-project-info__milestone time { white-space: nowrap; line-height: 22px; }
 .eva-project-info__milestone-state { line-height: 22px; }
 .eva-project-info__goals li > span { line-height: 24px; }
+
+.eva-project-pinned-card :is(.semi-card-header-wrapper, .arco-card-header-title) { min-width: 0; }

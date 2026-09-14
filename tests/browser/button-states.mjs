@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { after, afterEach, before, test } from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from '../../tools/serve.mjs';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +19,10 @@ before(async () => {
 after(async () => {
   await browser?.close();
   if (server) await new Promise(resolve => server.close(resolve));
+});
+
+afterEach(async () => {
+  await page.evaluate(() => document.querySelector('#button-contract')?.remove());
 });
 
 const color = el => el.evaluate(e => getComputedStyle(e).backgroundColor);
@@ -49,6 +53,7 @@ for (const scope of ['', 'collab-frame', 'collab-list-page', 'collab-empty']) {
 }
 test('真实新建项目入口 hover 保持蓝色',async()=>{
   await page.goto(`${origin}/#/collab`);
+  assert.equal(await page.locator('#button-contract').count(),0,'前一项测试夹具必须清理');
   const button=page.getByRole('button',{name:'新建项目',exact:true});
   await button.hover(); await page.waitForTimeout(250); assert.equal(await color(button),'rgb(18, 85, 202)');
 });

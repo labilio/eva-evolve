@@ -25,9 +25,10 @@
   function create(deps) {
     var h = deps.React.createElement;
     return function SitesPage() {
-      return h('main', { className: 'eva-sites', 'aria-label': '站点' },
+      return h('div', { className: 'eva-sites-page' },
+        h('header', { className: 'eva-page-header' }, h('h1', null, '站点')),
+        h('main', { className: 'eva-sites', 'aria-label': '站点' },
         h('header', { className: 'eva-sites__header' },
-          h('h1', null, '站点'),
           h('p', null, '查看由助理创建和维护的站点')
         ),
         h('section', { className: 'eva-sites__summary', 'aria-label': '站点概览' },
@@ -49,6 +50,7 @@
               );
             })
           )
+        )
         )
       );
     };

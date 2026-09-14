@@ -16,7 +16,7 @@
     "test:buttons": "node --test tests/browser/button-states.mjs",
     "test:headings": "node --test tests/browser/heading-system.mjs",
     "test:my-ai": "node --test tests/browser/my-ai-hierarchy-unread.mjs",
-    "test:layout": "node --test tests/browser/list-insets.mjs",
+    "test:layout": "node --test tests/browser/list-insets.mjs tests/browser/directory-layout.mjs tests/browser/workspace-shell.mjs tests/browser/sidebar-footer.mjs",
     "test:assistant": "node --test tests/browser/personal-assistant-modal.mjs"
   },
   "devDependencies": {

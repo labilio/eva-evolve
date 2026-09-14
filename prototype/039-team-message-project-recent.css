@@ -92,8 +92,8 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle:active,
 .eva-follow-category-title { gap: 6px; min-height: 36px; margin-bottom: 4px; padding: 0 8px 0 14px; border-radius: 8px; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title > .wk-category-header { padding: 0; background: transparent; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .wk-category-header__name { color: var(--semi-color-text-2); font-size: 13px; font-weight: 700; }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { padding-inline-start: 28px; }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { padding-inline-start: calc(28px + var(--eva-rail-identity-avatar-size, 22px) + var(--gds-space-2)); gap: 6px; }
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { padding-inline-start: var(--eva-rail-identity-content-inset); }
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { padding-inline-start: var(--eva-rail-team-thread-inset); gap: 6px; }
 .eva-follow-category-title > .wk-category-header { flex: 1; min-width: 0; }
 .eva-follow-category-title .eva-space-task-button { flex: none; }
 
@@ -109,7 +109,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact
   border-radius: 8px;
 }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:hover {
-  background: #f5f6f7;
+  background: var(--eva-conversation-row-hover);
 }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected,
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected:hover {

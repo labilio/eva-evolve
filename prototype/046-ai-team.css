@@ -24,9 +24,9 @@
      in 016. A session is the My AI equivalent of a group-chat subzone. */
   --eva-rail-secondary: var(--gds-color-text-secondary);
   --eva-rail-time: var(--gds-color-text-muted);
-  --eva-rail-hover: var(--gds-color-overlay-hover);
+  --eva-rail-hover: var(--eva-conversation-row-hover);
   --eva-rail-selected: var(--gds-color-surface-hover);
-  --eva-rail-group-hover: var(--gds-color-overlay-hover);
+  --eva-rail-group-hover: var(--eva-conversation-row-hover);
   --eva-rail-group-radius: 7px;
   --eva-rail-primary-row-radius: var(--wk-r-xs, 3px);
   --eva-rail-nested-row-radius: var(--wk-r-xs, 3px);
@@ -35,14 +35,10 @@
   --eva-rail-line-height: 1.4;
   /* Match the message rail's primary group rows: 22px identity avatar,
      13px label and an 8px icon/text gap. */
-  --eva-rail-identity-avatar-size: 22px;
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 28px;
-  --eva-rail-level-indent: var(--gds-space-1);
   /* Primary avatars and labels share the same columns as the message rail.
      Team subzone icons retain one compact connector step. */
-  --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
-  --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-content-inset) + var(--gds-space-2-5));
   --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + 14px + var(--gds-space-1-5));
   --eva-rail-identity-avatar-trailing: 0px;
   box-sizing: border-box;
@@ -621,3 +617,15 @@
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread).wk-conv-compact-item--selected { background: var(--eva-rail-selected); }
 
 .eva-ai-team__identity-heading .eva-ai-team__chevron { position:absolute;right:8px;top:10px; }
+
+/* 列表悬停复用我的消息；选中态与悬停操作仍由原有规则控制。 */
+:is(.eva-ai-team__team-heading, .eva-ai-team__identity-heading, .eva-ai-team__session-row, .eva-ai-team__team-thread-row):hover {
+  border-radius: var(--eva-conversation-row-radius);
+}
+.eva-ai-team__team-thread-row .wk-conv-compact-item--thread:hover {
+  background: var(--eva-rail-hover);
+  border-radius: var(--eva-conversation-row-radius);
+}
+.eva-ai-team__team-thread-row.is-selected .wk-conv-compact-item--thread:hover {
+  background: var(--eva-rail-selected);
+}

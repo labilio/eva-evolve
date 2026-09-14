@@ -23,10 +23,6 @@
       return h('div',{className:'eva-members-field'},h(SelectionBody,{items:choices.map(c=>({...c,kind:'clone'})),selected:value||[],onChange}));
     }
     function ActorPicker(){const s=useState();return h('div',{className:'eva-members-actor'},h('span',null,'演示身份'),h(Select,{value:s.actorId,optionList:store.people().map(p=>({value:p.id,label:h(HumanIdentity,{id:p.id,compact:true})})),onChange:id=>store.setActor(id)}));}
-    function AccountSwitcher({onAccount}){
-      const s=useState(),[open,setOpen]=R.useState(false);
-      return h(R.Fragment,null,h(Button,{className:'eva-account-switcher',theme:'borderless',type:'tertiary','aria-label':'当前项目演示身份：'+(store.person(s.actorId)?.name||'王宜林')+'，切换项目演示身份',onClick:()=>setOpen(true)},h(HumanIdentity,{id:s.actorId})),h(Modal,{className:'eva-members-modal',title:'切换项目演示身份',visible:open,footer:null,onCancel:()=>setOpen(false)},h('p',{className:'eva-members-muted'},'用于项目及群聊成员演示；个人 Eva 和我的 AI 固定使用王宜林的数据。'),h('div',{className:'eva-account-options'},store.people().map(p=>h(Button,{key:p.id,theme:p.id===s.actorId?'light':'borderless',type:p.id===s.actorId?'primary':'tertiary',onClick:()=>{store.setActor(p.id);setOpen(false);}},h(HumanIdentity,{id:p.id}),p.id===s.actorId&&h('span',{className:'eva-members-muted'},'当前')))),onAccount&&h(Button,{theme:'borderless',type:'tertiary',onClick:()=>{setOpen(false);onAccount();}},'账号设置')));
-    }
     function RoleAssignment({projectId,memberId,onMemberChange,onClose}){
       const s=useState(),[ids,setIds]=R.useState([]),[error,setError]=R.useState(''),[roleName,setRoleName]=R.useState(''),[creating,setCreating]=R.useState(false),[createError,setCreateError]=R.useState('');
       R.useEffect(()=>{setIds(store.memberRoles(projectId,memberId).map(r=>r.id));setError('');setRoleName('');setCreating(false);setCreateError('');},[projectId,memberId,s.actorId]);
@@ -142,6 +138,6 @@
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,useNavigate},store);
     const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,useNavigate},store);
-    return {...cards,HumanIdentity,ChatSettings,AccountSwitcher,Members,CloneChoice,ActorPicker,useState,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker};
+    return {...cards,HumanIdentity,ChatSettings,Members,CloneChoice,ActorPicker,useState,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker};
   }};
 })(window);

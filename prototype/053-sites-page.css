@@ -1,4 +1,6 @@
 /* 团队站点：复用 Eva GDS 语义 token，不使用个人 Eva 的 260/940 画板骨架。 */
+.eva-sites-page { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.eva-sites-page > .eva-sites { flex: 1; height: auto; }
 .eva-sites {
   box-sizing: border-box;
   width: 100%;
@@ -14,7 +16,6 @@
 }
 
 .eva-sites__header { margin-bottom: var(--eva-space-6); }
-.eva-sites__header h1,
 .eva-sites__recent h2 {
   margin: 0;
   color: var(--eva-text-primary);

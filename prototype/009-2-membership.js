@@ -582,6 +582,16 @@
       if(old&&!Object.values(saved.threads).includes(old.id)&&!(saved.messages[old.id]||[]).length&&!saved.chatSettings?.[old.id]&&!Object.values(saved.chatPreferences||{}).some(p=>p[old.id]))delete saved.groups[old.id];
       saved.seededMockLayoutV1=true;
     }
+    // The review defaults pin every accessible demo project once. Subsequent
+    // unpinning remains a personal preference and must survive reloads.
+    if(!saved.seededAllProjectPinsV1){
+      saved.pinnedProjects||={};
+      for(const human of saved.people.filter(p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot)){
+        saved.pinnedProjects[human.id]=Object.values(saved.projects).filter(p=>p.humans.some(m=>m.id===human.id)).map(p=>p.id).slice(0,6);
+      }
+      saved.seededAllProjectPinsV1=true;
+      try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{

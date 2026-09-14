@@ -62,13 +62,15 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       };
     });
     const aligned=(actual,expected)=>Number.isFinite(actual)&&Number.isFinite(expected)&&Math.abs(actual-expected)<1;
-    assert.ok(aligned(myAiColumns.teamAvatar,messageColumns.avatar));
+    assert.ok(aligned(myAiColumns.teamAvatar,messageColumns.avatar),JSON.stringify({myAiColumns,messageColumns}));
     assert.ok(aligned(myAiColumns.identityAvatar,messageColumns.avatar));
     assert.ok(aligned(myAiColumns.roleName,messageColumns.avatar));
     assert.ok(aligned(myAiColumns.teamName,messageColumns.name));
     assert.ok(aligned(myAiColumns.identityName,messageColumns.name));
     assert.ok(aligned(myAiColumns.childIcon,messageColumns.childIcon));
     assert.ok(aligned(myAiColumns.childName,messageColumns.childName));
+    assert.ok(aligned(myAiColumns.childName,myAiColumns.teamName),'团队子区名称与父团队名称对齐');
+    assert.ok(aligned(messageColumns.childName,messageColumns.name),'消息子区名称与父群名称对齐');
     const disclosureBox=await page.locator('.eva-ai-team__team-toggle').first().boundingBox();
     assert.ok(disclosureBox && disclosureBox.width >= 24 && disclosureBox.height >= 32, '收紧缩进后团队展开按钮仍可操作');
 
@@ -284,10 +286,15 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
 
     await page.locator('[data-eva-nav-id="messages"]').click();
     await page.waitForURL('**/#/messages');
+    // Wait for the intermediate mode to mount; URL changes precede React commits.
+    await page.locator('.eva-ai-team__sidebar').waitFor({state:'hidden'});
     await page.locator('[data-eva-nav-id="my-ai"]').click();
     await page.waitForURL('**evaIM=my-ai');
     const restoredPersona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
+    await restoredPersona.waitFor({state:'visible'});
+    assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').count(),0,'返回后身份会话遵循默认收起合同');
     await restoredPersona.locator('.eva-ai-team__identity-button').click();
+    await restoredPersona.locator('.eva-ai-team__session-title').filter({hasText:'删空后的第一次消息'}).waitFor({state:'visible'});
     assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').filter({ hasText: '删空后的第一次消息' }).count(), 1, '入口往返后新会话仍在所属分身下');
     assert.deepEqual(errors, []);
     await page.screenshot({ path: '/tmp/eva-my-ai-empty-persona-session-1200.png' });
