@@ -18,6 +18,14 @@
   };
   let saved;try{saved=JSON.parse(root.localStorage.getItem(key));}catch{}
   let state={agents:seed.agents, drafts:{}, personaRequests:[], chats:{}, teamIds:[],...saved};
+  const incomingMessageCount=session=>Array.isArray(session?.messages)?session.messages.filter(message=>message?.sender?.ai===true&&!['self','u-wangyilin'].includes(message.sender.uid)).length:0;
+  const normalizeReadState=(session,markExistingRead=false)=>{
+    const total=incomingMessageCount(session);
+    if(!Number.isInteger(session.readAiMessageCount)||session.readAiMessageCount<0)session.readAiMessageCount=markExistingRead?total:0;
+    session.readAiMessageCount=Math.min(session.readAiMessageCount,total);
+    return session;
+  };
+  const unreadCountOf=session=>Math.max(0,incomingMessageCount(session)-(Number.isInteger(session?.readAiMessageCount)?session.readAiMessageCount:0));
   // Add newly shipped organization employees without replacing local creations or edits.
   const hrOnboardingSeed=seed.agents.find(a=>a.id==='a_hr_onboarding');
   if(hrOnboardingSeed&&!state.agents.some(a=>a.id===hrOnboardingSeed.id))state.agents=[...state.agents,{...hrOnboardingSeed}];
@@ -43,7 +51,7 @@
   const newSession=id=>{
     if(!get(id))throw new Error('数字员工不存在');
     let title='新对话',number=2;while(list(id).some(s=>s.title===title))title='新对话 '+number++;
-    const session=privateConversations.threadRecord(id,{id:'digital-thread:'+id+':'+root.crypto.randomUUID(),title,autoTitle:true,updatedAt:now(),pinned:false,messages:[],draft:''});
+    const session=privateConversations.threadRecord(id,{id:'digital-thread:'+id+':'+root.crypto.randomUUID(),title,autoTitle:true,updatedAt:now(),pinned:false,readAiMessageCount:0,messages:[],draft:''});
     state.chats[id]||={sessions:[]};state.chats[id].sessions.push(session);return session;
   };
   const writable=(id,sessionId)=>{
@@ -61,6 +69,7 @@
     session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text,...(replyTo?{replyTo}:{})},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
     session.draft='';session.updatedAt=now();publish();return true;
   };
+  const markSessionRead=(id,sessionId)=>{const session=readSession(id,sessionId);if(!session)return false;const total=incomingMessageCount(session);if(session.readAiMessageCount===total)return false;session.readAiMessageCount=total;publish();return true;};
   const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||'prototype/assets/project-agent-bot.svg',logo:'prototype/assets/project-agent-bot.svg'});
   const demoSession=(id,a,story,index)=>{
     const title=Array.isArray(story)?story[0]:story.title;
@@ -105,6 +114,15 @@
     state.hrOnboardingDemoV1=true;publish();
   }
   if(!state.compactDemoV1){Object.values(state.chats).forEach(chat=>chat.sessions.forEach(session=>session.messages.forEach(m=>{if(m.sender?.ai&&Object.hasOwn(seed.compactCopy||{},m.text))m.text=seed.compactCopy[m.text];})));state.compactDemoV1=true;publish();}
+  // Existing histories stay read. A single shipped demo topic remains unread so the
+  // notification hierarchy is visible without assigning unread state to user data.
+  Object.values(state.chats).forEach(chat=>chat.sessions.forEach(session=>normalizeReadState(session,true)));
+  if(!state.unreadNotificationsV1){
+    const demoUnread=state.teamIds.flatMap(id=>list(id)).find(session=>String(session.id).includes(':professional-v1:')&&incomingMessageCount(session)>0);
+    if(demoUnread)demoUnread.readAiMessageCount=incomingMessageCount(demoUnread)-1;
+    state.unreadNotificationsV1=true;
+    publish();
+  }
   // Include newly seeded records in the same persisted Octo topic contract.
   Object.entries(state.chats).forEach(([id,chat])=>{chat.sessions=chat.sessions.map(record=>privateConversations.threadRecord(id,record));});
   root.EvaDigitalEmployeesStore={
@@ -114,22 +132,25 @@
     hasInTeam:id=>state.teamIds.includes(id),
     addToTeam(id){if(get(id)?.kind!=='staff')throw new Error('请选择数字员工');if(state.teamIds.includes(id))return false;state.teamIds=[...state.teamIds,id];publish();return true;},
     removeFromTeam(id){state.teamIds=state.teamIds.filter(value=>value!==id);publish();},
-    sessions(id){return [...list(id)].reverse().sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt)).map(({id,title,updatedAt,pinned})=>({id,title,updatedAt,pinned}));},
+    sessions(id){return [...list(id)].reverse().sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt)).map(session=>({id:session.id,title:session.title,updatedAt:session.updatedAt,pinned:session.pinned,unreadCount:unreadCountOf(session)}));},
     renameThread(id,threadId,name){const session=readSession(id,threadId);if(!session)throw new Error('会话已删除');const title=String(name||'').trim();if(!title||Array.from(title).length>50)throw new Error('请输入 1–50 个字符的会话名称');session.title=title;session.autoTitle=false;publish();},
     createThread(id){const session=newSession(id);publish();return session.id;},
     createSession(id){const session=newSession(id);publish();return session.id;},
     setSessionFlag(id,sessionId,flag,value){if(flag!=='pinned')throw new Error('不支持的会话设置');const session=readSession(id,sessionId);if(!session)return;session.pinned=!!value;publish();},
     deleteSession(id,sessionId){if(!state.chats[id])return;state.chats[id].sessions=list(id).filter(s=>s.id!==sessionId);publish();},
     receiveForwarded(channelId,messages){
-      for(const id of state.teamIds){const session=list(id).find(item=>item.channel_id===channelId);if(!session)continue;session.messages.push(...JSON.parse(JSON.stringify(messages)));session.updatedAt=now();publish();return true;}return false;
+      for(const id of state.teamIds){const session=list(id).find(item=>item.channel_id===channelId);if(!session)continue;session.messages.push(...JSON.parse(JSON.stringify(messages)).map(message=>({...message,sender:{...message.sender,uid:'u-wangyilin',name:'王宜林',ai:false}})));session.updatedAt=now();publish();return true;}return false;
     },
+    markRead:markSessionRead,
+    unreadCount(id,sessionId){return unreadCountOf(readSession(id,sessionId));},
+    hasUnread(id){return (id?list(id):state.teamIds.flatMap(teamId=>list(teamId))).some(session=>unreadCountOf(session)>0);},
     conversationSource(id,sessionId){
       const a=get(id);if(!a)return null;
       const selected=readSession(id,sessionId);if(sessionId&&!selected)return null;
       const c=selected||{messages:[],draft:''},targetId=selected?.id;
       const source=privateConversations.source({identityId:id,name:a.name,appearance:appearance(a),records:list(id),selectedId:targetId,
         messages:threadId=>(list(id).find(s=>s.id===threadId)?.messages||[]).map(m=>({...m,sender:m.sender.uid==='u-wangyilin'?{...m.sender,avatar:root.__EVA_CURRENT_USER_PORTRAIT}:{...m.sender,name:a.name,identityAppearance:appearance(a)}}))});
-      return {...source,initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:(text,channelId,reply)=>sendSession(id,targetId,text,reply)};
+      return {...source,initialDraft:c.draft,onDraftChange:text=>setSessionDraft(id,targetId,text),onSend:(text,channelId,reply)=>{const sent=sendSession(id,targetId,text,reply);if(sent)markSessionRead(id,targetId);return sent;}};
     },
     personaRequests(ownerId){return structuredClone((state.personaRequests||[]).filter(r=>r.ownerId===ownerId));},
     submitPersonaRequest(ownerId,draft){
