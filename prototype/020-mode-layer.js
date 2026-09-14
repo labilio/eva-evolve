@@ -27,6 +27,7 @@
     crumbs: [],
     dialog: null,
     previewId: null,
+    previewFullscreen: false,
     previewPage: 0,
     previewSheet: 0,
     previewMode: 'rendered',
@@ -240,7 +241,7 @@
   }
 
   function spaceName(id) {
-    if (String(id || '').startsWith('personal:')) return '个人空间';
+    if (String(id || '').startsWith('personal:')) return '个人文件库';
     return workspaceName(id);
   }
 
@@ -318,12 +319,12 @@
   }
 
   function scopeCopy() {
-    if (state.driveScope === 'pinned') return { title: '置顶文件', section: '置顶文件', subtitle: '汇总你在个人空间和各个可访问项目中置顶的文件与文件夹' };
-    if (state.driveScope === 'personal') return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可统一整理本地文件与外部链接' };
-    if (state.driveScope === 'projects') return { title: '项目空间', section: '我的项目空间', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
-    if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: '权限继承项目角色，任务产出、群文件与外部链接归属项目空间' };
-    if (state.driveScope === 'trash') return { title: '回收站', section: '回收站', subtitle: '仅显示你有管理权限的空间中已删除的文件' };
-    return { title: '个人空间', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
+    if (state.driveScope === 'pinned') return { title: '置顶文件', section: '置顶文件', subtitle: '汇总你在个人文件库和各个可访问项目文件库中置顶的文件与文件夹' };
+    if (state.driveScope === 'personal') return { title: '个人文件库', section: '个人文件', subtitle: '仅你可访问，可统一整理本地文件与外部链接' };
+    if (state.driveScope === 'projects') return { title: '项目文件库', section: '我的项目文件库', subtitle: '选择一个已加入的项目后浏览和整理团队文件' };
+    if (state.driveScope === 'workspace') return { title: workspaceName(state.workspaceId), section: '团队文件', subtitle: '权限继承项目角色，任务产出、群文件与外部链接归属项目文件库' };
+    if (state.driveScope === 'trash') return { title: '回收站', section: '回收站', subtitle: '仅显示你有管理权限的文件库中已删除的文件' };
+    return { title: '个人文件库', section: '个人文件', subtitle: '仅你可访问，可用于上传和整理个人资料' };
   }
 
   function ensureDriveRoot(host) {
@@ -385,8 +386,8 @@
     if (context && context.files.sourceLabelFor) return context.files.sourceLabelFor(resource, fileActor());
     if (resource.source && resource.source.label) return resource.source.label;
     if (resource.area === 'project') return '项目 · ' + workspaceName(resource.projectId);
-    if (resource.area === 'personal') return '个人空间';
-    return '项目空间';
+    if (resource.area === 'personal') return '个人文件库';
+    return '项目文件库';
   }
 
   function resourceFileType(resource) {
@@ -462,11 +463,11 @@
   function shortcutDetailsHTML(resource) {
     var info = fileContext().files.shortcutInfo(resource, fileActor());
     if (!info) return '';
-    return '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>快捷方式信息</h3></div><dl class="eva-drive__meta"><div><dt>访问状态</dt><dd>' + escapeHTML(info.statusLabel) + '</dd></div>' + (info.status === 'available' ? '<div><dt>源文件</dt><dd>' + escapeHTML(info.sourceName) + '</dd></div><div><dt>来源空间</dt><dd>' + escapeHTML(info.sourceSpaceName) + '</dd></div>' : '<div><dt>权限说明</dt><dd>快捷方式不会授予源文件权限</dd></div>') + '</dl></section>';
+    return '<section class="eva-file-detail__section"><div class="eva-file-detail__section-head"><h3>快捷方式信息</h3></div><dl class="eva-drive__meta"><div><dt>访问状态</dt><dd>' + escapeHTML(info.statusLabel) + '</dd></div>' + (info.status === 'available' ? '<div><dt>源文件</dt><dd>' + escapeHTML(info.sourceName) + '</dd></div><div><dt>来源文件库</dt><dd>' + escapeHTML(info.sourceSpaceName) + '</dd></div>' : '<div><dt>权限说明</dt><dd>快捷方式不会授予源文件权限</dd></div>') + '</dl></section>';
   }
 
   function spaceRootLabel(resource) {
-    if (resource.area === 'personal') return '个人空间';
+    if (resource.area === 'personal') return '个人文件库';
     return workspaceName(resource.projectId || resource.spaceId) + ' / 团队文件';
   }
 
@@ -582,7 +583,7 @@
 
   function targetOptionsHTML(selectedSpaceId) {
     var context = fileContext(), actor = fileActor();
-    var personal = [{ id: personalSpaceId(), label: '个人空间' }];
+    var personal = [{ id: personalSpaceId(), label: '个人文件库' }];
     var projects = [];
     WORKSPACES.forEach(function (workspace) {
       var role = context.files.role(workspace.id, actor);
@@ -591,12 +592,12 @@
     function options(label, spaces) {
       return '<optgroup label="' + label + '">' + spaces.map(function (space) { return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(space.label) + '</option>'; }).join('') + '</optgroup>';
     }
-    return options('个人空间', personal) + options('项目空间', projects);
+    return options('个人文件库', personal) + options('项目文件库', projects);
   }
 
   function shortcutTargetOptionsHTML(sourceSpaceId, selectedSpaceId) {
     return fileContext().files.writableSpaces(fileActor(), sourceSpaceId).map(function (space) {
-      var prefix = space.kind === 'personal' ? '个人空间' : '项目空间';
+      var prefix = space.kind === 'personal' ? '个人文件库' : '项目文件库';
       return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(prefix + ' · ' + space.name) + '</option>';
     }).join('');
   }
@@ -630,7 +631,7 @@
     var options = suggestions.length ? suggestions.map(function (tag) {
       return '<button class="eva-tag-editor__option" type="button" role="option" data-drive-action="tag-option" data-drive-tag-value="' + escapeHTML(tag) + '">' + escapeHTML(tag) + '</button>';
     }).join('') : '<span class="eva-tag-editor__empty">没有匹配标签，按回车新建</span>';
-    var dropdown = state.dialog.tagDropdownOpen === false ? '' : '<div id="eva-drive-tag-options" class="eva-tag-editor__dropdown" role="listbox" aria-label="当前空间已有标签">' + options + '</div>';
+    var dropdown = state.dialog.tagDropdownOpen === false ? '' : '<div id="eva-drive-tag-options" class="eva-tag-editor__dropdown" role="listbox" aria-label="当前文件库已有标签">' + options + '</div>';
     return '<div class="eva-tag-editor"><span class="eva-tag-editor__label">自定义标签</span><div class="eva-tag-editor__selected">' + selected + '</div><div class="eva-tag-editor__control"><input id="eva-drive-dialog-tags" data-drive-tag-input type="text" value="' + escapeHTML(state.dialog.tagInput || '') + '" maxlength="20" placeholder="输入或选择标签" role="combobox" aria-label="输入或选择标签" aria-expanded="' + (state.dialog.tagDropdownOpen === false ? 'false' : 'true') + '" aria-controls="eva-drive-tag-options" autocomplete="off"><button class="eva-tag-editor__toggle" type="button" data-drive-action="tag-dropdown-toggle" aria-label="' + (state.dialog.tagDropdownOpen === false ? '展开已有标签' : '收起已有标签') + '">' + icon('arrow') + '</button></div>' + dropdown + (state.dialog.tagError ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.tagError) + '</small>' : '') + '</div>';
   }
 
@@ -650,18 +651,6 @@
     state.dialog.tagError = '';
   }
 
-  function externalFolderDetectionHTML(url) {
-    if (!String(url || '').trim()) return '<div class="eva-external-link-detection" data-external-folder-detection role="status" aria-live="polite">' + icon('folder') + '<span><strong>等待识别</strong><small>粘贴链接后识别来源平台</small></span></div>';
-    try {
-      var info = fileContext().files.inspectExternalLink(url, { kind: 'folder' });
-      var provider = info.provider === 'web' ? '其他平台' : info.providerLabel;
-      var description = info.detection === 'pattern' ? '已识别为文件夹链接' : '链接类型由你确认，将按外部文件夹保存';
-      return '<div class="eva-external-link-detection is-ready" data-external-folder-detection role="status" aria-live="polite">' + icon(info.provider === 'feishu' ? 'link' : info.provider === 'wecom' ? 'users' : 'folder') + '<span><strong>' + escapeHTML(provider + ' · 文件夹') + '</strong><small>' + escapeHTML(description) + '</small></span></div>';
-    } catch (error) {
-      return '<div class="eva-external-link-detection is-error" data-external-folder-detection role="status" aria-live="polite">' + icon('external') + '<span><strong>无法按文件夹保存</strong><small>' + escapeHTML(error.message || '无法识别该链接') + '</small></span></div>';
-    }
-  }
-
   function dialogHTML() {
     if (!state.dialog) return '';
     var type = state.dialog.type, resource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
@@ -673,20 +662,20 @@
       var linkInfo = resource ? fileContext().files.externalLinkInfo(resource, fileActor()) : null;
       var externalName = state.dialog.name == null ? resource ? resource.name : '' : state.dialog.name;
       var externalURL = state.dialog.url == null ? linkInfo ? linkInfo.url : '' : state.dialog.url;
-      var nameField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹名称' : '链接名称') + '</span><input id="eva-drive-dialog-external-name" value="' + escapeHTML(externalName) + '" maxlength="100" placeholder="' + (externalFolderDialog ? '例如：供应商交付资料' : '例如：供应商协作飞书文档') + '"' + (externalFolderDialog ? '' : ' autofocus') + '></label>';
-      var urlField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹链接' : '外部链接') + '</span><input id="eva-drive-dialog-external-url" type="url" value="' + escapeHTML(externalURL) + '" placeholder="https://"' + (externalFolderDialog ? ' autofocus' : '') + '></label>';
-      content = (externalFolderDialog ? urlField + externalFolderDetectionHTML(externalURL) + nameField : nameField + urlField) + (state.dialog.confirmHostChange ? '<div class="eva-external-link-warning">' + icon('external') + '<span>链接域名发生变化。请确认新地址可信后再保存。</span></div>' : '') + (state.dialog.error ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.error) + '</small>' : '') + '<p class="eva-drive-dialog__hint">' + (externalFolderDialog ? '仅保存访问入口，不复制或同步文件夹内容；访问权限仍由原平台控制。' : '仅保存访问入口，不复制外部内容、版本和评论；访问权限仍由原平台控制。') + '</p>';
+      var nameField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹名称' : '文件名称') + '</span><input id="eva-drive-dialog-external-name" value="' + escapeHTML(externalName) + '" maxlength="100" placeholder="' + (externalFolderDialog ? '例如：供应商交付资料' : '例如：供应商协作飞书文档') + '" autofocus></label>';
+      var urlField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹链接' : '文件链接') + '</span><input id="eva-drive-dialog-external-url" type="url" value="' + escapeHTML(externalURL) + '" placeholder="https://"></label>';
+      content = nameField + urlField + (state.dialog.confirmHostChange ? '<div class="eva-external-link-warning">' + icon('external') + '<span>链接域名发生变化。请确认新地址可信后再保存。</span></div>' : '') + (state.dialog.error ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.error) + '</small>' : '');
     }
-    if (type === 'target-upload') content = '<label class="eva-drive-dialog__field"><span>上传到</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || personalSpaceId()) + '</select></label><p class="eva-drive-dialog__hint">上传后文件继承目标空间的角色权限。</p>';
+    if (type === 'target-upload') content = '<label class="eva-drive-dialog__field"><span>上传到</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || personalSpaceId()) + '</select></label><p class="eva-drive-dialog__hint">上传后文件继承目标文件库的角色权限。</p>';
     if (type === 'rename') content = '<label class="eva-drive-dialog__field"><span>新名称</span><input id="eva-drive-dialog-name" value="' + escapeHTML(resource ? resource.name : '') + '" autofocus></label>';
     if (type === 'tags' && resource) content = tagEditorHTML(resource) + '<p class="eva-drive-dialog__hint">从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>';
     if (type === 'create-shortcut' && resource) {
       var shortcutSpaces = fileContext().files.writableSpaces(fileActor(), resource.spaceId);
-      content = shortcutSpaces.length ? '<div class="eva-shortcut-source"><span>源文件</span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(spaceRootLabel(resource)) + '</small></div><label class="eva-drive-dialog__field"><span>目标空间</span><select id="eva-drive-dialog-shortcut-space">' + shortcutTargetOptionsHTML(resource.spaceId, state.dialog.targetSpaceId) + '</select></label><label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-shortcut-parent">' + shortcutFolderOptionsHTML(state.dialog.targetSpaceId, state.dialog.targetParentId || 0) + '</select></label><p class="eva-drive-dialog__hint">快捷方式不复制文件，也不会向目标空间成员授予源文件权限。</p>' : '<p>没有其他可写入的空间，暂时无法创建跨空间快捷方式。</p>';
+      content = shortcutSpaces.length ? '<div class="eva-shortcut-source"><span>源文件</span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(spaceRootLabel(resource)) + '</small></div><label class="eva-drive-dialog__field"><span>目标文件库</span><select id="eva-drive-dialog-shortcut-space">' + shortcutTargetOptionsHTML(resource.spaceId, state.dialog.targetSpaceId) + '</select></label><label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-shortcut-parent">' + shortcutFolderOptionsHTML(state.dialog.targetSpaceId, state.dialog.targetParentId || 0) + '</select></label><p class="eva-drive-dialog__hint">快捷方式不复制文件，也不会向目标文件库成员授予源文件权限。</p>' : '<p>没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。</p>';
     }
     if (type === 'move') {
       var folders = fileContext().files.list(resource.spaceId, fileActor()).filter(function (item) { return item.type === 'folder' && item.id !== resource.id; });
-      content = '<label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-parent"><option value="0">根目录</option>' + folders.map(function (item) { return '<option value="' + escapeHTML(item.id) + '">' + escapeHTML(item.name) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">仅允许在当前空间内移动。</p>';
+      content = '<label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-parent"><option value="0">根目录</option>' + folders.map(function (item) { return '<option value="' + escapeHTML(item.id) + '">' + escapeHTML(item.name) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">仅允许在当前文件库内移动。</p>';
     }
     if (type === 'trash') content = '<p>将“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '移至回收站？Owner 或 Manager 可恢复。</p>';
     if (type === 'delete-forever') content = '<p>永久删除“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '后不可恢复。</p>';
@@ -759,7 +748,8 @@
     else if (sampleURL && extension === 'pdf') content = '<iframe class="eva-file-preview-sidebar__frame" src="' + escapeHTML(sampleURL) + '" title="' + escapeHTML(target.name + '预览') + '"></iframe>';
     else if (sampleURL && ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(extension)) content = '<img class="eva-file-preview-sidebar__image" src="' + escapeHTML(sampleURL) + '" alt="' + escapeHTML(target.name) + '">';
     else content = '<div class="eva-file-preview-sidebar__empty"><span class="eva-drive__file-mark ' + fileMarkClass(target) + '">' + icon(fileIconName(target)) + '</span><strong>' + escapeHTML(target.name) + '</strong><span>' + escapeHTML(context.files.fileTypeFor(target, actor) + ' · ' + formatDriveBytes(target.size)) + '</span><p>当前格式暂不支持在线阅读，可下载后打开。</p></div>';
-    return '<aside class="eva-file-preview-sidebar eva-drive-preview-sidebar" aria-label="文件预览"><header class="eva-file-preview-sidebar__head"><h2>' + escapeHTML(resource.name) + '</h2><button type="button" data-drive-action="preview-close" aria-label="关闭预览">' + icon('x') + '</button></header><div class="eva-file-preview-sidebar__body">' + content + '</div></aside>';
+    var fullscreenLabel = state.previewFullscreen ? '退出全屏预览' : '进入全屏预览';
+    return '<aside class="eva-file-preview-sidebar eva-drive-preview-sidebar' + (state.previewFullscreen ? ' is-fullscreen' : '') + '" aria-label="文件预览" data-eva-file-preview-fullscreen="' + (state.previewFullscreen ? 'true' : 'false') + '"><div class="eva-file-preview-resizer" role="separator" tabindex="0" aria-label="调整文件预览宽度" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="664" aria-valuenow="480" data-eva-file-preview-resizer></div><header class="eva-file-preview-sidebar__head"><h2>' + escapeHTML(resource.name) + '</h2><span class="eva-file-preview-sidebar__actions"><button type="button" data-drive-action="preview-fullscreen" aria-label="' + fullscreenLabel + '" aria-pressed="' + (state.previewFullscreen ? 'true' : 'false') + '" title="' + fullscreenLabel + (state.previewFullscreen ? '（Esc）' : '') + '">' + icon(state.previewFullscreen ? 'minimize-2' : 'maximize-2') + '</button><button type="button" data-drive-action="preview-close" aria-label="关闭预览" title="关闭预览">' + icon('x') + '</button></span></header><div class="eva-file-preview-sidebar__body">' + content + '</div></aside>';
   }
 
   function downloadDriveFile(resource) {
@@ -810,7 +800,7 @@
       var records = all.filter(function (resource) { return resource.projectId === workspace.id; });
       return { workspace: workspace, role: role, fileCount: records.filter(function (resource) { return resource.type !== 'folder'; }).length, folderCount: records.filter(function (resource) { return resource.type === 'folder'; }).length };
     }).filter(Boolean);
-    if (!projects.length) return '<div class="eva-drive__empty">你还没有加入任何项目空间</div>';
+    if (!projects.length) return '<div class="eva-drive__empty">你还没有加入任何项目文件库</div>';
     return '<div class="eva-drive-projects">' + projects.map(function (item) {
       var roleLabel = item.role === 'owner' ? 'Owner' : item.role === 'manager' ? 'Manager' : 'Editor';
       return '<button type="button" class="eva-drive-project-card" data-drive-scope="workspace" data-workspace-id="' + escapeHTML(item.workspace.id) + '"><span class="eva-drive-project-card__mark">' + escapeHTML(item.workspace.mark || item.workspace.name.slice(0, 1)) + '</span><span class="eva-drive-project-card__copy"><strong>' + escapeHTML(item.workspace.name) + '</strong><small>' + escapeHTML(item.workspace.description || '项目团队文件') + '</small><span>' + item.folderCount + ' 个文件夹 · ' + item.fileCount + ' 个文件</span></span><span class="eva-drive-project-card__role">' + roleLabel + '</span>' + icon('chevron') + '</button>';
@@ -818,7 +808,7 @@
   }
 
   function externalAddMenuHTML() {
-    return '<details class="eva-drive__external-add"><summary class="eva-drive__action" aria-label="添加外部资源" data-drive-action="toggle-external-add">' + icon('link') + '<span>添加外部资源</span>' + icon('arrow') + '</summary><span class="eva-drive__external-add-menu" role="menu" aria-label="添加外部资源"><button type="button" role="menuitem" data-drive-action="add-external-folder"><span class="eva-drive__external-add-icon">' + icon('folder') + '</span><span><strong>外部文件夹</strong><small>飞书、企业微信等文件夹入口</small></span></button><button type="button" role="menuitem" data-drive-action="add-external-link"><span class="eva-drive__external-add-icon">' + icon('link') + '</span><span><strong>普通外部链接</strong><small>文档、表格或网页入口</small></span></button></span></details>';
+    return '<details class="eva-drive__external-add"><summary class="eva-drive__action" aria-label="添加外部资源" data-drive-action="toggle-external-add"><span>添加外部资源</span><span class="eva-lucide-host">' + icon('arrow') + '</span></summary><span class="eva-drive__external-add-menu" role="menu" aria-label="添加外部资源"><button type="button" role="menuitem" data-drive-action="add-external-link"><span class="eva-drive__external-add-icon">' + icon('link') + '</span><span><strong>外部链接</strong><small>文档、表格或网页入口</small></span></button><button type="button" role="menuitem" data-drive-action="add-external-folder"><span class="eva-drive__external-add-icon">' + icon('folder') + '</span><span><strong>外部文件夹</strong><small>飞书、企业微信等文件夹入口</small></span></button></span></details>';
   }
 
   function driveHTML(list, selected) {
@@ -833,9 +823,9 @@
       '<nav class="eva-drive__tree">',
       '<div class="eva-drive__tree-group">快速访问</div>',
       treeButton('pinned', '置顶文件', 'pin', false),
-      '<div class="eva-drive__tree-group">文件空间</div>',
-      treeButton('personal', '个人空间', 'file', false),
-      treeButton('projects', '项目空间', 'workspace', false),
+      '<div class="eva-drive__tree-group">文件库</div>',
+      treeButton('personal', '个人文件库', 'file', false),
+      treeButton('projects', '项目文件库', 'workspace', false),
       WORKSPACES.map(function (item) { return treeButton('workspace', item.name, 'workspace', true, item.id); }).join(''),
       '<div class="eva-drive__tree-spacer"></div>',
       '<div class="eva-drive__tree-group">管理</div>',
@@ -848,10 +838,12 @@
       state.driveScope === 'workspace' ? '<button class="eva-drive__text-button" type="button" data-drive-action="open-project">' + icon('external') + '进入项目</button>' : '',
       '</header>',
       '<div class="eva-drive__scroll">',
-      currentSpace && state.driveScope !== 'trash' ? '<div class="eva-drive__actions"><button class="eva-drive__action" type="button" data-drive-action="new-folder">' + icon('plus') + '<span>新建文件夹</span></button>' + externalAddMenuHTML() + '<button class="eva-drive__action eva-drive__action--primary" type="button" data-drive-action="upload-file">' + icon('upload') + '<span>上传本地文件</span></button></div>' : '',
+      '<div class="eva-drive__toolbar">',
+      currentSpace && state.driveScope !== 'trash' ? '<div class="eva-drive__actions"><button class="eva-drive__action" type="button" data-drive-action="new-folder"><span>新建文件夹</span></button>' + externalAddMenuHTML() + '<button class="eva-drive__action eva-drive__action--primary" type="button" data-drive-action="upload-file"><span>上传本地文件</span></button></div>' : '',
+      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="' + (state.driveScope === 'pinned' ? '搜索置顶文件' : '搜索当前位置') + '"></label>',
+      '</div>',
       crumbs.length ? '<div class="eva-drive__pathbar"><button class="eva-drive__back-button" type="button" data-drive-action="up-folder">' + icon('chevron') + '<span>返回上一级</span></button><nav class="eva-drive__breadcrumbs" aria-label="文件路径">' + crumbs.map(function (crumb, index) { return '<button type="button" data-drive-action="breadcrumb" data-breadcrumb-index="' + index + '"' + (index === crumbs.length - 1 ? ' aria-current="page"' : '') + '>' + escapeHTML(crumb.name) + '</button>'; }).join('<span>/</span>') + '</nav></div>' : '',
       '</div>',
-      '<div class="eva-drive__section-head"><div><h1>' + escapeHTML(copy.section) + '</h1><p>' + escapeHTML(copy.subtitle) + '</p></div><label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="' + (state.driveScope === 'pinned' ? '搜索置顶文件' : '搜索当前位置') + '"></label></div>',
       state.driveScope === 'projects' ? projectSpacesHTML() : tableHTML(list),
       '</div>',
       '<input id="eva-file-upload" type="file" multiple hidden>',
@@ -895,6 +887,7 @@
     state.crumbs = [];
     state.dialog = null;
     state.previewId = null;
+    state.previewFullscreen = false;
     closeRowMenu(false);
     if (String(location.hash || '').indexOf('#/drive') !== 0) location.hash = '#/drive';
     else {
@@ -925,6 +918,7 @@
     state.crumbs = crumbs;
     state.selectedId = resource.id;
     state.previewId = null;
+    state.previewFullscreen = false;
     if (document.getElementById('eva-drive-root')) renderDrive();
     return true;
   }
@@ -932,6 +926,7 @@
   function closeDrive() {
     var root = document.getElementById('eva-drive-root');
     state.previewId = null;
+    state.previewFullscreen = false;
     state.previewPage = 0;
     state.previewSheet = 0;
     state.previewMode = 'rendered';
@@ -979,6 +974,9 @@
       state.dialog.targetParentId = 0;
     }
     renderDrive();
+    requestAnimationFrame(function () {
+      document.querySelector('#eva-drive-root [autofocus]')?.focus();
+    });
   }
 
   function closeDialog() {
@@ -1075,7 +1073,7 @@
   function handleDriveClick(event) {
     if (!event.target.closest('.eva-drive__external-add') && typeof document !== 'undefined') document.querySelectorAll('#eva-drive-root .eva-drive__external-add[open]').forEach(function (menu) { menu.open = false; });
     var previewOutside = Boolean(state.previewId && !event.target.closest('.eva-file-preview-sidebar'));
-    if (previewOutside) state.previewId = null;
+    if (previewOutside) { state.previewId = null; state.previewFullscreen = false; }
     var row = event.target.closest('[data-resource-id]');
     var resource = row ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === row.dataset.resourceId; }) : selectedResource();
 
@@ -1109,11 +1107,13 @@
           var rowTarget = fileContext().files.resolveFile(resource, fileActor());
           if (rowTarget.type === 'external_link') { openExternalResource(resource); return; }
           state.previewId = resource.id;
+          state.previewFullscreen = false;
           state.previewPage = 0;
           state.previewSheet = 0;
           state.previewMode = 'rendered';
         } catch (error) {
           state.previewId = null;
+          state.previewFullscreen = false;
           showToast(error.message || '当前文件无法预览');
         }
       }
@@ -1209,6 +1209,7 @@
         var previewTarget = fileContext().files.resolveFile(resource, fileActor());
         if (previewTarget.type === 'external_link') { openExternalResource(resource); return; }
         state.previewId = resource.id;
+        state.previewFullscreen = false;
         state.previewPage = 0;
         state.previewSheet = 0;
         state.previewMode = 'rendered';
@@ -1216,11 +1217,20 @@
         renderDrive();
       } catch (error) {
         state.previewId = null;
+        state.previewFullscreen = false;
         renderDrive();
         showToast(error.message || '当前文件无法预览');
       }
     }
-    if (name === 'preview-close') { state.previewId = null; renderDrive(); }
+    if (name === 'preview-fullscreen') {
+      state.previewFullscreen = !state.previewFullscreen;
+      renderDrive();
+      requestAnimationFrame(function () {
+        document.querySelector('[data-drive-action="preview-fullscreen"]')?.focus();
+      });
+      return;
+    }
+    if (name === 'preview-close') { state.previewId = null; state.previewFullscreen = false; renderDrive(); }
     if (name === 'download') { downloadDriveFile(resource); return; }
     if (name === 'detail-close') { state.selectedId = null; renderDrive(); }
     if (name === 'open-folder') {
@@ -1275,12 +1285,12 @@
     if (name === 'create-shortcut') openDialog('create-shortcut', resource);
     if (name === 'rename') openDialog('rename', resource);
     if (name === 'move') openDialog('move', resource);
-    if (name === 'copy') { fileContext().files.copy(fileActor(), resource.id); showToast('已在当前空间创建副本'); }
+    if (name === 'copy') { fileContext().files.copy(fileActor(), resource.id); showToast('已在当前文件库创建副本'); }
     if (name === 'trash') openDialog('trash', resource);
     if (name === 'restore') {
       var restoreResult = fileContext().files.restore(fileActor(), resource.id);
       state.selectedId = null;
-      showToast(restoreResult && restoreResult.restoredToRoot ? '原位置不存在，已恢复到空间根目录' : '已恢复到原位置');
+      showToast(restoreResult && restoreResult.restoredToRoot ? '原位置不存在，已恢复到文件库根目录' : '已恢复到原位置');
     }
     if (name === 'delete-forever') openDialog('delete-forever', resource);
     if (name === 'dialog-close') closeDialog();
@@ -1294,15 +1304,6 @@
       state.dialog.url = event.target.value;
       state.dialog.error = '';
       state.dialog.confirmHostChange = false;
-      var dialogResource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
-      if (state.dialog.type === 'add-external-folder' || (state.dialog.type === 'edit-external-link' && isExternalFolderResource(dialogResource))) {
-        renderDrive();
-        var externalURLInput = document.getElementById('eva-drive-dialog-external-url');
-        if (externalURLInput) {
-          externalURLInput.focus();
-          externalURLInput.setSelectionRange(externalURLInput.value.length, externalURLInput.value.length);
-        }
-      }
       return;
     }
     if (event.type === 'input' && event.target.matches('[data-drive-tag-input]')) {
@@ -1422,6 +1423,7 @@
         if (state.menuId || state.previewId) {
           closeRowMenu(false);
           state.previewId = null;
+          state.previewFullscreen = false;
           if (root && !root.hidden) renderDrive();
         }
       }
@@ -1457,7 +1459,15 @@
         if (state.menuId) { closeRowMenu(); renderDrive(); }
         if (state.dialog) closeDialog();
         else if (state.selectedId) { state.selectedId = null; renderDrive(); }
-        else if (state.previewId) { state.previewId = null; renderDrive(); }
+        else if (state.previewId && state.previewFullscreen) {
+          event.preventDefault();
+          state.previewFullscreen = false;
+          renderDrive();
+          requestAnimationFrame(function () {
+            document.querySelector('[data-drive-action="preview-fullscreen"]')?.focus();
+          });
+        }
+        else if (state.previewId) { state.previewId = null; state.previewFullscreen = false; renderDrive(); }
       }
     });
     window.addEventListener('resize', function () {

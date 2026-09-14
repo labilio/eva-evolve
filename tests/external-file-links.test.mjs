@@ -67,7 +67,7 @@ test('企业微信微盘分享链接可由用户确认为外部文件夹', () =>
   assert.equal(files.fileTypeFor(id, 'a'), '企业微信文件夹 · 外部链接');
 });
 
-test('添加外部文件夹会拒绝明确的文档地址，普通入口仍可自动识别文件夹', () => {
+test('添加外部文件夹会拒绝明确的文档地址，外部链接入口仍可自动识别文件夹', () => {
   const {files} = setup();
   assert.throws(() => files.createExternalLink('a', 'p', {
     name: '误选的飞书文档',
@@ -105,8 +105,10 @@ test('外部链接仅接受无凭据的 http 或 https 地址', () => {
     assert.throws(() => files.createExternalLink('a', 'p', {name: '危险链接', url}), /http 或 https/);
   }
   assert.throws(() => files.createExternalLink('a', 'p', {name: '带凭据', url: 'https://user:secret@example.com/docs'}), /账号或密码/);
-  assert.throws(() => files.createExternalLink('a', 'p', {name: '', url: 'https://example.com'}), /链接名称/);
-  assert.throws(() => files.createExternalLink('a', 'p', {name: '缺少地址', url: ''}), /外部链接/);
+  assert.throws(() => files.createExternalLink('a', 'p', {name: '', url: 'https://example.com'}), /文件名称/);
+  assert.throws(() => files.createExternalLink('a', 'p', {name: '缺少地址', url: ''}), /文件链接/);
+  assert.throws(() => files.createExternalLink('a', 'p', {name: '', url: 'https://example.com/folder', kind: 'folder'}), /文件夹名称/);
+  assert.throws(() => files.createExternalLink('a', 'p', {name: '缺少地址', url: '', kind: 'folder'}), /文件夹链接/);
 });
 
 test('同一目录的等价链接去重，不同目录可各自保存入口', () => {
@@ -159,6 +161,7 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
 
   for (const source of [drive, project]) {
     assert.match(source, /添加外部资源/);
+    assert.match(source, /外部链接/);
     assert.match(source, /外部文件夹/);
     assert.match(source, /添加外部链接/);
     assert.match(source, /打开原链接/);
@@ -167,7 +170,22 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
     assert.match(source, /externalLinkInfo/);
     assert.match(source, /noopener,noreferrer/);
     assert.match(source, /!isExternal[^\n]*canOpen[^\n]*files\.can\('download'/);
+    assert.doesNotMatch(source, /普通外部链接|链接名称/);
   }
+  assert.match(drive, /data-drive-action="add-external-link"[\s\S]*data-drive-action="add-external-folder"/);
+  assert.match(drive, /externalFolderDialog \? '文件夹名称' : '文件名称'/);
+  assert.match(drive, /externalFolderDialog \? '文件夹链接' : '文件链接'/);
+  assert.match(drive, /content = nameField \+ urlField/);
+  assert.match(project, /setDialog\(\{type:'external-link'[\s\S]*setDialog\(\{type:'external-folder'/);
+  assert.match(project, /externalFolderDialog\?'文件夹名称':'文件名称'/);
+  assert.match(project, /externalFolderDialog\?'文件夹链接':'文件链接'/);
+  assert.match(project, /body=h\(R\.Fragment,null,\s*nameField,\s*urlField,/);
+  for (const source of [drive, project]) {
+    assert.doesNotMatch(source, /eva-external-link-detection|externalFolderDetectionHTML|等待识别|粘贴链接后识别来源平台/);
+    assert.doesNotMatch(source, /仅保存访问入口，不复制/);
+  }
+  assert.doesNotMatch(styles, /\.eva-external-link-detection/);
+  for (const source of [drive, project]) assert.doesNotMatch(source, /个人空间|项目空间|文件空间|目标空间|当前空间|来源空间|空间根目录/);
   assert.match(drive, /data-drive-action="toggle-external-add"/);
   assert.match(drive, /data-drive-action="add-external-folder"/);
   assert.match(drive, /data-drive-action="add-external-link"/);

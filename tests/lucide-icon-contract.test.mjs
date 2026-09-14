@@ -76,9 +76,10 @@ test('Eva DOM 页面统一通过 Lucide 渲染器输出功能图标', () => {
     assert.doesNotMatch(source, /<symbol\b|<use\b|<svg\b/);
   }
 
-  assert.match(modeLayer, /treeButton\('personal', '个人空间', 'file'/, '个人空间保留既定文件图标语义');
+  assert.match(modeLayer, /treeButton\('personal', '个人文件库', 'file'/, '个人文件库保留既定文件图标语义');
   assert.match(modeLayer, /treeButton\('trash', '回收站', 'folder'/, '回收站保留既定文件夹图标语义');
-  assert.match(modeLayer, /workspace: 'layout-grid'/, '项目空间应使用项目网格语义图标');
+  assert.match(modeLayer, /workspace: 'layout-grid'/, '项目文件库应使用项目网格语义图标');
+  assert.match(read('prototype/050-lucide-dom.js'), /'minimize-2':/, '退出全屏预览应登记对应 Lucide 图标');
   assert.doesNotMatch(read('prototype/050-file-library.css'), /content\s*:\s*["']↗/);
 });
 

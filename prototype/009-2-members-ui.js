@@ -96,16 +96,16 @@
       R.useEffect(()=>{const next=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);setTarget(next);setParentId(0);setError('');setSavedId(null);},[file?.id,file?.name,source?.messageId,actor]);
       const targetInfo=targets.find(item=>item.id===target),folders=target?files.list(target,actor).filter(item=>item.type==='folder'&&!item.deletedAt):[];
       const folderName=id=>{const names=[];let current=folders.find(item=>item.id===id),guard=0;while(current&&guard++<20){names.unshift(current.name);current=folders.find(item=>item.id===current.parent_id);}return names.join(' / ');};
-      const folderOptions=[{value:0,label:'空间根目录'},...folders.map(item=>({value:item.id,label:folderName(item.id)}))];
+      const folderOptions=[{value:0,label:'文件库根目录'},...folders.map(item=>({value:item.id,label:folderName(item.id)}))];
       const sourceLabel=source?.type==='ai-conversation'?'我的 AI · '+(source.identityName||'AI'):source?.type==='chat'?'私聊 · '+(source.senderName||source.conversationTitle||'会话成员'):'群聊 · '+(source?.groupName||source?.conversationTitle||'来源群');
-      const save=()=>{try{if(!target)throw Error('请选择目标空间');const id=files.saveConversationFile(actor,target,parentId,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);setError('');onSaved?.(record);}catch(e){setError(e.message||'保存失败');}};
+      const save=()=>{try{if(!target)throw Error('请选择目标文件库');const id=files.saveConversationFile(actor,target,parentId,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);setError('');onSaved?.(record);}catch(e){setError(e.message||'保存失败');}};
       const open=()=>{if(savedId&&typeof root.__evaOpenDriveFile==='function')root.__evaOpenDriveFile(savedId);onClose();};
       return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:null,width:520},file&&h(R.Fragment,null,
         h('div',{className:'eva-file-save-modal__file'},h('strong',{title:file.name},file.name),h('span',null,sourceLabel)),
         !savedId&&h(R.Fragment,null,
-          h('div',{className:'eva-members-field'},h('label',null,'目标空间'),h(Select,{className:'eva-members-select',value:target,onChange:value=>{setTarget(value);setParentId(0);setError('');},optionList:targets.map(item=>({value:item.id,label:item.name}))})),
+          h('div',{className:'eva-members-field'},h('label',null,'目标文件库'),h(Select,{className:'eva-members-select',value:target,onChange:value=>{setTarget(value);setParentId(0);setError('');},optionList:targets.map(item=>({value:item.id,label:item.name}))})),
           h('div',{className:'eva-members-field'},h('label',null,'目标文件夹'),h(Select,{className:'eva-members-select',value:parentId,onChange:setParentId,optionList:folderOptions})),
-          targetInfo&&targetInfo.kind!=='personal'&&h('div',{className:'eva-members-notice'},h('strong',null,'保存后，目标空间成员可访问该文件'),h('p',null,'不会因此获得原会话、其他消息或其他附件的访问权限。')),
+          targetInfo&&targetInfo.kind!=='personal'&&h('div',{className:'eva-members-notice'},h('strong',null,'保存后，目标文件库成员可访问该文件'),h('p',null,'不会因此获得原会话、其他消息或其他附件的访问权限。')),
           h('p',{className:'eva-members-muted'},'文件只有在你确认后才会存入文件库，系统关联由来源自动生成。')),
         savedId&&h('div',{className:'eva-members-notice'},h('strong',null,'保存成功'),h('p',null,'已生成独立文件，并保留只读的来源关联。')),
         error&&h('p',{role:'alert',className:'eva-members-error'},error),
