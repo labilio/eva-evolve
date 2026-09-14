@@ -158,7 +158,7 @@
 }
 
 /* Status board: columns count top-level cards separately, while each root card owns its subtree. */
-.loop-page .eva-loop-board--nested .loop-board__col { min-width: 330px; }
+.loop-page .eva-loop-board--nested .loop-board__col { min-width: 360px; }
 .loop-page .eva-loop-board--nested .loop-board__col-head { gap: 8px; }
 .eva-board-col-count {
   display: grid;
@@ -245,7 +245,7 @@
 .eva-board-subtasks__tree > .eva-board-subtask__node > .eva-board-subtask__row::before,
 .eva-board-subtask__children > .eva-board-subtask__node > .eva-board-subtask__row::before {
   position: absolute;
-  top: 50%;
+  top: 17px;
   left: -10px;
   width: 8px;
   height: var(--eva-border-hairline-w);
@@ -255,38 +255,53 @@
 .eva-board-subtask__row {
   position: relative;
   display: grid;
-  grid-template-columns: 22px 16px minmax(92px, 1fr) auto;
+  grid-template-columns: 22px 16px minmax(0, 1fr) auto;
+  grid-template-rows: minmax(24px, auto) 24px;
   align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  margin: 1px 0;
-  padding: 3px 4px;
+  column-gap: 7px;
+  row-gap: 3px;
+  min-height: 55px;
+  margin: 2px 0;
+  padding: 5px 4px;
   border-radius: var(--eva-radius-control);
 }
 .eva-board-subtask__row:hover { background: var(--eva-surface-subtle); }
+.eva-board-subtask__row > .eva-board-subtask__toggle,
+.eva-board-subtask__row > .eva-board-subtask__toggle-spacer {
+  grid-column: 1;
+  grid-row: 1;
+}
+.eva-board-subtask__row > svg {
+  grid-column: 2;
+  grid-row: 1;
+}
 .eva-board-subtask__main {
+  grid-column: 3;
+  grid-row: 1;
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: center;
   min-width: 0;
-  gap: 6px;
+  gap: 8px;
   padding: 2px 0;
   text-align: left;
 }
 .eva-board-subtask__id {
   color: var(--eva-text-secondary-accessible);
-  font: 500 11px/16px var(--eva-font-sans);
+  font: 500 12px/18px var(--eva-font-sans);
   font-variant-numeric: tabular-nums;
 }
 .eva-board-subtask__title {
   min-width: 0;
   overflow: hidden;
   color: var(--eva-text-primary);
-  font: 500 12px/18px var(--eva-font-sans);
+  font: 500 13px/20px var(--eva-font-sans);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .eva-board-subtask__count {
+  grid-column: 4;
+  grid-row: 1;
   display: inline-grid;
   place-items: center;
   min-width: 20px;
@@ -299,17 +314,19 @@
   font-variant-numeric: tabular-nums;
 }
 .eva-board-subtask__meta {
+  grid-column: 3 / 5;
+  grid-row: 2;
   display: inline-flex;
   align-items: center;
-  justify-self: end;
+  justify-self: stretch;
   min-width: 0;
-  gap: 4px;
+  gap: 8px;
 }
 .eva-board-subtask__meta > .eva-issue-assignee {
   box-sizing: border-box;
-  max-width: 96px;
-  min-height: 26px;
-  padding: 2px 6px;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 2px 7px 2px 3px;
   border: var(--eva-border-hairline-w) solid var(--eva-border-faint);
   border-radius: var(--eva-radius-control);
   background: var(--eva-surface-subtle);
