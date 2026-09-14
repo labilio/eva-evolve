@@ -81,21 +81,24 @@
   flex-direction: column;
 }
 
-/* ---- 新会话欢迎区：仅保留欢迎标题 ---- */
+/* ---- 新会话欢迎区：左侧标题 + 右侧 Eva 陪伴形象 ---- */
 .eva-personal-workspace__hero {
   position: relative;
-  height: 48px;
+  order: 1;
+  height: 102px;
   flex: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-bottom: var(--eva-space-2);
 }
 .eva-personal-workspace__hero-grid {
   position: absolute;
-  right: -62px;
-  top: -82px;
-  width: 250px;
-  height: 250px;
+  right: -60px;
+  top: -66px;
+  width: 350px;
+  height: 260px;
   background-image:
     linear-gradient(var(--eva-decoration-dot) 3px, transparent 3px),
     linear-gradient(90deg, var(--eva-decoration-dot) 3px, transparent 3px);
@@ -104,6 +107,9 @@
   -webkit-mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
 }
 .eva-personal-workspace__welcome {
+  position: relative;
+  z-index: 1;
+  width: 100%;
   margin: 0;
   display: flex;
   align-items: center;
@@ -113,20 +119,55 @@
   white-space: nowrap;
 }
 .eva-personal-workspace__welcome-avatar {
-  position: relative;
-  width: 36px;
-  height: 36px;
+  position: absolute;
+  z-index: 0;
+  top: -56px;
+  right: 4px;
+  width: 218px;
+  height: 292px;
   flex: none;
-  overflow: hidden;
-  border-radius: var(--eva-radius-full);
-  background: var(--eva-decoration-dot);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.eva-personal-workspace__welcome-avatar::before {
+  content: "Hi";
+  position: absolute;
+  z-index: 2;
+  top: 48px;
+  left: -12px;
+  min-width: 42px;
+  height: 30px;
+  padding: 0 var(--eva-space-3);
+  border: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  border-radius: var(--eva-radius-chip);
+  display: grid;
+  place-items: center;
+  color: var(--eva-action-primary);
+  background: var(--eva-surface-primary);
+  box-shadow: var(--eva-shadow-floating);
+  font: var(--eva-fw-semibold) 14px/20px var(--eva-font-sans);
+}
+.eva-personal-workspace__welcome-avatar::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 72px;
+  left: 22px;
+  width: 8px;
+  height: 8px;
+  border-right: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  border-bottom: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+  transform: rotate(38deg);
 }
 .eva-personal-workspace__welcome-avatar img {
   position: absolute;
-  top: -3px;
-  left: -14px;
-  width: 64px;
-  height: auto;
+  inset: 0;
+  width: 218px;
+  height: 292px;
+  object-fit: contain;
   max-width: none;
 }
 .eva-newchat-icon-action:focus-visible,
@@ -136,23 +177,37 @@
   outline-offset: var(--eva-space-0-5);
 }
 
-/* ---- 快捷能力排：位于输入器后，仍保持原来的 37px 高度 ---- */
+/* ---- 快捷能力排：先展示能力，再引导输入 ---- */
 .eva-personal-workspace__rail {
+  order: 2;
+  width: calc(100% - 236px);
   flex: none;
   margin-top: var(--eva-space-2);
 }
-.eva-personal-workspace__capability .eva-i { color: var(--eva-action-primary); }
+.eva-personal-workspace__capabilities {
+  display: flex;
+  align-items: center;
+  gap: var(--eva-space-2);
+  min-width: 0;
+  height: 37px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.eva-personal-workspace__capabilities::-webkit-scrollbar { display: none; }
+.eva-personal-workspace__capability .eva-i { color: var(--eva-text-primary); }
 
 /* ---- 输入器：沿用原复合输入器尺寸，只替换工具内容 ---- */
 .eva-personal-workspace__composer {
   position: relative;
+  z-index: 2;
+  order: 3;
   flex: none;
-  margin-top: var(--eva-space-1);
+  margin-top: var(--eva-space-3);
 }
-/* 新会话不再把快捷能力放在输入器外框内，因此隐藏原组件用于承接
-   底部快捷区的灰色底板；保留 776×166 占位，输入器本体位置不变。 */
+/* 快捷能力移到输入器上方；灰色外包层重新承担输入器的视觉底座。 */
 .eva-composer-wrap--newchat {
-  background: transparent;
+  background: var(--eva-surface-subtle);
 }
 .eva-newchat-actions {
   height: 52px;
@@ -430,6 +485,11 @@
 .eva-personal-workspace textarea.eva-composer-prompt { flex:1; width:100%; min-width:0; height:52px; min-height:0; padding:0; margin:0; resize:none; border:0; outline:none; background:transparent; color:var(--eva-text-primary); font:400 15px/24px var(--eva-font-sans); }
 .eva-personal-workspace textarea.eva-composer-prompt::placeholder { color:var(--eva-text-muted); }
 .eva-personal-workspace .eva-composer:focus-within { border-color:var(--eva-border-focus); }
+.eva-personal-workspace .eva-composer-wrap--newchat { height:148px; }
+.eva-personal-workspace .eva-composer-wrap--newchat .eva-composer { height:104px; }
+.eva-personal-workspace .eva-composer-wrap--newchat .eva-composer-input-area { height:58px; padding:12px 16px 0; }
+.eva-personal-workspace .eva-composer-wrap--newchat textarea.eva-composer-prompt { height:46px; }
+.eva-personal-workspace .eva-composer-wrap--newchat .eva-newchat-actions { height:46px; padding:7px 10px; }
 .eva-personal-workspace__dock .eva-composer { width:min(768px, calc(100% - 28px)); }
 .eva-personal-workspace__opcard { left:14px; bottom:20px; }
 .eva-personal-workspace .eva-actionrow button { min-width:32px; min-height:32px; }
@@ -437,8 +497,8 @@
 .eva-personal-workspace .eva-canvas { width:min(calc(100% - 32px),534px); height:auto; aspect-ratio:16/9; }
 .eva-personal-workspace .eva-toolbar { overflow-x:auto; flex-shrink:0; }
 .eva-personal-workspace .eva-tool-btn { flex-shrink:0; }
-.eva-personal-workspace .eva-rail { overflow-x:auto; scrollbar-width:none; padding-right:32px; }
-.eva-personal-workspace .eva-rail-next { position:sticky; right:0; width:32px; height:32px; margin-left:-24px; }
+.eva-personal-workspace .eva-rail { overflow:hidden; padding-right:0; }
+.eva-personal-workspace .eva-rail-next { position:static; width:32px; height:32px; flex:0 0 32px; margin-left:0; }
 
 .eva-personal-workspace *, .eva-personal-workspace *::before, .eva-personal-workspace *::after { box-sizing:border-box; }
 .eva-personal-workspace .eva-artifact { max-width:100%; }

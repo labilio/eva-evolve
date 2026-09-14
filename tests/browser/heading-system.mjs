@@ -30,14 +30,14 @@ async function open(route, selector) {
 for (const width of [1200, 1000]) {
   test(`一级功能标题在 ${width}px 下遵循统一合同`, async () => {
     await page.setViewportSize({width, height:900});
-    for (const [route, header, title] of [
-      ['/guid','.eva-rail-header','.eva-personal-rail-title'],
-      ['/messages?evaIM=my-ai','.eva-rail-header','h1'],
-      ['/messages','.eva-rail-header','h1'],
-      ['/drive','.eva-drive__side-head','strong'],
-      ['/contacts','.eva-contacts__main-head','.eva-contacts__title strong'],
-      ['/eva-stub/工作板','.eva-feature-head','h1'],
-      ['/eva-stub/技能','.eva-connection-center__head','h1'],
+    for (const [route, header, title, expected] of [
+      ['/guid','.eva-rail-header','.eva-personal-rail-title',{height:42,line:'22px'}],
+      ['/messages?evaIM=my-ai','.eva-rail-header','h1',{height:48,line:'24px'}],
+      ['/messages','.eva-rail-header','h1',{height:48,line:'24px'}],
+      ['/drive','.eva-drive__side-head','strong',{height:64,line:'24px'}],
+      ['/contacts','.eva-contacts__main-head','.eva-contacts__title strong',{height:48,line:'24px'}],
+      ['/eva-stub/工作板','.eva-feature-head','h1',{height:48,line:'24px'}],
+      ['/eva-stub/技能','.eva-connection-center__head','h1',{height:48,line:'24px'}],
     ]) {
       const head = await open(route, header);
       const actual = await head.evaluate((el, selector) => {
@@ -46,7 +46,7 @@ for (const width of [1200, 1000]) {
           height:el.getBoundingClientRect().height, left:h.paddingLeft, right:h.paddingRight,
           decorations:[...el.querySelectorAll('svg')].filter(i=>!i.closest('button,label,.eva-contacts__search')).length};
       }, title);
-      assert.deepEqual(actual,{font:'16px',line:'24px',weight:'500',height:48,left:'16px',right:'16px',decorations:0},route);
+      assert.deepEqual(actual,{font:'16px',line:expected.line,weight:'500',height:expected.height,left:'16px',right:'16px',decorations:0},route);
       if(header==='.eva-rail-header') {
         const button=head.locator('button').first();
         assert.equal((await button.boundingBox()).width,32);

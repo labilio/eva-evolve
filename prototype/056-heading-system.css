@@ -48,6 +48,18 @@
 .eva-rail-header .eva-message-invite:hover,
 .eva-rail-header .eva-ai-team__create.semi-button:hover { background: var(--eva-rail-hover); }
 
+/* The designer reference gives the personal Eva rail a quieter, denser cap.
+   Keep the shared 48px contract for Messages and My Agent. */
+.eva-personal-sider-panel > .eva-rail-header {
+  height: 42px;
+  min-height: 42px;
+  padding: 5px var(--gds-space-4);
+  border-bottom: 0;
+}
+.eva-personal-sider-panel > .eva-rail-header .eva-personal-rail-title {
+  line-height: 22px;
+}
+
 /* Page and section typography. Components retain their own data and actions. */
 :root {
   --eva-page-heading-height: 48px;
@@ -96,5 +108,13 @@
 }
 
 /* Navigation-only rail heading: icon is identity, not an action. */
-.eva-drive__side-head { height: 48px; min-height: 48px; padding: 8px 16px; box-sizing: border-box; }
+.eva-drive__side-head { height: 64px; min-height: 64px; padding: 8px 16px; box-sizing: border-box; }
 .eva-drive__side-head strong { font-size: var(--eva-page-heading-size); line-height: var(--eva-page-heading-leading); font-weight: var(--eva-heading-weight); }
+
+/* Only the standalone file library adopts the 64px content heading.
+   Other level-one pages keep the shared 48px heading contract above. */
+.eva-native-page-host > .eva-drive .eva-drive__header {
+  height: 64px;
+  min-height: 64px;
+  padding: 12px var(--eva-page-heading-inset);
+}

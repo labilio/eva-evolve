@@ -237,7 +237,7 @@ test('两个文件入口用挤压式右侧栏预览、用弹窗展示文件详�
   assert.match(drive,/!event\.target\.closest\('\.eva-file-preview-sidebar'\)/);
   assert.match(project,/document\.addEventListener\('pointerdown',closePreviewOutside/);
   assert.match(project,/document\.addEventListener\('keydown',closePreviewOnKey/);
-  assert.match(styles,/\.eva-native-page-host > \.eva-drive:has\(> \.eva-drive-preview-sidebar\)[\s\S]*?grid-template-columns:\s*216px minmax\(0, 1fr\) minmax\(0, var\(--eva-file-preview-current/);
+  assert.match(styles,/\.eva-native-page-host > \.eva-drive:has\(> \.eva-drive-preview-sidebar\)[\s\S]*?grid-template-columns:\s*234px minmax\(0, 1fr\) minmax\(0, var\(--eva-file-preview-current/);
   assert.match(styles,/\.eva-project-files:has\(> \.eva-project-file-preview-sidebar\)[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, var\(--eva-file-preview-current/);
   assert.match(styles,/\.eva-drive:has\(> \.eva-drive-preview-sidebar\) \.eva-drive__toolbar \.eva-drive__side-search,[\s\S]*?width:\s*min\(240px, 100%\);[\s\S]*?flex:\s*0 1 240px;/);
   assert.match(layout,/filePreviewWidthProperty = '--eva-file-preview-current'/);
@@ -248,6 +248,21 @@ test('两个文件入口用挤压式右侧栏预览、用弹窗展示文件详�
   assert.match(previewRule,/box-shadow:\s*none/);
   assert.doesNotMatch(previewRule,/position:\s*absolute|right:\s*0/);
   assert.match(styles,/\.eva-file-detail-dialog__panel\s*\{[\s\S]*?width:\s*min\(720px,/);
+});
+test('文件库与项目文件共用带外框的疏朗表格，并按真实扩展名标记格式',()=>{
+  const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
+  const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
+  const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');
+  assert.match(styles,/\.eva-drive__table\s*\{[^}]*border:\s*1px solid var\(--gds-color-border-faint[^}]*border-radius:\s*var\(--gds-radius-chip, 12px\)/s);
+  assert.match(styles,/\.eva-drive__table-head\s*\{[^}]*min-height:\s*44px;[^}]*padding:\s*0 16px;/s);
+  assert.match(styles,/\.eva-drive__row\s*\{[^}]*padding:\s*0 16px;/s);
+  for(const source of [drive,project]){
+    assert.match(source,/\['doc',\s*'docx'\][^\n]*is-word/);
+    assert.match(source,/\['ppt',\s*'pptx'\][^\n]*is-presentation/);
+    assert.match(source,/\['zip',\s*'rar',\s*'7z',\s*'tar',\s*'gz'\][^\n]*is-archive/);
+    assert.match(source,/\['md',\s*'markdown'\][^\n]*is-markdown/);
+  }
+  assert.doesNotMatch(styles,/data-(?:project-)?resource-id/);
 });
 test('Word、Excel、PPT、Markdown 和压缩包均有格式专属的右栏内容',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');assert.match(source,/extensions:\["doc","docx"\],renderer:EvaWordPreviewRenderer/);assert.match(source,/extensions:\["xlsx","xls","xlsb","xlsm","csv"\],renderer:ExcelRenderer/);assert.match(source,/extensions:\["ppt","pptx"\],renderer:EvaPresentationPreviewRenderer/);assert.match(source,/extensions:\["md","markdown"\],renderer:MarkdownRenderer/);assert.match(source,/extensions:\["zip","rar","7z","tar","gz"\],renderer:EvaArchivePreviewRenderer/);for(const name of ['eva-word-preview','eva-sheet-preview','eva-presentation-preview','eva-markdown-preview','eva-archive-preview']){assert.match(drive,new RegExp(name));assert.match(styles,new RegExp('\\.'+name));}});
 test('个人文件根目录提供五种可直接演示的文档类型',()=>{const window={};vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-1-file-sharing.js',import.meta.url),'utf8'),{window});const extensions=window.EvaFileSharing.DEFAULT_RECORDS.filter(item=>item.area==='personal').map(item=>item.extension);for(const extension of ['docx','xlsx','pptx','md','zip'])assert.ok(extensions.includes(extension),extension+' 演示文件缺失');});
