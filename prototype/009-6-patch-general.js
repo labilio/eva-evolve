@@ -1,6 +1,18 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // Project-scoped task list: stable columns, without repeating its project name.
+    source = root.__evaCut(source,
+      'React.createElement("span",{className:"loop-list__spacer"}),rn.project_name&&React.createElement("span",{className:"loop-list__project"},rn.project_name),React.createElement("span",{className:"loop-list__id"},rn.identifier)',
+      'null', '任务列表移除重复项目与原编号位置');
+    source = root.__evaCut(source,
+      'React.createElement("button",{className:"loop-list__title",onClick:()=>ct(rn.id)},rn.title',
+      'React.createElement("span",{className:"loop-list__id"},rn.identifier),React.createElement("button",{className:"loop-list__title",onClick:()=>ct(rn.id)},rn.title',
+      '任务列表编号独立列');
+    source = root.__evaCut(source,
+      'React.createElement("label",{className:"loop-list__check",onClick:cn=>cn.stopPropagation()},React.createElement("input",{type:"checkbox",checked:sn,onChange:()=>jt(rn.id)}))',
+      'React.createElement("span",{className:"loop-list__check",onClick:cn=>cn.stopPropagation()},React.createElement(Checkbox,{"aria-label":"选择任务 "+rn.identifier,checked:sn,onChange:()=>jt(rn.id)}))',
+      '任务多选复用 Semi Checkbox');
     // Replace the compatibility fixture at one verified boundary; humans live in 009-2.
     const orgPeople = source.match(/ORG_PEOPLE=\[[\s\S]*?\];new Map\(ORG_PEOPLE/);
     if (!orgPeople) throw new Error('ORG_PEOPLE 数据边界不匹配');
@@ -54,6 +66,9 @@
           ['React.createElement(Avatar$2,{size:"small",color:"light-blue",src:pa.member_avatar??void 0},(pa.member_name??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:{id:pa.member_id,name:pa.member_name,type:pa.member_type,avatar:pa.member_avatar},size:24})'],
 
           ['function AssigneePicker(', 'function EvaLoopIdentityAvatar({person,size=20}){const h=React.createElement;if(!person?.id)return h(User,{size:20});const store=evaMembers().store,id=person.id,human=store.person(id);if(human||person.type==="member")return h("img",{src:window.EvaAvatar.personUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});if(person.type==="squad")return h("img",{src:window.EvaAvatar.squadUri(id),width:size,height:size,alt:"",style:{borderRadius:"50%",flexShrink:0}});const clone=store.clone(id),employee=store.employee(id),agent=id.startsWith("project-agent:")?store.projectAgent(id.slice(14)):null,identity=agent||employee||clone||scoped(BY_SPACE.agents).find(p=>p.id===id)||person,appearance=identity.identityAppearance||{name:identity.name||person.name,avatar:identity.avatar||window.__EVA_COLLEAGUE_PORTRAIT,sourceName:"Eva"};return window.EvaAIIdentity.avatar(appearance,size,h);}\nfunction AssigneePicker('],
+          ['function AssigneePicker(', 'function EvaLoopIdentityName({person}){const h=React.createElement,store=evaMembers().store,id=person?.id,human=id&&store.person(id),ai=!human&&person?.type!=="member"&&person?.type!=="squad"&&(person?.type==="agent"||!!store.clone(id)||!!store.employee(id)||String(id||"").startsWith("project-agent:")||scoped(BY_SPACE.agents).some(item=>item.id===id));return h("span",{className:"eva-loop-identity-name"},h("span",{className:"eva-loop-identity-name-text"},person?.name||""),ai&&window.EvaAIIdentity.badge(h));}function AssigneePicker('],
+          ['onClick:()=>ut(jt.id,jt.type,jt.name)},jt.name)', 'onClick:()=>ut(jt.id,jt.type,jt.name)},React.createElement(EvaLoopIdentityName,{person:jt}))'],
+          ['React.createElement("span",{className:"loop-assignee-name"},Nt?.name??ct)', 'React.createElement("span",{className:"loop-assignee-name"},React.createElement(EvaLoopIdentityName,{person:Nt||{id:rt,name:ct}}))'],
           ['jt.type==="member"&&jt.octo_uid?React.createElement(Avatar$2,{size:"extra-extra-small",color:"light-blue",src:WKApp$1.shared.avatarUser(jt.octo_uid)},jt.name.slice(0,1)):typeIcon(jt.type)', 'React.createElement(EvaLoopIdentityAvatar,{person:jt})'],
           ['React.createElement(Avatar$2,{size:"extra-extra-small",color:ASSIGNEE_TYPE_COLOR[Nt?.type??"member"],src:Nt?.octo_uid?WKApp$1.shared.avatarUser(Nt.octo_uid):void 0},(Nt?.name??ct??"?").slice(0,1))', 'React.createElement(EvaLoopIdentityAvatar,{person:Nt||{id:rt,name:ct}})'],
 

@@ -115,7 +115,32 @@
 .loop-page .loop-card__foot { flex-wrap: wrap; gap: 8px; }
 .loop-page .loop-abadge { max-width: 100%; }
 .loop-page .loop-groupboard__head { padding-block: 16px; font: 500 14px/22px var(--eva-font-sans); }
-.loop-page .loop-list__row { min-height: 48px; gap: 12px; }
+/* One shared column geometry across every status group. Labels keep their own space. */
+.loop-page .loop-list { gap: 0; --eva-task-columns: 16px 76px minmax(160px,1fr) minmax(0,120px) 210px 64px; }
+.loop-page .loop-list__row { display: grid; grid-template-columns: var(--eva-task-columns); align-items: center; column-gap: 12px; padding-left: 8px; padding-right: 24px; }
+.loop-page .loop-list__row { min-height: 48px; border: 0; box-shadow: none; border-radius: 0; }
+.loop-page .loop-list__id { grid-column: 2; }
+.loop-page .loop-list__title { grid-column: 3; min-width: 0; text-align: left; }
+.loop-page .loop-list__assignee { grid-column: 5; min-width: 0; text-align: left; }
+.loop-page .loop-list__time { grid-column: 6; min-width: 0; width: auto; text-align: right; white-space: nowrap; }
+.loop-page .loop-list__id { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.loop-page .loop-list__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loop-page .loop-list__assignee .loop-assignee-trigger { display: inline-flex; width: auto; max-width: 100%; min-width: 0; gap: 6px; }
+.loop-page .loop-list__assignee .loop-assignee-name { flex: 0 1 auto; max-width: none; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loop-page .loop-list__assignee .loop-assignee-trigger > svg:last-child { margin-left: 0; flex-shrink: 0; }
+/* Priority and selection share the same slot; keyboard focus also reveals selection. */
+.loop-page .loop-list__check,.loop-page .loop-list__icon { grid-column: 1; grid-row: 1; width: 16px; height: 16px; margin: 0; }
+.loop-page .loop-list__check { position: relative; opacity: 0; z-index: 1; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.loop-page .loop-list__icon { display: flex; align-items: center; justify-content: center; }
+.loop-page .loop-list__row:is(:hover,:focus-within,.is-selected) .loop-list__check { opacity: 1; pointer-events: auto; }
+.loop-page .loop-list__row:is(:hover,:focus-within,.is-selected) .loop-list__icon { visibility: hidden; }
+.loop-page .loop-list__row > .loop-label-chips { grid-column: 4; grid-row: 1; min-width: 0; overflow: hidden; }
+.loop-page .loop-list__row > :is(.loop-list__id,.loop-list__title,.loop-list__assignee,.loop-list__time) { grid-row: 1; }
+.loop-page .loop-list__group { margin: 0 0 16px; border: 0; }
+.loop-page .loop-list__group-head { min-height: 36px; padding: 8px; margin: 0 0 4px; border: 0; }
+@media (hover: none) { .loop-page .loop-list__check { opacity: 1; pointer-events: auto; } .loop-page .loop-list__icon { visibility: hidden; } }
+@media(max-width:1100px) { .loop-page .loop-list { gap: 0; --eva-task-columns: 16px 68px minmax(140px,1fr) minmax(0,80px) 210px 64px; } }
+@media(max-width:880px) { .loop-page .loop-list { overflow-x: auto; } .loop-page :is(.loop-list__row,.loop-list__group-head) { min-width: 720px; } }
 .loop-page .loop-list__title { font: 400 14px/22px var(--eva-font-sans); }
 .loop-page :is(.loop-list__id,.loop-list__time,.loop-list__project) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
 .loop-page :is(.loop-card,.loop-list__row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
@@ -137,3 +162,8 @@
 .loop-idp .loop-cmt__reply-stub { min-height: 32px; border-radius: var(--eva-radius-control); }
 .loop-idp .loop-composer { border-radius: var(--eva-radius-panel); }
 @media (prefers-reduced-motion: reduce) { .loop-page .loop-card { transition: none; } }
+
+/* Shared task assignee identity keeps the public AI badge visible beside the name. */
+.eva-loop-identity-name { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; vertical-align: middle; }
+.eva-loop-identity-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-loop-identity-name > .ai-badge { flex-shrink: 0; }
