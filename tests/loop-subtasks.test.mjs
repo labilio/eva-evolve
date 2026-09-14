@@ -113,7 +113,7 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);
 });
 
-test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=>{
+test('任务分解画布内嵌于任务详情并可在固定分解根内切换节点详情',()=>{
   assert.ok(runtime.includes('function EvaIssueBreakdownCanvas('));
   assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,gt)'));
   assert.ok(runtime.includes('"查看分解"'));
@@ -123,7 +123,7 @@ test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
   assert.ok(runtime.includes('onClick:()=>pt(kr)'));
   assert.ok(runtime.includes('className:"loop-idp__section eva-loop-subtasks",ref:evaBreakdownSectionRef'));
-  assert.ok(runtime.includes('evaBreakdownOpen&&Ht.length?React.createElement(EvaIssueBreakdownCanvas'));
+  assert.ok(runtime.includes('evaBreakdownOpen&&evaBreakdownHasNodes?React.createElement(EvaIssueBreakdownCanvas'));
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-fields"'));
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-due"'));
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-labels"'));
@@ -131,24 +131,30 @@ test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=
   assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:kr,size:18})'));
   assert.ok(runtime.includes('React.createElement(LabelChips,{labels:kr.labels,max:2})'));
   assert.ok(runtime.includes('returnContext:evaReturn'));
-  assert.ok(runtime.includes('evaReturn={origin:"parent",parentIssueId:xt.id,parentIdentifier:xt.identifier,label:"返回 "+xt.identifier}'));
-  assert.ok(runtime.includes('evaReturnContext?.parentIssueId===evaParentIssue.id?Qa():Ea(evaParentIssue.id)'));
+  assert.ok(runtime.includes('Ea=(ki,evaOrigin="parent")=>'));
+  assert.ok(runtime.includes('breakdownRootIssueId:evaRoot.id'));
+  assert.ok(runtime.includes('evaReturnContext?.parentIssueId===evaParentIssue.id?Qa():Ea(evaParentIssue.id,evaReturnContext?.origin==="breakdown"?"breakdown":"parent")'));
   assert.ok(runtime.includes('[evaSelectedIssueId,evaSetSelectedIssueId]'));
   assert.ok(runtime.includes('selectedIssueId:evaSelectedIssueId'));
-  assert.ok(runtime.includes('canvas:{...no.canvas,selectedIssueId:rt}'));
+  assert.ok(runtime.includes('canvas:{...no.canvas,selectedIssueId:evaBreakdownRootId}'));
   assert.ok(runtime.includes('"aria-label":"选择任务 "+kr.identifier'));
   assert.ok(runtime.includes('"aria-selected":evaIsSelected'));
   assert.ok(runtime.includes('"aria-pressed":evaIsSelected'));
   assert.ok(runtime.includes('"当前选中 ",React.createElement("strong",null,evaSelectedIssue.identifier)'));
+  assert.ok(runtime.includes('kr!==evaActiveIssueId&&ct?.(kr)'));
+  assert.ok(runtime.includes('rootIssue:evaBreakdownRootIssue,activeIssueId:xt.id'));
+  assert.ok(runtime.includes('onSelect:ki=>Ea(ki,"breakdown")'));
+  assert.ok(runtime.includes('if(ki===evaRoot.id&&evaReturnContext?.origin==="breakdown")'));
+  assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"&&WKApp$1.routeRight.pop()'));
+  assert.ok(runtime.includes('onChanged:evaIsBreakdown?ct:'));
   assert.ok(runtime.includes('onClick:Ct?void 0:()=>Ea(ki.id)'));
-  assert.equal(runtime.includes('onOpen:ki=>Ea(ki,"breakdown")'),false);
   assert.equal(runtime.includes('返回任务分解'),false);
   assert.ok(runtime.includes('evaReturnContext?.label||St("loop.detail.board")'));
-  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),Wi&&xt?.identifier'));
+  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),Wi&&evaReturn.parentIdentifier'));
   assert.ok(runtime.includes('const evaIssueDetailViewState=new Map'));
-  assert.ok(runtime.includes('viewState:evaReadIssueDetailViewState(rt).canvas'));
-  assert.ok(runtime.includes('onViewStateChange:ki=>evaRememberIssueDetailViewState(rt,{canvas:ki})'));
-  assert.ok(runtime.includes('evaReadIssueDetailViewState(rt).breakdownOpen===!0'));
+  assert.ok(runtime.includes('viewState:evaReadIssueDetailViewState(evaBreakdownRootId).canvas'));
+  assert.ok(runtime.includes('onViewStateChange:ki=>evaRememberIssueDetailViewState(evaBreakdownRootId,{canvas:ki})'));
+  assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"||evaReadIssueDetailViewState(evaReturnContext?.breakdownRootIssueId||rt).breakdownOpen===!0'));
   assert.ok(runtime.includes('onScroll:evaSaveView'));
   assert.ok(runtime.includes('evaReturnContext||evaIssueDetailViewState.delete(rt)'));
   assert.ok(runtime.includes('className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"'));
