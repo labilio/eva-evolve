@@ -110,7 +110,8 @@ test('全局侧栏保留既定入口语义并统一使用 Lucide 功能图标', 
   assert.match(sidebar, /React\.createElement\(LayoutGrid,/);
   assert.match(sidebar, /React\.createElement\(Globe,/);
   assert.doesNotMatch(sidebar, /AlarmClock\$4|SiderMessagesEntry|SiderCollabEntry|Earth\$2/);
-  assert.match(source, /React\.createElement\(EvaPowerIcon,\{size:16,strokeWidth:1\.8/);
+  assert.match(source, /className:"eva-settings-trigger"[^;]*React\.createElement\(Settings,\{size:18\}\)/);
+  assert.doesNotMatch(source, /EvaSiderFooterBase|EvaPowerIcon|className:"eva-logout"/);
   assert.doesNotMatch(source, /className:"eva-logout"[^}]+},"⏻"/);
 });
 

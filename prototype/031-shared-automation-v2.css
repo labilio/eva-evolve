@@ -1,4 +1,6 @@
 
+  .eva-automation-page { display:flex; flex-direction:column; height:100%; min-height:0; }
+  .eva-automation-page > .eva-shared-auto { flex:1; height:auto; }
   .eva-shared-auto { height: 100%; min-height: 0; overflow: auto; box-sizing: border-box; padding: 24px max(24px, calc((100% - 1084px) / 2)) 48px; background: var(--gds-color-surface-primary); color: var(--gds-color-text-primary); font-family: var(--gds-font-family-sans); }
   .eva-shared-auto__head { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 0 24px; }
   .eva-auto-segmented { position: relative; display: inline-grid; grid-template-columns: repeat(2, minmax(112px, 1fr)); align-items: center; padding: 3px; border: 1px solid var(--gds-color-border-subtle); border-radius: var(--gds-radius-control); background: var(--gds-color-surface-subtle); }

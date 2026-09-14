@@ -51,13 +51,26 @@
   overflow: hidden;
   background: var(--eva-rail-backdrop);
 }
-.layout-sider {
+/* Both independent shells use exactly the same single native border and rounded geometry. */
+.app-shell :is(.layout-sider, .layout-content) {
+  position: relative;
   box-sizing: border-box;
-  --bg-2: var(--eva-surface-glass);
-  background: var(--eva-surface-glass);
-  backdrop-filter: blur(var(--eva-blur-glass));
+  min-width: 0;
   border: 1px solid var(--eva-border-subtle);
   border-radius: var(--eva-radius-panel);
+  overflow: hidden;
+  isolation: isolate;
+}
+.layout-sider {
+  --bg-2: var(--eva-surface-glass);
+  background: var(--eva-surface-glass);
+}
+.layout-content {
+  background: var(--eva-surface-primary);
+}
+.app-shell :is(.layout-sider, .layout-content) > * {
+  isolation: isolate;
+  z-index: 0;
 }
 .eva-nav-entry svg.lucide {
   width: var(--eva-icon-nav);

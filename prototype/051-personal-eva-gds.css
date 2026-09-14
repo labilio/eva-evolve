@@ -1,6 +1,6 @@
 /* GDS 2.0 personal workspace, desktop adaptation.
    Extra app navigation stays 180px (collapsed 80px); assistant rail is 260px.
-   Main column is capped at 776px and shrinks to the remaining width with 24px gutters.
+   New-chat content scales with the available stage width and height, within readable limits.
    Completed replaces the assistant rail: 390px context + flexible editor.
    Titlebar remains unique and visible. Fonts/controls are never globally scaled. */
 
@@ -19,6 +19,7 @@
 }
 
 .eva-personal-workspace__stage {
+  container-type: size;
   position: relative;
   display: flex;
   min-width: 0;
@@ -69,10 +70,13 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden; /* hero 装饰会越出主列，越出部分不参与布局 */
-  padding: var(--eva-space-10) var(--eva-space-6);
+  /* Bias the entire welcome/composer/capability group upward; retain scrolling on short windows. */
+  padding: var(--eva-space-10) var(--eva-space-6) calc(var(--eva-space-10) + clamp(32px, 12vh, 96px));
   box-sizing: border-box;
 }
 .eva-personal-workspace__column {
+  /* Scale only the new-chat group; CSS zoom participates in layout and native input hit testing. */
+  zoom: clamp(0.85, min(calc(100cqw / 760px), calc(100cqh / 700px)), 1.3);
   margin: auto;
   width: min(100%, var(--eva-main-col-w));
   min-width: 0;
@@ -81,24 +85,21 @@
   flex-direction: column;
 }
 
-/* ---- 新会话欢迎区：左侧标题 + 右侧 Eva 陪伴形象 ---- */
+/* ---- 新会话欢迎区：仅保留欢迎标题 ---- */
 .eva-personal-workspace__hero {
   position: relative;
-  order: 1;
-  height: 102px;
+  height: 48px;
   flex: none;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding-bottom: var(--eva-space-2);
+  align-items: center;
 }
 .eva-personal-workspace__hero-grid {
   position: absolute;
-  right: -60px;
-  top: -66px;
-  width: 350px;
-  height: 260px;
+  right: -62px;
+  top: -82px;
+  width: 250px;
+  height: 250px;
   background-image:
     linear-gradient(var(--eva-decoration-dot) 3px, transparent 3px),
     linear-gradient(90deg, var(--eva-decoration-dot) 3px, transparent 3px);
@@ -107,9 +108,6 @@
   -webkit-mask-image: radial-gradient(circle, var(--eva-text-strong), transparent 70%);
 }
 .eva-personal-workspace__welcome {
-  position: relative;
-  z-index: 1;
-  width: 100%;
   margin: 0;
   display: flex;
   align-items: center;
@@ -119,55 +117,20 @@
   white-space: nowrap;
 }
 .eva-personal-workspace__welcome-avatar {
-  position: absolute;
-  z-index: 0;
-  top: -56px;
-  right: 4px;
-  width: 218px;
-  height: 292px;
+  position: relative;
+  width: 36px;
+  height: 36px;
   flex: none;
-  overflow: visible;
-  border-radius: 0;
-  background: transparent;
-  pointer-events: none;
-}
-.eva-personal-workspace__welcome-avatar::before {
-  content: "Hi";
-  position: absolute;
-  z-index: 2;
-  top: 48px;
-  left: -12px;
-  min-width: 42px;
-  height: 30px;
-  padding: 0 var(--eva-space-3);
-  border: var(--eva-border-hairline-w) solid var(--eva-border-faint);
-  border-radius: var(--eva-radius-chip);
-  display: grid;
-  place-items: center;
-  color: var(--eva-action-primary);
-  background: var(--eva-surface-primary);
-  box-shadow: var(--eva-shadow-floating);
-  font: var(--eva-fw-semibold) 14px/20px var(--eva-font-sans);
-}
-.eva-personal-workspace__welcome-avatar::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  top: 72px;
-  left: 22px;
-  width: 8px;
-  height: 8px;
-  border-right: var(--eva-border-hairline-w) solid var(--eva-border-faint);
-  border-bottom: var(--eva-border-hairline-w) solid var(--eva-border-faint);
-  background: var(--eva-surface-primary);
-  transform: rotate(38deg);
+  overflow: hidden;
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-decoration-dot);
 }
 .eva-personal-workspace__welcome-avatar img {
   position: absolute;
-  inset: 0;
-  width: 218px;
-  height: 292px;
-  object-fit: contain;
+  top: -3px;
+  left: -14px;
+  width: 64px;
+  height: auto;
   max-width: none;
 }
 .eva-newchat-icon-action:focus-visible,
@@ -177,10 +140,8 @@
   outline-offset: var(--eva-space-0-5);
 }
 
-/* ---- 快捷能力排：先展示能力，再引导输入 ---- */
+/* ---- 快捷能力排：位于输入器下方，保留翻页操作 ---- */
 .eva-personal-workspace__rail {
-  order: 2;
-  width: calc(100% - 236px);
   flex: none;
   margin-top: var(--eva-space-2);
 }
@@ -201,13 +162,12 @@
 .eva-personal-workspace__composer {
   position: relative;
   z-index: 2;
-  order: 3;
   flex: none;
-  margin-top: var(--eva-space-3);
+  margin-top: var(--eva-space-5);
 }
-/* 快捷能力移到输入器上方；灰色外包层重新承担输入器的视觉底座。 */
+/* 快捷能力独立放在下方，输入器外包层不再绘制灰色底座。 */
 .eva-composer-wrap--newchat {
-  background: var(--eva-surface-subtle);
+  background: transparent;
 }
 .eva-newchat-actions {
   height: 52px;

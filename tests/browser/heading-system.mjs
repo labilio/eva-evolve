@@ -27,26 +27,48 @@ async function open(route, selector) {
   return field;
 }
 
+// Every route uses this same contract; page-specific expected values are forbidden.
+const HEADER_STANDARD = Object.freeze({font:'16px',line:'24px',weight:'500',height:48,left:'16px',right:'16px',decorations:0});
+async function verifyHeaderAppearance(head, title, label) {
+  const actual = await head.evaluate((el, selector) => {
+    const t=el.querySelector(selector), s=getComputedStyle(t), h=getComputedStyle(el);
+    return {font:s.fontSize,line:s.lineHeight,weight:s.fontWeight,
+      height:el.getBoundingClientRect().height,left:h.paddingLeft,right:h.paddingRight,
+      decorations:[...el.querySelectorAll('svg')].filter(i=>!i.closest('button,label,.eva-contacts__search,.eva-digital-center__market-search')).length};
+  }, title);
+  assert.deepEqual(actual, HEADER_STANDARD, label);
+}
+async function verifyHeader(head, title, label) {
+  await verifyHeaderAppearance(head, title, label);
+  const position=await head.evaluate((el, selector)=>{
+    const r=el.getBoundingClientRect(), t=el.querySelector(selector).getBoundingClientRect();
+    return {top:r.top,titlebarBottom:document.querySelector('.app-titlebar').getBoundingClientRect().bottom,
+      textInset:t.left-r.left,centerOffset:(t.top+t.height/2)-(r.top+r.height/2)};
+  }, title);
+  assert.ok(Math.abs(position.top-position.titlebarBottom)<=1,`${label}: 一级标题必须紧接系统标题栏`);
+  assert.ok(Math.abs(position.textInset-16)<=1,`${label}: 标题文字必须从左侧 16px 起始`);
+  assert.ok(Math.abs(position.centerOffset)<=1,`${label}: 标题文字必须垂直居中`);
+}
+
 for (const width of [1200, 1000]) {
   test(`一级功能标题在 ${width}px 下遵循统一合同`, async () => {
     await page.setViewportSize({width, height:900});
-    for (const [route, header, title, expected] of [
-      ['/guid','.eva-rail-header','.eva-personal-rail-title',{height:42,line:'22px'}],
-      ['/messages?evaIM=my-ai','.eva-rail-header','h1',{height:48,line:'24px'}],
-      ['/messages','.eva-rail-header','h1',{height:48,line:'24px'}],
-      ['/drive','.eva-drive__side-head','strong',{height:64,line:'24px'}],
-      ['/contacts','.eva-contacts__main-head','.eva-contacts__title strong',{height:48,line:'24px'}],
-      ['/eva-stub/工作板','.eva-feature-head','h1',{height:48,line:'24px'}],
-      ['/eva-stub/技能','.eva-connection-center__head','h1',{height:48,line:'24px'}],
+    for (const [route, header, title] of [
+      ['/guid','.eva-rail-header','.eva-personal-rail-title'],
+      ['/messages?evaIM=my-ai','.eva-rail-header','h1'],
+      ['/messages','.eva-rail-header','h1'],
+      ['/drive','.eva-drive__side-head','strong'],
+      ['/drive','.eva-drive__header','strong'],
+      ['/contacts','.eva-contacts__main-head','.eva-contacts__title strong'],
+      ['/eva-stub/工作板','.eva-feature-head','h1'],
+      ['/eva-stub/技能','.eva-connection-center__head','h1'],
+      ['/collab','.eva-page-header','h1'],
+      ['/eva-stub/站点','.eva-page-header','h1'],
+      ['/scheduled','.eva-page-header','h1'],
+      ['/eva-stub/数字员工','.eva-digital-center__head','h1'],
     ]) {
       const head = await open(route, header);
-      const actual = await head.evaluate((el, selector) => {
-        const t=el.querySelector(selector), s=getComputedStyle(t), h=getComputedStyle(el);
-        return {font:s.fontSize, line:s.lineHeight, weight:s.fontWeight,
-          height:el.getBoundingClientRect().height, left:h.paddingLeft, right:h.paddingRight,
-          decorations:[...el.querySelectorAll('svg')].filter(i=>!i.closest('button,label,.eva-contacts__search')).length};
-      }, title);
-      assert.deepEqual(actual,{font:'16px',line:expected.line,weight:'500',height:expected.height,left:'16px',right:'16px',decorations:0},route);
+      await verifyHeader(head, title, route);
       if(header==='.eva-rail-header') {
         const button=head.locator('button').first();
         assert.equal((await button.boundingBox()).width,32);
@@ -62,11 +84,77 @@ for (const width of [1200, 1000]) {
     await head.waitFor();
     assert.equal(await head.locator('h1').innerText(),'群聊');
     assert.equal(await head.locator('input').count(),0);
-    assert.equal((await head.boundingBox()).height,48);
-    assert.equal(await head.locator('h1').evaluate(e=>getComputedStyle(e).fontSize),'16px');
+    await verifyHeaderAppearance(head, 'h1', '项目内群聊分区');
     const plus=head.locator('button').first();
     assert.equal((await plus.boundingBox()).width,32);
     await plus.click();
     await page.keyboard.press('Escape');
   });
 }
+
+
+test('标题门禁拒绝高度、字号和位置偏差，恢复后通过', async () => {
+  const head=await open('/messages','.eva-rail-header');
+  const title=head.locator('h1');
+  const headStyle=await head.getAttribute('style');
+  const titleStyle=await title.getAttribute('style');
+  for(const [label,target,css] of [
+    ['42px 高度',head,'height:42px!important;min-height:42px!important;max-height:42px!important'],
+    ['20px 字号',title,'font-size:20px!important'],
+    ['下移 16px',head,'margin-top:16px!important'],
+  ]) {
+    await target.evaluate((el,css)=>el.style.cssText+=';'+css,css);
+    await assert.rejects(()=>verifyHeader(head,'h1',label),{name:'AssertionError'},`${label} 必须被门禁拒绝`);
+    await head.evaluate((el,style)=>style===null?el.removeAttribute('style'):el.setAttribute('style',style),headStyle);
+    await title.evaluate((el,style)=>style===null?el.removeAttribute('style'):el.setAttribute('style',style),titleStyle);
+    await verifyHeader(head,'h1',`恢复 ${label}`);
+  }
+});
+
+test('个人首页保留已确认的居中头像标题、输入器及下方快捷能力',async()=>{
+  const samples=[];
+  for(const [width,height] of [[900,600],[1200,800],[1920,1080]]) {
+    await page.setViewportSize({width,height});
+    await open('/guid','.eva-personal-workspace__welcome');
+    const geometry=await page.evaluate(()=>{
+      const root=document.querySelector('.eva-personal-workspace'),title=root.querySelector('.eva-personal-workspace__welcome'),avatar=root.querySelector('.eva-personal-workspace__welcome-avatar'),column=root.querySelector('.eva-personal-workspace__column');
+      const r=el=>el.getBoundingClientRect().toJSON();
+      return {scale:Number(getComputedStyle(column).zoom),title:r(title),avatar:r(avatar),column:r(column),composer:r(root.querySelector('.eva-personal-workspace__composer')),rail:r(root.querySelector('.eva-personal-workspace__rail')),bubble:getComputedStyle(avatar,'::before').content};
+    });
+    assert.ok(Math.abs(geometry.title.x+geometry.title.width/2-geometry.column.x-geometry.column.width/2)<1,'欢迎语居中');
+    assert.ok(Math.abs(geometry.avatar.width/geometry.scale-36)<0.1);assert.ok(Math.abs(geometry.avatar.height/geometry.scale-36)<0.1);
+    assert.ok(geometry.column.right<=width&&geometry.column.x>=0);
+    samples.push(geometry);
+    assert.ok(geometry.avatar.x>geometry.title.x&&geometry.avatar.right<geometry.title.right,'头像位于两段欢迎语之间');
+    assert.ok(geometry.composer.y>=geometry.title.bottom);
+    assert.ok(geometry.rail.y>=geometry.composer.bottom,'快捷能力在输入器之后');
+    assert.equal(geometry.bubble,'none','禁止恢复 Hi 气泡');
+    const input=page.locator('.eva-composer-prompt');
+    await input.fill('保留中文输入与编辑');await input.press('Backspace');
+    assert.equal(await input.inputValue(),'保留中文输入与编');
+    await input.fill('');
+  }
+  assert.ok(samples[0].avatar.width<samples[1].avatar.width&&samples[1].avatar.width<samples[2].avatar.width,'整组随可用空间放大');
+  assert.ok(samples[0].composer.height<samples[1].composer.height&&samples[1].composer.height<samples[2].composer.height,'输入器随整组缩放');
+});
+
+ test('相邻标题栏底边严格对齐，包含边框且拒绝1px偏差', async()=>{
+  for(const width of [1200,1000]){
+   await page.setViewportSize({width,height:800});
+   for(const [route,left,right] of [['/messages','.eva-rail-header','.ch-head'],['/messages?evaIM=my-ai','.eva-rail-header','.ch-head'],['/drive','.eva-drive__side-head','.eva-drive__header']]){
+    await open(route,right);
+    const measure=async()=>page.evaluate(({left,right})=>{
+     const a=document.querySelector(left).getBoundingClientRect(),b=document.querySelector(right).getBoundingClientRect();
+     return {top:a.top-b.top,bottom:a.bottom-b.bottom,leftHeight:a.height,rightHeight:b.height};
+    },{left,right});
+    const expected={top:0,bottom:0,leftHeight:48,rightHeight:48};
+    assert.deepEqual(await measure(),expected,route);
+    if(right==='.ch-head'){
+     await page.locator(right).evaluate(e=>e.style.boxSizing='content-box');
+     assert.notDeepEqual(await measure(),expected,'1px边框偏差必须被识别');
+     await page.locator(right).evaluate(e=>e.style.removeProperty('box-sizing'));
+     assert.deepEqual(await measure(),expected);
+    }
+   }
+  }
+ });

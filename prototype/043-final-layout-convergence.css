@@ -18,9 +18,9 @@
     min-width: var(--eva-conversation-rail-current);
     max-width: var(--eva-conversation-rail-current);
     flex-basis: var(--eva-conversation-rail-current);
-    border: 1px solid var(--eva-conversation-rail-border);
-    border-radius: var(--eva-radius-panel);
-    backdrop-filter: blur(var(--eva-blur-glass));
+    border: 0;
+    border-right: 1px solid var(--eva-conversation-rail-border);
+    border-radius: 0;
     background: var(--eva-conversation-rail-bg);
     box-shadow: none !important;
   }
@@ -207,8 +207,4 @@
     .eva-digital-employee-page__body { grid-template-columns: 290px minmax(0, 1fr); }
     .eva-digital-market-row { grid-template-columns: minmax(220px,1fr) auto; }
     .eva-digital-market-row__code, .eva-digital-market-row__domain { display: none; }
-  }
-
-  @media (max-width: 980px) {
-    .eva-project-pinned-grid { grid-template-columns: 1fr; }
   }

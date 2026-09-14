@@ -1537,9 +1537,6 @@ body.eva-message-hierarchy-ready .eva-my-avatar-chat__portrait {
   object-fit: cover;
 }
 
-.eva-user-row img.ava {
-  object-fit: cover;
-}
 
 body.eva-message-hierarchy-ready .eva-my-avatar-chat .ch-head .ops .op {
   display: inline-flex;

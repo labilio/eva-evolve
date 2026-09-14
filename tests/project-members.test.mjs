@@ -25,6 +25,20 @@ test('群设置只允许已加入的群主或继承管理员修改，分身不�
 test('私聊设置与清空记录按人类和会话隔离，不删除其他人的消息',()=>{const s=setup();s.setChatPreferences('dm-b','a',{mute:true,top:true,clearedCount:2});assert.equal(s.chatPreferences('dm-b','a').mute,true);assert.equal(s.chatPreferences('dm-b','b').mute,undefined);assert.equal(s.chatPreferences('dm-c','a').mute,undefined);assert.equal(s.visibleMessages('dm-b','a',[1,2,3]).join(','),'3');assert.equal(s.visibleMessages('dm-b','b',[1,2,3]).length,3);const restored=windowlessRestore(s.snapshot());assert.equal(restored.chatPreferences('dm-b','a').top,true);});
 function windowlessRestore(seed){const window={};loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});return window.EvaMembership.create(seed);}
 
+test('演示项目默认全部置顶，按访问范围初始化且取消置顶后刷新不重置',()=>{
+ let saved=null;
+ const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:()=>saved,setItem:(_,value)=>{saved=value;}}};
+ loadIdentityEnvironment(window);
+ vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});
+ const people=[{uid:'u-wangyilin',name:'王宜林'},{uid:'u-b',name:'乙'}],projects=[{id:'p1',name:'一',members:[]},{id:'p2',name:'二',members:[{name:'乙'}]}];
+ const s=window.EvaMembership.bootstrap(people,projects,{});
+ assert.deepEqual(Array.from(s.pinnedProjects('u-wangyilin')),['p1','p2']);
+ assert.deepEqual(Array.from(s.pinnedProjects('u-b')),['p2']);
+ s.setPinnedProjects('u-wangyilin',['p1']);
+ const restored=window.EvaMembership.bootstrap(people,projects,{});
+ assert.deepEqual(Array.from(restored.pinnedProjects('u-wangyilin')),['p1']);
+});
+
 test('项目专员自动覆盖本项目所有群和子区，首条欢迎包含创建信息',()=>{
  const s=setup();s.createProject('p','交付项目','a',[],'按期交付');const agent=s.projectAgent('p');assert.equal(agent.kind,'project-agent');
  const welcome=s.messagesFor('all:p','a')[0];assert.equal(welcome.sender.uid,agent.id);assert.ok(welcome.text.startsWith('@所有人'));assert.ok(welcome.text.includes('按期交付'));assert.ok(welcome.text.includes('甲'));

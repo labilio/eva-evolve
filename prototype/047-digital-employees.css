@@ -86,7 +86,7 @@
 .eva-creator-workspace .eva-digital-center__field > label { font: 500 14px/22px var(--eva-font-sans); }
 .eva-creator-workspace .eva-digital-center__field small { font: 400 12px/16px var(--eva-font-sans); }
 .eva-creator-workspace :is(.semi-input,.semi-input-textarea,.semi-select-selection) { font: 400 15px/24px var(--eva-font-sans); }
-.eva-creator-workspace .eva-digital-center__rail { border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); backdrop-filter: blur(var(--eva-blur-glass)); }
+.eva-creator-workspace .eva-digital-center__rail { border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); }
 .eva-creator-workspace .eva-digital-center__rail .semi-button { min-height: 38px; font: 500 14px/22px var(--eva-font-sans); }
 .eva-creator-workspace .eva-digital-center__main:not(.eva-creator-catalog) > .eva-digital-center__head { align-items: flex-start; gap: var(--eva-space-6); margin-bottom: var(--eva-space-8); }
 .eva-creator-workspace .eva-digital-center__head > div:first-child { min-width: 0; }
@@ -95,11 +95,9 @@
 
 /* Employee market: preserve the catalog table and its business filters. */
 .eva-market-workspace { font: 400 14px/22px var(--eva-font-sans); }
-.eva-market-workspace h1 { font: 500 16px/24px var(--eva-font-sans); }
 .eva-market-workspace h3 { font: 500 14px/22px var(--eva-font-sans); }
 .eva-market-workspace p { font: 400 14px/22px var(--eva-font-sans); color: var(--eva-text-secondary); }
-.eva-market-workspace .eva-digital-center__main { padding: 24px; }
-.eva-market-workspace .eva-digital-center__head { margin-bottom: 24px; }
+.eva-market-workspace .eva-digital-center__main { padding: 0 var(--eva-space-6) var(--eva-space-6); }
 .eva-market-workspace .eva-digital-center__rail { padding: 24px 12px; }
 .eva-market-workspace .eva-digital-center__rail h2 { font: 500 16px/24px var(--eva-font-sans); padding-inline: 12px; margin-bottom: 20px; }
 .eva-market-workspace .eva-digital-center__rail .semi-button { min-height: 56px; padding: 8px 12px; font: 500 14px/22px var(--eva-font-sans); }
@@ -121,7 +119,7 @@
 .eva-market-workspace .eva-digital-center__joined-status { color: var(--eva-text-primary); font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action { background: transparent; color: var(--eva-action-primary); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action:hover { background: var(--eva-action-primary-08); }
-.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 4px; }
+.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
 .eva-market-workspace .eva-digital-center__domain-filters .semi-button { flex: none; }
 .eva-market-workspace .eva-digital-center__table .semi-button { min-height: 32px; padding: 0 8px; font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace :is(.eva-digital-center__table,.semi-table-row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
@@ -134,8 +132,19 @@
 
 .eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head,
 .eva-market-workspace .eva-digital-center__table .semi-table-tbody > .semi-table-row > .semi-table-row-cell { padding: 12px; font: 400 14px/22px var(--eva-font-sans); }
-.eva-market-workspace .eva-digital-center__rail { background: var(--eva-surface-glass); backdrop-filter: blur(var(--eva-blur-glass)); }
+.eva-market-workspace .eva-digital-center__rail { background: var(--eva-surface-glass); }
 .eva-market-workspace .eva-digital-center__filters .semi-button[aria-pressed="true"],
 .eva-market-workspace .eva-digital-center__rail .semi-button[aria-pressed="true"] { color: var(--eva-action-primary); background: color-mix(in srgb, var(--eva-action-primary) 8%, var(--eva-surface-primary)); }
 .eva-market-workspace .eva-digital-center__filters .semi-button { border: 1px solid var(--eva-border-faint); }
 .eva-market-workspace .eva-digital-center__filters .semi-button[aria-pressed="true"] { border-color: var(--eva-border-focus); }
+
+/* Market header layout only; search appearance stays in 055-search-controls.css. */
+.eva-market-workspace .eva-digital-center__market-search { width: min(350px, 100%); flex: 0 1 350px; }
+.eva-market-workspace .eva-digital-center__head h1 { margin: 0; }
+.eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); font-weight: var(--eva-fw-medium); }
+.eva-market-workspace .eva-digital-center__table .semi-table-pagination-outer { box-sizing: border-box; padding: var(--eva-space-3) var(--eva-space-3); gap: var(--eva-space-3); flex-wrap: wrap; }
+.eva-market-workspace .eva-digital-center__table .semi-table-pagination-info { min-width: 0; }
+.eva-market-workspace .eva-digital-center__table .semi-table-pagination-wrapper { margin-left: auto; }
+@media (max-width: 760px) {
+  .eva-market-workspace .eva-digital-center__market-search { width: 100%; flex-basis: 100%; }
+}

@@ -10,6 +10,14 @@
    ============================================================ */
 
 :root {
+  --eva-conversation-row-hover: #f5f6f7;
+  --eva-conversation-row-radius: 8px;
+  /* 消息与我的 Agent 共用列表起点，禁止业务页另设缩进。 */
+  --eva-rail-identity-avatar-size: 22px;
+  --eva-rail-level-indent: var(--gds-space-1);
+  --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
+  --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-content-inset) + var(--gds-space-2-5));
+
   /* ---- color · primitive (token layer only) ---------------- */
   --eva-c-white: #ffffff;
   --eva-c-paper: #fefefe;
@@ -76,6 +84,11 @@
   --eva-im-accent: var(--eva-action-primary);
   /* User-confirmed: outgoing bubbles exactly match navigation selection. */
   --eva-im-bubble-outgoing: var(--eva-nav-selected);
+  --eva-im-bubble-incoming: #f2f2f2;
+  --eva-im-bubble-radius: 14px;
+  --eva-contacts-header-background: #F7F8FA;
+  --eva-contacts-header-border: #EEF0F2;
+  --eva-contacts-header-text: #646A73;
   --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
   --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
   --eva-im-tint-08: color-mix(in srgb, var(--eva-im-accent) 8%, transparent);
