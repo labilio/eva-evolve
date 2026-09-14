@@ -7,7 +7,7 @@ const members=[{id:'u-wangyilin',name:'王宜林',kind:'human'},{id:'persona',na
 test('fixed group derives all member kinds without duplicates and isolates history',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage:null});
  const source=group.source([...members,members[1]]),channel=source.channels[0];
- assert.equal(channel.name,'我的 OPT');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
+ assert.equal(channel.name,'我的AI团队');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
  assert.equal(channel.replyPolicy,'mention-only');assert.equal(channel.memberIds.join(','),members.map(m=>m.id).join(','));
  source.onSend('普通群消息');assert.equal(group.source(members).messages[group.id].length,1);
  source.onSend('@通用助理 请整理');let history=group.source(members).messages[group.id];assert.equal(history.length,3);assert.equal(history[2].sender.uid,'assistant');
@@ -22,12 +22,12 @@ test('fixed group retains its channel, messages and draft after reload',()=>{
 });
 test('legacy default group name is normalized while custom team names are retained',()=>{
  const saved=JSON.stringify({schemaVersion:2,groups:[
-  {id:'my-ai-team:u-wangyilin',name:'我的 AI',system:true,messages:[],draft:'',threads:[]},
+  {id:'my-ai-team:u-wangyilin',name:'我的 OPT',system:true,messages:[],draft:'',threads:[]},
   {id:'my-ai-group:legacy',name:'原有团队',system:false,memberIds:['assistant'],messages:[],draft:'',threads:[]}
  ]});
  const storage={getItem:key=>key==='eva:my-ai-groups:v2'?saved:null,setItem:()=>{}};
  const group=window.EvaMyAITeamGroup.createStore({storage});
- assert.equal(group.get(group.id).name,'我的 OPT');assert.equal(group.get('my-ai-group:legacy').name,'原有团队');
+ assert.equal(group.get(group.id).name,'我的AI团队');assert.equal(group.get('my-ai-group:legacy').name,'原有团队');
 });
 test('group and subzones isolate messages and drafts across reloads',()=>{
  let saved;const storage={getItem:()=>saved,setItem:(_,v)=>{saved=v;}};
@@ -57,11 +57,28 @@ test('custom AI teams keep a member snapshot and isolate group data',()=>{
  const restored=window.EvaMyAITeamGroup.createStore({storage});
  assert.equal(restored.source(customId,members).initialDraft,'团队草稿');
  assert.equal(restored.source(customId,members).messages[customId].length,2);
- restored.updateGroup(customId,{name:'上市协作组',memberIds:['persona']});
+ restored.updateGroup(customId,{name:'上市协作组',avatar:'data:image/png;base64,dGVhbQ==',memberIds:['assistant','persona']});
  assert.equal(restored.source(customId,members).channels[0].name,'上市协作组');
- assert.equal(restored.source(customId,members).channels[0].memberIds.join(','),'u-wangyilin,persona');
+ assert.equal(restored.source(customId,members).channels[0].identityAvatarUrl,'data:image/png;base64,dGVhbQ==');
+ assert.equal(restored.source(customId,members).channels[0].memberIds.join(','),'u-wangyilin,assistant,persona');
  assert.throws(()=>restored.updateGroup(restored.id,{name:'不可修改'}),/默认团队不可编辑/);
  assert.throws(()=>restored.createGroup({name:'空团队',memberIds:[]}),/至少选择/);
+});
+test('custom AI teams can be dissolved with all nested data while the default team stays protected',()=>{
+ let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};
+ const group=window.EvaMyAITeamGroup.createStore({storage});
+ const customId=group.createGroup({name:'临时协作组',memberIds:['assistant']});
+ const threadId=group.createThread(customId,{id:'temporary',name:'临时子区'});
+ group.source(customId,members,threadId).onDraftChange('待删除草稿',threadId);
+ group.source(customId,members,threadId).onSend('@通用助理 临时消息',threadId);
+ group.removeGroup(customId);
+ assert.throws(()=>group.get(customId),/AI 团队不存在/);
+ assert.equal(group.groups().some(item=>item.id===customId),false);
+ assert.throws(()=>group.removeGroup(group.id),/默认团队不可删除/);
+ const restored=window.EvaMyAITeamGroup.createStore({storage});
+ assert.equal(restored.groups().some(item=>item.id===customId),false);
+ assert.equal(JSON.stringify(saved).includes('待删除草稿'),false);
+ assert.equal(restored.get(restored.id).name,'我的AI团队');
 });
 test('team groups expose exact child unread counts and aggregate only unread presence',()=>{
  let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};

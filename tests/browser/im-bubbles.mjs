@@ -91,7 +91,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  const aiOriginal=page.locator('.eva-im-bubble-row').first();await aiOriginal.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('回复',{exact:true}).click();
  await page.getByRole('textbox',{name:'发送给 保供晨会'}).fill('团队引用回归');await page.getByRole('button',{name:'发送',exact:true}).click();
  await page.locator('.eva-im-bubble-row').last().getByText('团队引用回归',{exact:true}).waitFor();assert.equal(await page.locator('.eva-im-bubble-row').last().locator('.wk-reply-block').count(),1);
- await page.getByRole('button',{name:'供应商整改',exact:true}).click();await page.getByRole('textbox',{name:'发送给 供应商整改'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row').count()>0);
+ await page.locator('.wk-conv-compact-item--thread').filter({hasText:'供应商整改'}).click();await page.getByRole('textbox',{name:'发送给 供应商整改'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row').count()>0);
  await page.locator('[data-eva-nav-id="messages"]').click();await page.locator('.eva-im-bubble-row').first().waitFor();
  await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'发送给 03 Markdown 与长内容'}).waitFor();
  assert.equal(await page.locator('.eva-im-bubble-row pre').count(),6);assert.equal(await page.locator('.eva-im-bubble-row table').count(),6);
