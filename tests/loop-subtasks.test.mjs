@@ -105,23 +105,29 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
 });
 
-test('任务分解树从任务详情进入并复用同一父子关系',()=>{
-  assert.ok(runtime.includes('function EvaIssueBreakdownPage('));
-  assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,St)'));
+test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=>{
+  assert.ok(runtime.includes('function EvaIssueBreakdownCanvas('));
+  assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,gt)'));
   assert.ok(runtime.includes('"查看分解"'));
   assert.ok(runtime.includes('"查看任务分解"'));
+  assert.ok(runtime.includes('"收起分解"'));
   assert.ok(runtime.includes('"开始分解"'));
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
   assert.ok(runtime.includes('onClick:()=>pt(kr)'));
-  assert.ok(runtime.includes('className:"eva-task-breakdown__detail-overlay"'));
-  assert.ok(runtime.includes('presentation:"panel"'));
-  assert.ok(runtime.includes('breakdownContext:!0'));
-  assert.ok(runtime.includes('"返回任务分解"'));
-  assert.ok(runtime.includes('evaSetSelectedIssue(null);return !1'));
+  assert.ok(runtime.includes('className:"loop-idp__section eva-loop-subtasks",ref:evaBreakdownSectionRef'));
+  assert.ok(runtime.includes('evaBreakdownOpen&&Ht.length?React.createElement(EvaIssueBreakdownCanvas'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown__node-fields"'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown__node-due"'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown__node-labels"'));
+  assert.ok(runtime.includes('className:"eva-task-breakdown__node-priority"'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:kr,size:18})'));
+  assert.ok(runtime.includes('React.createElement(LabelChips,{labels:kr.labels,max:2})'));
+  assert.equal(runtime.includes('className:"eva-task-breakdown__detail-overlay"'),false);
+  assert.equal(runtime.includes('breakdownContext:!0'),false);
   assert.equal(runtime.includes('["board","grouped","list","hierarchy","breakdown"]'),false);
-  assert.match(taskStyles,/\.eva-task-breakdown\s*\{[\s\S]*height:\s*100%;[\s\S]*overflow:\s*hidden/);
+  assert.match(taskStyles,/\.eva-task-breakdown\s*\{[\s\S]*height:\s*440px;[\s\S]*border:\s*var\(--eva-border-standard-w\) solid var\(--eva-border-subtle\)/);
   assert.match(taskStyles,/\.eva-task-breakdown__children::before\s*\{[\s\S]*background:\s*var\(--eva-border-default\)/);
+  assert.match(taskStyles,/\.eva-task-breakdown__node\s*\{[\s\S]*width:\s*292px;[\s\S]*height:\s*178px/);
   assert.match(taskStyles,/\.eva-task-breakdown__node-title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
-  assert.match(taskStyles,/\.eva-task-breakdown__detail-overlay\s*\{[\s\S]*position:\s*absolute;[\s\S]*inset:\s*0/);
-  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*224px/);
+  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*270px;\s*height:\s*174px/);
 });
