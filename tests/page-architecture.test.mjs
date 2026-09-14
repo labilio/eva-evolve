@@ -90,11 +90,8 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /'新建 AI 团队'.+'新建个人助理'/s);
-  assert.match(imPatch, /sectionTitle\('teams','AI 团队'.+sectionTitle\('assistants','AI 助理'/s);
-  assert.match(imPatch, /sectionTitle\('teams','AI 团队'.+Users\)/s);
-  assert.match(imPatch, /sectionTitle\('assistants','AI 助理'.+Sparkles\)/s);
-  assert.match(imPatch, /const \[sectionCollapsed,setSectionCollapsed\]=reactExports\.useState\(\{teams:false,assistants:false\}\)/);
-  assert.match(imPatch, /'aria-expanded':!collapsed,'aria-controls':contentId/);
+  assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
+  assert.match(imPatch, /className:'eva-ai-team__teams'.+className:'eva-ai-team__list-divider',role:'separator'.+className:'eva-ai-team__direct-groups'/s);
   assert.match(imPatch, /type:'file',hidden:true,accept:'image\/png,image\/jpeg,image\/webp'/);
   assert.match(imPatch, /const reader=new FileReader\(\)/);
   assert.match(imPatch, /avatar\?'更换团队头像':'上传团队头像'/);
@@ -103,6 +100,9 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team-editor__selected-item\s*>\s*span/);
   assert.match(imPatch, /teamGroups\.map\(teamGroupItem\)/);
   assert.match(imPatch, /className:'eva-ai-team__team-default'\},'默认'/);
+  assert.match(imPatch, /Dropdown\.Item,\{type:'danger',onClick:\(\)=>setGroupToDissolve\(group\)\},'解散群'/);
+  assert.match(imPatch, /title:'解散 AI 团队'.+okText:'解散群'.+okButtonProps:\{type:'danger'\}/s);
+  assert.match(imPatch, /groupStore\.removeGroup\(id\).+selection\.identityId===id.+choose\(groupStore\.id,null\)/s);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__group-count'/);
   assert.match(imPatch, /className:'eva-ai-team__session-unread'/);
   assert.match(imPatch, /className:'eva-ai-team__unread-dot'/);
@@ -231,10 +231,10 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(hierarchyCss, /wk-conv-compact-item--thread \.wk-conv-compact-name\s*\{[^}]*font-size:\s*var\(--gds-type-label-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*13px[^}]*line-height:\s*1\.5[^}]*font-weight:\s*var\(--gds-font-weight-semibold\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
-  assert.match(aiTeamCss, /--eva-rail-level-indent:\s*12px/);
+  assert.match(aiTeamCss, /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
   assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--eva-rail-level-indent\)\)/);
-  assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-4\) \+ var\(--eva-rail-level-indent\)\)/);
-  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*2px/);
+  assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0/);
   assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-rail-identity-content-inset\)/s);
   assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*var\(--eva-rail-team-thread-inset\)/s);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-size:\s*22px/);
@@ -263,40 +263,23 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
 });
 
-test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分组', () => {
+test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const modeCss = read('prototype/012-mode-layer.css');
   const tokens = read('prototype/047-gds-tokens.css');
-  const sectionTitleRule = aiTeamCss.match(/\.eva-ai-team__section-title\s*\{[^}]*\}/s)?.[0]||'';
-  const sectionTitleStart = imPatch.indexOf('function sectionTitle(');
-  const sectionTitleEnd = imPatch.indexOf('function teamGroupItem(', sectionTitleStart);
-  const sectionTitle = imPatch.slice(sectionTitleStart, sectionTitleEnd);
-  const sectionIcon = sectionTitle.indexOf("className:'eva-ai-team__section-icon'");
-  const sectionLabel = sectionTitle.indexOf("className:'eva-ai-team__section-label'");
-  const sectionCount = sectionTitle.indexOf("className:'eva-ai-team__section-count'");
-  const sectionUnread = sectionTitle.indexOf("unreadDot(label+'有未读消息')");
-  const sectionChevron = sectionTitle.indexOf("className:'eva-ai-team__section-chevron'");
-
-  assert.ok(sectionTitleStart >= 0 && sectionTitleEnd > sectionTitleStart, '未找到我的 AI 顶层分区标题渲染函数');
-  assert.ok(sectionIcon < sectionLabel && sectionLabel < sectionCount && sectionCount < sectionUnread && sectionUnread < sectionChevron, '顶层分区应按图标、标题、可选数量、未读提示、右侧箭头排列');
-  assert.match(sectionTitle, /className:'eva-ai-team__section-toggle','aria-label':label,'aria-expanded':!collapsed/);
-  assert.match(sectionTitle, /className:'eva-ai-team__section-count','aria-hidden':true/);
-  assert.match(sectionTitle, /hasUnread&&unreadDot\(label\+'有未读消息'\)/);
-  assert.match(imPatch, /sectionTitle\('teams','AI 团队',null,false/);
-  assert.match(imPatch, /sectionTitle\('assistants','AI 助理',null,false/);
-  assert.doesNotMatch(imPatch, /sectionTitle\('assistants','AI 助理',availableIdentities\.length/);
+  assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__section-(?:title|toggle|icon|label|count|chevron)/);
+  assert.match(imPatch, /className:'eva-ai-team__teams'.+teamGroups\.map\(teamGroupItem\).+className:'eva-ai-team__list-divider',role:'separator','aria-orientation':'horizontal'.+className:'eva-ai-team__direct-groups'/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__list-divider\s*\{[^}]*border-top:\s*var\(--gds-border-standard\) solid var\(--gds-color-border-subtle\)/s);
+  assert.match(aiTeamCss, /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0/);
+  assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*width:\s*var\(--eva-rail-identity-content-inset\)[^}]*flex:\s*0 0 var\(--eva-rail-identity-content-inset\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
-  assert.match(sectionTitleRule, /min-height:\s*40px/);
-  assert.match(sectionTitleRule, /border-radius:\s*var\(--gds-radius-key\)/);
   assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
-  assert.match(sectionTitleRule, /background:\s*transparent/);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-title:hover\s*\{[^}]*background:\s*var\(--eva-rail-hover\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-title:has\(\.eva-ai-team__section-toggle:active\)\s*\{[^}]*background:\s*var\(--eva-rail-selected\)/s);
-  assert.doesNotMatch(sectionTitleRule, /box-shadow/);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-icon\s*\{[^}]*width:\s*20px[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-count\s*\{[^}]*color:\s*var\(--eva-rail-time\)[^}]*text-align:\s*right/s);
   assert.match(aiTeamCss, /\.eva-ai-team__unread-dot\s*\{[^}]*width:\s*6px[^}]*background:\s*var\(--eva-unread-indicator\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*justify-self:\s*end/s);
@@ -314,8 +297,6 @@ test('我的 AI 顶层分区使用透明底色并以标题层级区别角色分�
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__unread-dot,[^}]*focus-within \.eva-ai-team__unread-dot,[^}]*is-active\) \.eva-ai-team__unread-dot\s*\{\s*opacity:\s*0/s);
   assert.match(tokens, /--eva-unread-indicator:\s*var\(--eva-c-mac-red\)/);
   assert.match(modeCss, /\.eva-my-ai-collaboration-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-chevron\s*\{[^}]*color:\s*var\(--gds-color-text-secondary\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__section-label\s*\{[^}]*flex:\s*1[^}]*text-overflow:\s*ellipsis/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-title\s*\{[^}]*flex:\s*1/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);

@@ -530,10 +530,10 @@
     }
     return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
-  // “我的 AI”中的默认群“我的 OPT”动态包含所有 AI；自定义团队保存创建时的成员快照。
+  // “我的 AI”中的默认群“我的AI团队”动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
     const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-groups:v2';
-    const blankGroup = (record = {}) => ({id:record.id || id, name:record.system === false ? record.name || 'AI 团队' : '我的 OPT', avatar:record.avatar || '', system:record.system !== false,
+    const blankGroup = (record = {}) => ({id:record.id || id, name:record.system === false ? record.name || 'AI 团队' : '我的AI团队', avatar:record.avatar || '', system:record.system !== false,
       memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
       messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
       threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
