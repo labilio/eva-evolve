@@ -88,6 +88,9 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.ok(runtime.includes('"直接子任务"'));
   assert.ok(runtime.includes('mt.total," 项任务"'));
   assert.ok(runtime.includes('className:"eva-loop-list__task"'));
+  assert.ok(runtime.includes('className:"loop-list__check",onClick:cn=>cn.stopPropagation()},React.createElement(Checkbox,{"aria-label":"选择任务 "+rn.identifier'));
+  assert.ok(runtime.includes('className:"loop-list__id"},rn.identifier),React.createElement("div",{className:"eva-loop-list__task"'));
+  assert.equal(runtime.includes('className:"loop-list__project"'),false);
   assert.ok(runtime.includes('className:"loop-list__due"'));
   assert.ok(runtime.includes('" is-subtask"'));
   assert.ok(runtime.includes('" has-subtasks"'));
@@ -108,6 +111,9 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-board-subtasks__tree,[\s\S]*margin-left:\s*6px;[\s\S]*padding-left:\s*6px/);
   assert.match(taskStyles,/\.loop-card \.eva-issue-relation\s*\{[\s\S]*background:\s*var\(--eva-surface-subtle\)/);
   assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
+  assert.match(taskStyles,/--eva-task-columns:\s*16px 76px minmax\(180px,1fr\) minmax\(0,120px\) 76px 210px 64px/);
+  assert.match(taskStyles,/\.loop-list__due\s*\{\s*grid-column:\s*5/);
+  assert.match(taskStyles,/\.loop-list__assignee\s*\{\s*grid-column:\s*6/);
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);
   assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
   assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);

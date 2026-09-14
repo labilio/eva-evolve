@@ -101,7 +101,7 @@
           item.name,item.creator,fileType(item),item.external?.host,item.external?.url,...(item.tags||[]),...relationsFor(item).map(relation=>relation.label)
         ].some(value=>String(value||'').toLowerCase().includes(normalized)));
         else if(!trashMode)list=list.filter(item=>item.parent_id===parentId);
-        return context.files.sortEntries(list);
+        return context.files.sortEntries(actor,list,{pinnedFirst:!trashMode});
       },[all,trash,trashMode,parentId,query,revision]);
       const selected=useMemo(()=>(trashMode?trash:snapshot).find(item=>item.id===selectedId)||null,[snapshot,trash,trashMode,selectedId]);
       const availableTags=useMemo(()=>Array.from(new Set(all.flatMap(item=>item.tags||[]))),[all]);
@@ -172,6 +172,10 @@
         setNotice(message);
         clearTimeout(noticeTimer.current);
         noticeTimer.current=setTimeout(()=>setNotice(''),1800);
+      };
+      const togglePin=item=>{
+        const pinned=context.files.togglePinned(actor,item.id);
+        showNotice(pinned?'已置顶，可在文件库的“置顶文件”中查看':'已取消置顶');
       };
       const restoreItem=item=>{
         const result=context.files.restore(actor,item.id);
@@ -309,6 +313,7 @@
           else if(canOpen)items.push(menuButton('预览',()=>openPreview(item)));
           if(canDownload)items.push(menuButton('下载',()=>download(item)));
           items.push(menuButton('查看文件信息',()=>openDetails(item)));
+          items.push(menuButton(item.pinned?'取消置顶':'置顶',()=>togglePin(item)));
           if(isExternal)items.push(menuButton(linkInfo.kind==='folder'?'复制文件夹链接':'复制外部链接',()=>copyExternalLink(item)));
           items.push(menuButton('复制内部链接',()=>copyLink(item)));
           if(context.files.can('rename',item.spaceId,actor))items.push(menuButton('重命名',()=>setDialog({type:'rename',id:item.id,value:item.name})));
@@ -320,7 +325,9 @@
           if(context.files.can('trash',item.spaceId,actor))items.push(menuButton('移至回收站',()=>setDialog({type:'trash',id:item.id}),true));
         }
         const open=menuId===item.id;
+        const pinLabel=(item.pinned?'取消置顶：':'置顶：')+item.name;
         return h('span',{className:'eva-drive__row-actions'},
+          !trashMode?h('button',{className:'eva-drive__pin-button'+(item.pinned?' is-pinned':''),type:'button','aria-label':pinLabel,title:item.pinned?'取消置顶':'置顶','aria-pressed':item.pinned?'true':'false',onClick:event=>{event.stopPropagation();togglePin(item);}},icon('pin')):null,
           h('button',{className:'eva-drive__row-more',type:'button','aria-label':'更多操作：'+item.name,'aria-haspopup':'menu','aria-expanded':open,onClick:event=>{
             event.stopPropagation();
             if(open){closeMenu();return;}
@@ -346,6 +353,7 @@
             canRestore?h('button',{type:'button',onClick:()=>restoreItem(selected)},'恢复'):null,
             canDeleteForever?h('button',{className:'is-danger',type:'button',onClick:()=>setDialog({type:'delete',id:selected.id})},'永久删除'):null
           ):!deleted?h('div',{className:'eva-drive__management-actions'},
+            h('button',{type:'button',onClick:()=>togglePin(selected)},selected.pinned?'取消置顶':'置顶'),
             h('button',{type:'button',onClick:()=>setDialog({type:'rename',id:selected.id,value:selected.name})},'重命名'),
             selected.type==='external_link'?h('button',{type:'button',onClick:()=>setDialog({type:'edit-external-link',id:selected.id,name:selected.name,url:linkInfo?.url||''})},linkInfo?.kind==='folder'?'编辑外部文件夹':'编辑链接'):null,
             h('button',{type:'button',onClick:()=>setDialog({type:'move',id:selected.id,parentId:selected.parent_id||0})},'移动'),
@@ -390,7 +398,7 @@
         return h('div',{className:'eva-drive__table eva-drive__table--with-source eva-project-files__table'+(trashMode?' eva-drive__table--trash':''),role:'table','aria-label':trashMode?'项目回收站':'团队文件列表'},
           h('div',{className:'eva-drive__table-head',role:'row'},
             h('span',null,'名称'),h('span',null,'文件类型'),h('span',null,trashMode?'原位置':'关联内容'),h('span',null,'大小'),h('span',null,trashMode?'删除信息':'创建信息'),h('span',null,'操作')),
-          shown.map(item=>h('div',{className:'eva-drive__row',role:'row',tabIndex:0,key:item.id,'data-project-resource-id':item.id,'aria-selected':item.id===selectedId?'true':'false',onClick:event=>{
+          shown.map(item=>h('div',{className:'eva-drive__row'+(item.pinned?' is-pinned':''),role:'row',tabIndex:0,key:item.id,'data-project-resource-id':item.id,'data-file-pinned':item.pinned?'true':'false','aria-selected':item.id===selectedId?'true':'false',onClick:event=>{
             if(event.target.closest('button'))return;
             if(item.type==='folder'){if(!trashMode)enterFolder(item);return;}
             openPreview(item);

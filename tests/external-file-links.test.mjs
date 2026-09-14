@@ -239,6 +239,23 @@ test('外链示例仅迁移一次，永久删除后刷新不复活', () => {
   assert.equal(files.list('p', 'a').some(item => item.id === 'sample-link'), false);
 });
 
+test('外部链接与外部文件夹使用账号级置顶，并在回收站与永久删除时遵循统一边界', () => {
+  const {files} = setup();
+  const linkId = files.createExternalLink('a', 'p', {name: '供应商协作入口', url: 'https://example.com/docs'});
+  const folderId = files.createExternalLink('a', 'p', {name: '供应商资料夹', url: 'https://sample.feishu.cn/drive/folder/pin-demo', kind: 'folder'});
+  files.setPinned('a', linkId, true);
+  files.setPinned('a', folderId, true);
+  assert.equal(JSON.stringify(files.pinnedFiles('a').map(item => item.id).sort()), JSON.stringify([folderId, linkId].sort()));
+  assert.equal(files.pinnedFiles('b').length, 0);
+  files.trash('a', linkId);
+  assert.equal(files.pinnedFiles('a').some(item => item.id === linkId), false);
+  files.restore('a', linkId);
+  assert.equal(files.pinnedFiles('a').some(item => item.id === linkId), true);
+  files.trash('a', linkId);
+  files.removeForever('a', linkId);
+  assert.equal(files.isPinned('a', linkId), false);
+});
+
 test('回收站外链不能编辑，移动外链不能造成同目录重复 URL', () => {
   const {files} = setup();
   const first = files.createExternalLink('a', 'p', {name: '根目录', url: 'https://example.com'});

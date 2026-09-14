@@ -72,6 +72,7 @@
   /* IM emphasis palette; neutral hover and business identity colors stay separate. */
   --eva-unread-surface: #eef0f2;
   --eva-unread-text: #4f5b64;
+  --eva-unread-indicator: var(--eva-c-mac-red);
   --eva-im-accent: var(--eva-action-primary);
   /* User-confirmed: outgoing bubbles exactly match navigation selection. */
   --eva-im-bubble-outgoing: var(--eva-nav-selected);

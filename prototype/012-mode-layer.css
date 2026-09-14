@@ -493,6 +493,25 @@
   object-fit: contain;
 }
 
+.eva-my-ai-collaboration-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.eva-my-ai-collaboration-icon__unread {
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eva-unread-indicator);
+  box-shadow: 0 0 0 2px var(--eva-surface-primary);
+}
+
 .eva-personal-entry.is-collapsed {
   height: 56px;
   display: flex;

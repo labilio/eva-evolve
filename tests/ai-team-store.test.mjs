@@ -44,6 +44,37 @@ test('one persona per owner: concurrent creation, fixed name, and failure recove
 test('send creates only nonempty sessions, isolates drafts, and refuses offline assistant',()=>{
  const s=make(); const n=s.getSnapshot().sessions.length; assert.equal(s.sendMessage('ai-general',null,'  '),null); assert.equal(s.getSnapshot().sessions.length,n); s.setDraft('draft:ai-general','send'); s.setDraft('draft:persona-initial','keep'); const id=s.sendMessage('ai-general',null,'  hello world  '); const session=s.getSnapshot().sessions.find(x=>x.id===id); assert.equal(session.title,'hello world'); assert.equal(session.messages[0].text,'hello world'); assert.equal(session.messages[1].text,'收到，我会协助你整理。'); assert.equal(s.getSnapshot().drafts['draft:ai-general'],undefined); assert.equal(s.getSnapshot().drafts['draft:persona-initial'],'keep'); assert.throws(()=>s.sendMessage('persona-initial',id,'wrong identity')); s.setLocalOnline('assistant-general',false); assert.throws(()=>s.sendMessage('ai-general',id,'offline')); assert.ok(s.sendMessage('persona-initial',null,'route'));
 });
+test('unread counts only incoming AI messages, aggregates by identity, clears and persists',()=>{
+ const storage=memory(),s=make({storage});
+ const session=s.getSnapshot().sessions.find(item=>item.id==='team-assistant-welcome');
+ assert.equal(session.unreadCount,1);
+ assert.equal(s.unreadCount(session.id),1);
+ assert.equal(s.hasUnread('ai-general'),true);
+ assert.equal(s.markRead(session.id),true);
+ assert.equal(s.markRead(session.id),false);
+ assert.equal(s.unreadCount(session.id),0);
+ s.sendMessage('ai-general',session.id,'请继续');
+ assert.equal(s.unreadCount(session.id),1);
+ assert.equal(make({storage}).unreadCount(session.id),1);
+});
+test('unread migration keeps historical messages read and ignores self-forwarded AI content',()=>{
+ const storage=memory(),seeded=make({storage}).getSnapshot(),saved=JSON.parse(storage.getItem());
+ delete saved.unreadNotificationsV1;
+ saved.sessions.forEach(session=>delete session.readAiMessageCount);
+ saved.sessions.push({id:'user-only',identityId:'ai-general',title:'用户消息',updatedAt:'2026-09-01T00:00:00Z',messages:[{id:'self-only',kind:'text',sender:{uid:'self',name:'我',color:'#1563EB',ai:false},time:'2026-09-01T00:00:00Z',text:'仅自己发送'}]});
+ storage.setItem('',JSON.stringify(saved));
+ const restored=make({storage});
+ assert.equal(restored.unreadCount('user-only'),0);
+ assert.equal(restored.getSnapshot().sessions.find(item=>item.id==='user-only').readAiMessageCount,0);
+ assert.equal(restored.getSnapshot().sessions.length,seeded.sessions.length+1);
+ const session=restored.getSnapshot().sessions.find(item=>item.identityId==='ai-general');
+ restored.markRead(session.id);
+ const channel=context.window.EvaAIPrivateConversations.threadRecord('ai-general',session).channel_id;
+ restored.receiveForwarded(channel,[{id:'forwarded-ai',kind:'text',sender:{uid:'another-ai',name:'其他 AI',ai:true},time:'10:00',text:'转发内容'}]);
+  assert.equal(restored.unreadCount(session.id),0);
+  assert.equal(restored.getSnapshot().sessions.find(item=>item.id===session.id).messages.at(-1).sender.ai,false);
+  assert.equal(make({storage}).getSnapshot().sessions.find(item=>item.id===session.id).messages.at(-1).text,'转发内容');
+});
 test('persistence restores messages and drafts; invalid nested values fallback safely',()=>{
  const storage=memory(); const s=make({storage}); const id=s.sendMessage('ai-general',null,'saved'); s.setDraft(id,'draft'); const r=make({storage}); assert.equal(r.getSnapshot().drafts[id],'draft'); assert.equal(r.getSnapshot().sessions.find(x=>x.id===id).messages[0].text,'saved'); const bad=JSON.parse(storage.getItem()); bad.sessions[0].messages=[{kind:'text',text:'bad'}]; storage.setItem('',JSON.stringify(bad)); const recovered=make({storage}); assert.equal(recovered.getSnapshot().sessions.length,2); assert.ok(recovered.getSnapshot().storageWarning);
 });

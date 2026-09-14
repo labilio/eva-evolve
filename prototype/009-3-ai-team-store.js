@@ -39,6 +39,14 @@
   window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, replySnapshot, source: threadSource});
   const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
+  const incomingMessageCount = session => Array.isArray(session?.messages) ? session.messages.filter(message => message?.sender?.ai === true && !['self', 'u-wangyilin'].includes(message.sender.uid)).length : 0;
+  const normalizeReadState = (session, markExistingRead = false) => {
+    const total = incomingMessageCount(session);
+    if (!Number.isInteger(session.readAiMessageCount) || session.readAiMessageCount < 0) session.readAiMessageCount = markExistingRead ? total : 0;
+    session.readAiMessageCount = Math.min(session.readAiMessageCount, total);
+    return session;
+  };
+  const unreadCountOf = session => Math.max(0, incomingMessageCount(session) - (Number.isInteger(session?.readAiMessageCount) ? session.readAiMessageCount : 0));
   function freeze(value) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
       Object.values(value).forEach(freeze);
@@ -75,7 +83,7 @@
     const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', defaultPersonaName, localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
       id: i ? 'team-persona-welcome' : 'team-assistant-welcome', identityId: identity.id,
-      title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time,
+      title: i ? '团队沟通接待' : '整理工作安排', updatedAt: time, readAiMessageCount: 0,
       messages: [{ id: 'team-seed-' + i, kind: 'text', sender: { uid: identity.id, name: identity.name, color: '#1563EB', ai: true }, time,
         text: i ? '你好，我可以替你接收协作请求并跟进进展。' : '把需要整理的事项发给我，我们一起安排。' }]
     }));
@@ -97,7 +105,7 @@
     if (!record(state) || state.schemaVersion !== 1 || !Array.isArray(state.localAssistants) || !Array.isArray(state.identities) || !Array.isArray(state.sessions) || !record(state.drafts)) return false;
     if (!state.localAssistants.every(x => record(x) && str(x.id) && str(x.name) && Number.isInteger(x.version) && x.version > 0 && typeof x.online === 'boolean' && config(x.configuration))) return false;
     if (!state.identities.every(x => record(x) && str(x.id) && str(x.name) && ['assistant', 'persona'].includes(x.role) && ['ready', 'offline'].includes(x.status) && ['synced', 'syncing', 'waiting', 'error'].includes(x.syncStatus) && str(x.lastSyncedAt) && Number.isInteger(x.configVersion) && x.configVersion > 0 && config(x.configuration) && ((x.role === 'persona' && x.sourceAssistantId === null && x.syncStatus === 'synced') || state.localAssistants.some(l => l.id === x.sourceAssistantId && x.configVersion <= l.version)))) return false;
-    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(message))) return false;
+    if (!state.sessions.every(x => record(x) && str(x.id) && str(x.title) && str(x.updatedAt) && (x.pinned === undefined || typeof x.pinned === 'boolean') && Number.isInteger(x.readAiMessageCount) && x.readAiMessageCount >= 0 && x.readAiMessageCount <= incomingMessageCount(x) && state.identities.some(i => i.id === x.identityId) && Array.isArray(x.messages) && x.messages.every(message))) return false;
     return unique(state.localAssistants) && unique(state.identities) && unique(state.sessions) && Object.entries(state.drafts).every(([key, value]) => str(value) && (state.sessions.some(s => s.id === key) || state.identities.some(i => 'draft:' + i.id === key))) && new Set(state.identities.filter(i => i.role === 'assistant').map(i => i.sourceAssistantId)).size === state.identities.filter(i => i.role === 'assistant').length;
   }
   // Migrate only known generated copy; never rewrite user-authored messages.
@@ -132,6 +140,8 @@
             session.messages.forEach(message => {
               if (message?.sender && typeof message.sender === 'object' && message.sender.color === undefined) message.sender.color = '#1563EB';
             });
+            // Existing histories predate unread tracking and must stay read after upgrade.
+            normalizeReadState(session, true);
           });
         }
         if (!valid(parsed)) throw new Error('Invalid demo state');
@@ -163,7 +173,7 @@
         if (state.drafts[key]) {
           let topicId = 'migrated-draft:' + previous.id;
           while (state.sessions.some(session => session.id === topicId)) topicId += ':saved';
-          state.sessions.push({id:topicId,identityId:primary.id,title:'未发送草稿',updatedAt:now(),messages:[]});
+          state.sessions.push({id:topicId,identityId:primary.id,title:'未发送草稿',updatedAt:now(),readAiMessageCount:0,messages:[]});
           state.drafts[topicId] = state.drafts[key];
         }
         delete state.drafts[key];
@@ -194,7 +204,7 @@
           id: identityId === 'ai-general' ? 'team-assistant-welcome' : 'team-assistant-' + local.id + '-welcome',
           identityId: identity.id,
           title: identityId === 'ai-general' ? '整理工作安排' : '开始新对话',
-          updatedAt: now(),
+          updatedAt: now(), readAiMessageCount: 0,
           messages: [{id: 'restored-' + identity.id, kind: 'text', sender: {uid: identity.id, name: identity.name, color: '#1563EB', ai: true}, time: now(), text: identityId === 'ai-general' ? '把需要整理的事项发给我，我们一起安排。' : '你好，我可以协助你整理研发资料和评审要点。'}]
         });
       });
@@ -298,18 +308,35 @@
       }
       identity.name = local.name;
     });
+    // Initialize unread tracking without turning historical conversations into unread.
+    state.sessions.forEach(session => normalizeReadState(session, true));
+    // The review profile ships two controlled unread examples so notification states
+    // remain visible without reclassifying user-authored history.
+    if (options.profile === 'review' && !state.unreadNotificationsV1) {
+      ['team-assistant-welcome', 'team-persona-welcome'].forEach(baseId => {
+        const session = state.sessions.find(item => item.id === baseId + '-example') || state.sessions.find(item => item.id === baseId);
+        const total = incomingMessageCount(session);
+        if (session && total) session.readAiMessageCount = total - 1;
+      });
+      state.unreadNotificationsV1 = true;
+    }
     // Add the Octo parent/topic relationship without changing local IDs or user content.
     state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
     try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { warning = '本地存储不可用，刷新后数据可能丢失。'; }
     state.storageWarning = warning;
-    let snapshot = freeze(copy(state));
+    const makeSnapshot = () => {
+      const value = copy(state);
+      value.sessions.forEach(session => { session.unreadCount = unreadCountOf(session); });
+      return freeze(value);
+    };
+    let snapshot = makeSnapshot();
     const listeners = new Set(), connections = new Map(), syncTokens = new Map();
     let serial = 0;
     const id = prefix => { let value; do { value = prefix + '-' + (++serial); } while ([...state.localAssistants, ...state.identities, ...state.sessions].some(x => x.id === value)); return value; };
     function publish() {
       try { storage?.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { state.storageWarning = '本地存储不可用，刷新后数据可能丢失。'; }
-      snapshot = freeze(copy(state));
+      snapshot = makeSnapshot();
       [...listeners].forEach(listener => listener());
     }
     const localById = key => { const local = state.localAssistants.find(l => l.id === key); if (!local) throw new Error('找不到本地助理'); return local; };
@@ -439,6 +466,21 @@
       delete state.drafts[sessionId];
       publish();
     }
+    function markRead(sessionId) {
+      const session = state.sessions.find(item => item.id === sessionId);
+      if (!session) return false;
+      const total = incomingMessageCount(session);
+      if (session.readAiMessageCount === total) return false;
+      session.readAiMessageCount = total;
+      publish();
+      return true;
+    }
+    function unreadCount(sessionId) {
+      return unreadCountOf(state.sessions.find(item => item.id === sessionId));
+    }
+    function hasUnread(identityId) {
+      return state.sessions.some(session => (!identityId || session.identityId === identityId) && unreadCountOf(session) > 0);
+    }
     function createThread(identityId) {
       const identity = identityById(identityId);
       if (!['persona', 'assistant'].includes(identity.role)) throw new Error('请选择云端分身或个人助理');
@@ -446,7 +488,7 @@
       let title = '新对话', number = 2;
       while (records.some(s => s.title === title)) title = '新对话 ' + number++;
       const base = {id: id((identity.role === 'persona' ? 'team-thread-' : 'team-session-') + (window.crypto?.randomUUID?.() || Date.now())), identityId, title,
-        autoTitle: true, messages: [], updatedAt: now()};
+        autoTitle: true, messages: [], updatedAt: now(), readAiMessageCount: 0};
       // 云端分身使用团队私聊中的 topic 记录；本地助理保留自己的本地会话记录。
       const record = identity.role === 'persona' ? threadRecord(identityId, base) : base;
       state.sessions.push(record);
@@ -469,7 +511,7 @@
       const time = now(), body = text.trim();
       if (!session) {
         session = {id: id(identity.role === 'persona' ? 'team-thread' : 'team-session'), identityId,
-          title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time};
+          title: Array.from(body).slice(0, 20).join(''), messages: [], updatedAt: time, readAiMessageCount: 0};
         session = threadRecord(identityId, session);
         state.sessions.push(session);
       }
@@ -484,9 +526,9 @@
     function receiveForwarded(channelId,messages) {
       const session=state.sessions.find(item=>threadRecord(item.identityId,item).channel_id===channelId);
       if(!session)return false;
-      const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self'}})));session.updatedAt=time;publish();return true;
+      const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self',name:'我',color:message.sender?.color||'#1563EB',ai:false}})));session.updatedAt=time;publish();return true;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的 OPT”动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
@@ -495,6 +537,8 @@
       memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
       messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
       threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
+      readAiMessageCount:Number.isInteger(record.readAiMessageCount) ? record.readAiMessageCount : undefined,
+      teamUnreadNotificationsV1:!!record.teamUnreadNotificationsV1,
       createdAt:record.createdAt || new Date().toISOString(), updatedAt:record.updatedAt || record.createdAt || new Date().toISOString()});
     let storage, state = {schemaVersion:2, groups:[blankGroup()]}, revision = 0, serial = 0;
     const listeners = new Set();
@@ -509,6 +553,7 @@
       }
     } catch (_) {}
     if(!state.groups.some(group=>group.id===id))state.groups.unshift(blankGroup());
+    state.groups.forEach(group=>[group,...group.threads].forEach(item=>normalizeReadState(item,true)));
     const groupById = groupId => {
       const group=state.groups.find(item=>item.id===(groupId||id));
       if(!group)throw new Error('AI 团队不存在');
@@ -540,7 +585,7 @@
       forwardChannels(){return state.groups.map(group=>({...publicGroup(group),threads:group.threads.filter(thread=>!thread.deleted).map(thread=>({id:thread.id,name:thread.name}))}));},
       receiveForwarded(channelId,messages){
         const group=state.groups.find(group=>group.id===channelId||group.threads.some(thread=>!thread.deleted&&thread.id===channelId));if(!group)return false;
-        const current=target(group.id,channelId);current.messages.push(...copy(messages));current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;
+        const current=target(group.id,channelId);current.messages.push(...copy(messages).map(message=>({...message,sender:{...message.sender,uid:'self',name:'我',ai:false,avatar:window.__EVA_CURRENT_USER_PORTRAIT}})));current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;
       },
       get(groupId) { return publicGroup(groupById(groupId)); },
       createGroup(record) {
@@ -567,7 +612,7 @@
         const channelId = group.id + '____' + shortId;
         if (group.threads.some(item => item.id === channelId)) throw new Error('子区已存在');
         group.threads.push({...record, id:channelId, short_id:shortId, group_no:group.id, channel_id:channelId,
-          channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:''});
+          channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:'', readAiMessageCount:0});
         group.updatedAt=new Date().toISOString();publish(); return channelId;
       },
       updateThread(groupOrChannelId, channelOrPatch, patchMaybe) {
@@ -581,6 +626,16 @@
         }
         for (const field of ['status','deleted','joined','is_joined','member_count']) if (patch[field] !== undefined) thread[field] = patch[field];
         thread.updated_at = new Date().toISOString();group.updatedAt=thread.updated_at;publish();
+      },
+      unreadCount(groupId, channelId) { return unreadCountOf(target(groupId,channelId)); },
+      hasUnread(groupId) {
+        const groups=groupId?[groupById(groupId)]:state.groups;
+        return groups.some(group=>unreadCountOf(group)>0||group.threads.some(thread=>!thread.deleted&&unreadCountOf(thread)>0));
+      },
+      markRead(groupId, channelId) {
+        const current=target(groupId,channelId),total=incomingMessageCount(current);
+        if(current.readAiMessageCount===total)return false;
+        current.readAiMessageCount=total;publish();return true;
       },
       source(groupOrMembers, membersOrThread, threadMaybe) {
         const {groupId,members,selectedThreadId}=argsForSource(groupOrMembers,membersOrThread,threadMaybe),group=groupById(groupId),all=normalizeMembers(members);
@@ -597,6 +652,12 @@
           const member=ai[0];group.messages.unshift({id:group.id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:group.id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
           group.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
         }
+        if(!group.teamUnreadNotificationsV1&&(!group.system||group.collaborationStoriesV1)){
+          [group,...group.threads].forEach(item=>normalizeReadState(item,true));
+          if(group.system){const sample=group.threads.find((item,index)=>index>0&&incomingMessageCount(item)>0)||group.threads.find(item=>incomingMessageCount(item)>0),total=incomingMessageCount(sample);if(sample&&total)sample.readAiMessageCount=total-1;}
+          group.teamUnreadNotificationsV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+          Promise.resolve().then(publish);
+        }
         // Convert text mentions to the shared IM identity contract, including saved demo history.
         const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
         const historicalNames=new Map();
@@ -611,9 +672,10 @@
           if(message.mentions)message.mentions=message.mentions.map(mention=>{const current=all.find(m=>m.id===canonicalIdentity(mention.uid));return current?{...mention,uid:current.id,name:'@'+current.name}:mention;});
           return message;
         }).map(message=>({...message,mentions:[...(message.mentions||[]),...mentionCandidates.filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
+        const threads=group.threads.filter(item=>!item.deleted).map(item=>{const {messages,draft,readAiMessageCount,...thread}=item;return {...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name,unread:unreadCountOf(item)};});
         const channel = {id:group.id, name:group.name, identityAvatarUrl:group.avatar||undefined, chatType:'group', channel_type:2,
           ownerId:'u-wangyilin', memberIds:unique.map(member=>member.id), members:unique.length, fixedMembers:unique,
-          threads:group.threads.filter(item=>!item.deleted).map(({messages,draft,...thread})=>({...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name})), unread:0, replyPolicy:'mention-only'};
+          threads, unread:unreadCountOf(group), replyPolicy:'mention-only'};
         return {conversationOnly:true, sidebarVariant:'ai-team-group', selectedThreadId, channels:[channel], cats:[],
           messages:{[group.id]:renderMessages(group.messages)},threadMessages:Object.fromEntries(group.threads.filter(item=>!item.deleted).map(item=>[item.id,renderMessages(item.messages)])),scopeNameOf:{},
           initialDraft:target(group.id,selectedThreadId).draft,
@@ -624,7 +686,7 @@
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
             current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,...(replyTo?{replyTo}:{})});
             unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
-            current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
+            current.readAiMessageCount=incomingMessageCount(current);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }
     });
