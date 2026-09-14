@@ -113,6 +113,23 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);
 });
 
+test('任务详情递归展示全部后代并按整棵子任务树统计进度',()=>{
+  assert.ok(runtime.includes('function EvaIssueDetailSubtaskTree('));
+  assert.ok(runtime.includes('className:"loop-subissues eva-loop-subtask-tree",role:"tree","aria-label":rt.identifier+" 的全部子任务"'));
+  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__item",role:"treeitem","aria-level":Ct+1'));
+  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__children",role:"group"'));
+  assert.ok(runtime.includes('Pt.map(Ft=>gt(Ft,Ct+1,Dt))'));
+  assert.ok(runtime.includes('onClick:ut?void 0:()=>ct(St.id)'));
+  assert.ok(runtime.includes('evaDetailSubtaskIds=evaIssueDescendantIds(xt.id,issuesOf())'));
+  assert.ok(runtime.includes('evaDetailSubtasks=issuesOf().filter(ki=>evaDetailSubtaskIds.has(ki.id))'));
+  assert.ok(runtime.includes('evaSubtaskTotal=evaDetailSubtasks.length'));
+  assert.ok(runtime.includes('"aria-valuemax":evaSubtaskTotal'));
+  assert.ok(runtime.includes('width:evaSubtaskTotal?Oi/evaSubtaskTotal*100+"%":"0%"'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
+  assert.match(taskStyles,/\.eva-loop-subtask-tree__children\s*\{[\s\S]*margin-left:\s*8px;[\s\S]*padding-left:\s*12px;[\s\S]*border-left:/);
+  assert.match(taskStyles,/\.eva-loop-subtask-tree__children > \.eva-loop-subtask-tree__branch::before\s*\{[\s\S]*left:\s*-12px;[\s\S]*border-top:/);
+});
+
 test('任务分解画布内嵌于任务详情并可在固定分解根内切换节点详情',()=>{
   assert.ok(runtime.includes('function EvaIssueBreakdownCanvas('));
   assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,gt)'));
@@ -147,7 +164,7 @@ test('任务分解画布内嵌于任务详情并可在固定分解根内切换�
   assert.ok(runtime.includes('if(ki===evaRoot.id&&evaReturnContext?.origin==="breakdown")'));
   assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"&&WKApp$1.routeRight.pop()'));
   assert.ok(runtime.includes('onChanged:evaIsBreakdown?ct:'));
-  assert.ok(runtime.includes('onClick:Ct?void 0:()=>Ea(ki.id)'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
   assert.equal(runtime.includes('返回任务分解'),false);
   assert.ok(runtime.includes('evaReturnContext?.label||St("loop.detail.board")'));
   assert.ok(runtime.includes('WKApp$1.routeRight.pop(),Wi&&evaReturn.parentIdentifier'));

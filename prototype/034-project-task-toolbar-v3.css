@@ -615,6 +615,24 @@
 .loop-idp .loop-subissue__id { color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
 .loop-idp .loop-subissue__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .loop-idp .loop-subissue__priority { display: inline-flex; align-items: center; justify-content: center; }
+.loop-idp .eva-loop-subtask-tree__branch,
+.loop-idp .eva-loop-subtask-tree__item { min-width: 0; }
+.loop-idp .eva-loop-subtask-tree__branch { position: relative; }
+.loop-idp .eva-loop-subtask-tree__children {
+  display: grid;
+  gap: 4px;
+  margin-left: 8px;
+  padding-left: 12px;
+  border-left: var(--eva-border-hairline-w) solid var(--eva-border-default);
+}
+.loop-idp .eva-loop-subtask-tree__children > .eva-loop-subtask-tree__branch::before {
+  position: absolute;
+  top: 20px;
+  left: -12px;
+  width: 10px;
+  border-top: var(--eva-border-hairline-w) solid var(--eva-border-default);
+  content: "";
+}
 .loop-idp .eva-loop-subtasks__empty {
   display: flex;
   align-items: center;
