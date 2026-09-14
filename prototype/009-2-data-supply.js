@@ -170,6 +170,16 @@ window.__EVA_PEOPLE = [
     supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'squad', 'sq-supply-risk', '履约与风险专家团', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
     supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'agent', 'ag-supply-contract', '供应链合同管理专家', '2026-09-10', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
   ];
+  supplyIssues[2].attachments = [{
+    id: 'task-file-a2409-checklist',
+    name: 'A-2409现场复核清单.md',
+    filename: 'A-2409现场复核清单.md',
+    extension: 'md',
+    content_type: 'text/markdown',
+    size: 4860,
+    url: 'prototype/assets/file-samples/A-2409现场复核清单.md',
+    download_url: 'prototype/assets/file-samples/A-2409现场复核清单.md'
+  }];
 
   var supplyTaskLabels = [
     {id: 'task-label-procurement', project_id: 'p-supply', name: '采购'},

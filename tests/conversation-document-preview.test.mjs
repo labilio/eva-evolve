@@ -34,6 +34,14 @@ test('消息右栏注册 Markdown、HTML、Word 和 PDF 阅读器', async () => 
   assert.match(patch, /EvaHtmlPreviewDocument\(jt,rt\.url\)/);
   assert.match(patch, /Escape/);
   assert.match(patch, /\.\.\.ci,url:Zi/);
+  assert.match(patch, /ch-right-panel--file-preview/);
+  assert.match(patch, /data-eva-file-preview-resizer/);
+  assert.match(patch, /EvaFilePreviewEnterFullscreenIcon=createLucideIcon\("Maximize2"/);
+  assert.match(patch, /EvaFilePreviewExitFullscreenIcon=createLucideIcon\("Minimize2"/);
+  assert.match(patch, /aria-label":evaFullscreen\?"退出全屏预览":"进入全屏预览"/);
+  assert.match(patch, /className:"wk-file-preview-panel"\+\(evaFullscreen\?" is-fullscreen":""\)/);
+  assert.match(patch, /if\(evaFullscreen\)\{evaEvent\.preventDefault\(\);evaEvent\.stopPropagation\(\);evaSetFullscreen\(!1\)/);
+  assert.match(patch, /addEventListener\("keydown",evaOnKeyDown,!0\)/);
 });
 
 test('四类演示文件均有本地可读内容', async () => {
@@ -47,9 +55,46 @@ test('四类演示文件均有本地可读内容', async () => {
 
 test('预览样式保持右栏推开布局', async () => {
   const css = await read('prototype/054-conversation-document-preview.css');
-  assert.match(css, /\.ch-right-panel--preview/);
-  assert.match(css, /flex:\s*0 0 664px/);
+  const layout = await read('prototype/044-final-layout-convergence.js');
+  assert.match(css, /\.ch-right-panel--preview:not\(\.ch-right-panel--file-preview\)\s*\{[\s\S]*?position:\s*absolute/);
+  assert.match(css, /\.ch-right-panel--file-preview\s*\{[\s\S]*?position:\s*relative[\s\S]*?flex:\s*0 0 var\(--eva-file-preview-current/);
+  assert.match(css, /\.loop-idp\.eva-task-file-preview-open\s*\{[\s\S]*?display:\s*grid/);
+  assert.match(css, /\.eva-task-file-preview-pane\s*\{[\s\S]*?grid-column:\s*2/);
+  assert.match(css, /\.eva-file-preview-resizer\s*\{[\s\S]*?cursor:\s*col-resize/);
+  assert.match(css, /\.ch-right-panel--file-preview:has\(> \.wk-file-preview-panel\.is-fullscreen\)[\s\S]*?position:\s*fixed[\s\S]*?inset:\s*var\(--topbar-height, 37px\) 0 0 var\(--eva-sider-w, 180px\)/);
+  assert.match(css, /\.eva-task-file-preview-pane:has\(> \.wk-file-preview-panel\.is-fullscreen\)/);
+  assert.match(css, /\.wk-file-preview-header \.eva-file-preview-fullscreen-button > svg\s*\{[\s\S]*?display:\s*block/);
+  assert.match(layout, /filePreviewMin = 280/);
+  assert.match(layout, /filePreviewMax = 664/);
+  assert.match(layout, /startWidth \+ activeFilePreviewDrag\.startX - event\.clientX/);
+  assert.match(layout, /event\.key === 'Home'/);
   assert.doesNotMatch(css, /backdrop-filter/);
+});
+
+test('文件库独立预览提供同一全屏状态与退出规则', async () => {
+  const source = await read('prototype/020-mode-layer.js');
+  const css = await read('prototype/050-file-library.css');
+  assert.match(source, /previewFullscreen:\s*false/);
+  assert.match(source, /data-drive-action="preview-fullscreen"/);
+  assert.match(source, /state\.previewFullscreen \? '退出全屏预览' : '进入全屏预览'/);
+  assert.match(source, /state\.previewId && state\.previewFullscreen/);
+  assert.match(css, /\.eva-file-preview-sidebar\.is-fullscreen\s*\{[\s\S]*?position:\s*fixed[\s\S]*?inset:\s*var\(--topbar-height, 37px\) 0 0 var\(--eva-sider-w, 180px\)/);
+  assert.match(css, /\.eva-project-file-preview-sidebar:has\(\.wk-file-preview-panel\.is-fullscreen\)/);
+});
+
+test('任务附件接入统一预览并挂载在任务详情右栏', async () => {
+  const patch = await read('prototype/009-6-patch-general.js');
+  const supply = await read('prototype/009-2-data-supply.js');
+  assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview\}\)/);
+  assert.match(patch, /evaOpenTaskAttachment=async/);
+  assert.match(patch, /eva-task-file-preview-pane/);
+  assert.match(patch, /data-eva-file-preview-resizer/);
+  assert.match(supply, /task-file-a2409-checklist[\s\S]*?A-2409现场复核清单\.md/);
+  const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
+  const {source} = createPatchedRuntime();
+  assert.match(source, /className:"loop-att eva-task-attachment-preview"/);
+  assert.match(source, /evaTaskFilePreview\?" eva-task-file-preview-open"/);
+  assert.match(source, /className:"eva-task-file-preview-pane"[\s\S]*?React\.createElement\(FilePreviewHost/);
 });
 
 test('文档预览令牌只作用于预览右栏，不覆盖全局 Octo 表面令牌', async () => {
