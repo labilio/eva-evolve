@@ -34,8 +34,8 @@ forbidText('data-eva-new-assistant-chat', 'Personal Eva still organizes chats by
 requireText('const teamGroups=groupStore.groups()', 'My AI does not derive its AI team list from the canonical group store');
 requireText('teamGroups.map(teamGroupItem)', 'My AI does not render every AI team from the canonical group store');
 requireText("groupStore.createGroup(record)", 'My AI does not create AI teams through the canonical group store');
-requireText("sectionTitle('teams','AI 团队'", 'My AI does not separate AI teams in its conversation rail');
-requireText("sectionTitle('assistants','AI 助理'", 'My AI does not separate AI assistants in its conversation rail');
+requireText("className:'eva-ai-team__teams'},teamGroups.map(teamGroupItem)", 'My AI does not render its canonical AI team container');
+requireText("className:'eva-ai-team__direct-groups'},roleGroup('persona','云端分身'", 'My AI does not separate its direct identity groups from AI teams');
 requireText('setSectionCollapsed', 'My AI top-level team and assistant sections cannot collapse independently');
 requireText("'新建 AI 团队'", 'My AI is missing its create-team action');
 requireText("'新建个人助理'", 'My AI is missing its create-assistant action');
