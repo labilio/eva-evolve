@@ -13,6 +13,11 @@ body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive {
   font-family: var(--gds-font-family-sans, "PingFang SC", sans-serif);
 }
 
+.eva-native-page-host > .eva-drive:has(> .eva-drive-preview-sidebar),
+body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive:has(> .eva-drive-preview-sidebar) {
+  grid-template-columns: 216px minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, clamp(336px, 38%, 480px)));
+}
+
 body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive .eva-drive__side {
   display: flex;
 }
@@ -145,6 +150,30 @@ body.eva-message-hierarchy-ready .eva-drive__actions,
   gap: 8px;
 }
 
+.eva-drive__toolbar {
+  position: relative;
+  z-index: 20;
+  min-height: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.eva-drive__toolbar .eva-drive__side-search,
+.eva-project-files__toolbar .eva-drive__side-search {
+  width: min(320px, 42%);
+  margin: 0 0 0 auto;
+  flex: 0 1 320px;
+}
+
+.eva-drive:has(> .eva-drive-preview-sidebar) .eva-drive__toolbar .eva-drive__side-search,
+.eva-project-files:has(> .eva-project-file-preview-sidebar) .eva-project-files__toolbar .eva-drive__side-search {
+  width: min(240px, 100%);
+  margin-left: auto;
+  flex: 0 1 240px;
+}
+
 body.eva-message-hierarchy-ready .eva-drive__action,
 .eva-drive__action {
   box-sizing: border-box;
@@ -183,9 +212,15 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
   background: #0e54ca;
 }
 
-.eva-drive__action > .eva-drive-icon {
+.eva-drive__action .eva-drive-icon {
   width: 16px;
   height: 16px;
+}
+
+.eva-drive__action > .eva-lucide-host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .eva-drive__external-add {
@@ -204,7 +239,8 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
   display: none;
 }
 
-.eva-drive__external-add > summary > .eva-drive-icon:last-child {
+.eva-drive__external-add > summary > .eva-drive-icon:last-child,
+.eva-drive__external-add > summary > .eva-lucide-host:last-child .eva-drive-icon {
   width: 12px;
   height: 12px;
   transition: transform 120ms ease;
@@ -215,7 +251,8 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
   background: var(--gds-color-surface-subtle, #f5f5f5);
 }
 
-.eva-drive__external-add[open] > summary > .eva-drive-icon:last-child {
+.eva-drive__external-add[open] > summary > .eva-drive-icon:last-child,
+.eva-drive__external-add[open] > summary > .eva-lucide-host:last-child .eva-drive-icon {
   transform: rotate(180deg);
 }
 
@@ -382,26 +419,6 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
 .eva-drive__breadcrumbs button[aria-current="page"] {
   color: var(--gds-color-text-primary, #1e1e1e);
   cursor: default;
-}
-
-.eva-drive__section-head {
-  min-height: 70px;
-  padding: 8px 24px 12px;
-}
-
-.eva-drive__section-head h1 {
-  font-size: var(--gds-type-header-font-size, 16px);
-  line-height: var(--gds-type-header-line-height, 24px);
-}
-
-.eva-drive__section-head p {
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: var(--gds-type-caption-font-size, 12px);
-}
-
-.eva-drive__section-head .eva-drive__side-search {
-  width: min(300px, 40%);
-  margin: 0;
 }
 
 body.eva-message-hierarchy-ready .eva-drive__table--with-source,
@@ -860,20 +877,30 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 }
 
 .eva-file-preview-sidebar {
-  position: absolute;
-  z-index: 82;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  z-index: 1;
+  inset: auto;
   box-sizing: border-box;
-  width: min(560px, calc(100% - 24px));
-  min-width: 360px;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
   overflow: hidden;
   border-left: 1px solid var(--gds-color-border-faint, #ebebeb);
   display: flex;
   flex-direction: column;
   background: var(--gds-color-surface-primary, #fff);
-  box-shadow: -12px 0 28px rgb(31 35 41 / 10%);
+  box-shadow: none;
+  animation: eva-file-preview-panel-in 160ms ease-out;
+}
+
+.eva-drive-preview-sidebar {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+@keyframes eva-file-preview-panel-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .eva-file-preview-sidebar__head {
@@ -897,6 +924,13 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   white-space: nowrap;
 }
 
+.eva-file-preview-sidebar__actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
 .eva-file-preview-sidebar__head button {
   width: 32px;
   height: 32px;
@@ -907,11 +941,38 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   background: transparent;
   font: inherit;
   font-size: 20px;
+  display: grid;
+  place-items: center;
   cursor: pointer;
+}
+
+.eva-file-preview-sidebar__actions .eva-drive-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .eva-file-preview-sidebar__head button:hover {
   background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
+}
+
+.eva-file-preview-sidebar__head button:focus-visible {
+  outline: 2px solid var(--gds-color-action-primary);
+  outline-offset: 2px;
+}
+
+.eva-file-preview-sidebar.is-fullscreen {
+  position: fixed;
+  z-index: 950;
+  inset: var(--topbar-height, 37px) 0 0 var(--eva-sider-w, 180px);
+  width: auto;
+  max-width: none;
+  height: auto;
+  border-left: 0;
+  animation: none;
+}
+
+.eva-file-preview-sidebar.is-fullscreen .eva-file-preview-resizer {
+  display: none;
 }
 
 .eva-file-preview-sidebar__body {
@@ -1842,69 +1903,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   flex: 0 0 auto;
 }
 
-.eva-external-link-detection {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--gds-color-border-faint, #ebebeb);
-  border-radius: var(--gds-radius-control, 8px);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-external-link-detection.is-ready {
-  border-color: rgb(21 99 235 / 24%);
-  background: rgb(21 99 235 / 6%);
-}
-
-.eva-external-link-detection.is-error {
-  border-color: var(--semi-color-warning-light-active, #f0d79a);
-  background: var(--semi-color-warning-light-default, #fff7e6);
-}
-
-.eva-external-link-detection > .eva-drive-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  color: var(--gds-color-action-primary, #1563eb);
-}
-
-.eva-external-link-detection.is-error > .eva-drive-icon {
-  color: var(--gds-color-text-secondary, #4a4a4a);
-}
-
-.eva-external-link-detection > span {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.eva-external-link-detection strong,
-.eva-external-link-detection small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.eva-external-link-detection strong {
-  color: var(--gds-color-text-primary, #1e1e1e);
-  font-size: 13px;
-  font-weight: var(--gds-font-weight-medium, 500);
-}
-
-.eva-external-link-detection small {
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: var(--gds-type-caption-font-size, 12px);
-  line-height: var(--gds-type-caption-line-height, 16px);
-}
-
-.eva-external-link-detection + .eva-drive-dialog__field {
-  margin-top: 16px;
-}
-
 .eva-drive-dialog__field textarea {
   min-height: 80px;
   padding: 9px 10px;
@@ -2074,10 +2072,40 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   color: var(--gds-color-text-primary, #1e1e1e);
   background: var(--gds-color-surface-primary, #fff);
+}
+
+.eva-project-files:has(> .eva-project-file-preview-sidebar) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, clamp(336px, 38%, 480px)));
+}
+
+.eva-project-files__header {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.eva-project-files__toolbar {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.eva-project-files > .eva-drive__pathbar {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.eva-project-files__content {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.eva-project-file-preview-sidebar {
+  grid-column: 2;
+  grid-row: 1 / -1;
 }
 
 .eva-project-files__header {
@@ -2123,11 +2151,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.eva-project-files__toolbar .eva-drive__side-search {
-  width: min(320px, 42%);
-  margin: 0 0 0 auto;
 }
 
 .eva-project-files__content {
@@ -2226,6 +2249,20 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
   flex: 1;
 }
 
+.eva-project-file-preview-sidebar:has(.wk-file-preview-panel.is-fullscreen) {
+  position: fixed;
+  z-index: 950;
+  inset: var(--topbar-height, 37px) 0 0 var(--eva-sider-w, 180px);
+  width: auto;
+  max-width: none;
+  height: auto;
+  border-left: 0;
+}
+
+.eva-project-file-preview-sidebar:has(.wk-file-preview-panel.is-fullscreen) > .eva-file-preview-resizer {
+  display: none;
+}
+
 .eva-file-trash-list {
   display: flex;
   flex-direction: column;
@@ -2270,13 +2307,24 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
     grid-template-columns: 184px minmax(0, 1fr);
   }
 
+  .eva-native-page-host > .eva-drive:has(> .eva-drive-preview-sidebar),
+  body.eva-message-hierarchy-ready .eva-native-page-host > .eva-drive:has(> .eva-drive-preview-sidebar) {
+    grid-template-columns: 184px minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, 336px));
+  }
+
+  .eva-project-files:has(> .eva-project-file-preview-sidebar) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, 336px));
+  }
+
   .eva-drive__header > div:first-child > span {
     display: none;
   }
 
+  .eva-drive__toolbar .eva-drive__side-search,
   .eva-project-files__toolbar .eva-drive__side-search {
     width: 100%;
     margin-left: 0;
+    flex-basis: 100%;
   }
 
   body.eva-message-hierarchy-ready .eva-drive__table--with-source .eva-drive__table-head,
@@ -2294,6 +2342,10 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
     grid-template-columns: minmax(210px, 1.25fr) minmax(160px, .9fr) 88px minmax(145px, .9fr) 62px 108px 68px;
   }
 
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eva-file-preview-sidebar { animation: none; }
 }
 
 /* Shared file surfaces: readable metadata, bounded scroll and keyboard targets. */

@@ -1,5 +1,45 @@
-/* Shared conversation previews overlay the chat without changing its geometry. */
-.ch-layout .ch-right-panel--preview {
+/* Task details retain the existing overlay contract; file previews are pushed siblings. */
+.eva-file-preview-resizer {
+  position: absolute;
+  z-index: 102;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  pointer-events: auto;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.eva-file-preview-resizer::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 1px;
+  background: var(--eva-border-subtle, var(--wk-border-subtle));
+  content: '';
+  transition: width 120ms ease, background-color 120ms ease;
+}
+
+.eva-file-preview-resizer:hover::after,
+.eva-file-preview-resizer:focus-visible::after,
+html.eva-file-preview-resizing .eva-file-preview-resizer::after {
+  width: 2px;
+  background: var(--eva-action-primary, var(--wk-color-accent));
+}
+
+.eva-file-preview-resizer:focus-visible {
+  outline: none;
+}
+
+html.eva-file-preview-resizing,
+html.eva-file-preview-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+.ch-layout .ch-right-panel--preview:not(.ch-right-panel--file-preview) {
   position: absolute;
   z-index: 84;
   inset: 0 0 0 auto;
@@ -12,6 +52,21 @@
   box-shadow: var(--wk-shadow-drawer);
 }
 
+.ch-layout .ch-right-panel--file-preview {
+  position: relative;
+  z-index: 1;
+  inset: auto;
+  align-self: stretch;
+  max-width: 66.666%;
+  min-width: 280px;
+  width: var(--eva-file-preview-current, min(664px, 58%));
+  flex: 0 0 var(--eva-file-preview-current, min(664px, 58%));
+  background: var(--wk-bg-surface);
+  border-left: 1px solid var(--wk-border-subtle);
+  box-shadow: none;
+  animation: eva-pushed-preview-in 160ms ease-out;
+}
+
 .ch-layout .ch-right-panel--preview > .wk-file-preview-panel {
   position: relative;
   inset: auto;
@@ -20,6 +75,124 @@
   height: 100%;
   border: 0;
   box-shadow: none;
+}
+
+.loop-idp.eva-task-file-preview-open {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, min(48%, 664px)));
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.loop-idp.eva-task-file-preview-open > .loop-idp__topbar {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.loop-idp.eva-task-file-preview-open > .loop-idp__body {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+}
+
+.eva-task-file-preview-pane {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1 / -1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--wk-border-subtle);
+  background: var(--wk-bg-surface);
+  animation: eva-pushed-preview-in 160ms ease-out;
+}
+
+.eva-task-file-preview-pane > .wk-file-preview-panel {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
+.ch-layout .ch-right-panel--file-preview:has(> .wk-file-preview-panel.is-fullscreen),
+.eva-task-file-preview-pane:has(> .wk-file-preview-panel.is-fullscreen) {
+  position: fixed;
+  z-index: 950;
+  inset: var(--topbar-height, 37px) 0 0 var(--eva-sider-w, 180px);
+  width: auto;
+  max-width: none;
+  height: auto;
+  min-width: 0;
+  border-left: 0;
+  animation: none;
+}
+
+.ch-layout .ch-right-panel--file-preview:has(> .wk-file-preview-panel.is-fullscreen) {
+  flex: none;
+}
+
+.ch-layout .ch-right-panel--file-preview:has(> .wk-file-preview-panel.is-fullscreen) > .eva-file-preview-resizer,
+.eva-task-file-preview-pane:has(> .wk-file-preview-panel.is-fullscreen) > .eva-file-preview-resizer {
+  display: none;
+}
+
+.wk-file-preview-panel.is-fullscreen {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
+.wk-file-preview-header .eva-file-preview-fullscreen-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--wk-text-secondary);
+  border-radius: var(--wk-r-input);
+}
+
+.wk-file-preview-header .eva-file-preview-fullscreen-button > svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.wk-file-preview-header .eva-file-preview-fullscreen-button:hover {
+  background: var(--wk-bg-hover);
+  color: var(--wk-text-primary);
+}
+
+.eva-file-preview-fullscreen-button:focus-visible {
+  outline: 2px solid var(--wk-color-accent);
+  outline-offset: 2px;
+}
+
+.loop-idp button.eva-task-attachment-preview {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.loop-idp button.eva-task-attachment-preview:focus-visible {
+  outline: 2px solid var(--wk-color-accent);
+  outline-offset: 2px;
+}
+
+@keyframes eva-pushed-preview-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .eva-word-preview-renderer {
@@ -92,22 +265,44 @@
 }
 
 @media (max-width: 1439px) {
-  .ch-layout .ch-right-panel--preview {
+  .ch-layout .ch-right-panel--preview:not(.ch-right-panel--file-preview) {
     flex-basis: 380px;
     width: 380px;
+  }
+
+  .ch-layout .ch-right-panel--file-preview {
+    max-width: 52%;
+    width: var(--eva-file-preview-current, min(480px, 52%));
+    flex-basis: var(--eva-file-preview-current, min(480px, 52%));
   }
 }
 
 @media (max-width: 1099px) {
-  .ch-layout .ch-right-panel--preview {
+  .ch-layout .ch-right-panel--preview:not(.ch-right-panel--file-preview) {
     position: absolute;
     z-index: 84;
     inset: 0 0 0 auto;
     width: min(480px, 100%);
     max-width: 100%;
   }
+
+  .ch-layout .ch-right-panel--file-preview {
+    position: relative;
+    z-index: 1;
+    inset: auto;
+    max-width: 50%;
+    min-width: 0;
+    width: var(--eva-file-preview-current, 50%);
+    flex: 0 0 var(--eva-file-preview-current, 50%);
+  }
+
+  .loop-idp.eva-task-file-preview-open {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, 50%));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eva-word-preview-renderer__spinner { animation: none; }
+  .eva-word-preview-renderer__spinner,
+  .ch-layout .ch-right-panel--file-preview,
+  .eva-task-file-preview-pane { animation: none; }
 }

@@ -41,15 +41,15 @@
     return'';
   };
   const parseExternalLink=(value,options={})=>{
-    const input=String(value||'').trim();if(!input)throw new Error('请输入外部链接');if(input.length>2048)throw new Error('外部链接不能超过 2048 个字符');
+    const requestedKind=options.kind||null,input=String(value||'').trim();if(!input)throw new Error(requestedKind==='folder'?'请输入文件夹链接':'请输入文件链接');if(input.length>2048)throw new Error((requestedKind==='folder'?'文件夹链接':'文件链接')+'不能超过 2048 个字符');
     let parsed;try{parsed=new URL(input);}catch{throw new Error('请输入完整的 http 或 https 链接');}
     if(!['http:','https:'].includes(parsed.protocol))throw new Error('仅支持 http 或 https 链接');
     if(parsed.username||parsed.password)throw new Error('外部链接不能包含账号或密码');
     const host=parsed.hostname.toLowerCase().replace(/\.$/,'');
     const matchesDomain=domain=>host===domain||host.endsWith('.'+domain);
     const provider=matchesDomain('feishu.cn')||matchesDomain('larksuite.com')?'feishu':matchesDomain('work.weixin.qq.com')||matchesDomain('wecom.work')||matchesDomain('drive.weixin.qq.com')||matchesDomain('doc.weixin.qq.com')?'wecom':'web';
-    const detectedKind=externalKindFromURL(parsed),requestedKind=options.kind||null;
-    if(requestedKind==='folder'&&detectedKind!=='unknown'&&detectedKind!=='folder')throw new Error('该地址看起来不是文件夹链接，请改用“普通外部链接”');
+    const detectedKind=externalKindFromURL(parsed);
+    if(requestedKind==='folder'&&detectedKind!=='unknown'&&detectedKind!=='folder')throw new Error('该地址看起来不是文件夹链接，请改用“外部链接”');
     const kind=requestedKind||detectedKind,detection=requestedKind==='folder'&&detectedKind==='unknown'?'user_confirmed':detectedKind==='unknown'?'unknown':'pattern';
     const url=parsed.toString(),resourceToken=externalResourceToken(parsed,provider,kind),resourceKey=resourceToken?[provider,kind,resourceToken].join(':'):url;
     return{url,canonicalUrl:url,provider,kind,detectedKind,detection,host,resourceKey};
@@ -65,13 +65,13 @@
     file('prod-report','prod','A-2409来料异常分析报告.pdf',421888,'林晓','林晓','2026-09-07T11:32:00+08:00',{type:'task',label:'任务 SC-103 · 来料异常分析'},'关键供应商来料异常的根因、措施与验证记录'),
     file('prod-demand','prod','本季度间接采购需求清单.xlsx',2936012,'王宜林','王宜林','2026-09-07T10:48:00+08:00',{type:'upload',label:'王宜林本地上传'},'各部门提交的采购数量、预算与期望到货时间'),
     file('prod-compliance','prod','新供应商准入合规材料.zip',18874368,'周远','周远','2026-09-06T17:26:00+08:00',{type:'group-copy',label:'项目群 · 供应商整改协同'},'从项目群保存到项目文件管理的独立副本'),
-    file('prod-minutes','prod','0905-供应链周会纪要.md',9632,'Eva 项目管理专员','Eva 项目管理专员','2026-09-05T11:30:00+08:00',{type:'task',label:'任务 SC-105 · 项目周报'},'任务产出归属项目空间','prod-folder-meeting'),
+    file('prod-minutes','prod','0905-供应链周会纪要.md',9632,'Eva 项目管理专员','Eva 项目管理专员','2026-09-05T11:30:00+08:00',{type:'task',label:'任务 SC-105 · 项目周报'},'任务产出归属项目文件库','prod-folder-meeting'),
     file('prod-qualification','prod','核心供应商资质汇总.xlsx',1572864,'周远','未编辑过','2026-09-04T16:20:00+08:00',{type:'upload',label:'周远本地上传'},'供应商资质与有效期汇总','prod-folder-supplier'),
     folder('lab-folder-delivery','lab','交付资料','苏航','2026-09-06T09:50:00+08:00'),
     file('lab-profile','lab','客户XX公司资料.pdf',1468006,'苏航','苏航','2026-09-06T09:18:00+08:00',{type:'group-copy',label:'项目群 · 客户联合交付群'},'从项目群保存的客户背景与需求资料','lab-folder-delivery'),
-    file('lab-script','lab','客户XX公司销售话术.docx',131072,'销售话术专家','销售话术专家','2026-09-06T09:26:00+08:00',{type:'task',label:'任务 · 客户销售准备'},'专家任务产出，文件归属项目空间','lab-folder-delivery'),
-    {id:'personal-brand',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'品牌视觉素材.zip',type:'blob',size:25794969,extension:'zip',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T18:05:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间中的品牌素材'},
-    {id:'personal-notes',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'项目复盘备忘.md',type:'blob',size:18640,extension:'md',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T16:40:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人空间文件'},
+    file('lab-script','lab','客户XX公司销售话术.docx',131072,'销售话术专家','销售话术专家','2026-09-06T09:26:00+08:00',{type:'task',label:'任务 · 客户销售准备'},'专家任务产出，文件归属项目文件库','lab-folder-delivery'),
+    {id:'personal-brand',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'品牌视觉素材.zip',type:'blob',size:25794969,extension:'zip',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T18:05:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人文件库中的品牌素材'},
+    {id:'personal-notes',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'项目复盘备忘.md',type:'blob',size:18640,extension:'md',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-06T16:40:00+08:00',source:{type:'upload',label:'本地上传'},description:'个人文件库文件'},
     {id:'personal-word-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'A-2409临时放行评审纪要.docx',type:'blob',size:28416,extension:'docx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T17:35:00+08:00',source:{type:'upload',label:'本地上传'},description:'供应商异常临时放行评审纪要'},
     {id:'personal-sheet-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'EVA-分享权限验收矩阵.xlsx',type:'blob',size:48640,extension:'xlsx',creator:'王宜林',editor:'王宜林',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T16:20:00+08:00',source:{type:'upload',label:'本地上传'},description:'不同角色与分享范围的验收矩阵'},
     {id:'personal-slides-demo',spaceId:'personal:u-wangyilin',projectId:null,area:'personal',parent_id:0,name:'UI设计师发展前景.pptx',type:'blob',size:2516582,extension:'pptx',creator:'王宜林',editor:'未编辑过',createdBy:'王宜林',updatedBy:'王宜林',updated_at:'2026-09-07T15:45:00+08:00',source:{type:'task',label:'Eva 任务产出'},description:'管理层同步使用的六页演示文稿'}
@@ -92,10 +92,19 @@
     'personal-sheet-demo':{tags:['权限','验收']},
     'personal-slides-demo':{tags:['汇报','设计']}
   };
+  const normalizeFileLibraryCopy=value=>typeof value==='string'?value
+    .replaceAll('个人空间','个人文件库')
+    .replaceAll('项目空间','项目文件库')
+    .replaceAll('跨空间快捷方式','跨文件库快捷方式')
+    .replaceAll('其他空间源文件','其他文件库源文件')
+    .replaceAll('来源空间 ·','来源文件库 ·')
+    .replaceAll('在当前空间创建','在当前文件库创建'):value;
   const normalizeRecord=item=>{
     const preset=RECORD_METADATA[item.id]||{},isFolder=item.type==='folder',normalized=clone(item);delete normalized.category;
     delete normalized.pinned;delete normalized.pinnedAt;
-    const systemRelations=clone(item.systemRelations||preset.systemRelations||[]).filter(itemRelation=>itemRelation.type!=='run');
+    if(normalized.description)normalized.description=normalizeFileLibraryCopy(normalized.description);
+    if(normalized.source?.type==='shortcut'&&normalized.source.label)normalized.source.label=normalizeFileLibraryCopy(normalized.source.label);
+    const systemRelations=clone(item.systemRelations||preset.systemRelations||[]).filter(itemRelation=>itemRelation.type!=='run').map(itemRelation=>({...itemRelation,meta:normalizeFileLibraryCopy(itemRelation.meta)}));
     return {...normalized,createdAt:item.createdAt||item.created_at||item.updated_at||stamp(),tags:isFolder?[]:clone(item.tags||preset.tags||[]),systemRelations};
   };
 
@@ -141,7 +150,7 @@
     const ensureSameSpace=(item,targetParentId)=>{
       if(!targetParentId)return;
       const target=record(targetParentId);
-      if(target.type!=='folder'||target.spaceId!==item.spaceId)fail('不能跨空间移动或复制');
+      if(target.type!=='folder'||target.spaceId!==item.spaceId)fail('不能跨文件库移动或复制');
     };
     const descendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
     const activeDescendants=(id,spaceId)=>{const scope=spaceId??record(id).spaceId,ids=new Set([id]);let changed=true;while(changed){changed=false;for(const item of records){if(item.spaceId===scope&&!item.deletedAt&&ids.has(item.parent_id)&&!ids.has(item.id)){ids.add(item.id);changed=true;}}}return ids;};
@@ -235,8 +244,8 @@
       let index=2,candidate;do{candidate=base+' ('+index+++')'+suffix;}while(occupied.has(candidate));return candidate;
     };
     const spaceLabel=(spaceId,actorId)=>{
-      if(spaceId===personalSpace(actorId))return'个人空间';
-      return snapshot().projects[spaceId]?.name||'项目空间';
+      if(spaceId===personalSpace(actorId))return'个人文件库';
+      return snapshot().projects[spaceId]?.name||'项目文件库';
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
@@ -296,7 +305,7 @@
         const external=parseExternalLink(value,options);return{...clone(external),providerLabel:externalProviderLabel(external.provider),kindLabel:externalKindLabel(external.kind),typeLabel:externalTypeLabel(external)};
       },
       writableSpaces(actorId,excludeSpaceId){
-        const result=[{id:personalSpace(actorId),name:'个人空间',kind:'personal'}];
+        const result=[{id:personalSpace(actorId),name:'个人文件库',kind:'personal'}];
         Object.entries(snapshot().projects).forEach(([projectId,project])=>{if(role(projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
         return clone(result.filter(space=>space.id!==excludeSpaceId));
       },
@@ -305,7 +314,7 @@
         if(item.type==='shortcut'){
           const info=api.shortcutInfo(item,actorId);
           if(info.status!=='available')return[{type:'file',id:null,label:info.statusLabel,meta:'快捷方式不会授予源文件权限',restricted:true}];
-          return[relation('file',item.sourceFileId,info.sourceName,'来源空间 · '+info.sourceSpaceName)];
+          return[relation('file',item.sourceFileId,info.sourceName,'来源文件库 · '+info.sourceSpaceName)];
         }
         return clone(item.systemRelations||[]).map(itemRelation=>{
           if(itemRelation.type==='group'&&itemRelation.id&&!membership.canRead(itemRelation.id,actorId))return {...itemRelation,label:'来源群聊',meta:'你无权访问来源消息',restricted:true};
@@ -320,7 +329,7 @@
         if(item.source?.groupId&&!membership.canRead(item.source.groupId,actorId))return'从群聊保存';
         if(item.source?.type==='chat-copy'&&!membership.canReadDirect?.(item.source.conversationId,actorId))return'从私聊保存';
         if(item.source?.type==='ai-conversation-copy'&&item.source.ownerId!==actorId)return'从 AI 会话保存';
-        return item.source?.label||'空间内创建';
+        return item.source?.label||'文件库内创建';
       },
       list(spaceId,actorId,options={}){
         if(!role(spaceId,actorId))return[];
@@ -342,7 +351,7 @@
         ensureSameSpace(item,parentId);records.unshift(item);notify();return item.id;
       },
       createExternalLink(actorId,spaceId,draft={},parentId=0){
-        requireAction('add-external-link',spaceId,actorId);const name=String(draft.name||'').trim();if(!name)fail('请输入链接名称');if(name.length>100)fail('链接名称不能超过 100 个字符');
+        requireAction('add-external-link',spaceId,actorId);const folderDraft=draft.kind==='folder',name=String(draft.name||'').trim();if(!name)fail(folderDraft?'请输入文件夹名称':'请输入文件名称');if(name.length>100)fail((folderDraft?'文件夹名称':'文件名称')+'不能超过 100 个字符');
         const external=parseExternalLink(draft.url,{kind:draft.kind}),targetProbe={spaceId};ensureSameSpace(targetProbe,parentId);
         const existing=records.find(item=>!item.deletedAt&&item.type==='external_link'&&item.spaceId===spaceId&&item.parent_id===(parentId||0)&&externalIdentity(item.external)===external.resourceKey);if(existing)return existing.id;
         const isFolder=external.kind==='folder',now=stamp(),area=areaForSpace(spaceId),item={id:'external-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId,projectId:projectForSpace(spaceId),area,parent_id:parentId||0,name,type:'external_link',size:0,extension:'',external,creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:normalizeTags(draft.tags||[]),systemRelations:[],source:{type:'external-link',label:isFolder?'手动添加外部文件夹':'手动添加外部链接'},description:isFolder?'外部文件夹访问入口；内容与版本由原平台维护':'外部资源入口；内容与版本由原平台维护'};
@@ -350,7 +359,7 @@
       },
       updateExternalLink(actorId,id,draft={}){
         const item=record(id);if(item.type!=='external_link')fail('当前资源不是外部链接');if(item.deletedAt)fail('请先从回收站恢复外部链接');requireAction('edit-external-link',item.spaceId,actorId);
-        const name=String(draft.name??item.name).trim();if(!name)fail('请输入链接名称');if(name.length>100)fail('链接名称不能超过 100 个字符');const external=parseExternalLink(draft.url??item.external?.url,{kind:draft.kind||(item.external?.kind==='folder'?'folder':undefined)});
+        const folderDraft=(draft.kind||(item.external?.kind==='folder'?'folder':undefined))==='folder',name=String(draft.name??item.name).trim();if(!name)fail(folderDraft?'请输入文件夹名称':'请输入文件名称');if(name.length>100)fail((folderDraft?'文件夹名称':'文件名称')+'不能超过 100 个字符');const external=parseExternalLink(draft.url??item.external?.url,{kind:draft.kind||(item.external?.kind==='folder'?'folder':undefined)});
         if(item.external?.host&&external.host!==item.external.host&&!draft.confirmHostChange)fail('链接域名已变更，请确认后再保存');
         const duplicate=records.find(candidate=>candidate.id!==item.id&&!candidate.deletedAt&&candidate.type==='external_link'&&candidate.spaceId===item.spaceId&&candidate.parent_id===item.parent_id&&externalIdentity(candidate.external)===external.resourceKey);if(duplicate)fail('当前文件夹中已存在该外部链接');
         item.name=name;item.external=external;item.source={type:'external-link',label:external.kind==='folder'?'手动添加外部文件夹':'手动添加外部链接'};item.description=external.kind==='folder'?'外部文件夹访问入口；内容与版本由原平台维护':'外部资源入口；内容与版本由原平台维护';item.updatedBy=actorName(actorId);item.editor=actorName(actorId);item.updated_at=stamp();records.filter(candidate=>candidate.type==='shortcut'&&candidate.sourceFileId===item.id&&!candidate.customName).forEach(shortcut=>{shortcut.name=name;});notify();
@@ -395,10 +404,10 @@
       },
       createShortcut(actorId,sourceId,targetSpaceId,targetParentId=0){
         const source=record(sourceId);if(source.type==='folder')fail('当前版本不支持文件夹快捷方式');if(source.type==='shortcut')fail('不能为快捷方式再次创建快捷方式');if(source.deletedAt)fail('源文件已进入回收站');
-        requireAction('read',source.spaceId,actorId);requireAction('create-shortcut',targetSpaceId,actorId);if(source.spaceId===targetSpaceId)fail('请选择其他空间');
+        requireAction('read',source.spaceId,actorId);requireAction('create-shortcut',targetSpaceId,actorId);if(source.spaceId===targetSpaceId)fail('请选择其他文件库');
         const targetProbe={spaceId:targetSpaceId};ensureSameSpace(targetProbe,targetParentId);
         if(records.some(item=>item.type==='shortcut'&&!item.deletedAt&&item.sourceFileId===source.id&&item.spaceId===targetSpaceId&&item.parent_id===(targetParentId||0)))fail('目标文件夹中已存在该文件的快捷方式');
-        const now=stamp(),area=areaForSpace(targetSpaceId),item={id:'shortcut-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId:targetSpaceId,projectId:projectForSpace(targetSpaceId),area,parent_id:targetParentId||0,name:source.name,type:'shortcut',sourceFileId:source.id,sourceSpaceId:source.spaceId,extension:source.extension||ext(source.name),size:0,customName:false,creator:actorName(actorId),createdBy:actorName(actorId),editor:'未编辑过',updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:[],systemRelations:[],source:{type:'shortcut',label:'跨空间快捷方式'},description:'指向其他空间源文件的快捷方式'};
+        const now=stamp(),area=areaForSpace(targetSpaceId),item={id:'shortcut-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),spaceId:targetSpaceId,projectId:projectForSpace(targetSpaceId),area,parent_id:targetParentId||0,name:source.name,type:'shortcut',sourceFileId:source.id,sourceSpaceId:source.spaceId,extension:source.extension||ext(source.name),size:0,customName:false,creator:actorName(actorId),createdBy:actorName(actorId),editor:'未编辑过',updatedBy:actorName(actorId),createdAt:now,updated_at:now,tags:[],systemRelations:[],source:{type:'shortcut',label:'跨文件库快捷方式'},description:'指向其他文件库源文件的快捷方式'};
         records.unshift(item);notify();return item.id;
       },
       copy(actorId,id,parentId){
@@ -407,7 +416,7 @@
         for(const sourceId of ids){
           const original=record(sourceId),isRoot=sourceId===id,name=isRoot?original.name.replace(/(\.[^.]+)?$/,' 副本$1'):original.name;
           const inherited=(original.systemRelations||[]).map(itemRelation=>({...clone(itemRelation),inherited:true}));
-          if(isRoot&&original.type!=='folder')inherited.push(relation('file',original.id,'副本来源 · '+original.name,'在当前空间创建的副本'));
+          if(isRoot&&original.type!=='folder')inherited.push(relation('file',original.id,'副本来源 · '+original.name,'在当前文件库创建的副本'));
           records.unshift({...clone(original),id:mapping.get(sourceId),name,parent_id:isRoot?(parentId||0):mapping.get(original.parent_id),creator:actorName(actorId),createdBy:actorName(actorId),editor:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,systemRelations:inherited,deletedAt:null,deletedBy:null,originalParentId:null});
         }
         notify();return mapping.get(id);

@@ -180,7 +180,7 @@
       const restoreItem=item=>{
         const result=context.files.restore(actor,item.id);
         setSelectedId(null);
-        showNotice(result?.restoredToRoot?'原位置不存在，已恢复到空间根目录':'已恢复到原位置');
+        showNotice(result?.restoredToRoot?'原位置不存在，已恢复到文件库根目录':'已恢复到原位置');
       };
       const completeDialog=()=>{
         if(!dialog)return;
@@ -215,17 +215,13 @@
         let body=null;
         if(dialog.type==='new-folder'||dialog.type==='rename')body=h('label',{className:'eva-drive-dialog__field'},h('span',null,dialog.type==='new-folder'?'文件夹名称':'新名称'),h('input',{id:'eva-project-files-dialog-value',name:'projectFileName',autoFocus:true,value:dialog.value||'',placeholder:'请输入名称',onChange:event=>setDialog({...dialog,value:event.target.value})}),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null);
         if(dialog.type==='external-folder'||dialog.type==='external-link'||dialog.type==='edit-external-link'){
-          let draftInfo=null,draftError='';
-          if(externalFolderDialog&&String(dialog.url||'').trim())try{draftInfo=context.files.inspectExternalLink(dialog.url,{kind:'folder'});}catch(error){draftError=error.message||'无法识别该链接';}
-          const nameField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹名称':'链接名称'),h('input',{id:'eva-project-files-external-name',name:'externalLinkName',autoFocus:!externalFolderDialog,maxLength:100,value:dialog.name||'',placeholder:externalFolderDialog?'例如：供应商交付资料':'例如：供应商协作飞书文档',onChange:event=>setDialog({...dialog,name:event.target.value,error:null})}));
-          const urlField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹链接':'外部链接'),h('input',{id:'eva-project-files-external-url',name:'externalLinkUrl',autoFocus:externalFolderDialog,type:'url',value:dialog.url||'',placeholder:'https://',onChange:event=>setDialog({...dialog,url:event.target.value,error:null,confirmHostChange:false})}));
+          const nameField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹名称':'文件名称'),h('input',{id:'eva-project-files-external-name',name:'externalLinkName',autoFocus:true,maxLength:100,value:dialog.name||'',placeholder:externalFolderDialog?'例如：供应商交付资料':'例如：供应商协作飞书文档',onChange:event=>setDialog({...dialog,name:event.target.value,error:null})}));
+          const urlField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹链接':'文件链接'),h('input',{id:'eva-project-files-external-url',name:'externalLinkUrl',type:'url',value:dialog.url||'',placeholder:'https://',onChange:event=>setDialog({...dialog,url:event.target.value,error:null,confirmHostChange:false})}));
           body=h(R.Fragment,null,
-          externalFolderDialog?urlField:nameField,
-          externalFolderDialog?h('div',{className:'eva-external-link-detection'+(draftError?' is-error':draftInfo?' is-ready':''),role:'status','aria-live':'polite'},icon(draftError?'external':draftInfo?.provider==='feishu'?'link':draftInfo?.provider==='wecom'?'users':'folder'),h('span',null,h('strong',null,draftError?'无法按文件夹保存':draftInfo?(draftInfo.provider==='web'?'其他平台':draftInfo.providerLabel)+' · 文件夹':'等待识别'),h('small',null,draftError||(!draftInfo?'粘贴链接后识别来源平台':draftInfo.detection==='pattern'?'已识别为文件夹链接':'链接类型由你确认，将按外部文件夹保存')))) : null,
-          externalFolderDialog?nameField:urlField,
+          nameField,
+          urlField,
           dialog.confirmHostChange?h('div',{className:'eva-external-link-warning'},icon('external'),h('span',null,'链接域名发生变化。请确认新地址可信后再保存。')):null,
-          dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null,
-          h('p',{className:'eva-drive-dialog__hint'},externalFolderDialog?'仅保存访问入口，不复制或同步文件夹内容；访问权限仍由原平台控制。':'仅保存访问入口，不复制外部内容、版本和评论；访问权限仍由原平台控制。')
+          dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
           );
         }
         if(dialog.type==='move')body=h(R.Fragment,null,
@@ -233,7 +229,7 @@
             h('option',{value:0},'项目根目录'),
             all.filter(folder=>folder.type==='folder'&&folder.id!==dialog.id).map(folder=>h('option',{key:folder.id,value:folder.id},folder.name))
           )),
-          h('p',{className:'eva-drive-dialog__hint'},'仅允许在当前项目空间内移动。'),
+          h('p',{className:'eva-drive-dialog__hint'},'仅允许在当前项目文件库内移动。'),
           dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
         );
         if(dialog.type==='tags'){
@@ -256,7 +252,7 @@
                 h('input',{autoFocus:true,value:dialog.tagInput||'',maxLength:20,placeholder:'输入或选择标签',role:'combobox','aria-label':'输入或选择标签','aria-expanded':dialog.tagDropdownOpen!==false,'aria-controls':'eva-project-tag-options',autoComplete:'off',onFocus:()=>{if(dialog.tagDropdownOpen===false)setDialog({...dialog,tagDropdownOpen:true});},onChange:event=>setDialog({...dialog,tagInput:event.target.value,tagDropdownOpen:true,error:null}),onKeyDown:event=>{if(event.key==='Enter'){event.preventDefault();addTag();}}}),
                 h('button',{className:'eva-tag-editor__toggle',type:'button','aria-label':dialog.tagDropdownOpen===false?'展开已有标签':'收起已有标签',onClick:()=>setDialog({...dialog,tagDropdownOpen:dialog.tagDropdownOpen===false})},icon('arrow'))
               ),
-              dialog.tagDropdownOpen===false?null:h('div',{id:'eva-project-tag-options',className:'eva-tag-editor__dropdown',role:'listbox','aria-label':'当前空间已有标签'},suggestions.length?suggestions.map(tag=>h('button',{className:'eva-tag-editor__option',type:'button',role:'option',key:tag,onClick:()=>addTag(tag)},tag)):h('span',{className:'eva-tag-editor__empty'},'没有匹配标签，按回车新建')),
+              dialog.tagDropdownOpen===false?null:h('div',{id:'eva-project-tag-options',className:'eva-tag-editor__dropdown',role:'listbox','aria-label':'当前文件库已有标签'},suggestions.length?suggestions.map(tag=>h('button',{className:'eva-tag-editor__option',type:'button',role:'option',key:tag,onClick:()=>addTag(tag)},tag)):h('span',{className:'eva-tag-editor__empty'},'没有匹配标签，按回车新建')),
               dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
             ),
             h('p',{className:'eva-drive-dialog__hint'},'从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。')
@@ -266,10 +262,10 @@
           const spaces=context.files.writableSpaces(actor,item.spaceId),targetSpaceId=dialog.targetSpaceId||spaces[0]?.id,folders=targetSpaceId?context.files.list(targetSpaceId,actor).filter(entry=>entry.type==='folder'):[];
           body=spaces.length?h(R.Fragment,null,
             h('div',{className:'eva-shortcut-source'},h('span',null,'源文件'),h('strong',null,item.name),h('small',null,'当前项目 · 团队文件')),
-            h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标空间'),h('select',{value:targetSpaceId,onChange:event=>setDialog({...dialog,targetSpaceId:event.target.value,targetParentId:0})},spaces.map(space=>h('option',{key:space.id,value:space.id},(space.kind==='personal'?'个人空间':'项目空间')+' · '+space.name)))),
+            h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件库'),h('select',{value:targetSpaceId,onChange:event=>setDialog({...dialog,targetSpaceId:event.target.value,targetParentId:0})},spaces.map(space=>h('option',{key:space.id,value:space.id},(space.kind==='personal'?'个人文件库':'项目文件库')+' · '+space.name)))),
             h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件夹'),h('select',{value:dialog.targetParentId||0,onChange:event=>setDialog({...dialog,targetParentId:event.target.value==='0'?0:event.target.value})},h('option',{value:0},'根目录'),folders.map(folder=>h('option',{key:folder.id,value:folder.id},folder.name)))),
-            h('p',{className:'eva-drive-dialog__hint'},'快捷方式不复制文件，也不会向目标空间成员授予源文件权限。'),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
-          ):h('p',null,'没有其他可写入的空间，暂时无法创建跨空间快捷方式。');
+            h('p',{className:'eva-drive-dialog__hint'},'快捷方式不复制文件，也不会向目标文件库成员授予源文件权限。'),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
+          ):h('p',null,'没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。');
         }
         if(dialog.type==='trash')body=h('p',null,'将“'+item.name+'”'+(item.type==='folder'?'及其中内容':'')+'移至回收站？Owner 或 Manager 可恢复。');
         if(dialog.type==='delete')body=h('p',null,'永久删除“'+item.name+'”'+(item.type==='folder'?'及其中内容':'')+'后不可恢复。');
@@ -371,7 +367,7 @@
           ):null,
           shortcutInfo?h('section',{className:'eva-file-detail__section'},h('div',{className:'eva-file-detail__section-head'},h('h3',null,'快捷方式信息')),h('dl',{className:'eva-drive__meta'},
             h('div',null,h('dt',null,'访问状态'),h('dd',null,shortcutInfo.statusLabel)),
-            shortcutInfo.status==='available'?h(R.Fragment,null,h('div',null,h('dt',null,'源文件'),h('dd',null,shortcutInfo.sourceName)),h('div',null,h('dt',null,'来源空间'),h('dd',null,shortcutInfo.sourceSpaceName))):h('div',null,h('dt',null,'权限说明'),h('dd',null,'快捷方式不会授予源文件权限'))
+            shortcutInfo.status==='available'?h(R.Fragment,null,h('div',null,h('dt',null,'源文件'),h('dd',null,shortcutInfo.sourceName)),h('div',null,h('dt',null,'来源文件库'),h('dd',null,shortcutInfo.sourceSpaceName))):h('div',null,h('dt',null,'权限说明'),h('dd',null,'快捷方式不会授予源文件权限'))
           )):null,
           isExternal?h('section',{className:'eva-file-detail__section'},h('div',{className:'eva-file-detail__section-head'},h('h3',null,linkInfo.kind==='folder'?'外部文件夹':'外部链接')),h('dl',{className:'eva-drive__meta'},
             h('div',null,h('dt',null,'来源平台'),h('dd',null,linkInfo.providerLabel)),
@@ -429,15 +425,15 @@
         ),
         h('div',{className:'eva-project-files__toolbar'},
           !trashMode?h(R.Fragment,null,
-            h('button',{className:'eva-drive__action',type:'button',onClick:()=>setDialog({type:'new-folder',value:''})},icon('plus'),'新建文件夹'),
+            h('button',{className:'eva-drive__action',type:'button',onClick:()=>setDialog({type:'new-folder',value:''})},'新建文件夹'),
             h('details',{className:'eva-drive__external-add',onBlur:event=>{if(!event.currentTarget.contains(event.relatedTarget))event.currentTarget.open=false;},onKeyDown:event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}},
-              h('summary',{className:'eva-drive__action','aria-label':'添加外部资源'},icon('link'),h('span',null,'添加外部资源'),icon('arrow')),
+              h('summary',{className:'eva-drive__action','aria-label':'添加外部资源'},h('span',null,'添加外部资源'),icon('arrow')),
               h('span',{className:'eva-drive__external-add-menu',role:'menu','aria-label':'添加外部资源'},
-                h('button',{type:'button',role:'menuitem',onClick:event=>{event.currentTarget.closest('details').open=false;setDialog({type:'external-folder',name:'',url:''});}},h('span',{className:'eva-drive__external-add-icon'},icon('folder')),h('span',null,h('strong',null,'外部文件夹'),h('small',null,'飞书、企业微信等文件夹入口'))),
-                h('button',{type:'button',role:'menuitem',onClick:event=>{event.currentTarget.closest('details').open=false;setDialog({type:'external-link',name:'',url:''});}},h('span',{className:'eva-drive__external-add-icon'},icon('link')),h('span',null,h('strong',null,'普通外部链接'),h('small',null,'文档、表格或网页入口')))
+                h('button',{type:'button',role:'menuitem',onClick:event=>{event.currentTarget.closest('details').open=false;setDialog({type:'external-link',name:'',url:''});}},h('span',{className:'eva-drive__external-add-icon'},icon('link')),h('span',null,h('strong',null,'外部链接'),h('small',null,'文档、表格或网页入口'))),
+                h('button',{type:'button',role:'menuitem',onClick:event=>{event.currentTarget.closest('details').open=false;setDialog({type:'external-folder',name:'',url:''});}},h('span',{className:'eva-drive__external-add-icon'},icon('folder')),h('span',null,h('strong',null,'外部文件夹'),h('small',null,'飞书、企业微信等文件夹入口')))
               )
             ),
-            h('button',{className:'eva-drive__action eva-drive__action--primary',type:'button',onClick:()=>uploadInput.current?.click()},icon('upload'),'上传本地文件'),
+            h('button',{className:'eva-drive__action eva-drive__action--primary',type:'button',onClick:()=>uploadInput.current?.click()},'上传本地文件'),
             h('input',{ref:uploadInput,id:'eva-project-files-upload',name:'projectFiles',type:'file',multiple:true,hidden:true,onChange:event=>{Array.from(event.target.files||[]).forEach(file=>context.files.upload(actor,projectId,file,parentId));event.target.value='';}})
           ):null,
           h('label',{className:'eva-drive__side-search'},icon('search'),h('input',{id:'eva-project-files-search',name:'projectFileSearch',type:'search',value:query,onChange:event=>setQuery(event.target.value),placeholder:'搜索当前项目'}))
@@ -449,7 +445,7 @@
         h('div',{className:'eva-project-files__content'},renderRows()),
         renderDetails(),
         renderDialog(),
-        preview?h('aside',{className:'eva-file-preview-sidebar eva-project-file-preview-sidebar','aria-label':'文件预览'},h('div',{className:'eva-project-file-preview'},preview.sharedVersion?h('p',{className:'eva-members-notice'},'项目副本 · 来源：',sourceLabel(preview),'。访问此文件不会获得来源群的聊天权限。'):null,h(deps.FilePreviewHost,{file:preview,onClose:()=>setPreview(null)}))):null,
+        preview?h('aside',{className:'eva-file-preview-sidebar eva-project-file-preview-sidebar','aria-label':'文件预览'},h('div',{className:'eva-file-preview-resizer',role:'separator',tabIndex:0,'aria-label':'调整文件预览宽度','aria-orientation':'vertical','aria-valuemin':280,'aria-valuemax':664,'aria-valuenow':480,'data-eva-file-preview-resizer':true}),h('div',{className:'eva-project-file-preview'},preview.sharedVersion?h('p',{className:'eva-members-notice'},'项目副本 · 来源：',sourceLabel(preview),'。访问此文件不会获得来源群的聊天权限。'):null,h(deps.FilePreviewHost,{file:preview,onClose:()=>setPreview(null)}))):null,
         notice?h('div',{className:'eva-project-files__notice',role:'status','aria-live':'polite'},notice):null
       );
     };

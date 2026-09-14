@@ -90,7 +90,7 @@ test('文件消息未确认保存时不会自动变成已存入', () => {
   assert.equal(window.EvaFileMessage.action(first, source).title, '前往文件库查看');
 });
 
-test('非项目会话文件传递稳定上下文，并可在保存弹窗选择空间和文件夹', async () => {
+test('非项目会话文件传递稳定上下文，并可在保存弹窗选择文件库和文件夹', async () => {
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
   const {source} = createPatchedRuntime();
   const membersUI = fs.readFileSync(new URL('../prototype/009-2-members-ui.js', import.meta.url), 'utf8');
@@ -99,9 +99,9 @@ test('非项目会话文件传递稳定上下文，并可在保存弹窗选择�
   assert.match(source, /conversationId/);
   assert.match(source, /ai-conversation/);
   assert.match(source, /存到文件库/);
-  assert.match(membersUI, /目标空间/);
+  assert.match(membersUI, /目标文件库/);
   assert.match(membersUI, /目标文件夹/);
-  assert.match(membersUI, /保存后，目标空间成员可访问该文件/);
+  assert.match(membersUI, /保存后，目标文件库成员可访问该文件/);
 });
 
 test('项目群文件一键保存到所属项目根目录，并保留文件库查看入口', async () => {
