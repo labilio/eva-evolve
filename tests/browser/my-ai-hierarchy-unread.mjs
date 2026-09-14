@@ -233,3 +233,66 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await new Promise(resolve => server.close(resolve));
   }
 });
+
+test('云端分身删空后不显示占位，点击身份发送才创建会话', async () => {
+  const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.platform === 'darwin' ? { channel: 'msedge' } : {});
+  try {
+    const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin
+      ? route.continue() : route.abort());
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${origin}/#/messages?evaIM=my-ai`);
+    await page.locator('.eva-ai-team').waitFor();
+
+    const fixture = await page.evaluate(() => {
+      const store = window.EvaAITeam;
+      const persona = store.getSnapshot().identities.find(identity => identity.role === 'persona');
+      const sessions = store.getSnapshot().sessions.filter(session => session.identityId === persona.id);
+      sessions.slice(1).forEach(session => store.deleteSession(session.id));
+      return { id: persona.id, name: persona.name, sessionId: sessions[0].id, sessionTitle: sessions[0].title };
+    });
+    const persona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
+    const identityButton = persona.locator('.eva-ai-team__identity-button');
+    await identityButton.click();
+    const onlySession = persona.locator('.eva-ai-team__session-row');
+    assert.equal(await onlySession.count(), 1);
+    await onlySession.locator('.eva-ai-team__session').click();
+    await onlySession.hover();
+    await onlySession.getByRole('button', { name: '会话操作 ' + fixture.sessionTitle }).click();
+    await page.getByText('删除', { exact: true }).last().click();
+    await onlySession.waitFor({ state: 'detached' });
+
+    assert.equal(await persona.locator('.eva-ai-team__session').count(), 0, '删空后不显示“新对话”或“新建会话”占位');
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 0);
+
+    const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
+    await systemTeam.locator('.eva-ai-team__team-button').click();
+    await identityButton.click();
+    assert.equal(await identityButton.getAttribute('aria-expanded'), 'true', '空身份入口保持展开以承载首次创建结果');
+    const editor = page.getByRole('textbox', { name: '发送给 ' + fixture.name, exact: true });
+    await editor.fill('删空后的第一次消息');
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    const createdSession = persona.locator('.eva-ai-team__session-row');
+    await createdSession.waitFor();
+    assert.equal(await createdSession.locator('.eva-ai-team__session-title').innerText(), '删空后的第一次消息');
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 1);
+
+    await page.locator('[data-eva-nav-id="messages"]').click();
+    await page.waitForURL('**/#/messages');
+    await page.locator('[data-eva-nav-id="my-ai"]').click();
+    await page.waitForURL('**evaIM=my-ai');
+    const restoredPersona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
+    await restoredPersona.locator('.eva-ai-team__identity-button').click();
+    assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').filter({ hasText: '删空后的第一次消息' }).count(), 1, '入口往返后新会话仍在所属分身下');
+    assert.deepEqual(errors, []);
+    await page.screenshot({ path: '/tmp/eva-my-ai-empty-persona-session-1200.png' });
+  } finally {
+    await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});
