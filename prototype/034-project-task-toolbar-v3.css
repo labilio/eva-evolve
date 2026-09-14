@@ -729,6 +729,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.eva-task-breakdown__toolbar-hint strong {
+  color: var(--eva-action-primary);
+  font-weight: 500;
+}
 .eva-task-breakdown__tool {
   min-height: 30px;
   padding: 0 8px;
@@ -788,8 +792,12 @@
   border-color: var(--eva-border-default);
   box-shadow: var(--eva-shadow-canvas);
 }
-.eva-task-breakdown__node.is-root {
+.eva-task-breakdown__node.is-root:not(.is-selected) {
+  border-color: var(--eva-border-default);
+}
+.eva-task-breakdown__node.is-selected {
   border-color: var(--eva-action-primary);
+  background: color-mix(in srgb, var(--eva-action-primary) 4%, var(--eva-surface-primary));
   box-shadow: 0 0 0 var(--eva-border-hairline-w) var(--eva-action-primary), var(--eva-shadow-canvas);
 }
 .eva-task-breakdown__node-main {
@@ -808,7 +816,10 @@
   text-align: left;
   cursor: pointer;
 }
-.eva-task-breakdown__node-main.is-current { cursor: default; }
+.eva-task-breakdown__node-main:focus-visible {
+  outline: 2px solid var(--eva-action-primary);
+  outline-offset: -3px;
+}
 .eva-task-breakdown__node-top,
 .eva-task-breakdown__node-fields,
 .eva-task-breakdown__node-labels,
