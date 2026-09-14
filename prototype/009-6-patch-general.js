@@ -568,7 +568,7 @@ function IssueCard(`,'任务父子关系组件与层级视图');
     if(evaTaskDetailStart<0||evaTaskDetailEnd<evaTaskDetailStart)throw new Error('任务详情预览挂载边界不匹配');
     const evaTaskDetailSource=source.slice(evaTaskDetailStart,evaTaskDetailEnd);
     if(!evaTaskDetailSource.endsWith(')}'))throw new Error('任务详情预览根节点边界不匹配');
-    const evaTaskDetailWithPreview=evaTaskDetailSource.slice(0,-2)+',evaTaskFilePreview&&React.createElement("aside",{className:"eva-task-file-preview-pane","aria-label":"任务附件预览"},React.createElement(FilePreviewHost,{file:evaTaskFilePreview,onClose:()=>setEvaTaskFilePreview(null)})))}';
+    const evaTaskDetailWithPreview=evaTaskDetailSource.slice(0,-2)+',evaTaskFilePreview&&React.createElement("aside",{className:"eva-task-file-preview-pane","aria-label":"任务附件预览"},React.createElement("div",{className:"eva-file-preview-resizer",role:"separator",tabIndex:0,"aria-label":"调整文件预览宽度","aria-orientation":"vertical","aria-valuemin":280,"aria-valuemax":664,"aria-valuenow":480,"data-eva-file-preview-resizer":true}),React.createElement(FilePreviewHost,{file:evaTaskFilePreview,onClose:()=>setEvaTaskFilePreview(null)})))}';
     source=root.__evaCut(source,evaTaskDetailSource,evaTaskDetailWithPreview,'任务附件预览挂载到详情右栏');
     source=root.__evaCut(source,'const sa=skillSource();return React.createElement("div",{className:"loop-sd"}', 'const sa=["github","local","workspace"].includes(mt.source_type)?mt.source_type:"workspace";return React.createElement("div",{className:"loop-sd"}', '技能来源读取元数据而非异步内容请求');
     const contributionStart=source.indexOf('getAgentContributions=rt=>{'),contributionEnd=source.indexOf(',getAgentEnv=',contributionStart);

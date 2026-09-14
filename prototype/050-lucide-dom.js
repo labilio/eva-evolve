@@ -68,6 +68,7 @@
     'loader-circle': [["path", {d: "M21 12a9 9 0 1 1-6.219-8.56"}]],
     'mail': [["path", {d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"}], ["rect", {x: "2", y: "4", width: "20", height: "16", rx: "2"}]],
     'maximize-2': [["path", {d: "M15 3h6v6"}], ["path", {d: "m21 3-7 7"}], ["path", {d: "m3 21 7-7"}], ["path", {d: "M9 21H3v-6"}]],
+    'minimize-2': [["polyline", {points: "4 14 10 14 10 20"}], ["polyline", {points: "20 10 14 10 14 4"}], ["line", {x1: "14", x2: "21", y1: "10", y2: "3"}], ["line", {x1: "3", x2: "10", y1: "21", y2: "14"}]],
     'mic': [["path", {d: "M12 19v3"}], ["path", {d: "M19 10v2a7 7 0 0 1-14 0v-2"}], ["rect", {x: "9", y: "2", width: "6", height: "13", rx: "3"}]],
     'minus': [["path", {d: "M5 12h14"}]],
     'monitor': [["rect", {width: "20", height: "14", x: "2", y: "3", rx: "2"}], ["line", {x1: "8", x2: "16", y1: "21", y2: "21"}], ["line", {x1: "12", x2: "12", y1: "17", y2: "21"}]],

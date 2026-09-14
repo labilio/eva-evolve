@@ -38,10 +38,29 @@ async function appearance(field) {
       fill: getComputedStyle(icon).fill, inputBorder: getComputedStyle(input).borderTopWidth };
   });
 }
+async function actionAppearance(toolbar) {
+  return toolbar.locator('.eva-drive__action').evaluateAll(actions => actions.map(action => {
+    const style = getComputedStyle(action), rect = action.getBoundingClientRect();
+    const icon = action.querySelector('svg'), iconRect = icon?.getBoundingClientRect();
+    return {
+      label: action.textContent.trim(),
+      height: rect.height,
+      paddingLeft: style.paddingLeft,
+      paddingRight: style.paddingRight,
+      radius: style.borderRadius,
+      fontSize: style.fontSize,
+      gap: style.gap,
+      borderWidth: style.borderTopWidth,
+      iconCount: action.querySelectorAll('svg').length,
+      iconWidth: iconRect?.width || 0,
+      iconHeight: iconRect?.height || 0,
+    };
+  }));
+}
 for (const [name, route, selector] of [
   ['项目', '/collab', '.eva-project-directory-search'],
   ['通讯录', '/contacts', '.eva-contacts__search'],
-  ['文件库', '/drive', '.eva-drive__section-head .eva-drive__side-search'],
+  ['文件库', '/drive', '.eva-drive__toolbar .eva-drive__side-search'],
   ['连接中心', '/eva-stub/技能', '.eva-connection-search'],
   ['数字员工', '/eva-stub/数字员工', '.semi-input-wrapper:has(input[placeholder="搜索数字员工"])'],
 ]) {
@@ -77,6 +96,106 @@ for (const [name, route, selector] of [
     assert.notEqual((await appearance(field)).color, focused.color);
   });
 }
+test('文件库工具栏与项目文件按钮一致，搜索框同行且最右对齐', async () => {
+  const search = await open('/drive', '.eva-drive__toolbar .eva-drive__side-search');
+  const driveToolbar = page.locator('.eva-drive__toolbar');
+  const driveActions = await actionAppearance(driveToolbar);
+  assert.deepEqual(driveActions.map(action => action.label), ['新建文件夹', '添加外部资源', '上传本地文件']);
+  assert.deepEqual(driveActions.map(action => action.iconCount), [0, 1, 0], '三个操作按钮不得显示前置图标，仅外部资源保留末尾下拉箭头');
+  assert.equal(driveActions[1].iconWidth, 12, '外部资源下拉箭头保持既定 12px');
+  assert.equal(driveActions[1].iconHeight, 12, '外部资源下拉箭头保持既定 12px');
+  assert.equal(await page.locator('.eva-drive__section-head').count(), 0, '文件列表上方不应重复显示“个人文件”标题');
+  const driveGeometry = await page.evaluate(() => {
+    const toolbar = document.querySelector('.eva-drive__toolbar');
+    const searchField = toolbar.querySelector('.eva-drive__side-search');
+    const firstAction = toolbar.querySelector('.eva-drive__action');
+    const table = document.querySelector('.eva-drive__table');
+    const t = toolbar.getBoundingClientRect(), s = searchField.getBoundingClientRect();
+    const a = firstAction.getBoundingClientRect(), l = table.getBoundingClientRect();
+    return { toolbarCenter: t.y + t.height / 2, searchCenter: s.y + s.height / 2,
+      actionCenter: a.y + a.height / 2, searchRight: s.right, tableRight: l.right };
+  });
+  assert.ok(Math.abs(driveGeometry.searchCenter - driveGeometry.actionCenter) <= 1, '按钮与搜索框应垂直居中在同一行');
+  assert.ok(Math.abs(driveGeometry.searchRight - driveGeometry.tableRight) <= 1, '搜索框应与表格右边缘对齐');
+  assert.equal(await search.locator('input').getAttribute('placeholder'), '搜索当前位置');
+
+  await page.goto(`${origin}/#/collab?evaProject=prod`);
+  await page.locator('.collab-frame').waitFor();
+  await page.getByRole('tab', { name: '文件', exact: true }).click();
+  const projectToolbar = page.locator('.eva-project-files__toolbar');
+  await projectToolbar.waitFor();
+  const projectActions = await actionAppearance(projectToolbar);
+  assert.deepEqual(projectActions, driveActions, '两处同名操作应使用相同的高度、内距、圆角、字号、间距、边框和图标规则');
+});
+test('文件预览打开时两处搜索框缩短，关闭后恢复常规宽度', async () => {
+  const searchGeometry = selector => page.locator(selector).evaluate(element => {
+    const search = element.getBoundingClientRect();
+    const toolbar = element.closest('.eva-drive__toolbar, .eva-project-files__toolbar');
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const toolbarStyle = getComputedStyle(toolbar);
+    return { width: search.width, right: search.right, toolbarContentRight: toolbarRect.right - parseFloat(toolbarStyle.paddingRight || '0') };
+  });
+
+  let search = await open('/drive', '.eva-drive__toolbar .eva-drive__side-search');
+  const driveNormal = await searchGeometry('.eva-drive__toolbar .eva-drive__side-search');
+  await page.locator('[data-drive-action="preview"]').first().click();
+  await page.locator('.eva-drive-preview-sidebar').waitFor();
+  const driveCompact = await searchGeometry('.eva-drive__toolbar .eva-drive__side-search');
+  assert.ok(driveCompact.width <= 240 && driveCompact.width < driveNormal.width, '文件库预览态搜索框应缩短到 240px 以内');
+  assert.ok(Math.abs(driveCompact.right - driveCompact.toolbarContentRight) <= 1, '文件库预览态搜索框仍应右对齐');
+  await page.keyboard.press('Escape');
+  await page.locator('.eva-drive-preview-sidebar').waitFor({ state: 'detached' });
+  assert.equal(Math.round((await searchGeometry('.eva-drive__toolbar .eva-drive__side-search')).width), Math.round(driveNormal.width));
+
+  await page.goto(`${origin}/#/collab?evaProject=prod`);
+  await page.locator('.collab-frame').waitFor();
+  await page.getByRole('tab', { name: '文件', exact: true }).click();
+  search = page.locator('.eva-project-files__toolbar .eva-drive__side-search');
+  await search.waitFor();
+  const projectNormal = await searchGeometry('.eva-project-files__toolbar .eva-drive__side-search');
+  const names = page.locator('.eva-project-files__table .eva-drive__name-cell');
+  const labels = await names.allTextContents();
+  const fileIndex = labels.findIndex(label => /\.(?:pdf|md|docx?|xlsx?|pptx?|zip)\b/i.test(label));
+  assert.ok(fileIndex >= 0, '项目文件列表应有可预览样本');
+  await names.nth(fileIndex).click();
+  await page.locator('.eva-project-file-preview-sidebar').waitFor();
+  const projectCompact = await searchGeometry('.eva-project-files__toolbar .eva-drive__side-search');
+  assert.ok(projectCompact.width <= 240 && projectCompact.width < projectNormal.width, '项目文件预览态搜索框应缩短到 240px 以内');
+  assert.ok(Math.abs(projectCompact.right - projectCompact.toolbarContentRight) <= 1, '项目文件预览态搜索框仍应右对齐');
+  await page.locator('.eva-project-files__header').click();
+  await page.locator('.eva-project-file-preview-sidebar').waitFor({ state: 'detached' });
+  assert.equal(Math.round((await searchGeometry('.eva-project-files__toolbar .eva-drive__side-search')).width), Math.round(projectNormal.width));
+});
+test('项目与文件库的外部资源弹窗统一为名称在前、链接在后', async () => {
+  for (const surface of ['drive', 'project']) {
+    for (const kind of ['外部链接', '外部文件夹']) {
+      if (surface === 'drive') {
+        await open('/drive', '.eva-drive__toolbar');
+      } else {
+        await page.goto(`${origin}/#/collab?evaProject=prod`);
+        await page.locator('.collab-frame').waitFor();
+        await page.getByRole('tab', { name: '文件', exact: true }).click();
+        await page.locator('.eva-project-files__toolbar').waitFor();
+      }
+      const toolbar = page.locator(surface === 'drive' ? '.eva-drive__toolbar' : '.eva-project-files__toolbar');
+      await toolbar.locator('.eva-drive__external-add > summary').click();
+      await toolbar.locator('.eva-drive__external-add-menu button').filter({ hasText: kind }).click();
+      const dialog = page.getByRole('dialog', { name: `添加${kind}` });
+      await dialog.waitFor();
+      const fields = dialog.locator('.eva-drive-dialog__body > .eva-drive-dialog__field');
+      assert.deepEqual(await fields.locator(':scope > span').allTextContents(), kind === '外部文件夹'
+        ? ['文件夹名称', '文件夹链接']
+        : ['文件名称', '文件链接']);
+      assert.equal(await fields.count(), 2, '弹窗正文只保留名称和链接两个字段');
+      assert.equal(await fields.first().locator('input').evaluate(element => element === document.activeElement), true, '首次焦点应位于名称输入框');
+      assert.equal(await dialog.locator('.eva-external-link-detection').count(), 0, '不得显示来源识别卡片');
+      assert.equal(await dialog.locator('.eva-drive-dialog__hint').count(), 0, '不得显示额外提示');
+      assert.doesNotMatch(await dialog.innerText(), /等待识别|粘贴链接后识别来源平台|仅保存访问入口/);
+      await dialog.getByRole('button', { name: '取消', exact: true }).click();
+      await dialog.waitFor({ state: 'detached' });
+    }
+  }
+});
 test('项目搜索：中文筛选、空结果和清空恢复原列表', async () => {
   const field = await open('/collab', '.eva-project-directory-search');
   const rows = page.locator('.eva-project-list-item');

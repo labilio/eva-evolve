@@ -19,25 +19,87 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await page.goto(`${origin}/#/messages?evaIM=my-ai`);
     await page.locator('.eva-ai-team').waitFor();
 
-    assert.equal(await page.locator('.eva-ai-team__section-count').count(), 0, '顶层分类不显示数量或未读');
-    assert.equal(await page.getByRole('button', { name: 'AI 团队', exact: true }).getAttribute('aria-expanded'), 'true');
-    assert.equal(await page.getByRole('button', { name: 'AI 助理', exact: true }).getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.locator('.eva-ai-team__section-title').count(), 0, '不再显示 AI 团队与 AI 助理顶层标题');
+    assert.equal(await page.getByRole('button', { name: 'AI 团队', exact: true }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: 'AI 助理', exact: true }).count(), 0);
+    assert.equal(await page.locator('.eva-ai-team__list-divider').count(), 1, '团队与单聊之间只有一条分隔线');
+    assert.equal(await page.evaluate(() => {
+      const teams=document.querySelector('.eva-ai-team__teams')?.getBoundingClientRect();
+      const divider=document.querySelector('.eva-ai-team__list-divider')?.getBoundingClientRect();
+      const direct=document.querySelector('.eva-ai-team__direct-groups')?.getBoundingClientRect();
+      return !!teams&&!!divider&&!!direct&&teams.bottom<=divider.top&&divider.bottom<=direct.top;
+    }), true, '分隔线位于团队列表和单聊列表之间');
+    const titlebarBox = await page.locator('.app-titlebar').boundingBox();
+    const pageBox = await page.locator('.eva-ai-team').boundingBox();
+    assert.ok(titlebarBox && pageBox && pageBox.y >= titlebarBox.y + titlebarBox.height, '我的 AI 页面保持在系统标题栏下方');
+    await page.locator('[data-eva-nav-id="messages"]').click();
+    await page.waitForURL('**/#/messages');
+    await page.locator('.eva-ai-team').waitFor({ state: 'detached' });
+    const messageColumns = await page.evaluate(() => {
+      const start=node=>node?.getBoundingClientRect().x;
+      const parent=document.querySelector('.wk-conv-compact-item:not(.wk-conv-compact-item--thread)');
+      const child=document.querySelector('.wk-conv-compact-item--thread');
+      return {
+        avatar:start(parent?.querySelector('.wk-conv-compact-icon')),
+        name:start(parent?.querySelector('.wk-conv-compact-name')),
+        childIcon:start(child?.querySelector('.wk-conv-compact-icon')),
+        childName:start(child?.querySelector('.wk-conv-compact-name')),
+      };
+    });
+    await page.locator('[data-eva-nav-id="my-ai"]').click();
+    await page.waitForURL('**evaIM=my-ai');
+    await page.locator('.eva-ai-team').waitFor();
+    const myAiColumns = await page.evaluate(() => {
+      const start=selector=>document.querySelector(selector)?.getBoundingClientRect().x;
+      return {
+        teamAvatar:start('.eva-ai-team__team-avatar'),
+        teamName:start('.eva-ai-team__team-name'),
+        identityAvatar:start('.eva-ai-team__identity-button .eva-identity-avatar'),
+        identityName:start('.eva-ai-team__identity-name'),
+        roleName:start('.eva-ai-team__group-title'),
+        childIcon:start('.eva-ai-team__team-thread-row .wk-conv-compact-icon'),
+        childName:start('.eva-ai-team__team-thread-row .wk-conv-compact-name'),
+      };
+    });
+    const aligned=(actual,expected)=>Number.isFinite(actual)&&Number.isFinite(expected)&&Math.abs(actual-expected)<1;
+    assert.ok(aligned(myAiColumns.teamAvatar,messageColumns.avatar));
+    assert.ok(aligned(myAiColumns.identityAvatar,messageColumns.avatar));
+    assert.ok(aligned(myAiColumns.roleName,messageColumns.avatar));
+    assert.ok(aligned(myAiColumns.teamName,messageColumns.name));
+    assert.ok(aligned(myAiColumns.identityName,messageColumns.name));
+    assert.ok(aligned(myAiColumns.childIcon,messageColumns.childIcon));
+    assert.ok(aligned(myAiColumns.childName,messageColumns.childName));
+    const disclosureBox=await page.locator('.eva-ai-team__team-toggle').first().boundingBox();
+    assert.ok(disclosureBox && disclosureBox.width >= 24 && disclosureBox.height >= 32, '收紧缩进后团队展开按钮仍可操作');
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的AI团队');
     assert.equal(await systemTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
     assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
+    const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: '通用助理' }).first();
+    const assistantToggle = assistantIdentity.locator('.eva-ai-team__identity-button');
+    await assistantToggle.click();
+    const assistantNameBox = await assistantIdentity.locator('.eva-ai-team__identity-name').boundingBox();
+    const assistantSessionBox = await assistantIdentity.locator('.eva-ai-team__session-title').first().boundingBox();
+    assert.ok(assistantNameBox && assistantSessionBox && Math.abs(assistantNameBox.x - assistantSessionBox.x) < 1, '个人助理会话名称与助理名称起点对齐');
+    await assistantToggle.click();
 
     const fixture = await page.evaluate(() => {
       const groupStore = window.EvaMyAITeamGroup;
       const defaultGroup = groupStore.groups().find(group => group.system);
-      const identityId = window.EvaAITeam.getSnapshot().identities[0].id;
-      const customGroupId = groupStore.createGroup({ name: '层级回归团队', memberIds: [identityId] });
+      const identities = window.EvaAITeam.getSnapshot().identities;
+      const identityId = identities[0].id;
+      const newMemberId = identities[1].id;
+      const newMemberName = identities[1].name;
+      const customGroupName = '层级回归团队-用于确认超长团队名称单行截断且操作入口保持可用';
+      const renamedGroupName = '名称头像回归团队';
+      const customGroupId = groupStore.createGroup({ name: customGroupName, memberIds: [identityId] });
       const extraThreadId = groupStore.createThread(defaultGroup.id, { id: 'hierarchy-regression', name: '额外验收子区' });
-      return { customGroupId, extraThreadId };
+      return { customGroupId, customGroupName, renamedGroupName, newMemberId, newMemberName, extraThreadId };
     });
-    const customTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 层级回归团队"])`);
+    const customTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 ${fixture.customGroupName}"])`);
     await customTeam.waitFor();
     assert.equal(await customTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
     await page.waitForFunction(() => document.querySelector('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-threads-more'));
@@ -106,6 +168,62 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }));
     assert.deepEqual(viewport, { scrollX: 0, overflow: 0 }, '展开长会话名后页面不得横向滚动或溢出');
+
+    await customTeam.locator('.eva-ai-team__team-button').click();
+    assert.equal(await customTeam.locator('.eva-ai-team__team-menu').count(), 0, '中栏不再保留第二套团队治理菜单');
+    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    let teamInfo = page.locator('.eva-chat-settings');
+    await teamInfo.waitFor();
+    await teamInfo.getByRole('heading', { name: '聊天信息（2）', exact: true }).waitFor();
+    assert.equal(await teamInfo.getByRole('button', { name: '添加 AI 团队成员', exact: true }).count(), 1);
+    assert.equal(await teamInfo.getByRole('button', { name: '编辑 AI 团队', exact: true }).count(), 0);
+    await teamInfo.getByRole('button', { name: /^团队名称/ }).click();
+    const nameEditor = teamInfo.locator('.eva-chat-setting-edit').filter({ hasText: '团队名称' });
+    await nameEditor.getByRole('textbox', { name: '团队名称', exact: true }).fill(fixture.renamedGroupName);
+    await nameEditor.getByRole('button', { name: '保存', exact: true }).click();
+    const renamedTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 ${fixture.renamedGroupName}"])`);
+    await renamedTeam.waitFor();
+    assert.equal(await page.evaluate(id => window.EvaMyAITeamGroup.get(id).name, fixture.customGroupId), fixture.renamedGroupName);
+    await teamInfo.getByRole('button', { name: /^团队头像/ }).click();
+    const avatarModal = page.locator('.semi-modal').filter({ hasText: '团队头像' });
+    const avatarBytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+    await avatarModal.getByLabel('上传团队头像').setInputFiles({ name: 'team-avatar.png', mimeType: 'image/png', buffer: avatarBytes });
+    await avatarModal.waitFor({ state: 'detached' });
+    await page.waitForFunction(id => window.EvaMyAITeamGroup.get(id).avatar.startsWith('data:image/png;base64,'), fixture.customGroupId);
+    await page.screenshot({ path: '/tmp/eva-my-ai-team-details-1200.png' });
+    await teamInfo.getByRole('button', { name: '添加 AI 团队成员', exact: true }).click();
+    const groupEditor = page.locator('.semi-modal').filter({ hasText: '编辑团队成员' });
+    await groupEditor.waitFor();
+    assert.equal(await groupEditor.locator('.eva-ai-team-editor__identity').count(), 0, '成员编辑不再混入团队名称和头像');
+    assert.equal(await groupEditor.getByRole('textbox', { name: '团队名称', exact: true }).count(), 0);
+    const candidate = groupEditor.locator('.eva-ai-team-editor__candidate').filter({ hasText: fixture.newMemberName });
+    await candidate.click();
+    assert.equal(await candidate.getByRole('checkbox').isChecked(), true);
+    await groupEditor.getByText('保存', { exact: true }).click();
+    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    teamInfo = page.locator('.eva-chat-settings');
+    await teamInfo.getByRole('heading', { name: '聊天信息（3）', exact: true }).waitFor();
+    assert.ok(await teamInfo.getByText(fixture.newMemberName, { exact: true }).count() > 0, '新增成员即时出现在团队信息中');
+    assert.equal(await page.evaluate(({ groupId, memberId }) => window.EvaMyAITeamGroup.get(groupId).memberIds.includes(memberId), { groupId: fixture.customGroupId, memberId: fixture.newMemberId }), true);
+    await teamInfo.getByRole('button', { name: '解散 AI 团队', exact: true }).click();
+    let dissolveModal = page.locator('.semi-modal').filter({ hasText: '解散 AI 团队' });
+    const modalBox = await dissolveModal.locator('.semi-modal-content').boundingBox();
+    assert.ok(modalBox && modalBox.y >= titlebarBox.y + titlebarBox.height, '解散确认框保持在系统标题栏下方');
+    await page.screenshot({ path: '/tmp/eva-my-ai-dissolve-confirm-1200.png' });
+    await dissolveModal.getByText('取消', { exact: true }).click();
+    assert.equal(await renamedTeam.count(), 1, '取消解散后团队仍保留');
+    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    teamInfo = page.locator('.eva-chat-settings');
+    await teamInfo.waitFor();
+    await teamInfo.getByRole('button', { name: '解散 AI 团队', exact: true }).click();
+    dissolveModal = page.locator('.semi-modal').filter({ hasText: '解散 AI 团队' });
+    await dissolveModal.getByText('解散群', { exact: true }).click();
+    await renamedTeam.waitFor({ state: 'detached' });
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-button').getAttribute('aria-current'), 'true', '解散当前团队后回到默认团队');
+    assert.equal(await page.evaluate(id => window.EvaMyAITeamGroup.groups().some(group => group.id === id), fixture.customGroupId), false);
+    await page.reload();
+    await page.locator('.eva-ai-team').waitFor();
+    assert.equal(await page.locator(`.eva-ai-team__team-button[aria-label="进入团队会话 ${fixture.renamedGroupName}"]`).count(), 0, '刷新后已解散团队不会恢复');
     assert.deepEqual(errors, []);
 
     await page.screenshot({ path: '/tmp/eva-my-ai-hierarchy-unread-1200.png' });

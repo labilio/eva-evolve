@@ -1,5 +1,5 @@
 /* AI Team-specific surfaces use GDS semantic tokens. The conversation remains Octo IM.
- * The 336px rail is Eva's existing team rail, not GDS's personal 260px shell. */
+ * The rail width follows the shared resizable 260px conversation-rail baseline. */
 .eva-ai-team {
   display: flex;
   position: relative;
@@ -38,13 +38,13 @@
   --eva-rail-identity-avatar-size: 22px;
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 28px;
-  --eva-rail-level-indent: 12px;
-  /* AI identity avatars align with their role-group label column. Team
-     subzones keep their own deeper inset relative to the team avatar. */
+  --eva-rail-level-indent: var(--gds-space-1);
+  /* Primary avatars and labels share the same columns as the message rail.
+     Team subzone icons retain one compact connector step. */
   --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
-  --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4) + var(--eva-rail-level-indent));
+  --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-content-inset) + var(--gds-space-2-5));
   --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + 14px + var(--gds-space-1-5));
-  --eva-rail-identity-avatar-trailing: 2px;
+  --eva-rail-identity-avatar-trailing: 0px;
   box-sizing: border-box;
   /* Assistant sessions have no leading avatar, so their labels reuse the
      assistant-name column, including the avatar's trailing margin. */
@@ -99,12 +99,7 @@
   flex-shrink: 0;
 }
 .eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
-.eva-ai-team__section + .eva-ai-team__section { margin-top: var(--gds-space-4); padding-top: var(--gds-space-3); border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-.eva-ai-team__section-title { display: flex; min-height: 40px; box-sizing: border-box; align-items: center; justify-content: space-between; gap: var(--gds-space-2); margin-bottom: var(--gds-space-1); padding: 0 var(--gds-space-2); border-radius: var(--gds-radius-key); background: transparent; color: var(--eva-rail-primary); }
-.eva-ai-team__section-title:hover { background: var(--eva-rail-hover); }
-.eva-ai-team__section-title:has(.eva-ai-team__section-toggle:active) { background: var(--eva-rail-selected); }
-.eva-ai-team__section-title h2 { min-width: 0; flex: 1; margin: 0; color: inherit; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--gds-font-weight-semibold); }
-.eva-ai-team__section-count { min-width: 18px; color: var(--eva-rail-time); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-medium); text-align: right; }
+.eva-ai-team__list-divider { height: 0; margin: var(--gds-space-3) var(--gds-space-2) var(--gds-space-2); border: 0; border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
 .eva-ai-team__unread-dot {
   width: 6px;
   height: 6px;
@@ -113,13 +108,6 @@
   background: var(--eva-unread-indicator);
   transition: opacity 120ms ease;
 }
-.eva-ai-team__section-toggle { display: flex; width: 100%; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); border: 0; border-radius: var(--gds-radius-key); background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
-.eva-ai-team__section-toggle:hover { background: transparent; }
-.eva-ai-team__section-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team__section-chevron { flex: 0 0 12px; color: var(--gds-color-text-secondary); transition: transform 120ms ease; }
-.eva-ai-team__section-chevron.is-expanded { transform: rotate(90deg); }
-.eva-ai-team__section-icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; color: var(--gds-color-text-secondary); }
-.eva-ai-team__section-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
 .eva-ai-team__team-heading:hover,
@@ -127,9 +115,9 @@
 .eva-ai-team__team-heading.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__team-toggle {
   display: grid;
-  width: calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4));
+  width: var(--eva-rail-identity-content-inset);
   min-height: var(--eva-rail-identity-height);
-  flex: 0 0 calc(var(--eva-rail-identity-avatar-size) + var(--gds-space-4));
+  flex: 0 0 var(--eva-rail-identity-content-inset);
   place-items: center;
   padding: 0;
   border: 0;
@@ -145,14 +133,6 @@
 .eva-ai-team__team-name { min-width: 0; flex: 1; overflow: hidden; color: var(--eva-rail-primary); font-size: var(--eva-rail-name-size); font-weight: var(--gds-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__team-default { flex-shrink: 0; padding: 0 var(--gds-space-1); border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-control); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
 .eva-ai-team__team-button > .eva-ai-team__unread-dot { margin-left: auto; }
-.eva-ai-team__team-menu { position: absolute; z-index: 1; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex; opacity: 0; pointer-events: none; }
-.eva-ai-team__team-heading:hover .eva-ai-team__team-menu,
-.eva-ai-team__team-heading:focus-within .eva-ai-team__team-menu { opacity: 1; pointer-events: auto; }
-.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):hover .eva-ai-team__team-button,
-.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):focus-within .eva-ai-team__team-button { padding-right: 36px; }
-.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):hover .eva-ai-team__unread-dot,
-.eva-ai-team__team-heading:has(> .eva-ai-team__team-menu):focus-within .eva-ai-team__unread-dot { opacity: 0; }
-.eva-ai-team__team-menu .semi-button { width: 28px; height: 28px; min-height: 28px; padding: 0; }
 .eva-ai-team__team-thread-row { position: relative; min-height: var(--eva-rail-identity-height); border-radius: var(--eva-rail-nested-row-radius); }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { width: 100%; padding-left: var(--eva-rail-team-thread-inset); padding-right: var(--gds-space-2); min-height: var(--eva-rail-identity-height); }
 .eva-ai-team__team-thread-row .wk-conv-compact-badges { margin-left: auto; margin-right: 0; transition: opacity 120ms ease; }
@@ -178,7 +158,7 @@
 .eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
 .eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
-.eva-ai-team__direct-groups { margin-top: var(--gds-space-1); }
+.eva-ai-team__direct-groups { margin-top: 0; }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
      would make the AI rail look more segmented than the message rail. */
@@ -190,7 +170,7 @@
   min-height: 32px;
   align-items: center;
   gap: var(--gds-space-1);
-  padding: 0 var(--gds-space-2);
+  padding: 0 var(--gds-space-2) 0 0;
   border: 0;
   border-radius: var(--eva-rail-group-radius);
   background: transparent;
