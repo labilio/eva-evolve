@@ -13,6 +13,8 @@ function setup() {
   const scope = {humans:[{id:'owner'},{id:'member'}],cloneIds:['clone'],employeeIds:['employee']};
   const store = {taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
   const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
+  const helperStart=runtime.indexOf('function evaNormalizeTaskStatus'),helperEnd=runtime.indexOf('function evaNormalizeTaskList',helperStart);
+  vm.runInNewContext(runtime.slice(helperStart,helperEnd),ctx);
   vm.runInNewContext(runtime.slice(start,end),ctx);
   const ga=runtime.indexOf('getIssue=rt=>{'),gb=runtime.indexOf('},',ga)+1;
   assert.ok(ga>=0&&gb>ga);vm.runInNewContext(runtime.slice(ga,gb),ctx);
@@ -20,6 +22,9 @@ function setup() {
 }
 test('新任务写入明确指定项目，使用该项目前缀和序号，不污染当前其他项目',async()=>{
  const s=setup();const issue=await s.ctx.createIssue({workspace_id:'q',title:'  新任务  '});assert.equal(issue.workspace_id,'q');assert.equal(issue.identifier,'QA-10');assert.equal(issue.title,'新任务');assert.equal(s.lists.prod.length,1);assert.equal(s.lists.q.length,2);
+});
+test('兼容旧创建状态待规划，保存为待办',async()=>{
+ const s=setup();const issue=await s.ctx.createIssue({workspace_id:'prod',title:'旧状态任务',status:'backlog'});assert.equal(issue.status,'todo');assert.equal(s.lists.q.length,1);
 });
 test('项目或权限无效、空标题均拒绝且不写入',async()=>{
  const s=setup();await assert.rejects(s.ctx.createIssue({workspace_id:'missing',title:'新任务'}),/项目/);s.store.canRead=()=>false;await assert.rejects(s.ctx.createIssue({title:'新任务'}),/项目/);s.store.canRead=()=>true;await assert.rejects(s.ctx.createIssue({title:'  '}),/任务名称/);assert.equal(s.lists.prod.length,1);

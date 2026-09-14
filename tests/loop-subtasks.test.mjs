@@ -27,6 +27,10 @@ function setup() {
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
   vm.runInNewContext(runtime.slice(helperStart, helperEnd), ctx);
+  const statusHelperStart = runtime.indexOf('function evaNormalizeTaskStatus');
+  const statusHelperEnd = runtime.indexOf('function evaNormalizeTaskList', statusHelperStart);
+  assert.ok(statusHelperStart >= 0 && statusHelperEnd > statusHelperStart);
+  vm.runInNewContext(runtime.slice(statusHelperStart, statusHelperEnd), ctx);
   vm.runInNewContext(assignment('updateIssue', ',previewIssueTrigger='), ctx);
   vm.runInNewContext(assignment('batchUpdateIssues', ',batchDeleteIssues='), ctx);
   vm.runInNewContext(assignment('batchDeleteIssues', ',listChildren='), ctx);

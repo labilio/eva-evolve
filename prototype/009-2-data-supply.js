@@ -523,7 +523,7 @@ window.__EVA_CLIENT_TASKS = [
     "number": 105,
     "title": "收集第二批客户场景需求",
     "description": "先归集反馈和业务价值，范围未确认前不承诺排期。",
-    "status": "backlog",
+    "status": "todo",
     "priority": "medium",
     "assignee_type": "member",
     "assignee_id": "u-hejing",
@@ -540,10 +540,10 @@ window.__EVA_CLIENT_TASKS = [
 
 window.__EVA_OFFICIAL_TASKS.push(
   {...window.__EVA_OFFICIAL_TASKS[0],id:'official-104',number:104,identifier:'EVA-104',position:104,title:'发布用户反馈信息收集模板',status:'done',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'演示记录：已整理版本号、复现步骤、期望结果及脱敏要求，供用户反馈时参考。'},
-  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'backlog',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
+  {...window.__EVA_OFFICIAL_TASKS[0],id:'official-105',number:105,identifier:'EVA-105',position:105,title:'整理社区高频问题候选清单',status:'todo',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集用户交流中的重复问题，评估哪些内容进入下一版说明，暂未确认排期。'}
 );
 window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'backlog',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'agent',assignee_id:'ag-supply-procurement',assignee_name:'间接采购专家',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'agent',assignee_id:'ag-supply-contract',assignee_name:'供应链合同管理专家',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
