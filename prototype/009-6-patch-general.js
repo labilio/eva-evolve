@@ -229,6 +229,7 @@
     source=root.__evaCut(source,'function IssueCard(',String.raw`function evaIssueChildrenOf(rt,ct=issuesOf()){return ct.filter(ut=>ut.parent_issue_id===rt)}
 function evaIssueParentOf(rt,ct=issuesOf()){return rt?.parent_issue_id?ct.find(ut=>ut.id===rt.parent_issue_id)??null:null}
 function evaIssueDescendantIds(rt,ct=issuesOf()){const ut=new Set,pt=[rt];while(pt.length){const mt=pt.pop();for(const gt of ct)gt.parent_issue_id===mt&&!ut.has(gt.id)&&(ut.add(gt.id),pt.push(gt.id))}return ut}
+function evaIssueDefaultCollapsedIds(rt,ct=issuesOf(),ut=3){const pt=new Set,mt=(gt,St,Ct)=>{for(const xt of evaIssueChildrenOf(gt,ct)){if(Ct.has(xt.id))continue;const Pt=St+1,Nt=evaIssueChildrenOf(xt.id,ct),Mt=new Set(Ct);Mt.add(xt.id),Nt.length&&Pt>=ut?pt.add(xt.id):mt(xt.id,Pt,Mt)}};return mt(rt,0,new Set([rt])),pt}
 const EvaHierarchyIcon=createLucideIcon("Network",[["rect",{x:"16",y:"16",width:"6",height:"6",rx:"1",key:"network-right"}],["rect",{x:"2",y:"16",width:"6",height:"6",rx:"1",key:"network-left"}],["rect",{x:"9",y:"2",width:"6",height:"6",rx:"1",key:"network-root"}],["path",{d:"M5 16v-4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v4",key:"network-branches"}],["path",{d:"M12 12V8",key:"network-stem"}]]);
 function EvaIssueAssignee({issue:rt,size:ct=20,compact:ut=!1}){if(!rt.assignee_id)return React.createElement("span",{className:"eva-issue-assignee is-empty"+(ut?" is-compact":""),title:"负责人：未指派","aria-label":"负责人：未指派"},ut?"—":"未指派");const pt=rt.assignee_type||"member",mt={id:rt.assignee_id,name:rt.assignee_name||"未命名",type:pt},gt="负责人："+mt.name+(pt==="agent"?"（AI）":"");return React.createElement("span",{className:"eva-issue-assignee"+(ut?" is-compact":""),title:gt,"aria-label":ut?gt:void 0},React.createElement(EvaLoopIdentityAvatar,{person:mt,size:ct}),!ut&&React.createElement("span",{className:"eva-issue-assignee__name"},mt.name),!ut&&pt==="agent"&&window.EvaAIIdentity.badge(React.createElement))}
 function EvaIssueRelationMeta({issue:rt,variant:ct="card"}){const ut=evaIssueParentOf(rt),pt=evaIssueChildrenOf(rt.id);if(!ut&&!pt.length)return null;const mt=pt.filter(gt=>gt.status==="done").length,gt=pt.length?Math.round(mt/pt.length*100):0;return React.createElement("div",{className:"eva-issue-relation eva-issue-relation--"+ct},ut&&React.createElement("span",{className:"eva-issue-relation__parent"+(pt.length?" has-children":""),title:"父任务："+ut.identifier+" "+ut.title},React.createElement(ChevronRight,{size:12}),React.createElement("span",{className:"eva-issue-relation__label"},"父任务"),React.createElement("strong",{className:"eva-issue-relation__id"},ut.identifier)),pt.length>0&&React.createElement("span",{className:"eva-issue-relation__children",title:"直接子任务已完成 "+mt+" 项，共 "+pt.length+" 项"},React.createElement("span",{className:"eva-issue-relation__label"},"直接子任务"),React.createElement("strong",null,mt," / ",pt.length),React.createElement("span",{className:"eva-issue-relation__track","aria-hidden":!0},React.createElement("span",{style:{width:gt+"%"}}))))}
@@ -253,20 +254,23 @@ function EvaBoardSubtaskTree({issue:rt,onOpen:ct,running:ut}){
     Nt&&React.createElement("div",{className:"eva-board-subtasks__tree",role:"tree","aria-label":rt.identifier+" 的子任务"},gt.map(Mt=>Pt(Mt,0,new Set([rt.id])))));
 }
 function EvaIssueDetailSubtaskTree({rootIssue:rt,onOpen:ct,readOnly:ut=!1}){
-  const{t:pt}=useI18n$1(),mt=issuesOf(),gt=(St,Ct,xt)=>{
+  const{t:pt}=useI18n$1(),mt=issuesOf(),evaTreeSignature=mt.map(St=>St.id+":"+(St.parent_issue_id||"")).join("|"),[evaCollapsedIds,evaSetCollapsedIds]=reactExports.useState(()=>evaIssueDefaultCollapsedIds(rt.id,mt));
+  reactExports.useEffect(()=>evaSetCollapsedIds(evaIssueDefaultCollapsedIds(rt.id,mt)),[rt.id,evaTreeSignature]);
+  const gt=(St,Ct,xt)=>{
     if(xt.has(St.id))return null;
-    const Pt=evaIssueChildrenOf(St.id,mt),Nt=ISSUE_STATUS_ICON[St.status],Mt=PRIORITY_ICON[St.priority||"none"],Dt=new Set(xt);Dt.add(St.id);
+    const Pt=evaIssueChildrenOf(St.id,mt),evaExpanded=!evaCollapsedIds.has(St.id),Nt=ISSUE_STATUS_ICON[St.status],Mt=PRIORITY_ICON[St.priority||"none"],Dt=new Set(xt);Dt.add(St.id);
     return React.createElement("div",{key:St.id,className:"eva-loop-subtask-tree__branch"},
-      React.createElement("div",{className:"eva-loop-subtask-tree__item",role:"treeitem","aria-level":Ct+1,"aria-expanded":Pt.length?!0:void 0},
+      React.createElement("div",{className:"eva-loop-subtask-tree__item",role:"treeitem","aria-level":Ct+1,"aria-expanded":Pt.length?evaExpanded:void 0},
+        Pt.length?React.createElement("button",{type:"button",className:"eva-loop-subtask-tree__toggle","aria-label":evaExpanded?"收起 "+St.identifier+" 的子任务":"展开 "+St.identifier+" 的子任务",onClick:()=>evaSetCollapsedIds(Ft=>{const Qt=new Set(Ft);return evaExpanded?Qt.add(St.id):Qt.delete(St.id),Qt})},React.createElement(ChevronRight,{size:13,className:evaExpanded?"is-open":""})):React.createElement("span",{className:"eva-loop-subtask-tree__toggle-spacer"}),
         React.createElement(ut?"div":"button",{type:ut?void 0:"button",className:"loop-subissue",title:St.identifier+" "+St.title,"aria-label":ut?void 0:"打开任务 "+St.identifier+" "+St.title,onClick:ut?void 0:()=>ct(St.id)},
           React.createElement(Nt,{size:14,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[St.status]},"aria-label":pt("loop.status."+St.status)}),
           React.createElement("span",{className:"loop-subissue__id"},St.identifier),
           React.createElement("span",{className:"loop-subissue__title"},St.title),
           React.createElement(EvaIssueAssignee,{issue:St}),
           React.createElement("span",{className:"loop-subissue__priority",title:pt("loop.priority."+(St.priority||"none"))},React.createElement(Mt,{size:14,strokeWidth:2,style:{color:PRIORITY_HEX[St.priority||"none"]}})))),
-      Pt.length>0&&React.createElement("div",{className:"eva-loop-subtask-tree__children",role:"group"},Pt.map(Ft=>gt(Ft,Ct+1,Dt))));
+      evaExpanded&&Pt.length>0&&React.createElement("div",{className:"eva-loop-subtask-tree__children",role:"group"},Pt.map(Ft=>gt(Ft,Ct+1,Dt))));
   },St=evaIssueChildrenOf(rt.id,mt);
-  return React.createElement("div",{className:"loop-subissues eva-loop-subtask-tree",role:"tree","aria-label":rt.identifier+" 的全部子任务"},St.map(Ct=>gt(Ct,0,new Set([rt.id]))));
+  return React.createElement(React.Fragment,null,evaCollapsedIds.size>0&&React.createElement("div",{className:"eva-loop-subtask-tree__depth-note"},React.createElement("span",null,"第 4 层及更深任务已收起"),React.createElement(Button,{theme:"borderless",size:"small",className:"eva-loop-subtask-tree__expand-all",icon:React.createElement(ChevronDown,{size:14}),onClick:()=>evaSetCollapsedIds(new Set)},"展开全部层级")),React.createElement("div",{className:"loop-subissues eva-loop-subtask-tree",role:"tree","aria-label":rt.identifier+" 的全部子任务"},St.map(Ct=>gt(Ct,0,new Set([rt.id])))));
 }
 const EvaZoomInIcon=createLucideIcon("ZoomIn",[["circle",{cx:"11",cy:"11",r:"8",key:"zoom-in-1"}],["path",{d:"m21 21-4.3-4.3",key:"zoom-in-2"}],["path",{d:"M11 8v6",key:"zoom-in-3"}],["path",{d:"M8 11h6",key:"zoom-in-4"}]]);
 const EvaZoomOutIcon=createLucideIcon("ZoomOut",[["circle",{cx:"11",cy:"11",r:"8",key:"zoom-out-1"}],["path",{d:"m21 21-4.3-4.3",key:"zoom-out-2"}],["path",{d:"M8 11h6",key:"zoom-out-3"}]]);
