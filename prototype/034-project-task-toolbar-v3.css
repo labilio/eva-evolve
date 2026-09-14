@@ -115,8 +115,12 @@
 .loop-page .loop-card__foot { flex-wrap: wrap; gap: 8px; }
 .loop-page .loop-abadge { max-width: 100%; }
 .loop-page .loop-groupboard__head { padding-block: 16px; font: 500 14px/22px var(--eva-font-sans); }
+.loop-page .loop-groupboard__head em,
+.loop-page .loop-list__group-head em { color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
 .loop-page .loop-list__row { min-height: 48px; gap: 12px; }
-.loop-page .loop-list__title { font: 400 14px/22px var(--eva-font-sans); }
+.loop-page .loop-list__row.has-subtasks,
+.loop-page .loop-list__row.is-subtask { min-height: 62px; }
+.loop-page .loop-list__title { max-width: 100%; font: 500 14px/22px var(--eva-font-sans); }
 .loop-page :is(.loop-list__id,.loop-list__time,.loop-list__project) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
 .loop-page :is(.loop-card,.loop-list__row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 
@@ -137,24 +141,93 @@
 .loop-idp .loop-cmt__reply-stub { min-height: 32px; border-radius: var(--eva-radius-control); }
 .loop-idp .loop-composer { border-radius: var(--eva-radius-panel); }
 
-/* Grouped cards keep compact relation hints; the status board renders the full tree below. */
+/* Grouped cards and list rows expose the same relation summary; the hierarchy view owns the full tree. */
 .loop-page .eva-issue-relation {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  min-height: 18px;
+  gap: 4px 8px;
+  min-height: 20px;
   color: var(--eva-text-secondary-accessible);
   font: 400 12px/16px var(--eva-font-sans);
 }
-.loop-page .eva-issue-relation > span { display: inline-flex; align-items: center; min-width: 0; }
-.loop-page .eva-issue-relation__parent { max-width: 100%; }
-.loop-page .eva-issue-relation__parent svg { flex: none; }
+.loop-page .eva-issue-relation > span {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 20px;
+}
+.loop-page .eva-issue-relation__label { white-space: nowrap; }
+.loop-page .eva-issue-relation__parent {
+  max-width: 100%;
+  gap: 3px;
+}
+.loop-page .eva-issue-relation__parent.has-children {
+  padding-right: 8px;
+  border-right: var(--eva-border-hairline-w) solid var(--eva-border-subtle);
+}
+.loop-page .eva-issue-relation__parent svg { flex: none; color: var(--eva-text-muted); }
+.loop-page .eva-issue-relation__id,
+.loop-page .eva-issue-relation__children strong {
+  color: var(--eva-text-primary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .loop-page .eva-issue-relation__children {
-  padding: 1px 6px;
+  gap: 5px;
+}
+.loop-page .eva-issue-relation__track {
+  position: relative;
+  width: 40px;
+  height: 4px;
+  overflow: hidden;
   border-radius: var(--eva-radius-full);
+  background: var(--eva-border-faint);
+}
+.loop-page .eva-issue-relation__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--eva-action-primary);
+}
+.loop-page .loop-card .eva-issue-relation {
+  padding: 6px 8px;
+  border: var(--eva-border-hairline-w) solid var(--eva-border-faint);
+  border-radius: var(--eva-radius-control);
   background: var(--eva-surface-subtle);
-  color: var(--eva-text-secondary);
+}
+.eva-loop-list__task {
+  display: flex;
+  flex: 1 1 320px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 180px;
+  padding-block: 3px;
+}
+.loop-page .eva-loop-list__task .eva-issue-relation {
+  margin-top: 1px;
+}
+.loop-page .loop-list__row.is-subtask .eva-loop-list__task {
+  position: relative;
+  padding-left: 14px;
+}
+.loop-page .loop-list__row.is-subtask .eva-loop-list__task::before {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: var(--eva-border-hairline-w);
+  border-radius: var(--eva-radius-full);
+  background: var(--eva-border-default);
+  content: "";
+}
+@media (max-width: 900px) {
+  .eva-loop-list__task { flex-basis: 220px; min-width: 140px; }
+  .loop-page .loop-list__row { gap: 8px; }
+  .loop-page .eva-issue-relation__track { display: none; }
 }
 
 /* Status board: columns count top-level cards separately, while each root card owns its subtree. */

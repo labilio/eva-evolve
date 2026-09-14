@@ -74,11 +74,17 @@ test('供应链演示数据提供两级和三级子任务链，且不复制项�
   for(const id of ['SC-109','SC-110','SC-111','SC-112'])assert.equal(byIdentifier(id).project_id,'p-supply');
 });
 
-test('层级视图、看板子任务树、详情常驻子任务区和完成前确认均接入统一运行时',()=>{
+test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
   assert.ok(runtime.includes('["board","grouped","list","hierarchy"]'));
   assert.ok(runtime.includes('className:"eva-loop-subtasks__empty"'));
   assert.ok(runtime.includes('父任务完成不会自动完成子任务，子任务状态保持不变。'));
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rt})'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rn,variant:"list"})'));
+  assert.ok(runtime.includes('"直接子任务"'));
+  assert.ok(runtime.includes('mt.total," 项任务"'));
+  assert.ok(runtime.includes('className:"eva-loop-list__task"'));
+  assert.ok(runtime.includes('" is-subtask"'));
+  assert.ok(runtime.includes('" has-subtasks"'));
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
   assert.ok(runtime.includes('function EvaBoardSubtaskTree('));
   assert.ok(runtime.includes('className:"eva-board-subtask__children"'));
@@ -90,4 +96,8 @@ test('层级视图、看板子任务树、详情常驻子任务区和完成前�
   assert.match(taskStyles,/\.eva-loop-board--nested\s*\{\s*grid-auto-columns:\s*336px/);
   assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto auto/);
   assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*5/);
+  assert.match(taskStyles,/\.loop-card \.eva-issue-relation\s*\{[\s\S]*background:\s*var\(--eva-surface-subtle\)/);
+  assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
+  assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);
+  assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
 });
