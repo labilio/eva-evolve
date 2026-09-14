@@ -308,7 +308,11 @@
     if (resource.type === 'external_link') return 'is-external-link';
     if (resource.type === 'shortcut') return 'is-shortcut';
     if (resource.extension === 'pdf') return 'is-pdf';
+    if (['doc', 'docx'].includes(resource.extension)) return 'is-word';
     if (['xlsx', 'xls', 'csv'].includes(resource.extension)) return 'is-sheet';
+    if (['ppt', 'pptx'].includes(resource.extension)) return 'is-presentation';
+    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(resource.extension)) return 'is-archive';
+    if (['md', 'markdown'].includes(resource.extension)) return 'is-markdown';
     return '';
   }
 

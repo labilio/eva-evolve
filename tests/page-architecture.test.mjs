@@ -91,12 +91,18 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /'新建 AI 团队'.+'新建个人助理'/s);
+  assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
+  assert.doesNotMatch(imPatch, /evaCreate=mine&evaReturn=/);
   assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
   assert.match(imPatch, /className:'eva-ai-team__teams'.+className:'eva-ai-team__list-divider',role:'separator'.+className:'eva-ai-team__direct-groups'/s);
   assert.match(imPatch, /type:'file',hidden:true,accept:'image\/png,image\/jpeg,image\/webp'/);
   assert.match(imPatch, /const reader=new FileReader\(\)/);
   assert.match(imPatch, /avatar\?'更换团队头像':'上传团队头像'/);
-  assert.doesNotMatch(imPatch, /粘贴头像图片地址/);
+  assert.match(imPatch, /'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
+  assert.match(imPatch, /className:'eva-editor-avatar-button'.+avatarInput\.current\?\.click\(\)/s);
+  assert.doesNotMatch(imPatch, /头像图片地址|粘贴头像图片地址/);
+  assert.match(imPatch, /if\(persona\)tabs\.push\(\['collaboration','协作'/);
+  assert.doesNotMatch(imPatch, /\['skills','技能'.+\],\['collaboration','协作'/);
   assert.match(imPatch, /className:'eva-ai-team-editor__selected-avatar'.+EvaAIIdentity\.avatar\(item\.appearance,28,h\).+className:'eva-ai-team-editor__selected-name'/s);
   assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team-editor__selected-item\s*>\s*span/);
   assert.match(imPatch, /teamGroups\.map\(teamGroupItem\)/);
@@ -388,7 +394,7 @@ test('个人仅创建文件夹与对话，移除助理创建和编辑入口', ()
   assert.match(workspace, /window\.EvaPersonal\.renameConversation/);
 });
 
-test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
+test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', () => {
   const sider = read('prototype/009-7-patch-sider.js');
   const imPatch = read('prototype/009-5-patch-im.js');
   const creator = read('prototype/047-digital-employees.js');
@@ -406,7 +412,8 @@ test('我的 AI 位于个人导航并复用个人助理创建流程', () => {
   assert.match(sider, /label:rt\.collapsed\?"数字员工":"数字员工市场"/);
   assert.doesNotMatch(sider, /label:"我的 AI"/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
-  assert.match(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
+  assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
+  assert.doesNotMatch(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
   assert.match(sider, /returnTo=evaCreatorParams\.get\("evaReturn"\)/);
   assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
 });
@@ -536,8 +543,16 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.match(componentCss, /\.eva-composer-wrap\s*\{[^}]*width:\s*var\(--eva-main-col-w\);[^}]*height:\s*166px;/s);
   assert.match(componentCss, /\.eva-composer\s*\{[^}]*width:\s*768px;[^}]*height:\s*118px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*height:\s*48px;/s);
-  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*margin-top:\s*var\(--eva-space-1\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*order:\s*1;[^}]*height:\s*102px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__welcome-avatar\s*\{[^}]*width:\s*218px;[^}]*height:\s*292px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__rail\s*\{[^}]*order:\s*2;[^}]*width:\s*calc\(100% - 236px\)/s);
+  assert.match(workspace, /eva-personal-workspace__capabilities/);
+  assert.match(workspace, /querySelector\('\.eva-personal-workspace__capabilities'\)\.scrollBy/);
+  assert.match(workspaceCss, /\.eva-personal-workspace__capabilities\s*\{[^}]*flex:\s*1;[^}]*overflow-x:\s*auto;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-rail-next\s*\{[^}]*position:\s*static;[^}]*flex:\s*0 0 32px;[^}]*margin-left:\s*0;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*order:\s*3;[^}]*margin-top:\s*var\(--eva-space-3\)/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat\s*\{\s*height:148px;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat \.eva-composer\s*\{\s*height:104px;/s);
 });
 
 test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏', () => {

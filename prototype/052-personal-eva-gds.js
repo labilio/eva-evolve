@@ -198,10 +198,12 @@
   /* ---- 场景 chip 排 ---------------------------------------- */
   function railHTML() {
     return '<div class="eva-rail eva-personal-workspace__rail" role="group" aria-label="快捷能力">'
+      + '<div class="eva-personal-workspace__capabilities">'
       + SCENARIOS.map(function (item) {
         return '<button class="eva-chip eva-t-chip eva-personal-workspace__capability" type="button" data-eva-scenario="' + item.id + '">'
           + icon(item.icon, 16, 'eva-i') + '<span>' + escapeHTML(item.label) + '</span></button>';
       }).join('')
+      + '</div>'
       + '<button class="eva-rail-next" type="button" aria-label="更多快捷能力">' + icon('chevron-right', 12, 'eva-i-chevron') + '</button>'
       + '</div>';
   }
@@ -837,7 +839,7 @@
       root.querySelector('.eva-composer-prompt').focus();
     }
     if (event.target.closest('.eva-rail-next')) {
-      root.querySelector('.eva-rail').scrollBy({left:200, behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+      root.querySelector('.eva-personal-workspace__capabilities').scrollBy({left:200, behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
     }
   });
 
