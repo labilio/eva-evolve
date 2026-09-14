@@ -546,6 +546,10 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   assert.match(workspaceCss, /\.eva-personal-workspace__hero\s*\{[^}]*order:\s*1;[^}]*height:\s*102px;/s);
   assert.match(workspaceCss, /\.eva-personal-workspace__welcome-avatar\s*\{[^}]*width:\s*218px;[^}]*height:\s*292px;/s);
   assert.match(workspaceCss, /\.eva-personal-workspace__rail\s*\{[^}]*order:\s*2;[^}]*width:\s*calc\(100% - 236px\)/s);
+  assert.match(workspace, /eva-personal-workspace__capabilities/);
+  assert.match(workspace, /querySelector\('\.eva-personal-workspace__capabilities'\)\.scrollBy/);
+  assert.match(workspaceCss, /\.eva-personal-workspace__capabilities\s*\{[^}]*flex:\s*1;[^}]*overflow-x:\s*auto;/s);
+  assert.match(workspaceCss, /\.eva-personal-workspace \.eva-rail-next\s*\{[^}]*position:\s*static;[^}]*flex:\s*0 0 32px;[^}]*margin-left:\s*0;/s);
   assert.match(workspaceCss, /\.eva-personal-workspace__composer\s*\{[^}]*order:\s*3;[^}]*margin-top:\s*var\(--eva-space-3\)/s);
   assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat\s*\{\s*height:148px;/s);
   assert.match(workspaceCss, /\.eva-personal-workspace \.eva-composer-wrap--newchat \.eva-composer\s*\{\s*height:104px;/s);

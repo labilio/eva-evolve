@@ -184,6 +184,17 @@
   flex: none;
   margin-top: var(--eva-space-2);
 }
+.eva-personal-workspace__capabilities {
+  display: flex;
+  align-items: center;
+  gap: var(--eva-space-2);
+  min-width: 0;
+  height: 37px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.eva-personal-workspace__capabilities::-webkit-scrollbar { display: none; }
 .eva-personal-workspace__capability .eva-i { color: var(--eva-text-primary); }
 
 /* ---- 输入器：沿用原复合输入器尺寸，只替换工具内容 ---- */
@@ -486,8 +497,8 @@
 .eva-personal-workspace .eva-canvas { width:min(calc(100% - 32px),534px); height:auto; aspect-ratio:16/9; }
 .eva-personal-workspace .eva-toolbar { overflow-x:auto; flex-shrink:0; }
 .eva-personal-workspace .eva-tool-btn { flex-shrink:0; }
-.eva-personal-workspace .eva-rail { overflow-x:auto; scrollbar-width:none; padding-right:32px; }
-.eva-personal-workspace .eva-rail-next { position:sticky; right:0; width:32px; height:32px; margin-left:-24px; }
+.eva-personal-workspace .eva-rail { overflow:hidden; padding-right:0; }
+.eva-personal-workspace .eva-rail-next { position:static; width:32px; height:32px; flex:0 0 32px; margin-left:0; }
 
 .eva-personal-workspace *, .eva-personal-workspace *::before, .eva-personal-workspace *::after { box-sizing:border-box; }
 .eva-personal-workspace .eva-artifact { max-width:100%; }
