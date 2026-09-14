@@ -485,3 +485,21 @@ window.__EVA_THREAD_STATE_DEMO = {
     {id:'supply-hidden-office-demand',name:'办公用品需求核对',status:1,hidden:true,creator_name:'王宜林',member_count:6,message_count:1,created_at:'2026-09-01T09:00:00+08:00',updated_at:'2026-09-02T11:00:00+08:00',last_message_sender_name:'王宜林',last_message_content:'各部门需求已收齐，后续按合并清单推进，明细保留在这里查阅。',senderId:'u-wangyilin'}
   ]
 };
+
+// Curated mock navigation: three parallel topics per ordinary project group.
+window.__EVA_MOCK_LAYOUT = {
+  groups:[
+    {id:'c-eva',projectId:'prod',name:'采购与招投标',topics:['采购需求归集确认','供应商报价口径核对','招投标文件联合评审']},
+    {id:'c-review',projectId:'prod',name:'质量与排产',topics:['来料异常联合复核','供应商整改闭环跟踪','排产齐套风险确认']},
+    {id:'c-weekly',projectId:'prod',name:'合规与合同',topics:['供应商准入资料复核','采购合同条款评审','到期合同续签确认']},
+    {id:'c-client-delivery',projectId:'lab',name:'交付与验收',topics:['本周交付范围确认','客户验收资料核对','交付问题闭环跟踪']},
+    {id:'c-client-issues',projectId:'lab',name:'问题与响应',topics:['客户问题分级处理','现场问题联合排查','修复结果回归确认']},
+    {id:'c-client-sync',projectId:'lab',name:'进度与协同',topics:['每日进展同步确认','跨团队依赖事项核对','下周协作计划安排']},
+    {id:'drive-product-design',projectId:'drive-design',name:'文件体验设计',topics:['文件列表导航设计','分享链接权限评审','预览下载体验设计']},
+    {id:'drive-development',projectId:'drive-design',name:'文件功能开发',topics:['上传失败与恢复重试','共享权限校验实现','文件预览兼容处理']},
+    {id:'drive-acceptance',projectId:'drive-design',name:'文件验收反馈',topics:['文件操作路径验收','共享权限矩阵复核','搜索空态体验检查']},
+    {id:'official-community',projectId:'official',name:'用户反馈交流',topics:['文件上传问题反馈','分享权限使用答疑','会议行动事项整理']},
+    {id:'official-product',projectId:'official',name:'产品体验讨论',create:true,topics:['导航操作体验讨论','消息协作体验讨论','任务跟进体验讨论']},
+    {id:'official-release',projectId:'official',name:'版本发布跟进',create:true,topics:['本轮更新范围确认','发布前验收问题核对','使用指引文档完善']}
+  ]
+};

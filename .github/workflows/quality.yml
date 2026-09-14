@@ -49,6 +49,9 @@ jobs:
       - name: Verify heading system in browser
         run: npm run test:headings
 
+      - name: Check list content insets
+        run: npm run test:layout
+
       - name: Check manifest
         run: npm run check:manifest
 

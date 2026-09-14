@@ -38,7 +38,7 @@
     color: var(--semi-color-text-2);
     font-size: 14px;
     font-weight: 400;
-    transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    transition: background-color var(--eva-switch-color-duration) ease, color var(--eva-switch-color-duration) ease, box-shadow var(--eva-switch-color-duration) ease;
   }
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn:hover {
@@ -134,7 +134,7 @@ body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-re
   background: #fff;
   box-shadow: 0 1px 2px rgb(31 35 41 / 8%), 0 0 0 1px rgb(31 35 41 / 3%);
   pointer-events: none;
-  transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+  transition: transform var(--eva-switch-duration) var(--eva-switch-easing);
 }
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container:has(.wk-sidebar-tabbar__btn:nth-child(2).wk-sidebar-tabbar__btn--active)::before {
   transform: translateX(100%);
@@ -151,3 +151,26 @@ body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-re
 @media (prefers-reduced-motion: reduce) {
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container::before { transition: none; }
 }
+
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .eva-space-task-button {
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .eva-space-task-button:hover,
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .eva-space-task-button:focus-visible {
+  background: var(--semi-color-fill-1);
+}
+
+/* Shared overlay scrollbar: visual rail width never depends on native gutter. */
+.eva-list-scroll-overlay { position:relative;flex:1;min-height:0;min-width:0;overflow:hidden; }
+body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__scroll { height:100%;width:100%;box-sizing:border-box;overflow-y:auto;scrollbar-width:none;scrollbar-gutter:auto; }
+.eva-list-scroll-native::-webkit-scrollbar { display:none; }
+.eva-list-scroll-content { display:flow-root; }
+.eva-list-scroll-track { position:absolute;top:0;bottom:0;right:4px;width:7px;pointer-events:none; }
+.eva-list-scroll-thumb { width:7px;border-radius:999px;background:#c7cdd2;pointer-events:auto;touch-action:none;cursor:default; }
+
+.eva-list-scroll-track { opacity:0;visibility:hidden;transition:opacity 150ms ease,visibility 150ms; }
+.eva-list-scroll-track.is-visible { opacity:1;visibility:visible; }
+@media(prefers-reduced-motion:reduce) { .eva-list-scroll-track { transition:none; } }

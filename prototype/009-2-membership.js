@@ -561,6 +561,27 @@
       }
       saved.seededThreadStatesV1=true;
     }
+    // One-time mock layout upgrade; no deletion, message reset or preference reset.
+    if(root.__EVA_MOCK_LAYOUT&&!saved.seededMockLayoutV1){
+      saved.threadDetails||={};saved.messages||={};
+      for(const spec of root.__EVA_MOCK_LAYOUT.groups){
+        const project=saved.projects[spec.projectId];if(!project)continue;
+        let group=saved.groups[spec.id];
+        if(!group&&spec.create)group=saved.groups[spec.id]={id:spec.id,name:spec.name,projectId:spec.projectId,ownerId:project.ownerId,humans:project.humans.map(p=>({id:p.id,role:'member'})),cloneIds:[]};
+        if(!group||group.projectId!==spec.projectId)continue;
+        const oldNames={'c-client-delivery':'客户联合交付群','c-client-issues':'问题响应','c-client-sync':'每日同步','drive-acceptance':'文件验收与反馈','official-community':'用户使用反馈与开发交流'};
+        if(group.name===oldNames[spec.id])group.name=spec.name;
+        const existing=Object.entries(saved.threads).filter(([id,parent])=>parent===spec.id&&saved.threadDetails[id]?.status!==2&&!saved.chatPreferences?.[saved.actorId]?.[id]?.hidden);
+        for(let n=existing.length;n<3;n++){
+          const id=spec.id+'-mock-topic-'+(n+1);if(saved.threads[id]||saved.threadDetails[id])continue;
+          saved.threads[id]=spec.id;saved.threadDetails[id]={id,name:spec.topics[n],status:1,created_at:root.__EVA_DEMO_TIME?.T1};
+          const sender=saved.people.find(p=>p.id===group.ownerId);if(sender)saved.messages[id]=[{kind:'text',sender:{...sender,uid:sender.id},time:'09:30',fixtureId:'mock-layout-v1:'+id,text:'本子区集中讨论'+spec.topics[n]+'，请将待确认事项、相关资料和下一步安排汇总在这里。'}];
+        }
+      }
+      const old=saved.groups['c-drive-design'];
+      if(old&&!Object.values(saved.threads).includes(old.id)&&!(saved.messages[old.id]||[]).length&&!saved.chatSettings?.[old.id]&&!Object.values(saved.chatPreferences||{}).some(p=>p[old.id]))delete saved.groups[old.id];
+      saved.seededMockLayoutV1=true;
+    }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{

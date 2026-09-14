@@ -87,3 +87,10 @@
   --gds-icon-size-navigation: 18px;
   --gds-icon-size-toolbar: 20px;
 }
+
+/* Eva motion adapter tokens; original customer GDS tokens remain unchanged. */
+:root {
+  --eva-switch-duration: 220ms;
+  --eva-switch-color-duration: 180ms;
+  --eva-switch-easing: cubic-bezier(.22, 1, .36, 1);
+}

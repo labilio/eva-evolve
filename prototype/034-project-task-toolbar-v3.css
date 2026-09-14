@@ -1117,3 +1117,36 @@
 .eva-loop-identity-name { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; vertical-align: middle; }
 .eva-loop-identity-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-loop-identity-name > .ai-badge { flex-shrink: 0; }
+
+/* A shared moving highlight keeps view changes visually continuous. */
+.eva-task-view-switcher {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+.eva-task-view-switcher::before {
+  content: "";
+  position: absolute;
+  inset: 3px auto 3px 3px;
+  width: calc((100% - 6px) / 3);
+  border-radius: var(--gds-radius-key);
+  background: var(--gds-color-surface-primary);
+  box-shadow: 0 1px 2px rgb(31 35 41 / 8%);
+  pointer-events: none;
+  transition: transform var(--eva-switch-duration) var(--eva-switch-easing);
+}
+.eva-task-view-switcher:has(.loop-seg__btn:nth-child(2).is-active)::before { transform: translateX(100%); }
+.eva-task-view-switcher:has(.loop-seg__btn:nth-child(3).is-active)::before { transform: translateX(200%); }
+.eva-task-view-switcher .loop-seg__btn {
+  position: relative;
+  z-index: 1;
+  transition: color var(--eva-switch-color-duration) ease;
+}
+.eva-task-view-switcher .loop-seg__btn:hover,
+.eva-task-view-switcher .loop-seg__btn.is-active { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .eva-task-view-switcher::before,
+  .eva-task-view-switcher .loop-seg__btn { transition: none; }
+}
