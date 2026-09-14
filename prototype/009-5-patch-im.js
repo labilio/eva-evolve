@@ -577,6 +577,9 @@ function EvaAITeamPage() {
   const draftKey = session?.id || (identity ? 'draft:'+identity.id : '');
   const status = i => i.role==='assistant' ? (i.status==='offline'?'本地离线':'本地已连接') : ({synced:'已自动同步',syncing:'正在同步',waiting:'等待记忆同步',error:'同步失败'}[i.syncStatus]);
   const choose = (identityId,sessionId) => {window.__evaOpenAssistantEditor?.(null);if(groupIds.has(identityId))groupStore.markRead(identityId,sessionId||identityId);else if(sessionId){if(digitalEmployees.some(item=>item.id===identityId))digitalStore.markRead(identityId,sessionId);else store.markRead(sessionId);}setSelection({identityId,sessionId});setError('');};
+  const rememberGroupActionOpener=()=>{groupEditorOpener.current=document.activeElement;};
+  const openGroupEditor=group=>{rememberGroupActionOpener();setGroupEditor({mode:'edit',record:group});};
+  const openGroupDissolve=group=>{rememberGroupActionOpener();setGroupToDissolve(group);};
   const newConversation = id => {setCollapsed(value=>({...value,[id]:false}));choose(id,digitalEmployees.some(item=>item.id===id)?digitalStore.createThread(id):store.createThread(id));};
   const employeeSessions=employee?digitalStore.sessions(employee.id):[];
   const employeeSession=employeeSessions.find(item=>item.id===selection.sessionId)||employeeSessions[0];
@@ -587,6 +590,7 @@ function EvaAITeamPage() {
   const source = groupSelected?groupStore.source(selectedGroup.id,fixedMembers,selection.sessionId):employee?digitalStore.conversationSource(employee.id,employeeSession?.id):identity ? messageSource('my-ai', snapshot, identity, session) : null;
   if(source)source.openMessageId=requestedMessageId;
   if(groupSelected){
+    if(!selectedGroup.system)source.fixedGroupActions={onEdit:()=>openGroupEditor(selectedGroup),onDissolve:()=>openGroupDissolve(selectedGroup)};
     source.onCreateThread=record=>{const id=groupStore.createThread(selectedGroup.id,record);setCollapsed(value=>({...value,[selectedGroup.id]:false}));return id;};
     source.onUpdateThread=(id,patch)=>{groupStore.updateThread(selectedGroup.id,id,patch);if(patch.deleted&&selection.sessionId===id)choose(selectedGroup.id,null);};
     source.onSelectThread=id=>choose(selectedGroup.id,id);
@@ -680,8 +684,7 @@ function EvaAITeamPage() {
         h('button',{type:'button',className:'eva-ai-team__team-button','aria-label':'进入团队会话 '+group.name,'aria-current':selected&&!selection.sessionId?'true':undefined,onClick:()=>choose(group.id,null)},
           h('img',{className:'eva-ai-team__team-avatar',src:group.avatar||window.EvaAvatar.uri({kind:'group',id:group.id}),alt:''}),
           h('span',{className:'eva-ai-team__team-name',title:group.name},group.name),
-          group.system&&h('span',{className:'eva-ai-team__team-default'},'默认'),hasUnread&&unreadDot(group.name+'有未读消息')),
-        !group.system&&h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,h(Dropdown.Item,{onClick:()=>setGroupEditor({mode:'edit',record:group})},'编辑团队'),h(Dropdown.Divider,null),h(Dropdown.Item,{type:'danger',onClick:()=>setGroupToDissolve(group)},'解散群'))},h('span',{className:'eva-ai-team__team-menu',onFocus:event=>{groupEditorOpener.current=event.target;}},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon,{size:16}),'aria-label':group.name+'的团队操作'})))),
+          group.system&&h('span',{className:'eva-ai-team__team-default'},'默认'),hasUnread&&unreadDot(group.name+'有未读消息'))),
       expanded&&h('div',{className:'eva-ai-team__team-threads',id:threadsId},visibleThreads.map(item=>h('div',{key:item.id,className:'eva-ai-team__team-thread-row'+(selected&&selection.sessionId===item.id?' is-selected':'')},h(ConvCompactItem,{isThread:true,name:item.name,unread:item.unread,selected:selected&&selection.sessionId===item.id,onClick:()=>choose(group.id,item.id)}),h('div',{className:'eva-ai-team__session-actions'},teamThreadMenu(group,item)))),hasMore&&h('button',{type:'button',className:'eva-ai-team__team-threads-more','aria-expanded':showAll,'aria-label':(showAll?'收起 ':'展开查看 ')+group.name+' 子区',onClick:()=>setShowAllTeamThreads(value=>({...value,[group.id]:!showAll}))},h('span',null,showAll?'收起':'展开查看'),h(ChevronDown,{size:12,className:'eva-ai-team__team-threads-more-chevron'+(showAll?' is-expanded':''),'aria-hidden':true}))));
   }
   const personas=snapshot.identities.filter(i=>i.role==='persona');
@@ -1005,7 +1008,7 @@ function EvaAITeamPage() {
     cut('className:"ch-right-panel ch-right-panel--overlay"},fa?React.createElement',
       'className:"ch-right-panel ch-right-panel--overlay"},fa&&ct?.presentation!=="ai-direct"?React.createElement', 'AI topics reuse direct chat settings');
     cut('channel:Sa,sessionInfoOnly:!!ct?.conversationOnly',
-      'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,sessionInfoOnly:!!ct?.conversationOnly', 'AI settings topic identity and actions');
+      'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,fixedGroupActions:ct?.fixedGroupActions,sessionInfoOnly:!!ct?.conversationOnly', 'AI settings topic identity and actions');
     // Octo directWithName copy applies to every IM target; AI topics display the AI identity.
     cut('placeholder:ct?.composerDisabled?"本地助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
       'placeholder:evaIMPlaceholder(ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name))', 'Unified recipient placeholder');

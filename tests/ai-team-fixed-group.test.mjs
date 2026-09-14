@@ -57,9 +57,9 @@ test('custom AI teams keep a member snapshot and isolate group data',()=>{
  const restored=window.EvaMyAITeamGroup.createStore({storage});
  assert.equal(restored.source(customId,members).initialDraft,'团队草稿');
  assert.equal(restored.source(customId,members).messages[customId].length,2);
- restored.updateGroup(customId,{name:'上市协作组',memberIds:['persona']});
+ restored.updateGroup(customId,{name:'上市协作组',memberIds:['assistant','persona']});
  assert.equal(restored.source(customId,members).channels[0].name,'上市协作组');
- assert.equal(restored.source(customId,members).channels[0].memberIds.join(','),'u-wangyilin,persona');
+ assert.equal(restored.source(customId,members).channels[0].memberIds.join(','),'u-wangyilin,assistant,persona');
  assert.throws(()=>restored.updateGroup(restored.id,{name:'不可修改'}),/默认团队不可编辑/);
  assert.throws(()=>restored.createGroup({name:'空团队',memberIds:[]}),/至少选择/);
 });

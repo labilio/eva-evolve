@@ -61,6 +61,7 @@ test('个人 Eva 主入口进入 GDS 工作区且加号仅作提示', () => {
 test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   const { source } = createPatchedRuntime();
   const imPatch = read('prototype/009-5-patch-im.js');
+  const chatSettings = read('prototype/009-2-chat-settings.js');
   const convergenceCss = read('prototype/043-final-layout-convergence.css');
   const workspace = read('prototype/052-personal-eva-gds.js');
 
@@ -100,7 +101,15 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team-editor__selected-item\s*>\s*span/);
   assert.match(imPatch, /teamGroups\.map\(teamGroupItem\)/);
   assert.match(imPatch, /className:'eva-ai-team__team-default'\},'默认'/);
-  assert.match(imPatch, /Dropdown\.Item,\{type:'danger',onClick:\(\)=>setGroupToDissolve\(group\)\},'解散群'/);
+  assert.doesNotMatch(imPatch, /className:'eva-ai-team__team-menu'/);
+  assert.doesNotMatch(read('prototype/046-ai-team.css'), /\.eva-ai-team__team-menu/);
+  assert.match(imPatch, /source\.fixedGroupActions=\{onEdit:\(\)=>openGroupEditor\(selectedGroup\),onDissolve:\(\)=>openGroupDissolve\(selectedGroup\)\}/);
+  assert.match(imPatch, /fixedGroupActions:ct\?\.fixedGroupActions/);
+  assert.match(chatSettings, /fixedGroupActions/);
+  assert.match(chatSettings, /const openFixedAction=action=>\{onClose\(\);requestAnimationFrame\(action\);\}/);
+  assert.match(chatSettings, /title:'编辑 AI 团队'.+onClick:\(\)=>openFixedAction\(fixedGroupActions\.onEdit\)/s);
+  assert.match(chatSettings, /title:'解散 AI 团队'.+danger:true.+onClick:\(\)=>openFixedAction\(fixedGroupActions\.onDissolve\)/s);
+  assert.match(chatSettings, /'aria-label':editableFixed\?'添加 AI 团队成员':'添加群聊成员'/);
   assert.match(imPatch, /title:'解散 AI 团队'.+okText:'解散群'.+okButtonProps:\{type:'danger'\}/s);
   assert.match(imPatch, /groupStore\.removeGroup\(id\).+selection\.identityId===id.+choose\(groupStore\.id,null\)/s);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__group-count'/);
