@@ -260,8 +260,8 @@
       },
       setChatPreferences(id,uid,patch){
         requireHuman(uid);if(!id)fail('会话不存在');
-        if((state.groups[id]||id.startsWith('all:'))&&!api.canRead(id,uid))fail('请先加入群聊');
-        if(Object.keys(patch).some(k=>!['mute','top','clearedCount'].includes(k)))fail('未知个人设置');
+        if((state.groups[id]||state.threads[id]||id.startsWith('all:'))&&!api.canRead(id,uid))fail('请先加入群聊');
+        if(Object.keys(patch).some(k=>!['mute','top','hidden','restoreOnMention','clearedCount'].includes(k)))fail('未知个人设置');
         state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],...patch};notify();
       },
       visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));},
@@ -316,7 +316,20 @@
       createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};notify();return id;},
       createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};notify();},
       updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');state.threadDetails[id]={...state.threadDetails[id],...patch,id};notify();},
-      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify();},
+      restoreHiddenOnMention(id,message){
+        let changed=false;
+        for(const [uid,preferences] of Object.entries(state.chatPreferences)){
+          const prefs=preferences[id],human=person(uid);
+          if(!prefs?.hidden||!prefs.restoreOnMention||!human||message.sender?.uid===uid||message.sender?.uid==='self'||!api.canReadForwardSource(id,uid))continue;
+          const explicit=(message.mentions||[]).some(mention=>(mention.uid||mention.id)===uid);
+          const text=String(message.text||''),token='@'+human.name;
+          let cursor=text.indexOf(token),matched=false;
+          while(cursor>=0){const end=cursor+token.length;if(end===text.length||/[\s，。！？、,.:：；;…]/.test(text[end])){matched=true;break;}cursor=text.indexOf(token,end);}
+          if(explicit||matched){prefs.hidden=false;changed=true;}
+        }
+        if(changed)notify();return changed;
+      },
+      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify();},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));
@@ -533,6 +546,20 @@
       const p=saved.projects[roleDemo.projectId];p.projectRoles=JSON.parse(JSON.stringify(roleDemo.roles));p.memberRoleIds={};
       for(const [id,ids] of Object.entries(roleDemo.assignments))if(p.humans.some(m=>m.id===id)||p.cloneIds.includes(id))p.memberRoleIds[id]=[...ids];
       saved.seededProjectRolesV1=true;
+    }
+    const threadStateDemo=root.__EVA_THREAD_STATE_DEMO;
+    if(threadStateDemo&&saved.groups[threadStateDemo.groupId]?.projectId==='prod'&&!saved.seededThreadStatesV1){
+      saved.threadDetails||={};saved.messages||={};saved.chatPreferences||={};
+      saved.chatPreferences[threadStateDemo.actorId]||={};
+      for(const record of threadStateDemo.threads){
+        if(saved.threads[record.id]||saved.threadDetails[record.id])continue;
+        const {hidden,senderId,...thread}=record;
+        saved.threads[thread.id]=threadStateDemo.groupId;saved.threadDetails[thread.id]=thread;
+        const sender=saved.people.find(person=>person.id===senderId);
+        saved.messages[thread.id]=[{kind:'text',text:thread.last_message_content,time:'10:00',fixtureId:'thread-state-v1:'+thread.id,sender:{...sender,uid:senderId}}];
+        if(hidden&&!saved.chatPreferences[threadStateDemo.actorId][thread.id])saved.chatPreferences[threadStateDemo.actorId][thread.id]={hidden:true};
+      }
+      saved.seededThreadStatesV1=true;
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));

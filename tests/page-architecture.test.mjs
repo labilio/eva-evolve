@@ -359,7 +359,8 @@ test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新�
   assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.availableIdentities\.map\(item=>\[item\.id,true\]\)/);
   assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
   assert.match(imPatch, /if\(groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
-  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2\)\.sort\(\(a,b\)=>teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)\)/);
+  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2&&!threadPreferenceStore\.chatPreferences\(item\.id,threadPreferenceActor\)\.hidden\)\.sort/);
+  assert.match(imPatch, /Number\(!!threadPreferenceStore\.chatPreferences\(b\.id,threadPreferenceActor\)\.top\)-Number\(!!threadPreferenceStore\.chatPreferences\(a\.id,threadPreferenceActor\)\.top\)\|\|teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)/);
   assert.match(imPatch, /visibleThreads=group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
   assert.match(imPatch, /className:'eva-ai-team__team-threads-more','aria-expanded':showAll/);
   assert.match(imPatch, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+group\.name\+' 子区'/);

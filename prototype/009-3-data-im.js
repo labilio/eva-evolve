@@ -476,3 +476,12 @@ window.__EVA_IM_BUBBLE_DEMO = (()=>{
   }};
 
 })();
+
+// Sidebar state examples belong to the existing supply project and procurement group.
+window.__EVA_THREAD_STATE_DEMO = {
+  groupId:'c-eva',actorId:'u-wangyilin',
+  threads:[
+    {id:'supply-archived-budget-review',name:'上季度采购预算复盘',status:2,creator_name:'何静',member_count:5,message_count:1,created_at:'2026-09-01T09:00:00+08:00',updated_at:'2026-09-02T10:00:00+08:00',last_message_sender_name:'何静',last_message_content:'预算偏差已核对，复盘资料已整理完成，本子区归档留存。',senderId:'u-hejing'},
+    {id:'supply-hidden-office-demand',name:'办公用品需求核对',status:1,hidden:true,creator_name:'王宜林',member_count:6,message_count:1,created_at:'2026-09-01T09:00:00+08:00',updated_at:'2026-09-02T11:00:00+08:00',last_message_sender_name:'王宜林',last_message_content:'各部门需求已收齐，后续按合并清单推进，明细保留在这里查阅。',senderId:'u-wangyilin'}
+  ]
+};
