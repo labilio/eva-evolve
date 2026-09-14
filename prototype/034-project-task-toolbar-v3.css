@@ -329,10 +329,10 @@
 .eva-board-subtask__row {
   position: relative;
   display: grid;
-  grid-template-columns: 20px 15px minmax(0, 1fr) auto auto;
+  grid-template-columns: 20px 15px minmax(0, 1fr) auto 20px;
   align-items: center;
   gap: 6px;
-  min-height: 34px;
+  min-height: 38px;
   margin: 1px 0;
   padding: 3px 4px;
   border-radius: var(--eva-radius-control);
@@ -352,7 +352,7 @@
   grid-row: 1;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   min-width: 0;
   gap: 6px;
   padding: 2px 0;
@@ -364,12 +364,16 @@
   font-variant-numeric: tabular-nums;
 }
 .eva-board-subtask__title {
+  display: -webkit-box;
   min-width: 0;
+  max-height: 40px;
   overflow: hidden;
   color: var(--eva-text-primary);
   font: 500 13px/20px var(--eva-font-sans);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .eva-board-subtask__count {
   grid-column: 4;
@@ -392,11 +396,11 @@
   align-items: center;
   justify-self: end;
   min-width: 0;
-  max-width: 96px;
+  max-width: 20px;
   gap: 4px;
-  overflow: hidden;
+  overflow: visible;
 }
-.eva-board-subtask__meta > .eva-issue-assignee {
+.eva-board-subtask__meta > .eva-issue-assignee:not(.is-compact) {
   box-sizing: border-box;
   max-width: 96px;
   min-height: 22px;
@@ -405,11 +409,23 @@
   border-radius: var(--eva-radius-control);
   background: var(--eva-surface-subtle);
 }
+.eva-board-subtask__meta > .eva-issue-assignee.is-compact {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  overflow: visible;
+}
 .eva-board-subtask__meta > .eva-issue-assignee.is-empty {
   min-height: 0;
   padding: 0;
   border: 0;
   background: transparent;
+}
+.eva-board-subtask__meta > .eva-issue-assignee.is-empty.is-compact {
+  color: var(--eva-text-muted);
+  font: 400 12px/20px var(--eva-font-sans);
 }
 .eva-board-subtasks :is(button,[role="treeitem"]):focus-visible {
   outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
