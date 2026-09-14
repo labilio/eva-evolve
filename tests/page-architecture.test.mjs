@@ -248,7 +248,7 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
   assert.match(aiTeamCss, /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--eva-rail-level-indent\)\)/);
   assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
-  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0px/);
   assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-rail-identity-content-inset\)/s);
   assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*var\(--eva-rail-team-thread-inset\)/s);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-size:\s*22px/);
@@ -287,7 +287,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(imPatch, /className:'eva-ai-team__teams'.+teamGroups\.map\(teamGroupItem\).+className:'eva-ai-team__list-divider',role:'separator','aria-orientation':'horizontal'.+className:'eva-ai-team__direct-groups'/s);
   assert.match(aiTeamCss, /\.eva-ai-team__list-divider\s*\{[^}]*border-top:\s*var\(--gds-border-standard\) solid var\(--gds-color-border-subtle\)/s);
   assert.match(aiTeamCss, /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
-  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0/);
+  assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0px/);
   assert.match(aiTeamCss, /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*width:\s*var\(--eva-rail-identity-content-inset\)[^}]*flex:\s*0 0 var\(--eva-rail-identity-content-inset\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);

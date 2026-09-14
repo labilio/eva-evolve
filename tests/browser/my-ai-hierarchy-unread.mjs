@@ -78,6 +78,13 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
     assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
+    const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: '通用助理' }).first();
+    const assistantToggle = assistantIdentity.locator('.eva-ai-team__identity-button');
+    await assistantToggle.click();
+    const assistantNameBox = await assistantIdentity.locator('.eva-ai-team__identity-name').boundingBox();
+    const assistantSessionBox = await assistantIdentity.locator('.eva-ai-team__session-title').first().boundingBox();
+    assert.ok(assistantNameBox && assistantSessionBox && Math.abs(assistantNameBox.x - assistantSessionBox.x) < 1, '个人助理会话名称与助理名称起点对齐');
+    await assistantToggle.click();
 
     const fixture = await page.evaluate(() => {
       const groupStore = window.EvaMyAITeamGroup;

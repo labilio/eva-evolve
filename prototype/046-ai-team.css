@@ -44,7 +44,7 @@
   --eva-rail-identity-content-inset: calc(var(--eva-rail-identity-avatar-size) + var(--eva-rail-level-indent));
   --eva-rail-team-thread-inset: calc(var(--eva-rail-identity-content-inset) + var(--gds-space-2-5));
   --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + 14px + var(--gds-space-1-5));
-  --eva-rail-identity-avatar-trailing: 0;
+  --eva-rail-identity-avatar-trailing: 0px;
   box-sizing: border-box;
   /* Assistant sessions have no leading avatar, so their labels reuse the
      assistant-name column, including the avatar's trailing margin. */
