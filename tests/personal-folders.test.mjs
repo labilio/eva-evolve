@@ -70,14 +70,21 @@ test('存储失败不留下未保存的文件夹，刷新顺序保留最新对�
  assert.ok(!a.store.getSnapshot().folders.some(f=>f.name==='失败文件夹'));
 });
 
-test('个人 Eva 不暴露助理创建，但我的 AI 可复用个人助理创建流程',()=>{
+test('个人 Eva 不暴露助理创建，但我的 AI 使用共享编辑弹窗创建个人助理',()=>{
  const data=fs.readFileSync('prototype/009-3-digital-employees-data.js','utf8');
  const center=fs.readFileSync('prototype/047-digital-employees.js','utf8');
+ const imPatch=fs.readFileSync('prototype/009-5-patch-im.js','utf8');
  assert.doesNotMatch(pageSource,/evaCreate=mine|data-eva-edit-assistant/);
  assert.match(data.slice(data.indexOf('"runtimes"')), /"key": "mine"/);
  assert.match(center,/initialType==='mine'.+saveLocalAssistant/s);
  assert.match(center,/returnTo\?navigate\(returnTo\):navigatePersonal/);
  assert.match(center,/submitPersonaRequest/);
+ assert.match(imPatch,/const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
+ assert.doesNotMatch(imPatch,/evaCreate=mine&evaReturn=/);
+ assert.match(imPatch,/'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
+ assert.doesNotMatch(imPatch,/头像图片地址/);
+ assert.match(imPatch,/if\(persona\)tabs\.push\(\['collaboration','协作'/);
+ assert.doesNotMatch(imPatch,/\['skills','技能'.+\],\['collaboration','协作'/);
 });
 
 
