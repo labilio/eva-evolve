@@ -4,8 +4,63 @@
     --eva-conversation-rail-current: var(--eva-conversation-rail-width);
     --eva-conversation-rail-min: 220px;
     --eva-conversation-rail-max: 480px;
-    --eva-conversation-rail-bg: var(--eva-surface-glass);
-    --eva-conversation-rail-border: var(--eva-border-subtle);
+    --eva-conversation-rail-bg: var(--eva-nav-secondary-surface);
+    --eva-conversation-rail-border: var(--eva-nav-secondary-outline);
+  }
+
+  /* 2026-09-14 navigation-only convergence.
+     The current 180/80 primary rail and resizable 260 (220-480) secondary rail
+     remain the geometry contract; this layer only changes their visual relation. */
+  .layout > .layout-sider {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    overflow: visible !important;
+    margin: var(--eva-nav-canvas-gap) 0 var(--eva-nav-canvas-gap) var(--eva-nav-canvas-gap);
+    --bg-2: transparent;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .layout > .layout-sider::after {
+    position: absolute;
+    z-index: -1;
+    inset: 0 auto 0 0;
+    width: 100%;
+    border: 1px solid var(--eva-nav-shell-outline);
+    border-radius: var(--eva-radius-panel);
+    background: var(--eva-nav-shell-background);
+    box-shadow: var(--eva-nav-shell-shadow);
+    content: '';
+    pointer-events: none;
+  }
+
+  .layout:has(:is(
+    .eva-personal-sider-panel,
+    .eva-ai-team__sidebar,
+    .ch-list
+  )) > .layout-sider::after {
+    width: calc(100% + var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap));
+  }
+
+  .layout > .layout-sider > .arco-layout-sider-children {
+    overflow: hidden;
+    border-radius: var(--eva-radius-panel);
+  }
+
+  body:not(:has(.layout-sider.collapsed, .layout-sider.arco-layout-sider-collapsed)) .app-titlebar__menu > .eva-tb-brand {
+    order: 1;
+    margin-left: 0;
+    font-size: 18px;
+    font-weight: var(--eva-fw-semibold);
+  }
+
+  body:not(:has(.layout-sider.collapsed, .layout-sider.arco-layout-sider-collapsed)) .app-titlebar__menu > .app-titlebar__button {
+    order: 2;
+    margin-left: auto;
   }
 
   body.eva-message-hierarchy-ready .eva-msg .ch-list,
@@ -18,11 +73,15 @@
     min-width: var(--eva-conversation-rail-current);
     max-width: var(--eva-conversation-rail-current);
     flex-basis: var(--eva-conversation-rail-current);
+    top: var(--eva-nav-secondary-inset);
+    height: calc(100% - var(--eva-nav-secondary-block-trim));
+    margin-right: var(--eva-nav-canvas-gap);
     border: 1px solid var(--eva-conversation-rail-border);
     border-radius: var(--eva-radius-panel);
-    backdrop-filter: blur(var(--eva-blur-glass));
+    -webkit-backdrop-filter: blur(var(--eva-nav-secondary-blur)) saturate(118%);
+    backdrop-filter: blur(var(--eva-nav-secondary-blur)) saturate(118%);
     background: var(--eva-conversation-rail-bg);
-    box-shadow: none !important;
+    box-shadow: var(--eva-nav-secondary-shadow) !important;
   }
 
   .eva-conversation-rail-resizer {
@@ -93,7 +152,7 @@
 
   .eva-personal-rail-new:hover, .eva-personal-folder__row:hover, .eva-personal-thread:hover { background: var(--eva-overlay-hover); }
   .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-medium) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
-  .eva-personal-folder { position: relative; margin-bottom: var(--eva-space-3); }
+  .eva-personal-folder { position: relative; margin-bottom: var(--eva-space-2); }
   .eva-personal-folder__row { display: flex; align-items: center; border-radius: var(--eva-radius-control); }
   .eva-personal-folder__main { flex: 1; min-height: 36px; padding: 0 var(--eva-space-2); font-weight: var(--eva-fw-medium); }
   .eva-personal-folder__main span, .eva-personal-thread__main span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -141,7 +200,7 @@
   #eva-drive-nav[aria-current="page"],
   .eva-nav-entry:has([aria-current="page"]) {
     overflow: hidden;
-    border-radius: 10px !important;
+    border-radius: var(--eva-radius-control) !important;
   }
 
   .eva-digital-employee-page {

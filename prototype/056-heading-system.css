@@ -10,8 +10,8 @@
   height: var(--eva-page-heading-height);
   min-height: var(--eva-page-heading-height);
   padding: var(--gds-space-2) var(--gds-space-4);
-  background: var(--gds-color-surface-primary);
-  border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
+  background: transparent;
+  border-bottom: 0;
 }
 .eva-rail-header :is(h1, .eva-personal-rail-title) {
   flex: 1;
