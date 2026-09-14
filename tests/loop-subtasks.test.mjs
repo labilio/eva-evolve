@@ -44,6 +44,10 @@ test('父子关系只允许当前项目内无环引用，并可清除父任务',
   assert.equal(issues.find(issue=>issue.id==='peer').title,'已拆分的同级任务');
   await ctx.updateIssue('peer',{parent_issue_id:''});
   assert.equal(issues.find(issue=>issue.id==='peer').parent_issue_id,null);
+  await ctx.updateIssue('peer',{due_date:'2026-09-20'});
+  assert.equal(issues.find(issue=>issue.id==='peer').due_date,'2026-09-20');
+  await ctx.updateIssue('peer',{due_date:null});
+  assert.equal(issues.find(issue=>issue.id==='peer').due_date,null);
 });
 
 test('删除父任务会被阻止，删除叶子任务不会遗留孤儿数据', async()=>{
@@ -72,6 +76,7 @@ test('供应链演示数据提供两级和三级子任务链，且不复制项�
   assert.equal(byIdentifier('SC-111').parent_issue_id,byIdentifier('SC-101').id);
   assert.equal(byIdentifier('SC-112').parent_issue_id,byIdentifier('SC-111').id);
   for(const id of ['SC-109','SC-110','SC-111','SC-112'])assert.equal(byIdentifier(id).project_id,'p-supply');
+  for(const issue of issues)assert.match(issue.due_date,/^2026-09-\d{2}$/);
 });
 
 test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
@@ -83,18 +88,20 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.ok(runtime.includes('"直接子任务"'));
   assert.ok(runtime.includes('mt.total," 项任务"'));
   assert.ok(runtime.includes('className:"eva-loop-list__task"'));
+  assert.ok(runtime.includes('className:"loop-list__due"'));
   assert.ok(runtime.includes('" is-subtask"'));
   assert.ok(runtime.includes('" has-subtasks"'));
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
   assert.ok(runtime.includes('function EvaBoardSubtaskTree('));
   assert.ok(runtime.includes('className:"eva-board-subtask__children"'));
   assert.ok(runtime.includes('className:"eva-board-subtask__meta"'));
+  assert.ok(runtime.includes('className:"eva-board-subtask__due"'));
   assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:Nt,size:18,compact:!0})'));
   assert.ok(runtime.includes('className:"eva-board-col-count"'));
   assert.ok(runtime.includes('showSubtasks:!0'));
   assert.match(taskStyles,/\.eva-board-subtasks__tree[\s\S]*border-left:/);
   assert.match(taskStyles,/\.eva-loop-board--nested\s*\{\s*grid-auto-columns:\s*336px/);
-  assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto 20px/);
+  assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto 38px/);
   assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*5/);
   assert.match(taskStyles,/\.eva-board-subtask__title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
   assert.match(taskStyles,/\.eva-board-subtask__meta > \.eva-issue-assignee\.is-compact\s*\{[\s\S]*width:\s*20px/);
@@ -103,6 +110,7 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);
   assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
+  assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);
 });
 
 test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=>{
@@ -122,6 +130,20 @@ test('任务分解画布内嵌于任务详情并展示完整任务上下文',()=
   assert.ok(runtime.includes('className:"eva-task-breakdown__node-priority"'));
   assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:kr,size:18})'));
   assert.ok(runtime.includes('React.createElement(LabelChips,{labels:kr.labels,max:2})'));
+  assert.ok(runtime.includes('returnContext:evaReturn'));
+  assert.ok(runtime.includes('evaOrigin==="breakdown"?"返回任务分解":"返回 "+xt.identifier'));
+  assert.ok(runtime.includes('evaReturnContext?.parentIssueId===evaParentIssue.id?Qa():Ea(evaParentIssue.id)'));
+  assert.ok(runtime.includes('onOpen:ki=>Ea(ki,"breakdown")'));
+  assert.ok(runtime.includes('evaReturnContext?.label||St("loop.detail.board")'));
+  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),Wi&&xt?.identifier'));
+  assert.ok(runtime.includes('const evaIssueDetailViewState=new Map'));
+  assert.ok(runtime.includes('viewState:evaReadIssueDetailViewState(rt).canvas'));
+  assert.ok(runtime.includes('onViewStateChange:ki=>evaRememberIssueDetailViewState(rt,{canvas:ki})'));
+  assert.ok(runtime.includes('evaReadIssueDetailViewState(rt).breakdownOpen===!0'));
+  assert.ok(runtime.includes('onScroll:evaSaveView'));
+  assert.ok(runtime.includes('evaReturnContext||evaIssueDetailViewState.delete(rt)'));
+  assert.ok(runtime.includes('className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"'));
+  assert.ok(runtime.includes('"aria-label":"截止日期",showClear:!0'));
   assert.equal(runtime.includes('className:"eva-task-breakdown__detail-overlay"'),false);
   assert.equal(runtime.includes('breakdownContext:!0'),false);
   assert.equal(runtime.includes('["board","grouped","list","hierarchy","breakdown"]'),false);
