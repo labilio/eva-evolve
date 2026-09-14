@@ -18,11 +18,11 @@
     overflow: visible !important;
     margin: var(--eva-nav-canvas-gap) 0 var(--eva-nav-canvas-gap) var(--eva-nav-canvas-gap);
     --bg-2: transparent;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 
   /* Keep the combined navigation frame above the inset secondary rail so its
@@ -31,6 +31,7 @@
     position: absolute;
     z-index: 2;
     inset: 0 auto 0 0;
+    box-sizing: border-box;
     width: 100%;
     border: 1px solid var(--eva-nav-shell-outline);
     border-radius: var(--eva-radius-panel);
@@ -42,20 +43,13 @@
     position: absolute;
     z-index: -1;
     inset: 0 auto 0 0;
+    box-sizing: border-box;
     width: 100%;
     border-radius: var(--eva-radius-panel);
     background: var(--eva-nav-shell-background);
     box-shadow: var(--eva-nav-shell-shadow);
     content: '';
     pointer-events: none;
-  }
-
-  .layout:has(:is(
-    .eva-personal-sider-panel,
-    .eva-ai-team__sidebar,
-    .ch-list
-  )) > .layout-sider::before {
-    width: calc(100% + var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap));
   }
 
   .layout > .layout-sider > .arco-layout-sider-children {
@@ -80,6 +74,7 @@
   .eva-personal-sider-panel,
   .eva-ai-team__sidebar {
     position: relative;
+    z-index: 1;
     box-sizing: border-box;
     width: var(--eva-conversation-rail-current);
     min-width: var(--eva-conversation-rail-current);
@@ -94,6 +89,68 @@
     backdrop-filter: blur(var(--eva-nav-secondary-blur)) saturate(118%);
     background: var(--eva-conversation-rail-bg);
     box-shadow: var(--eva-nav-secondary-shadow) !important;
+  }
+
+  /* The runtime keeps page surfaces white. Lift those surfaces above the
+     single gradient shell, then make only their shared canvas transparent;
+     each business main remains white and starts after the 6px shell gutter. */
+  @media (min-width: 769px) {
+    .layout:has(:is(
+      .eva-personal-sider-panel,
+      .eva-ai-team__sidebar,
+      .ch-list,
+      .eva-drive__side
+    )) > .layout-sider::before,
+    .layout:has(:is(
+      .eva-personal-sider-panel,
+      .eva-ai-team__sidebar,
+      .ch-list,
+      .eva-drive__side
+    )) > .layout-sider::after {
+      width: calc(100% + var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap));
+    }
+
+    .layout:has(.eva-personal-sider-panel) #eva-personal-workspace,
+    .layout:has(.ch-list) .eva-msg,
+    .layout:has(.eva-ai-team__sidebar) .eva-ai-team,
+    .layout:has(.collab-body > .ch-layout > .ch-list) .collab-body:has(> .ch-layout),
+    .layout:has(.eva-drive__side) .eva-drive {
+      position: relative;
+      z-index: 3;
+      background: transparent !important;
+    }
+
+    .layout .eva-native-page-host > .eva-drive > .eva-drive__side {
+      position: relative;
+      z-index: 1;
+      box-sizing: border-box;
+      width: var(--eva-conversation-rail-current);
+      min-width: var(--eva-conversation-rail-current);
+      max-width: var(--eva-conversation-rail-current);
+      height: calc(100% - var(--eva-nav-secondary-block-trim));
+      top: var(--eva-nav-secondary-inset);
+      margin-right: var(--eva-nav-canvas-gap);
+      border: 1px solid var(--eva-conversation-rail-border);
+      border-radius: var(--eva-radius-panel);
+      -webkit-backdrop-filter: blur(var(--eva-nav-secondary-blur)) saturate(118%);
+      backdrop-filter: blur(var(--eva-nav-secondary-blur)) saturate(118%);
+      background: var(--eva-conversation-rail-bg);
+      box-shadow: var(--eva-nav-secondary-shadow) !important;
+    }
+
+    /* File library is grid-based rather than flex-based. The first track
+       therefore includes the same 260px card plus its 6px outer gutter. */
+    .layout:has(.eva-drive__side) .eva-native-page-host > .eva-drive {
+      grid-template-columns: calc(var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap)) minmax(0, 1fr);
+    }
+
+    .layout:has(.eva-drive-preview-sidebar) .eva-native-page-host > .eva-drive {
+      grid-template-columns: calc(var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap)) minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, clamp(336px, 38%, 480px)));
+    }
+
+    .layout:has(.eva-drive__side) .eva-drive__tree button[aria-current="page"] {
+      background: var(--gds-color-surface-hover, #f0f1f2);
+    }
   }
 
   .eva-conversation-rail-resizer {
