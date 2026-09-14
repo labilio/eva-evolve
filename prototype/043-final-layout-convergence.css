@@ -13,7 +13,7 @@
      remain the geometry contract; this layer only changes their visual relation. */
   .layout > .layout-sider {
     position: relative;
-    z-index: 0;
+    z-index: 2;
     isolation: isolate;
     overflow: visible !important;
     margin: var(--eva-nav-canvas-gap) 0 var(--eva-nav-canvas-gap) var(--eva-nav-canvas-gap);
@@ -25,12 +25,24 @@
     backdrop-filter: none;
   }
 
+  /* Keep the combined navigation frame above the inset secondary rail so its
+     top, right and bottom edges remain visible on a white content canvas. */
+  .layout > .layout-sider::before {
+    position: absolute;
+    z-index: 2;
+    inset: 0 auto 0 0;
+    width: 100%;
+    border: 1px solid var(--eva-nav-shell-outline);
+    border-radius: var(--eva-radius-panel);
+    content: '';
+    pointer-events: none;
+  }
+
   .layout > .layout-sider::after {
     position: absolute;
     z-index: -1;
     inset: 0 auto 0 0;
     width: 100%;
-    border: 1px solid var(--eva-nav-shell-outline);
     border-radius: var(--eva-radius-panel);
     background: var(--eva-nav-shell-background);
     box-shadow: var(--eva-nav-shell-shadow);
@@ -42,7 +54,7 @@
     .eva-personal-sider-panel,
     .eva-ai-team__sidebar,
     .ch-list
-  )) > .layout-sider::after {
+  )) > .layout-sider::before {
     width: calc(100% + var(--eva-conversation-rail-current) + var(--eva-nav-canvas-gap));
   }
 

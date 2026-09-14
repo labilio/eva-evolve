@@ -70,11 +70,11 @@
   --eva-nav-secondary-inset: 12px;
   --eva-nav-secondary-block-trim: 24px;
   --eva-nav-secondary-blur: 28px;
-  --eva-nav-shell-outline: #eaebec;
+  --eva-nav-shell-outline: #dfe3e8;
   --eva-nav-shell-background: linear-gradient(212.729deg, #f2f4f8 19.562%, #f7f7f8 59.04%, #faf9f9 94.383%);
   --eva-nav-shell-shadow: 0 1px 2px rgba(30, 30, 30, 0.018);
   --eva-nav-secondary-surface: rgba(255, 255, 255, 0.76);
-  --eva-nav-secondary-outline: rgba(255, 255, 255, 0.62);
+  --eva-nav-secondary-outline: var(--eva-nav-shell-outline);
   --eva-nav-secondary-shadow: 0 1px 2px rgba(30, 30, 30, 0.018), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   --eva-nav-primary-hover: rgba(30, 30, 30, 0.045);
   --eva-nav-primary-pressed: rgba(30, 30, 30, 0.075);
