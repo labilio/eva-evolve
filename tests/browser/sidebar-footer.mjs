@@ -46,10 +46,13 @@ test('Shared footer is passive identity plus one functioning settings button, ex
   for(const width of [1200,1000]){
     await page.setViewportSize({width,height:800});
     await verifyFooter();
-    await page.getByRole('button',{name:'收起',exact:true}).click();
+    const siderToggle=page.locator('.app-titlebar__button');
+    assert.equal(await siderToggle.count(),1,'System titlebar exposes exactly one sidebar toggle');
+    assert.equal(await siderToggle.getAttribute('aria-label'),'收起');
+    await siderToggle.click();
     await page.locator('.eva-sider-footer.is-collapsed').waitFor();
     await verifyFooter();
-    await page.locator('.app-titlebar button').first().click();
+    await siderToggle.click();
     await page.locator('.eva-sider-footer:not(.is-collapsed)').waitFor();
   }
   for(const route of ['/messages','/contacts','/guid']){
