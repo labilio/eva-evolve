@@ -1131,6 +1131,8 @@ function EvaAITeamPage() {
       'React.createElement("span",{className:"t"},Sa.name),!ct?.conversationOnly&&evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId)&&React.createElement("span",{className:"eva-chat-project-context",title:evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId).projectName},React.createElement(LayoutGrid,{size:12,style:{color:window.EvaProjectAppearance.css(evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId)).accent},"aria-hidden":true}),React.createElement("span",null,evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId).projectName)))),','聊天顶部项目归属');
     cut('Wa=ci=>{const Zi=[...(ct?.messages??CHANNEL_MESSAGES)[ci]??[],...oa[ci]??[]];',
       'Wa=ci=>{const Zi=evaMemberStore.visibleMessages(ci,evaActorId,[...(ct?.messages??CHANNEL_MESSAGES)[ci]??[],...evaMemberStore.messagesFor(ci,evaActorId),...oa[ci]??[]].sort((a,b)=>Number(!!b.fixtureId?.startsWith("project-agent-welcome:"))-Number(!!a.fixtureId?.startsWith("project-agent-welcome:"))));','会话摘要读取与聊天流相同的成员消息');
+    cut('preview:Ki.last_message_sender_name?`${Ki.last_message_sender_name}: ${Ki.last_message_content??""}`:""',
+      'preview:Wa(Ki.id)||(Ki.last_message_sender_name?`${Ki.last_message_sender_name}: ${Ki.last_message_content??""}`:"")','最近子区摘要读取真实消息');
     cut('},[pt,Va,oa,ct]).map(ci=>','},[pt,Va,oa,ct,evaMemberRevision,evaActorId]).map(ci=>','成员消息更新时刷新最近摘要');
     cut('scopeId:evaMentionScope})=>', 'scopeId:evaMentionScope,mentionMembers:evaMentionMembers})=>', '固定群成员传入共享输入区');
     cut('scopeId:evaMentionScope,visible:evaMentionOpen', 'scopeId:evaMentionScope,members:evaMentionMembers,visible:evaMentionOpen', '固定群成员传入共享提及选择器');
