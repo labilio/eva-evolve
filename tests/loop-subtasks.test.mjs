@@ -99,6 +99,25 @@ test('任务详情默认展示前三层，并只折叠仍有后代的第三层�
   assert.deepEqual([...ctx.evaIssueDefaultCollapsedIds('level-2',issues)],[]);
 });
 
+test('任务祖先链按根任务到直接父任务排序，并在异常循环关系下安全终止',()=>{
+  const {ctx,issues}=setup();
+  assert.deepEqual(Array.from(ctx.evaIssueAncestorChain(issues.find(issue=>issue.id==='grandchild'),issues),issue=>issue.id),['root','child']);
+  issues.find(issue=>issue.id==='root').parent_issue_id='grandchild';
+  assert.deepEqual(Array.from(ctx.evaIssueAncestorChain(issues.find(issue=>issue.id==='grandchild'),issues),issue=>issue.id),['root','child']);
+});
+
+test('任务面包屑只保留离当前任务最近的三级',()=>{
+  const {ctx}=setup(),issues=[
+    {id:'root',identifier:'SC-101',title:'根任务',parent_issue_id:null},
+    {id:'level-1',identifier:'SC-102',title:'一级任务',parent_issue_id:'root'},
+    {id:'level-2',identifier:'SC-103',title:'二级任务',parent_issue_id:'level-1'},
+    {id:'level-3',identifier:'SC-104',title:'三级任务',parent_issue_id:'level-2'},
+    {id:'current',identifier:'SC-105',title:'当前任务',parent_issue_id:'level-3'},
+  ];
+  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[4],issues),issue=>issue.id),['level-2','level-3','current']);
+  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[1],issues),issue=>issue.id),['root','level-1']);
+});
+
 test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
   assert.ok(runtime.includes('["board","grouped","list","hierarchy"]'));
   assert.ok(runtime.includes('className:"eva-loop-subtasks__empty"'));
@@ -115,20 +134,13 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.ok(runtime.includes('" is-subtask"'));
   assert.ok(runtime.includes('" has-subtasks"'));
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
-  assert.ok(runtime.includes('function EvaBoardSubtaskTree('));
-  assert.ok(runtime.includes('className:"eva-board-subtask__children"'));
-  assert.ok(runtime.includes('className:"eva-board-subtask__meta"'));
-  assert.ok(runtime.includes('className:"eva-board-subtask__due"'));
-  assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:Nt,size:18,compact:!0})'));
-  assert.ok(runtime.includes('className:"eva-board-col-count"'));
-  assert.ok(runtime.includes('showSubtasks:!0'));
-  assert.match(taskStyles,/\.eva-board-subtasks__tree[\s\S]*border-left:/);
-  assert.match(taskStyles,/\.eva-loop-board--nested\s*\{\s*grid-auto-columns:\s*336px/);
-  assert.match(taskStyles,/\.eva-board-subtask__row\s*\{[\s\S]*grid-template-columns:\s*20px 15px minmax\(0, 1fr\) auto 38px/);
-  assert.match(taskStyles,/\.eva-board-subtask__meta\s*\{[\s\S]*grid-column:\s*5/);
-  assert.match(taskStyles,/\.eva-board-subtask__title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
-  assert.match(taskStyles,/\.eva-board-subtask__meta > \.eva-issue-assignee\.is-compact\s*\{[\s\S]*width:\s*20px/);
-  assert.match(taskStyles,/\.eva-board-subtasks__tree,[\s\S]*margin-left:\s*6px;[\s\S]*padding-left:\s*6px/);
+  assert.ok(runtime.includes('const Ft=rt.filter(Qt=>Qt.status===Dt)'));
+  assert.ok(runtime.includes('React.createElement("em",null,Ft.length)'));
+  assert.ok(runtime.includes('showRelation:!1,draggable:!0'));
+  assert.ok(runtime.includes('pt&&React.createElement(EvaIssueRelationMeta,{issue:rt})'));
+  assert.equal(runtime.includes('EvaBoardSubtask'),false);
+  assert.equal(runtime.includes('showSubtasks'),false);
+  assert.doesNotMatch(taskStyles,/eva-board-subtask|eva-board-subtasks|eva-board-col-count|eva-loop-board--subtasks/);
   assert.match(taskStyles,/\.loop-card \.eva-issue-relation\s*\{[\s\S]*background:\s*var\(--eva-surface-subtle\)/);
   assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
   assert.match(taskStyles,/--eva-task-columns:\s*16px 76px minmax\(180px,1fr\) minmax\(0,120px\) 76px 210px 64px/);
@@ -167,73 +179,47 @@ test('任务详情递归展示全部后代并按整棵子任务树统计进度',
   assert.match(taskStyles,/\.eva-loop-subtask-tree__depth-note\s*\{[\s\S]*justify-content:\s*flex-end/);
 });
 
-test('任务分解画布内嵌于任务详情并可在固定分解根内切换节点详情',()=>{
-  assert.ok(runtime.includes('function EvaIssueBreakdownCanvas('));
-  assert.ok(runtime.includes('createLucideIcon("Maximize2"'));
-  assert.ok(runtime.includes('createLucideIcon("Minimize2"'));
-  assert.ok(runtime.includes('evaIssueDescendantIds(rt.id,gt)'));
-  assert.ok(runtime.includes('"查看分解"'));
-  assert.ok(runtime.includes('"查看任务分解"'));
-  assert.ok(runtime.includes('"收起分解"'));
-  assert.ok(runtime.includes('"开始分解"'));
-  assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
-  assert.ok(runtime.includes('onClick:()=>pt(kr)'));
-  assert.ok(runtime.includes('className:"loop-idp__section eva-loop-subtasks",ref:evaBreakdownSectionRef'));
-  assert.ok(runtime.includes('evaBreakdownOpen&&evaBreakdownHasNodes?React.createElement(EvaIssueBreakdownCanvas'));
-  assert.ok(runtime.includes('className:"eva-task-breakdown__node-fields"'));
-  assert.ok(runtime.includes('className:"eva-task-breakdown__node-due"'));
-  assert.ok(runtime.includes('className:"eva-task-breakdown__node-labels"'));
-  assert.equal(runtime.includes('className:"eva-task-breakdown__node-label-empty"'),false);
-  assert.ok(runtime.includes('className:"eva-task-breakdown__node-priority"'));
-  assert.ok(runtime.includes('React.createElement(EvaIssueAssignee,{issue:kr,size:18})'));
-  assert.ok(runtime.includes('React.createElement(LabelChips,{labels:kr.labels,max:2})'));
-  assert.ok(runtime.includes('returnContext:evaReturn'));
-  assert.ok(runtime.includes('Ea=(ki,evaOrigin="parent")=>'));
-  assert.ok(runtime.includes('breakdownRootIssueId:evaRoot.id'));
-  assert.ok(runtime.includes('evaReturnContext?.parentIssueId===evaParentIssue.id?Qa():Ea(evaParentIssue.id,evaReturnContext?.origin==="breakdown"?"breakdown":"parent")'));
-  assert.ok(runtime.includes('[evaSelectedIssueId,evaSetSelectedIssueId]'));
-  assert.ok(runtime.includes('[evaFullscreen,evaSetFullscreen]'));
-  assert.ok(runtime.includes('selectedIssueId:evaSelectedIssueId'));
-  assert.ok(runtime.includes('fullscreen:evaFullscreen'));
-  assert.ok(runtime.includes('document.addEventListener("keydown",kr)'));
-  assert.ok(runtime.includes('document.querySelector(".semi-modal-wrap")'));
-  assert.ok(runtime.includes('className:"eva-task-breakdown"+(evaFullscreen?" is-fullscreen":"")'));
-  assert.ok(runtime.includes('"aria-label":evaFullscreen?"退出全屏编辑":"全屏编辑任务分解"'));
-  assert.ok(runtime.includes('"aria-pressed":evaFullscreen'));
-  assert.ok(runtime.includes('canvas:{...no.canvas,selectedIssueId:evaBreakdownRootId}'));
-  assert.ok(runtime.includes('"aria-label":"选择任务 "+kr.identifier'));
-  assert.ok(runtime.includes('"aria-selected":evaIsSelected'));
-  assert.ok(runtime.includes('"aria-pressed":evaIsSelected'));
-  assert.ok(runtime.includes('"当前选中 ",React.createElement("strong",null,evaSelectedIssue.identifier)'));
-  assert.ok(runtime.includes('kr!==evaActiveIssueId&&ct?.(kr)'));
-  assert.ok(runtime.includes('rootIssue:evaBreakdownRootIssue,activeIssueId:xt.id'));
-  assert.ok(runtime.includes('onSelect:ki=>Ea(ki,"breakdown")'));
-  assert.ok(runtime.includes('if(ki===evaRoot.id&&evaReturnContext?.origin==="breakdown")'));
-  assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"&&WKApp$1.routeRight.pop()'));
-  assert.match(taskStyles,/\.eva-task-breakdown\.is-fullscreen\s*\{[\s\S]*position:\s*fixed;[\s\S]*inset:\s*var\(--topbar-height, 37px\) 0 0;[\s\S]*z-index:\s*950;[\s\S]*height:\s*auto;/);
-  assert.ok(runtime.includes('onChanged:evaIsBreakdown?ct:'));
+test('任务详情只保留层级树，并通过最近三级可点击面包屑原位切换详情',()=>{
+  assert.ok(runtime.includes('function evaIssueAncestorChain('));
+  assert.ok(runtime.includes('function evaIssueBreadcrumbChain('));
+  assert.ok(runtime.includes('evaAncestorIssues=evaIssueAncestorChain(xt)'));
+  assert.ok(runtime.includes('evaBreadcrumbIssues=evaIssueBreadcrumbChain(xt)'));
+  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues=evaBreadcrumbIssues.slice(0,-1)'));
+  assert.ok(runtime.includes('evaBreadcrumbHasHiddenAncestors=evaAncestorIssues.length>evaBreadcrumbAncestorIssues.length'));
+  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues.map(ki=>React.createElement(React.Fragment'));
+  assert.ok(runtime.includes('className:"loop-idp__crumb-task"'));
+  assert.ok(runtime.includes('className:"loop-idp__crumb-id"},ki.identifier'));
+  assert.ok(runtime.includes('className:"loop-idp__crumb-title"},ki.title'));
+  assert.ok(runtime.includes('"aria-label":"已省略更早的任务层级"'));
+  assert.ok(runtime.includes('"aria-current":"page"'));
+  assert.ok(runtime.includes('onClick:Ct?void 0:()=>Ea(ki.id)'));
+  assert.ok(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'));
+  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),WKApp$1.routeRight.push'));
+  assert.ok(runtime.includes('React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:ut})'));
+  assert.ok(runtime.includes('function evaRestoreFleetProjectRoute('));
+  assert.ok(runtime.includes('writeBrowserPath("/#/collab?evaProject="+encodeURIComponent(rt),"replace")'));
+  assert.ok(runtime.includes('Qa=()=>{const Wi=currentWorkspaceSlug();Wi&&evaRestoreFleetProjectRoute(Wi)'));
   assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
-  assert.equal(runtime.includes('返回任务分解'),false);
-  assert.ok(runtime.includes('evaReturnContext?.label||St("loop.detail.board")'));
-  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),Wi&&evaReturn.parentIdentifier'));
-  assert.ok(runtime.includes('const evaIssueDetailViewState=new Map'));
-  assert.ok(runtime.includes('viewState:evaReadIssueDetailViewState(evaBreakdownRootId).canvas'));
-  assert.ok(runtime.includes('onViewStateChange:ki=>evaRememberIssueDetailViewState(evaBreakdownRootId,{canvas:ki})'));
-  assert.ok(runtime.includes('evaReturnContext?.origin==="breakdown"||evaReadIssueDetailViewState(evaReturnContext?.breakdownRootIssueId||rt).breakdownOpen===!0'));
-  assert.ok(runtime.includes('onScroll:evaSaveView'));
-  assert.ok(runtime.includes('evaReturnContext||evaIssueDetailViewState.delete(rt)'));
+  assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
+  assert.ok(runtime.includes('"开始分解"'));
   assert.ok(runtime.includes('className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"'));
   assert.ok(runtime.includes('"aria-label":"截止日期",showClear:!0'));
-  assert.equal(runtime.includes('className:"eva-task-breakdown__detail-overlay"'),false);
-  assert.equal(runtime.includes('breakdownContext:!0'),false);
-  assert.equal(runtime.includes('["board","grouped","list","hierarchy","breakdown"]'),false);
-  assert.match(taskStyles,/\.eva-task-breakdown\s*\{[\s\S]*height:\s*440px;[\s\S]*border:\s*var\(--eva-border-standard-w\) solid var\(--eva-border-subtle\)/);
-  assert.match(taskStyles,/\.eva-task-breakdown__children::before\s*\{[\s\S]*background:\s*var\(--eva-border-default\)/);
-  assert.match(taskStyles,/\.eva-task-breakdown__canvas\s*\{[\s\S]*padding:\s*24px 32px 56px/);
-  assert.match(taskStyles,/\.eva-task-breakdown__node\s*\{[\s\S]*width:\s*264px;[\s\S]*min-height:\s*112px/);
-  assert.match(taskStyles,/\.eva-task-breakdown__children\s*\{[\s\S]*margin-left:\s*28px;[\s\S]*gap:\s*10px/);
-  assert.match(taskStyles,/\.eva-task-breakdown__node\.is-selected\s*\{[\s\S]*border-color:\s*var\(--eva-action-primary\)/);
-  assert.match(taskStyles,/\.eva-task-breakdown__node-main:focus-visible\s*\{[\s\S]*outline:\s*2px solid var\(--eva-action-primary\)/);
-  assert.match(taskStyles,/\.eva-task-breakdown__node-title\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
-  assert.match(taskStyles,/@media \(max-width:\s*760px\)[\s\S]*\.eva-task-breakdown__node\s*\{\s*width:\s*244px;\s*min-height:\s*108px/);
+  for(const obsolete of [
+    'function EvaIssueBreakdownCanvas(',
+    '查看分解',
+    '查看任务分解',
+    '收起分解',
+    'evaIssueDetailViewState',
+    'evaBreakdown',
+    'returnContext',
+    'evaReturnContext',
+    '返回 SC-',
+  ])assert.equal(runtime.includes(obsolete),false,`已移除能力不应残留：${obsolete}`);
+  assert.doesNotMatch(taskStyles,/\.eva-task-breakdown/);
+  assert.doesNotMatch(taskStyles,/\.loop-idp__boardbtn\.is-contextual/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task,\s*[\s\S]*display:\s*inline-flex;[\s\S]*gap:\s*6px/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task \.loop-idp__crumb-title,[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-ellipsis\s*\{[\s\S]*width:\s*24px;[\s\S]*color:\s*var\(--eva-text-secondary-accessible\)/);
+  assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-task:hover,[\s\S]*color:\s*var\(--eva-action-primary\)/);
+  assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-cur:focus-visible\s*\{[\s\S]*outline:\s*var\(--eva-border-focus-w\) solid var\(--eva-border-focus\)/);
 });

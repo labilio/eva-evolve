@@ -9,7 +9,7 @@ before(async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   origin=`http://127.0.0.1:${server.address().port}`;
   browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
-  const context=await browser.newContext({viewport:{width:1200,height:800}});
+  const context=await browser.newContext({viewport:{width:1200,height:800},locale:'zh-CN'});
   await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   page=await context.newPage();
 });
@@ -54,10 +54,13 @@ test('Account footer button opens a menu with settings and logout, expanded and 
   for(const width of [1200,1000]){
     await page.setViewportSize({width,height:800});
     await verifyFooter();
-    await page.getByRole('button',{name:'收起',exact:true}).click();
+    const siderToggle=page.locator('.app-titlebar__button');
+    assert.equal(await siderToggle.count(),1,'System titlebar exposes exactly one sidebar toggle');
+    assert.equal(await siderToggle.getAttribute('aria-label'),'收起');
+    await siderToggle.click();
     await page.locator('.eva-sider-footer.is-collapsed').waitFor();
     await verifyFooter();
-    await page.locator('.app-titlebar button').first().click();
+    await siderToggle.click();
     await page.locator('.eva-sider-footer:not(.is-collapsed)').waitFor();
   }
   for(const route of ['/messages','/contacts','/guid']){

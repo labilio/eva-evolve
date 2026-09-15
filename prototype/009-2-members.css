@@ -45,7 +45,9 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-human-identity.is-compact .eva-members-human-avatar{width:24px;height:24px}
 .eva-members-human-name{font-size:14px;line-height:22px;font-weight:500}
 
-.eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head{background:var(--semi-color-fill-0);font-size:12px;font-weight:400;color:var(--semi-color-text-2)}
+.eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head{border-block:var(--gds-border-standard) solid var(--eva-contacts-header-border);background:var(--eva-contacts-header-background);font-size:var(--gds-type-caption-font-size);font-weight:400;color:var(--eva-contacts-header-text)}
+.eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head:first-child{border-inline-start:var(--gds-border-standard) solid var(--eva-contacts-header-border);border-radius:var(--eva-radius-control) 0 0 var(--eva-radius-control)}
+.eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head:last-child{border-inline-end:var(--gds-border-standard) solid var(--eva-contacts-header-border);border-radius:0 var(--eva-radius-control) var(--eva-radius-control) 0}
 .eva-members-table .semi-table-tbody>.semi-table-row>.semi-table-row-cell{padding:12px 16px}
 .eva-members-table .eva-members-actions{justify-content:flex-end;gap:4px}
 
@@ -53,57 +55,73 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-table .eva-members-identity-button{height:auto;padding:0;background:transparent}
 .eva-members-table .eva-members-clones{gap:12px}
 .eva-members-table .semi-button{font-size:12px;font-weight:400}
+.eva-members-table .eva-members-actions .semi-button{font-size:11px}
 .eva-members-table .semi-table-row-head{padding:10px 16px;line-height:18px}
 .eva-members-table .semi-table-row-cell{vertical-align:middle}
 
 
 .eva-members>.eva-members-toolbar:first-child{margin-top:0}
 
+/* The five project-settings tabs share one quiet, Semi-based control system. */
+.eva-project-settings{font:400 14px/22px var(--eva-font-sans);color:var(--semi-color-text-0)}
+.eva-project-settings :is(.loop-btn,.loop-toolbtn,.loop-agent-scope__btn,.loop-page__toolbar .semi-button,.loop-agent-toolbar .semi-button,.loop-skill-page-head__row .semi-button,.eva-members-toolbar .semi-button){box-sizing:border-box;height:32px;min-height:32px;border-radius:var(--eva-radius-control);font:500 14px/22px var(--eva-font-sans)}
+.eva-project-settings .loop-agent-scope__btn{padding-block:0}
+.eva-project-settings :is(.loop-agent-list,.loop-squad-list,.loop-skill-list){border-radius:10px}
+.eva-project-settings .eva-members{font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings .eva-members-toolbar{min-height:52px;margin-bottom:16px}
+.eva-project-settings .eva-members-toolbar :is(h3,p){font-family:var(--eva-font-sans)}
 
-.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:824px;margin:0 auto;padding:24px;color:var(--gds-color-text-primary);font-family:var(--gds-font-family-sans)}
-.eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:var(--gds-space-2)}
-.eva-project-settings-info .eva-project-info-field label{font-size:var(--gds-type-label-medium-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-label-medium-line-height);color:var(--gds-color-text-primary)}
-.eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:72px;resize:vertical;padding:var(--gds-space-2) var(--gds-space-2-5);border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-primary);font:inherit;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-project-settings-info .eva-project-info-field textarea:focus-visible{outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:2px}
+
+.eva-project-settings-info{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:14px 20px 24px;color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:8px}
+.eva-project-settings-info .eva-project-info-field label{font-size:14px;font-weight:500;line-height:22px;color:var(--semi-color-text-0)}
+.eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:88px;resize:none;padding:10px 12px;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info .eva-project-info-field textarea:hover{border-color:var(--semi-color-primary)}
+.eva-project-settings-info .eva-project-info-field textarea:focus-visible{border-color:var(--semi-color-primary);outline:0}
 .eva-project-settings-info .eva-project-info-field p{margin:0}
-.eva-project-settings-info > .eva-project-settings-info__hero{align-items:start;grid-template-columns:1fr;gap:24px}
+.eva-project-settings-info > .eva-project-settings-info__hero{align-items:start;grid-template-columns:1fr;gap:20px;padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:end}
-.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{width:160px;gap:8px}
-.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
-.eva-project-settings-info__hero .eva-project-info-field{margin-top:24px}
+.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{width:160px;gap:6px}
+.eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field label{font-size:14px;font-weight:500;line-height:22px;color:var(--semi-color-text-1)}
+.eva-project-settings-info__hero .eva-project-info-field{margin-top:20px}
 .eva-project-settings-info__hero .eva-project-info__eyebrow .eva-project-info-field{margin-top:0}
 .eva-project-settings-info__hero .eva-project-info-field .semi-input-wrapper{background:var(--semi-color-bg-0)}
-.eva-project-settings-info__hero .eva-project-info-field .semi-input{font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:32px;padding:0 12px;color:var(--gds-color-text-strong);font-size:16px;font-weight:var(--gds-font-weight-medium);line-height:24px}
-.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input-wrapper{padding-inline:0;border:1px solid var(--gds-color-border-subtle);background:var(--gds-color-surface-primary)}
-.eva-project-settings-info .eva-project-settings-info__facts{min-width:0;grid-template-columns:1fr 1fr;gap:24px}.eva-project-settings-info .eva-project-settings-info__facts>div{padding:0}.eva-project-settings-info .eva-project-settings-info__facts>div+div{border:0}
-.eva-project-settings-info__facts dt{margin-bottom:8px}
-.eva-project-settings-info__facts label{font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height);color:var(--gds-color-text-secondary-accessible)}
+.eva-project-settings-info__hero .eva-project-info-field .semi-input{font-size:14px;font-weight:400;line-height:22px}
+.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input{height:32px;padding:0 12px;color:var(--semi-color-text-0);font-size:14px;font-weight:400;line-height:22px}
+.eva-project-settings-info__hero .eva-project-info-field:has(.eva-project-settings-info__title) .semi-input-wrapper{padding-inline:0;border:1px solid var(--semi-color-border);background:var(--semi-color-bg-0)}
+.eva-project-settings-info .eva-project-settings-info__facts{min-width:0;grid-template-columns:1fr 1fr;gap:20px}.eva-project-settings-info .eva-project-settings-info__facts>div{padding:0}.eva-project-settings-info .eva-project-settings-info__facts>div+div{border:0}
+.eva-project-settings-info__facts dt{margin-bottom:6px}
+.eva-project-settings-info__facts label{font-size:14px;font-weight:500;line-height:22px;color:var(--semi-color-text-1)}
 .eva-project-settings-info__facts .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__facts dd{font-weight:400}
 .eva-project-settings-info__period{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
-.eva-project-settings-info__period>span{color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
-.eva-project-settings-info > .eva-project-settings-info__grid{margin-top:16px;grid-template-columns:1fr}
-.eva-project-settings-info__card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.eva-project-settings-info__card-title h2{margin:0}
+.eva-project-settings-info__period>span{color:var(--semi-color-text-2);font-size:12px;line-height:18px}
+.eva-project-settings-info > .eva-project-settings-info__grid{margin-top:16px;grid-template-columns:1fr;gap:16px}
+.eva-project-settings-info .eva-project-info__card{padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}
+.eva-project-settings-info__card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.eva-project-settings-info__card-title h2{margin:0;font-size:16px;font-weight:500;line-height:24px;color:var(--semi-color-text-0)}
+.eva-project-settings-info__card-title .semi-button{height:32px;min-height:32px;border-radius:var(--eva-radius-control);background:var(--semi-color-fill-0);color:var(--semi-color-text-1);font:500 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info__card-title .semi-button:hover{background:var(--semi-color-fill-1);color:var(--semi-color-text-0)}
 .eva-project-settings-info__row{display:flex;min-width:0;align-items:center;gap:4px}
 .eva-project-settings-info__row .semi-input-wrapper{min-width:0;flex:1;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__goals li{grid-template-columns:28px minmax(0,1fr)}
-.eva-project-settings-info__goals .semi-button{flex:none}
+.eva-project-settings-info__goals .semi-button,.eva-project-settings-info__milestone-copy>.semi-button{height:32px;min-height:32px;flex:none;padding-inline:8px;font:500 14px/22px var(--eva-font-sans)}
+.eva-project-settings .eva-project-settings-info :is(.eva-project-settings-info__goals,.eva-project-settings-info__milestone-copy) .semi-button.semi-button-danger{color:var(--semi-color-text-2)}
+.eva-project-settings .eva-project-settings-info :is(.eva-project-settings-info__goals,.eva-project-settings-info__milestone-copy) .semi-button.semi-button-danger:hover{color:var(--semi-color-danger)}
 .eva-project-settings-info__timeline{gap:10px}
 .eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:112px minmax(0,1fr) auto;min-height:48px}
 .eva-project-settings-info__timeline .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__milestone-copy{display:grid;min-width:0;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
-.eva-project-settings-info__milestone-copy select{height:32px;padding:0 24px 0 8px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary);color:var(--gds-color-text-secondary);font:inherit;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
-.eva-project-settings-info__empty{margin:0;color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-project-settings-info__advanced{margin-top:16px;padding:24px;border:1px solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-panel);background:var(--gds-color-surface-primary)}
+.eva-project-settings-info__milestone-copy select{height:32px;padding:0 24px 0 8px;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-1);font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info__empty{margin:0;color:var(--semi-color-text-2);font-size:14px;line-height:22px}
+.eva-project-settings-info__advanced{margin-top:16px;padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__advanced .eva-project-info-field{max-width:440px}
 .eva-project-settings-info__actions{display:flex;min-height:40px;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
 .eva-project-settings-info__actions p{margin:0}
-@media (max-width:900px){.eva-project-settings-info{padding-inline:24px}.eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:start}.eva-project-settings-info .eva-project-settings-info__facts{min-width:0}.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:76px minmax(0,1fr) auto}.eva-project-settings-info__milestone-copy{grid-template-columns:1fr}.eva-project-settings-info__actions{align-items:flex-start;flex-direction:column}}
+@media (max-width:900px){.eva-project-settings-info{padding-inline:20px}.eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:start}.eva-project-settings-info .eva-project-settings-info__facts{min-width:0}.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:76px minmax(0,1fr) auto}.eva-project-settings-info__milestone-copy{grid-template-columns:1fr}.eva-project-settings-info__actions{align-items:flex-start;flex-direction:column}}
 
 /* GDS form and member-management states. AI avatar geometry stays in 003. */
-.eva-project-settings-info .eva-project-info-field textarea { font-size:15px;line-height:24px;padding:12px; }
+.eva-project-settings-info .eva-project-info-field textarea { font-size:14px;line-height:22px;padding:10px 12px; }
 .eva-project-settings-info__hero .eva-project-info__eyebrow { flex-wrap:wrap;gap:16px; }
 .eva-project-settings-info__actions { position:sticky;bottom:0;padding:16px 0;background:var(--eva-surface-primary);border-top:1px solid var(--eva-border-subtle); }
 .eva-project-settings-info__milestone-copy select:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }

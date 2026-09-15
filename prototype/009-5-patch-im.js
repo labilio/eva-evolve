@@ -492,44 +492,25 @@ function EvaConversationSearch({conversationId,conversationName,messages,onClose
 
 function EvaAITeamGroupEditor({visible,record,membersOnly=false,candidates,onClose,onSubmit,getContainer}) {
   const h=React.createElement;
-  const avatarInput=reactExports.useRef(null);
-  const [name,setName]=reactExports.useState(''),[avatar,setAvatar]=reactExports.useState(''),[selected,setSelected]=reactExports.useState([]),[query,setQuery]=reactExports.useState(''),[error,setError]=reactExports.useState('');
-  reactExports.useEffect(()=>{
-    if(!visible)return;
-    setName(record?.name||'');setAvatar(record?.avatar||'');setSelected((record?.memberIds||[]).filter(id=>candidates.some(item=>item.id===id)));setQuery('');setError('');
-  },[visible,record?.id,membersOnly]);
-  const visibleCandidates=candidates.filter(item=>item.name.toLowerCase().includes(query.trim().toLowerCase()));
-  const groups=[['persona','云端分身'],['assistant','个人助理'],['digital','数字员工']];
-  const toggle=(id,checked)=>{setSelected(value=>checked?[...new Set([...value,id])]:value.filter(item=>item!==id));setError('');};
-  const uploadAvatar=event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;
-    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){setError('头像仅支持 PNG、JPG 或 WebP 图片');return;}
-    if(file.size>1024*1024){setError('头像图片请小于 1 MB');return;}
-    const reader=new FileReader();reader.onerror=()=>setError('头像读取失败，请重新选择');reader.onload=()=>{if(typeof reader.result==='string'){setAvatar(reader.result);setError('');}};reader.readAsDataURL(file);};
-  const canSubmit=selected.length>0&&(membersOnly||!!name.trim()&&name.trim().length<=50);
-  const submit=()=>{try{if(!canSubmit)throw new Error(!membersOnly&&!name.trim()?'请输入团队名称':'至少选择 1 个 AI 成员');onSubmit({name:name.trim(),avatar:avatar.trim(),memberIds:selected});}catch(e){setError(e.message||'保存失败');}};
-  const footer=h('div',{className:'eva-ai-team-editor__footer'},h(Button,{onClick:onClose},'取消'),h(Button,{theme:'solid',type:'primary',disabled:!canSubmit,onClick:submit},record?'保存':'创建'));
-  return h(Modal,{visible,title:membersOnly?'编辑团队成员':record?'编辑 AI 团队':'新建 AI 团队',className:'eva-ai-team__modal eva-ai-team-editor',width:720,footer,getPopupContainer:getContainer,onCancel:onClose,maskClosable:false},
-    h('div',{className:'eva-ai-team-editor__form'},
-      membersOnly?null:h('div',{className:'eva-ai-team-editor__identity'},
-        h('div',{className:'eva-ai-team-editor__avatar-upload'},
-          h('input',{ref:avatarInput,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择团队头像图片',onChange:uploadAvatar}),
-          h('button',{type:'button',className:'eva-ai-team-editor__avatar','aria-label':avatar?'更换团队头像':'上传团队头像','aria-describedby':'eva-ai-team-avatar-help',onClick:()=>avatarInput.current?.click()},avatar?h('img',{src:avatar,alt:''}):h(Users,{size:22,'aria-hidden':true}),h('span',{className:'eva-ai-team-editor__avatar-action','aria-hidden':true},h(Plus$c,{size:14,strokeWidth:1.75})))),
-        h('div',{className:'eva-ai-team-editor__primary-fields'},
-          h('label',{htmlFor:'eva-ai-team-name'},'团队名称',h('span',null,name.length+' / 50')),
-          h(ForwardInput,{id:'eva-ai-team-name',value:name,onChange:value=>{setName(value);setError('');},maxLength:50,placeholder:'例如：产品发布协作组',autoFocus:true}),
-          h('div',{className:'eva-ai-team-editor__avatar-help',id:'eva-ai-team-avatar-help'},h('span',null,'点击左侧头像上传 PNG、JPG 或 WebP 图片，最大 1 MB。'),avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',onClick:()=>{setAvatar('');setError('');}},'恢复默认头像')))),
-      h('div',{className:'eva-ai-team-editor__toolbar'},
-        h(ForwardInput,{value:query,onChange:setQuery,showClear:true,prefix:h(Search$1,{size:16}),placeholder:'搜索我的 AI 成员','aria-label':'搜索我的 AI 成员'}),
-        h(Button,{theme:'borderless',type:'tertiary',disabled:!visibleCandidates.length,onClick:()=>setSelected(value=>[...new Set([...value,...visibleCandidates.map(item=>item.id)])])},'全选当前结果')),
-      h('div',{className:'eva-ai-team-editor__picker'},
-        h('div',{className:'eva-ai-team-editor__candidates','aria-label':'可选 AI 成员'},
-          groups.map(([kind,label])=>{const items=visibleCandidates.filter(item=>item.kind===kind);return items.length&&h('fieldset',{key:kind,className:'eva-ai-team-editor__candidate-group'},h('legend',null,label+' '+items.length),items.map(item=>h('label',{key:item.id,className:'eva-ai-team-editor__candidate'},h(Checkbox,{checked:selected.includes(item.id),onChange:event=>toggle(item.id,event.target.checked)}),window.EvaAIIdentity.avatar(item.appearance,32,h),h('span',{className:'eva-ai-team-editor__candidate-copy'},h('span',{className:'eva-identity-name-row'},h('strong',{className:'eva-identity-name-text'},item.name),h(AiBadge,{size:'small'})),h('small',null,label)))))}),
-          !visibleCandidates.length&&h('p',{className:'eva-ai-team-editor__empty'},'没有匹配的 AI 成员')),
-        h('aside',{className:'eva-ai-team-editor__selected','aria-label':'已选 AI 成员'},
-          h('div',{className:'eva-ai-team-editor__selected-head'},h('strong',null,'已选 '+selected.length),h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:!selected.length,onClick:()=>setSelected([])},'清空')),
-          h('div',{className:'eva-ai-team-editor__selected-list'},candidates.filter(item=>selected.includes(item.id)).map(item=>h('div',{key:item.id,className:'eva-ai-team-editor__selected-item'},h('span',{className:'eva-ai-team-editor__selected-avatar'},window.EvaAIIdentity.avatar(item.appearance,28,h)),h('span',{className:'eva-ai-team-editor__selected-name',title:item.name},item.name),h(Button,{theme:'borderless',type:'tertiary',size:'small','aria-label':'移除 '+item.name,onClick:()=>toggle(item.id,false)},'移除'))),!selected.length&&h('p',null,'从左侧选择团队成员')))),
-      h('p',{className:'eva-ai-team-editor__hint'},membersOnly?'选择加入团队的 AI 成员，至少保留 1 个。你本人会自动加入团队。':'你本人会自动加入团队，不占用 AI 成员名额。团队创建后拥有独立消息、子区和草稿。'),
-      error&&h('p',{className:'eva-ai-team__error',role:'alert'},error)));
+  return h(evaMembers().ui.MemberPicker,{
+    visible,
+    title:membersOnly?'编辑团队成员':record?'编辑 AI 团队':'新建 AI 团队',
+    className:'eva-ai-team__modal eva-ai-team-editor',
+    items:candidates,
+    groups:[{kind:'persona',label:'云端分身'},{kind:'assistant',label:'个人助理'},{kind:'digital',label:'数字员工'}],
+    initialSelectedIds:(record?.memberIds||[]).filter(id=>candidates.some(item=>item.id===id)),
+    minimumSelection:1,
+    memberLabel:'团队成员',
+    nameField:membersOnly?null:{id:'eva-ai-team-name',label:'团队名称',placeholder:'输入团队名称',initialValue:record?.name||'',required:true,maxLength:50},
+    searchLabel:'搜索我的 AI 成员',
+    searchPlaceholder:'搜索我的 AI 成员',
+    emptyTitle:'暂无可用的 AI 成员',
+    emptyDescription:'请先创建或接入 AI 成员',
+    submit:record?'保存':'创建',
+    getPopupContainer:getContainer,
+    onCancel:onClose,
+    onSubmit:(chosen,name)=>onSubmit({name,memberIds:chosen.map(item=>item.id)})
+  });
 }
 
 function EvaOverlayListScroll({enabled,children,className}) {
@@ -635,7 +616,7 @@ function EvaAITeamPage() {
   const source = groupSelected?groupStore.source(selectedGroup.id,fixedMembers,selection.sessionId):employee?digitalStore.conversationSource(employee.id,employeeSession?.id):identity ? messageSource('my-ai', snapshot, identity, session) : null;
   if(source)source.openMessageId=requestedMessageId;
   if(groupSelected){
-    if(!selectedGroup.system)source.fixedGroupActions={onEditMembers:()=>openGroupMembersEditor(selectedGroup),onRename:name=>groupStore.updateGroup(selectedGroup.id,{name}),onUpdateAvatar:avatar=>groupStore.updateGroup(selectedGroup.id,{avatar}),onDissolve:()=>openGroupDissolve(selectedGroup)};
+    if(!selectedGroup.system)source.fixedGroupActions={onEditMembers:()=>openGroupMembersEditor(selectedGroup),onRename:name=>groupStore.updateGroup(selectedGroup.id,{name}),onDissolve:()=>openGroupDissolve(selectedGroup)};
     source.onCreateThread=record=>{const id=groupStore.createThread(selectedGroup.id,record);setCollapsed(value=>({...value,[selectedGroup.id]:false}));return id;};
     source.onUpdateThread=(id,patch)=>{groupStore.updateThread(selectedGroup.id,id,patch);if(patch.deleted&&selection.sessionId===id)choose(selectedGroup.id,null);};
     source.onSelectThread=id=>choose(selectedGroup.id,id);
@@ -730,7 +711,7 @@ function EvaAITeamPage() {
         h('button',{type:'button',className:'eva-ai-team__team-toggle','aria-label':(expanded?'收起':'展开')+' '+group.name+' 子区','aria-expanded':expanded,'aria-controls':threadsId,onClick:()=>setCollapsed(value=>({...value,[group.id]:expanded}))},
           h(ChevronRight,{size:12,className:'eva-ai-team__group-chevron'+(expanded?' is-expanded':''),'aria-hidden':true})),
         h('button',{type:'button',className:'eva-ai-team__team-button','aria-label':'进入团队会话 '+group.name,'aria-current':selected&&!selection.sessionId?'true':undefined,onClick:()=>choose(group.id,null)},
-          h('img',{className:'eva-ai-team__team-avatar',src:group.avatar||window.EvaAvatar.uri({kind:'group',id:group.id}),alt:''}),
+          h('img',{className:'eva-ai-team__team-avatar',src:window.EvaAvatar.uri({kind:'group',id:group.id}),alt:''}),
           h('span',{className:'eva-ai-team__team-name',title:group.name},group.name),
           group.system&&h('span',{className:'eva-ai-team__team-default'},'默认'),hasUnread&&unreadDot(group.name+'有未读消息'))),
       expanded&&h('div',{className:'eva-ai-team__team-threads',id:threadsId},visibleThreads.map(item=>h('div',{key:item.id,className:'eva-ai-team__team-thread-row'+(selected&&selection.sessionId===item.id?' is-selected':'')},h(ConvCompactItem,{isThread:true,name:item.name,unread:item.unread,selected:selected&&selection.sessionId===item.id,onClick:()=>choose(group.id,item.id)}),h('div',{className:'eva-ai-team__session-actions'},teamThreadMenu(group,item)))),hasMore&&h('button',{type:'button',className:'eva-ai-team__team-threads-more','aria-expanded':showAll,'aria-label':(showAll?'收起 ':'展开查看 ')+group.name+' 子区',onClick:()=>setShowAllTeamThreads(value=>({...value,[group.id]:!showAll}))},h('span',null,showAll?'收起':'展开查看'),h(ChevronDown,{size:12,className:'eva-ai-team__team-threads-more-chevron'+(showAll?' is-expanded':''),'aria-hidden':true}))));
@@ -952,6 +933,10 @@ function EvaAITeamPage() {
     evaThreadBody=root.__evaCut(evaThreadBody,',React.createElement(evaMembers().ui.ChatSettings.Row,{title:"离开子区",danger:!0,onClick:()=>Nt(null)}),React.createElement(evaMembers().ui.ChatSettings.Row,{title:"删除子区",danger:!0,onClick:()=>Ia(fa)})','','子区信息底部只保留归档');
     const threadToggle=field=>`React.createElement(evaMembers().ui.ChatSettings.Row,{title:"${field==='top'?'置顶子区':'隐藏子区'}",value:React.createElement(Switch,{size:"small","aria-label":"${field==='top'?'置顶子区':'隐藏子区'}",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).${field},onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{${field}:checked})})})`;
     evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(Switch,{size:"small"})))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','React.createElement(Switch,{size:"small"}))),'+threadToggle('top')+','+threadToggle('hidden')+',!!evaMemberStore.chatPreferences(fa.id,evaActorId).hidden&&React.createElement(\"div\",{className:\"eva-thread-mention-option\"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:\"被 @ 时自动取消隐藏\",value:React.createElement(Switch,{size:\"small\",\"aria-label\":\"被 @ 时自动取消隐藏\",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).restoreOnMention,onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{restoreOnMention:checked})})}))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','子区个人开关同组，归档单独分区');
+    evaThreadBody=root.__evaCut(evaThreadBody,
+      'React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?',
+      'React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:"清空聊天记录",danger:!0,onClick:()=>Modal.confirm({title:"清空聊天记录",content:"只清空你在此设备的当前子区记录，父群、其他子区和其他成员的记录不受影响。",okText:"清空",cancelText:"取消",okButtonProps:{type:"danger"},onOk:()=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{clearedCount:evaAllMessages.length})})})),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?',
+      '子区只清空当前会话记录');
     source=root.__evaCut(source,evaOldInfo,
       'React.createElement("div",{className:"ch-right-panel ch-right-panel--overlay"},fa?React.createElement("aside",{className:"eva-chat-settings eva-thread-settings","aria-label":"子区信息管理"},React.createElement("header",{className:"eva-chat-settings-head"},React.createElement("button",{type:"button",onClick:()=>Dt("none"),"aria-label":"关闭子区信息"},React.createElement(X,{size:20})),React.createElement("h3",null,"子区信息")),'+evaThreadBody+'):React.createElement(evaMembers().ui.ChatSettings,{key:Sa.id+":"+evaActorId,channel:Sa,sessionInfoOnly:!!ct?.conversationOnly,onClose:()=>Dt("none"),onManageProject:evaManageProject,onClear:()=>evaMemberStore.setChatPreferences(va,evaActorId,{clearedCount:evaAllMessages.length})}))',
       'Octo group and direct chat settings adapter');
@@ -1125,12 +1110,15 @@ function EvaAITeamPage() {
       'ut&&Cn==="follow"&&evaFollowCategories.length===0', '关注空状态使用真实分类');
     cut('name:Fi.name,at:Fi.lastAt??""','name:Fi.name,crumb:evaMemberStore.conversationContext(Fi.id,evaActorId)?.path,at:Fi.lastAt??""','最近项目群归属');
     cut('crumb:Fi.name,at:Ki.updated_at','crumb:evaMemberStore.conversationContext(Ki.id,evaActorId)?.path||Fi.name,at:Ki.updated_at','最近子区项目路径');
+    cut(',Fi&&React.createElement("div",{className:"wk-conv-group-hash-badge"},React.createElement(GroupIcon,{size:10}))','', '最近列表群头像不显示子区角标');
     cut('className:"wk-conv-breadcrumb"},ci.crumb','className:"wk-conv-breadcrumb",title:ci.crumb},evaMemberStore.conversationContext(ci.th?.id||ci.ch.id,evaActorId)&&React.createElement(LayoutGrid,{size:12,style:{color:window.EvaProjectAppearance.css(evaMemberStore.conversationContext(ci.th?.id||ci.ch.id,evaActorId)).accent},"aria-hidden":true}),React.createElement("span",null,ci.crumb)','完整项目路径提示');
     cut('Cn==="recent"?Aa:React.createElement(EvaFollowList','Cn==="recent"||Va.trim()?Aa:React.createElement(EvaFollowList','跨项目搜索统一归属行');
     cut('React.createElement("span",{className:"t"},Sa.name))),ut&&!fa&&(ct?.scopeNameOf[Sa.id]??Kr[Sa.id])&&React.createElement("span",{className:"ch-head__scope"},ct?.scopeNameOf[Sa.id]??Kr[Sa.id]),',
       'React.createElement("span",{className:"t"},Sa.name),!ct?.conversationOnly&&evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId)&&React.createElement("span",{className:"eva-chat-project-context",title:evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId).projectName},React.createElement(LayoutGrid,{size:12,style:{color:window.EvaProjectAppearance.css(evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId)).accent},"aria-hidden":true}),React.createElement("span",null,evaMemberStore.conversationContext(fa?.id||Sa.id,evaActorId).projectName)))),','聊天顶部项目归属');
     cut('Wa=ci=>{const Zi=[...(ct?.messages??CHANNEL_MESSAGES)[ci]??[],...oa[ci]??[]];',
       'Wa=ci=>{const Zi=evaMemberStore.visibleMessages(ci,evaActorId,[...(ct?.messages??CHANNEL_MESSAGES)[ci]??[],...evaMemberStore.messagesFor(ci,evaActorId),...oa[ci]??[]].sort((a,b)=>Number(!!b.fixtureId?.startsWith("project-agent-welcome:"))-Number(!!a.fixtureId?.startsWith("project-agent-welcome:"))));','会话摘要读取与聊天流相同的成员消息');
+    cut('preview:Ki.last_message_sender_name?`${Ki.last_message_sender_name}: ${Ki.last_message_content??""}`:""',
+      'preview:Wa(Ki.id)||(Ki.last_message_sender_name?`${Ki.last_message_sender_name}: ${Ki.last_message_content??""}`:"")','最近子区摘要读取真实消息');
     cut('},[pt,Va,oa,ct]).map(ci=>','},[pt,Va,oa,ct,evaMemberRevision,evaActorId]).map(ci=>','成员消息更新时刷新最近摘要');
     cut('scopeId:evaMentionScope})=>', 'scopeId:evaMentionScope,mentionMembers:evaMentionMembers})=>', '固定群成员传入共享输入区');
     cut('scopeId:evaMentionScope,visible:evaMentionOpen', 'scopeId:evaMentionScope,members:evaMentionMembers,visible:evaMentionOpen', '固定群成员传入共享提及选择器');

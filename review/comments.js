@@ -1,11 +1,11 @@
 import { getReviewAuthor, setReviewAuthor, subscribeReviewAuthor } from './review-identity.mjs';
 import { menuOf } from './developer-domain.mjs';
 import { createCommentsStore } from './comments-store.mjs';
-import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFloatingPosition, createPageChangeDetector, createPageRequestGate, hasDragMoved, inferProjectTab, isVisiblePin, normalizeStatus, pageLabel, partitionCommentsByCompletion, pointWithinRect } from './comments-domain.mjs';
+import { afterBrowserPaint, buildAnchorRecord, buildProjectViewContext, clampFloatingPosition, createPageChangeDetector, createPageRequestGate, floatingPositionStyle, hasDragMoved, inferProjectTab, isVisiblePin, normalizePinMode, normalizeStatus, pageLabel, partitionCommentsByCompletion, pointWithinRect } from './comments-domain.mjs';
 import { COMMENTS_CONFIG } from './comments-config.mjs';
 
 const store = createCommentsStore(COMMENTS_CONFIG);
-const state = { rows: [], loaded: false, pendingRows: null, checking: false, statusFilter: 'all', target: null, picking: false, pinMode: localStorage.getItem('eva-review-pin-mode') || 'all', activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
+const state = { rows: [], loaded: false, pendingRows: null, checking: false, statusFilter: 'all', target: null, picking: false, pinMode: normalizePinMode(localStorage.getItem('eva-review-pin-mode')), activeId: null, replyingId: null, replyDrafts: new Map(), submittingReplies: new Set(), listRenderPending: false, locateRevision: 0, draggedUntil: 0 };
 
 const KINDS = {
   copy: { label: '改文案', className: 'copy' },
@@ -24,7 +24,6 @@ const STATUSES = {
   doing: '原型修改中',
   done: '原型已改完',
 };
-if (state.pinMode === 'approved') state.pinMode = 'all';
 const savedStatusFilter = localStorage.getItem('eva-review-status-filter');
 state.statusFilter = Object.hasOwn(STATUSES, savedStatusFilter) ? savedStatusFilter : 'all';
 
@@ -217,7 +216,7 @@ function placeFloating(element, position) {
   if (!element || !position) return;
   const rect = element.getBoundingClientRect();
   const next = clampFloatingPosition({ ...position, width:rect.width, height:rect.height, viewportWidth:innerWidth, viewportHeight:innerHeight, margin:8 });
-  element.style.left = `${next.x}px`; element.style.top = `${next.y}px`; element.style.right = 'auto';
+  Object.assign(element.style, floatingPositionStyle(next));
   return next;
 }
 

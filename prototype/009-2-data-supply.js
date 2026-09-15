@@ -217,15 +217,24 @@ window.__EVA_PEOPLE = [
 window.__EVA_MEMBERSHIP_CLONES = [
   {id:'b-wangyilin',ownerId:'u-wangyilin',name:'王宜林的 AI 分身',active:true},
   {id:'clone-linxiao',ownerId:'u-linxiao',name:'林晓的 AI 分身',active:true},
-  {id:'clone-hejing',ownerId:'u-hejing',name:'何静的 AI 分身',active:true}
+  {id:'clone-hejing',ownerId:'u-hejing',name:'何静的 AI 分身',active:true},
+  {id:'clone-zhouyuan',ownerId:'u-zhouyuan',name:'周远的 AI 分身',active:true},
+  {id:'clone-suhang',ownerId:'u-suhang',name:'苏航的 AI 分身',active:true},
+  {id:'clone-yanbo',ownerId:'u-yanbo',name:'严博的 AI 分身',active:true}
 ];
 
 // Review scenario belongs to the existing collaboration workspace (prod).
 // p-supply is its task-board project, not its membership scope.
 window.__EVA_SUPPLY_MEMBER_DEMO = {
-  projectId:'prod', version:2,
-  humans:[{id:'u-wangyilin',role:'owner'},{id:'u-linxiao',role:'member'},{id:'u-zhouyuan',role:'admin'},{id:'u-hejing',role:'member'}],
-  cloneIds:['b-wangyilin','clone-linxiao'],
+  projectId:'prod', version:3,
+  humans:[{id:'u-wangyilin',role:'owner'},{id:'u-zhouyuan',role:'admin'},{id:'u-linxiao',role:'member'},{id:'u-hejing',role:'member'},{id:'u-suhang',role:'member'},{id:'u-tangwei',role:'member'},{id:'u-yanbo',role:'member'},{id:'u-huiling',role:'member'}],
+  cloneIds:['b-wangyilin','clone-linxiao','clone-hejing','clone-zhouyuan','clone-suhang','clone-yanbo'],
+  groupMembers:{
+    'c-eva':['u-wangyilin','u-zhouyuan','u-linxiao','u-yanbo'],
+    'c-review':['u-wangyilin','u-linxiao','u-zhouyuan','u-suhang'],
+    'c-weekly':['u-wangyilin','u-hejing','u-linxiao','u-huiling'],
+    'im-bubble-lab':['u-wangyilin','u-linxiao','u-zhouyuan']
+  },
   group:{id:'supply-demo-rectification',name:'供应商整改协同',ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'},{id:'u-linxiao',role:'member'}],cloneIds:['clone-linxiao']},
   thread:{id:'supply-demo-evidence',name:'A-2409整改证据',status:1,created_at:'2026-09-02T10:00:00+08:00',creator_name:'林晓',message_count:1,member_count:2,unread:0},
   messages:[
@@ -568,7 +577,7 @@ window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
   {id:'supply-role-front',name:'前端',description:'实现页面与交互'},
   {id:'supply-role-back',name:'后端',description:'数据与接口开发'},
   {id:'supply-role-hr',name:'HR',description:'人员协同与支持'}
-],assignments:{'u-wangyilin':['supply-role-product'],'u-linxiao':['supply-role-front'],'u-hejing':['supply-role-hr'],'u-zhouyuan':['supply-role-back']}};
+],assignments:{'u-wangyilin':['supply-role-product'],'u-linxiao':['supply-role-front'],'u-hejing':['supply-role-hr'],'u-zhouyuan':['supply-role-back'],'u-suhang':['supply-role-front'],'u-tangwei':['supply-role-product']}};
 
 // Project automation fixtures are illustrative; no scheduler or external system is invoked.
 (function(root){
