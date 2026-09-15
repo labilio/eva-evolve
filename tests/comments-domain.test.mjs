@@ -32,6 +32,14 @@ test('page marker mode shows all, approved-only, or no comments', () => {
   assert.equal(isVisiblePin(rows[2], '#/messages', 'off'), false);
 });
 
+test('page markers default to hidden while preserving an explicit user choice', () => {
+  assert.equal(typeof commentsDomain.normalizePinMode, 'function');
+  assert.equal(commentsDomain.normalizePinMode(null), 'off');
+  assert.equal(commentsDomain.normalizePinMode('off'), 'off');
+  assert.equal(commentsDomain.normalizePinMode('all'), 'all');
+  assert.equal(commentsDomain.normalizePinMode('approved'), 'all');
+});
+
 test('unknown persisted statuses fall back to open', () => {
   assert.equal(normalizeStatus('doing'), 'doing');
   assert.equal(normalizeStatus('approved'), 'approved');
@@ -142,4 +150,14 @@ test('floating review controls remain inside the viewport and distinguish drag f
   assert.deepEqual(commentsDomain.clampFloatingPosition({ x: 980, y: -20, width: 400, height: 600, viewportWidth: 1200, viewportHeight: 800, margin: 12 }), { x: 788, y: 12 });
   assert.equal(commentsDomain.hasDragMoved({ x: 10, y: 10 }, { x: 12, y: 13 }), false);
   assert.equal(commentsDomain.hasDragMoved({ x: 10, y: 10 }, { x: 18, y: 10 }), true);
+});
+
+test('dragged review controls release their original right and bottom insets', () => {
+  assert.equal(typeof commentsDomain.floatingPositionStyle, 'function');
+  assert.deepEqual(commentsDomain.floatingPositionStyle({ x: 24, y: 36 }), {
+    left: '24px',
+    top: '36px',
+    right: 'auto',
+    bottom: 'auto',
+  });
 });

@@ -36,6 +36,14 @@ test('项目设置与概览使用独立根类，设置字段样式可以命中',
   assert.match(css,/\.eva-project-settings-info \.eva-project-info-field textarea\s*\{[^}]*width:100%/);
 });
 
+test('项目成员表头复用通讯录的圆角浅灰视觉合同', () => {
+  const css=read('prototype/009-2-members.css');
+  assert.match(css,/\.eva-members-table \.semi-table-thead>\.semi-table-row>\.semi-table-row-head\s*\{[^}]*background:var\(--eva-contacts-header-background\)/);
+  assert.match(css,/\.eva-members-table \.semi-table-thead>\.semi-table-row>\.semi-table-row-head\s*\{[^}]*border-(?:block|top):var\(--gds-border-standard\) solid var\(--eva-contacts-header-border\)/);
+  assert.match(css,/\.eva-members-table \.semi-table-thead>\.semi-table-row>\.semi-table-row-head:first-child\s*\{[^}]*border-radius:var\(--eva-radius-control\) 0 0 var\(--eva-radius-control\)/);
+  assert.match(css,/\.eva-members-table \.semi-table-thead>\.semi-table-row>\.semi-table-row-head:last-child\s*\{[^}]*border-radius:0 var\(--eva-radius-control\) var\(--eva-radius-control\) 0/);
+});
+
 test('AI名称与标记共用身份行，标题不扩大公共圆形头像', () => {
   const css=read('prototype/046-ai-team.css');
   assert.match(css,/\.eva-ai-team__identity-name\s*\{[^}]*flex:\s*0 1 auto/);

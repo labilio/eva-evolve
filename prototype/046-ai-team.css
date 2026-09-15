@@ -482,63 +482,6 @@
 .eva-ai-team__modal .semi-modal-header { align-items: center; margin: 24px 0 16px; }
 .eva-ai-team__modal .semi-modal-title { line-height: 24px; }
 .eva-ai-team__modal .semi-modal-close { flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; }
-
-.eva-ai-team-editor .semi-modal-content { display: flex; max-height: calc(100dvh - 84px); flex-direction: column; }
-.eva-ai-team-editor .semi-modal-header,
-.eva-ai-team-editor .semi-modal-footer { flex-shrink: 0; }
-.eva-ai-team-editor .semi-modal-body { min-height: 0; padding-top: 0; overflow-y: auto; }
-.eva-ai-team-editor__form { display: flex; flex-direction: column; gap: var(--gds-space-4); color: var(--gds-color-text-primary); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); }
-.eva-ai-team-editor__identity { display: flex; align-items: flex-start; gap: var(--gds-space-3); }
-.eva-ai-team-editor__avatar-upload { width: 44px; flex: 0 0 44px; }
-.eva-ai-team-editor__avatar { position: relative; display: grid; width: 44px; height: 44px; place-items: center; overflow: visible; padding: 0; border: 0; border-radius: 50%; background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); cursor: pointer; }
-.eva-ai-team-editor__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.eva-ai-team-editor__avatar:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: var(--gds-space-0-5); }
-.eva-ai-team-editor__avatar-action { position: absolute; right: -2px; bottom: -2px; display: grid; width: 18px; height: 18px; place-items: center; border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: 50%; background: var(--gds-color-surface-primary); color: var(--gds-color-text-primary); }
-.eva-ai-team-editor__avatar:hover .eva-ai-team-editor__avatar-action,
-.eva-ai-team-editor__avatar:focus-visible .eva-ai-team-editor__avatar-action { background: var(--gds-color-action-dark); color: var(--gds-color-text-inverse); }
-.eva-ai-team-editor__primary-fields { display: grid; min-width: 0; flex: 1; grid-template-columns: minmax(0, 1fr); gap: var(--gds-space-2); }
-.eva-ai-team-editor__primary-fields label { display: flex; align-items: center; justify-content: space-between; gap: var(--gds-space-2); color: var(--gds-color-text-primary); font-weight: var(--gds-font-weight-medium); }
-.eva-ai-team-editor__primary-fields label:not(:first-child) { margin-top: var(--gds-space-1); }
-.eva-ai-team-editor__primary-fields label span { color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); font-weight: var(--gds-font-weight-regular); }
-.eva-ai-team-editor__avatar-help { display: flex; min-height: 24px; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gds-space-2); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
-.eva-ai-team-editor__avatar-help .semi-button { flex-shrink: 0; }
-.eva-ai-team-editor__toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gds-space-2); }
-.eva-ai-team-editor__picker { display: grid; min-height: 284px; grid-template-columns: minmax(0, 3fr) minmax(190px, 2fr); overflow: hidden; border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-panel); }
-.eva-ai-team-editor__candidates,
-.eva-ai-team-editor__selected-list { min-height: 0; max-height: 320px; overflow-y: auto; }
-.eva-ai-team-editor__candidates { padding: var(--gds-space-2); }
-.eva-ai-team-editor__candidate-group { min-width: 0; margin: 0; padding: 0; border: 0; }
-.eva-ai-team-editor__candidate-group + .eva-ai-team-editor__candidate-group { margin-top: var(--gds-space-3); }
-.eva-ai-team-editor__candidate-group legend { width: 100%; box-sizing: border-box; padding: var(--gds-space-1) var(--gds-space-2); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
-.eva-ai-team-editor__candidate { display: flex; min-height: 48px; align-items: center; gap: var(--gds-space-2); padding: var(--gds-space-1) var(--gds-space-2); border-radius: var(--gds-radius-control); cursor: pointer; }
-.eva-ai-team-editor__candidate:hover { background: var(--eva-rail-hover); }
-.eva-ai-team-editor__candidate:has(input:focus-visible) { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team-editor__candidate-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; }
-.eva-ai-team-editor__candidate-copy strong { font-weight: var(--gds-font-weight-medium); }
-.eva-ai-team-editor__candidate-copy small { color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
-.eva-ai-team-editor__selected { display: flex; min-width: 0; flex-direction: column; border-left: var(--gds-border-standard) solid var(--gds-color-border-subtle); background: var(--gds-color-surface-subtle); }
-.eva-ai-team-editor__selected-head { display: flex; min-height: 40px; flex-shrink: 0; align-items: center; justify-content: space-between; gap: var(--gds-space-2); padding: 0 var(--gds-space-3); border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
-.eva-ai-team-editor__selected-head strong { font-weight: var(--gds-font-weight-medium); }
-.eva-ai-team-editor__selected-list { padding: var(--gds-space-2); }
-.eva-ai-team-editor__selected-item { display: flex; min-height: 40px; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-1); }
-.eva-ai-team-editor__selected-avatar { display: inline-flex; width: 28px; height: 28px; flex: 0 0 28px; align-items: center; justify-content: center; }
-.eva-ai-team-editor__selected-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-ai-team-editor__selected-item .semi-button { flex-shrink: 0; }
-.eva-ai-team-editor__selected-list > p,
-.eva-ai-team-editor__empty { margin: var(--gds-space-6) var(--gds-space-3); color: var(--gds-color-text-secondary); text-align: center; }
-.eva-ai-team-editor__hint { margin: 0; color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); }
-.eva-ai-team-editor__footer { display: flex; justify-content: flex-end; gap: var(--gds-space-2); }
-
-@media (max-width: 760px) {
-  .eva-ai-team-editor__identity { align-items: center; }
-  .eva-ai-team-editor__toolbar { grid-template-columns: minmax(0, 1fr); }
-  .eva-ai-team-editor__toolbar .semi-button { justify-self: start; }
-  .eva-ai-team-editor__picker { grid-template-columns: minmax(0, 1fr); }
-  .eva-ai-team-editor__selected { border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); border-left: 0; }
-  .eva-ai-team-editor__candidates,
-  .eva-ai-team-editor__selected-list { max-height: 190px; }
-}
-
 .eva-editor-source { display: flex; flex-direction: column; gap: 12px; max-width: 560px; width: 100%; font-size: 13px; color: var(--semi-color-text-1); }
 .eva-editor-source p { margin: 0; line-height: 20px; }
 

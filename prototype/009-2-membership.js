@@ -304,7 +304,10 @@
         for(const id of scopeIds)delete state.messages[id];
         // Keep existing group/thread fixtures, restore membership only within this project.
         state.projects[pid]={...state.projects[pid],ownerId:'u-wangyilin',humans:JSON.parse(JSON.stringify(d.humans)),cloneIds:[...d.cloneIds]};
-        for(const id of groupIds){state.groups[id]={...state.groups[id],ownerId:'u-wangyilin',humans:d.humans.map(m=>({id:m.id,role:'member'})),cloneIds:[]};}
+        for(const id of groupIds){
+          const humanIds=d.groupMembers?.[id]||d.humans.map(m=>m.id);
+          state.groups[id]={...state.groups[id],ownerId:'u-wangyilin',humans:humanIds.map(id=>({id,role:'member'})),cloneIds:[]};
+        }
         state.groups[d.group.id]={...JSON.parse(JSON.stringify(d.group)),projectId:pid};
         state.threads[d.thread.id]=d.group.id;state.threadDetails[d.thread.id]={...d.thread};
         state.messages[d.group.id]=d.messages.map(m=>{const {senderId,...message}=m;return {...JSON.parse(JSON.stringify(message)),sender:{...person(senderId),uid:senderId}};});
@@ -370,6 +373,7 @@
       removeClone(id,uid,cid){cid=canonicalId(cid);if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
       transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
       setAdmin(id,uid,target,enabled){const s=state.projects[id]||fail('仅项目可设置管理员');if(s.ownerId!==uid||target===uid||!member(id,target))fail('无设置权限');s.humans.find(m=>m.id===target).role=enabled?'admin':'member';notify();},
+      leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通群可退出');if(!member(id,uid))fail('成员已离开');if(g.ownerId===uid){const successor=g.humans.find(item=>item.id!==uid&&person(item.id));if(!successor){dissolve(id);notify();return {type:'dissolved'};}g.ownerId=successor.id;drop(id,uid);notify();return {type:'left',successorId:successor.id};}drop(id,uid);notify();return {type:'left'};},
       remove(id,uid,target,successors={}){if(target?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);if(!member(id,uid)||(uid!==target&&!manager(id,uid)))fail('无移除权限');if(!member(id,target))fail('成员已离开');if(s.ownerId===target)fail('请先转让负责人或群主');const groups=state.projects[id]?Object.values(state.groups).filter(g=>g.projectId===id&&member(g.id,target)):[];const owned=groups.filter(g=>g.ownerId===target);for(const g of owned){if(g.humans.length>1&&(!successors[g.id]||successors[g.id]===target||!member(g.id,successors[g.id])))fail('请为 '+g.name+' 指定群内的人类接任者');}for(const g of owned){if(g.humans.length===1)dissolve(g.id);else g.ownerId=successors[g.id];}drop(id,target);groups.filter(g=>state.groups[g.id]).forEach(g=>drop(g.id,target));notify();},
       dissolveGroup(id,uid){const g=state.groups[id]||fail('仅普通群可解散');if(g.ownerId!==uid)fail('仅群主可解散');dissolve(id);notify();},
       seedProjectAgents(){
@@ -436,6 +440,19 @@
     if(!saved.seededOrgGroups){
       saved.seededOrgGroups=true;
       for(const g of orgChannels){saved.groups[g.id]={id:g.id,name:g.name,projectId:null,ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};for(const t of g.threads||[])saved.threads[t.id]=g.id;}
+    }
+    // Add the Recent-list non-project conversation once; preserve later edits or deletion.
+    const nonProjectRecentDemo=root.__EVA_NON_PROJECT_RECENT_DEMO;
+    if(nonProjectRecentDemo&&!saved.seededNonProjectRecentV1){
+      saved.messages||={};saved.threadDetails||={};
+      const memberIds=nonProjectRecentDemo.memberIds.filter(id=>saved.people.some(person=>person.id===id));
+      if(!saved.groups[nonProjectRecentDemo.id]&&memberIds.includes(nonProjectRecentDemo.ownerId)){
+        saved.groups[nonProjectRecentDemo.id]={id:nonProjectRecentDemo.id,name:nonProjectRecentDemo.name,projectId:null,ownerId:nonProjectRecentDemo.ownerId,humans:memberIds.map(id=>({id,role:'member'})),cloneIds:[],employeeIds:[]};
+        const thread=nonProjectRecentDemo.thread;
+        saved.threads[thread.id]=nonProjectRecentDemo.id;saved.threadDetails[thread.id]={status:1,...thread,created_at:root.__EVA_DEMO_TIME?.T1};
+        saved.messages[thread.id]=nonProjectRecentDemo.messages.filter(message=>memberIds.includes(message.senderId)).map(({senderId,...message},index)=>({...message,kind:'text',fixtureId:'non-project-recent-v1:'+index,sender:{...saved.people.find(person=>person.id===senderId),uid:senderId}}));
+      }
+      saved.seededNonProjectRecentV1=true;
     }
     // One-time additive fixture migration; do not recreate removed demo groups.
     const driveDemo=root.__EVA_DRIVE_CHAT_DEMO,driveProject=saved.projects['drive-design'];
@@ -505,6 +522,25 @@
       }
       saved.seededIMShowcaseV2=true;
     }
+    const supplyMemberDemo=root.__EVA_SUPPLY_MEMBER_DEMO,supplyProject=saved.projects[supplyMemberDemo?.projectId];
+    if(supplyMemberDemo&&supplyProject&&(saved.supplyMemberPresetVersion||0)<supplyMemberDemo.version){
+      const eligibleHuman=id=>saved.people.some(person=>person.id===id&&person.active!==false&&person.internal!==false&&person.activated!==false);
+      for(const member of supplyMemberDemo.humans){
+        if(!eligibleHuman(member.id))continue;
+        const existing=supplyProject.humans.find(item=>item.id===member.id);
+        if(existing)existing.role=member.role;
+        else supplyProject.humans.push({...member});
+      }
+      supplyProject.ownerId='u-wangyilin';
+      supplyProject.cloneIds=[...new Set([...supplyProject.cloneIds,...supplyMemberDemo.cloneIds.filter(id=>saved.clones.some(clone=>clone.id===id&&clone.active!==false&&supplyProject.humans.some(member=>member.id===clone.ownerId)))])];
+      for(const [id,humanIds] of Object.entries(supplyMemberDemo.groupMembers||{})){
+        const group=saved.groups[id];if(!group||group.projectId!==supplyMemberDemo.projectId)continue;
+        const manuallyAdded=new Set((saved.memberAdditions||[]).filter(record=>record.scopeId===id&&group.humans.some(member=>member.id===record.memberId)).map(record=>record.memberId));
+        group.humans=[...new Set([...humanIds,...manuallyAdded])].filter(eligibleHuman).map(id=>({id,role:'member'}));
+        group.ownerId='u-wangyilin';
+      }
+      saved.actorId='u-wangyilin';saved.supplyMemberPresetVersion=supplyMemberDemo.version;
+    }
     const officialDemo=root.__EVA_OFFICIAL_COMMUNITY_DEMO,officialProject=saved.projects.official;
     if(officialDemo&&officialProject&&!saved.seededOfficialCommunityV1){
       for(const id of officialDemo.humans){if(saved.people.some(p=>p.id===id&&p.active!==false)&&!officialProject.humans.some(p=>p.id===id))officialProject.humans.push({id,role:'member'});}
@@ -542,10 +578,10 @@
       saved.pinnedProjects={'u-wangyilin':ids};
     }
     const roleDemo=root.__EVA_PROJECT_ROLE_DEMO;
-    if(roleDemo&&saved.projects[roleDemo.projectId]&&!saved.seededProjectRolesV1){
+    if(roleDemo&&saved.projects[roleDemo.projectId]&&!saved.seededProjectRolesV2){
       const p=saved.projects[roleDemo.projectId];p.projectRoles=JSON.parse(JSON.stringify(roleDemo.roles));p.memberRoleIds={};
       for(const [id,ids] of Object.entries(roleDemo.assignments))if(p.humans.some(m=>m.id===id)||p.cloneIds.includes(id))p.memberRoleIds[id]=[...ids];
-      saved.seededProjectRolesV1=true;
+      saved.seededProjectRolesV1=true;saved.seededProjectRolesV2=true;
     }
     const threadStateDemo=root.__EVA_THREAD_STATE_DEMO;
     if(threadStateDemo&&saved.groups[threadStateDemo.groupId]?.projectId==='prod'&&!saved.seededThreadStatesV1){
