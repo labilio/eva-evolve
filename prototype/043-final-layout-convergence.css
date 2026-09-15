@@ -4,7 +4,7 @@
     --eva-conversation-rail-current: var(--eva-conversation-rail-width);
     --eva-conversation-rail-min: 220px;
     --eva-conversation-rail-max: 480px;
-    --eva-conversation-rail-bg: var(--eva-surface-glass);
+    --eva-conversation-rail-bg: var(--eva-conversation-rail-surface);
     --eva-conversation-rail-border: var(--eva-border-subtle);
   }
 

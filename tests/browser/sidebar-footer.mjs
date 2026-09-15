@@ -90,8 +90,8 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
     if(section.index>0){assert.equal(section.marginTop,'14px');assert.equal(section.paddingTop,'0px');assert.equal(section.borderTop,'0px');}
     for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');assert.equal(entry.radius,'8px');}
   }
-  const navigationSurface=await page.locator('.layout-sider').evaluate(element=>getComputedStyle(element).backgroundImage);
-  assert.match(navigationSurface,/linear-gradient\(212\.729deg, rgb\(245, 247, 251\) 19\.562%, rgb\(250, 250, 251\) 59\.04%, rgb\(251, 250, 250\) 94\.383%\)/);
+  const navigationSurface=await page.locator('.layout-sider').evaluate(element=>getComputedStyle(element).backgroundColor);
+  assert.equal(navigationSurface,'rgb(245, 246, 248)');
   const selected=page.locator('[data-eva-nav-id="new-chat"] .eva-personal-entry');
   const selectedColors=await selected.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('.eva-personal-entry__label'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
   assert.equal(selectedColors.background,'rgb(220, 233, 255)');
@@ -108,4 +108,13 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
   assert.equal(active.background,'rgb(220, 233, 255)');
   assert.equal(active.color,'rgb(21, 99, 235)');
   assert.equal(active.weight,'500');
+});
+
+test('Every three-column middle rail uses the confirmed shared surface',async()=>{
+  await page.setViewportSize({width:1200,height:800});
+  for(const [route,selector] of [['/guid','.eva-personal-sider-panel'],['/messages','.ch-list'],['/messages?evaIM=my-ai','.eva-ai-team__sidebar'],['/drive','.eva-drive__side']]){
+    await page.goto(`${origin}/#${route}`);
+    await page.locator(selector).first().waitFor({state:'visible'});
+    assert.equal(await page.locator(selector).first().evaluate(element=>getComputedStyle(element).backgroundColor),'rgb(253, 253, 253)',`${route} middle rail`);
+  }
 });
