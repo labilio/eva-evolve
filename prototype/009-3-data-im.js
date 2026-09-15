@@ -129,6 +129,20 @@
   };
 })();
 
+// One non-project parent group with a child subzone for the Recent-list demo.
+window.__EVA_NON_PROJECT_RECENT_DEMO = {
+  id: 'community-product-co-creation',
+  name: '产品共创交流群',
+  ownerId: 'u-wangyilin',
+  memberIds: ['u-wangyilin', 'u-linxiao', 'u-hejing'],
+  thread: {id: 'community-feedback-roundup', name: '近期体验反馈整理'},
+  messages: [
+    {senderId: 'u-linxiao', time: '09:18', text: '我把近期收到的体验反馈按操作路径整理了，先集中看消息列表和子区切换两类。'},
+    {senderId: 'u-hejing', time: '09:26', text: '权限相关的几条我会单独标注前置条件，避免把无权限和界面异常混在一起。'},
+    {senderId: 'u-wangyilin', time: '09:35', text: '好，这里先保留原始反馈和复现路径，确认后的改进项再转到对应项目跟进。'}
+  ]
+};
+
 // Contacts demo: additional personas of existing colleagues; no new people or projects.
 window.__EVA_CONTACT_PERSONAS = [
   {id:'clone-zhouyuan',ownerId:'u-zhouyuan',name:'周远的 AI 分身'},

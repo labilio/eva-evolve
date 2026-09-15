@@ -437,6 +437,19 @@
       saved.seededOrgGroups=true;
       for(const g of orgChannels){saved.groups[g.id]={id:g.id,name:g.name,projectId:null,ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};for(const t of g.threads||[])saved.threads[t.id]=g.id;}
     }
+    // Add the Recent-list non-project conversation once; preserve later edits or deletion.
+    const nonProjectRecentDemo=root.__EVA_NON_PROJECT_RECENT_DEMO;
+    if(nonProjectRecentDemo&&!saved.seededNonProjectRecentV1){
+      saved.messages||={};saved.threadDetails||={};
+      const memberIds=nonProjectRecentDemo.memberIds.filter(id=>saved.people.some(person=>person.id===id));
+      if(!saved.groups[nonProjectRecentDemo.id]&&memberIds.includes(nonProjectRecentDemo.ownerId)){
+        saved.groups[nonProjectRecentDemo.id]={id:nonProjectRecentDemo.id,name:nonProjectRecentDemo.name,projectId:null,ownerId:nonProjectRecentDemo.ownerId,humans:memberIds.map(id=>({id,role:'member'})),cloneIds:[],employeeIds:[]};
+        const thread=nonProjectRecentDemo.thread;
+        saved.threads[thread.id]=nonProjectRecentDemo.id;saved.threadDetails[thread.id]={status:1,...thread,created_at:root.__EVA_DEMO_TIME?.T1};
+        saved.messages[thread.id]=nonProjectRecentDemo.messages.filter(message=>memberIds.includes(message.senderId)).map(({senderId,...message},index)=>({...message,kind:'text',fixtureId:'non-project-recent-v1:'+index,sender:{...saved.people.find(person=>person.id===senderId),uid:senderId}}));
+      }
+      saved.seededNonProjectRecentV1=true;
+    }
     // One-time additive fixture migration; do not recreate removed demo groups.
     const driveDemo=root.__EVA_DRIVE_CHAT_DEMO,driveProject=saved.projects['drive-design'];
     if(driveDemo&&driveProject&&!saved.seededDriveDiscussionV1){
