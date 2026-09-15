@@ -68,8 +68,10 @@
   --eva-overlay-pressed: rgba(0, 0, 0, 0.09);
   --eva-overlay-dismiss: rgba(0, 0, 0, 0.2);        /* operation-card dismiss */
 
-  /* 2026-09-09 preview: monochrome brand treatment for global navigation only. */
-  --eva-nav-hover: #e2e3e5;
+  /* Global navigation follows the reviewed designer surface while preserving
+   * the user-confirmed blue interaction language. */
+  --eva-nav-surface: #f6f7f8;
+  --eva-nav-hover: #edf3ff;
   --eva-nav-selected: #dce9ff;
   --eva-nav-accent: var(--eva-action-primary);
 

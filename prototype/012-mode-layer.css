@@ -36,6 +36,11 @@
   box-sizing: border-box;
   height: 38px !important;
   min-height: 38px;
+  border-radius: var(--eva-radius-control) !important;
+}
+.eva-personal-entry:not(.is-collapsed),
+.eva-personal-entry:not(.is-collapsed) .eva-personal-entry__main {
+  border-radius: var(--eva-radius-control) !important;
 }
 .eva-nav-section:not(.is-collapsed) .eva-nav-entry [class*="text-14px"],
 .eva-personal-entry:not(.is-collapsed) .eva-personal-entry__label {
@@ -75,8 +80,8 @@
   isolation: isolate;
 }
 .layout-sider {
-  --bg-2: var(--eva-surface-glass);
-  background: var(--eva-surface-glass);
+  --bg-2: var(--eva-nav-surface);
+  background: var(--eva-nav-surface);
 }
 .layout-content {
   background: var(--eva-surface-primary);

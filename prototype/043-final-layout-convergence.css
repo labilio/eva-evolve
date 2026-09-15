@@ -141,7 +141,7 @@
   #eva-drive-nav[aria-current="page"],
   .eva-nav-entry:has([aria-current="page"]) {
     overflow: hidden;
-    border-radius: 10px !important;
+    border-radius: var(--eva-radius-control) !important;
   }
 
   .eva-digital-employee-page {

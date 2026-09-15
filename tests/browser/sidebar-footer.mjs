@@ -69,7 +69,8 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
       entries:[...section.querySelectorAll('.eva-nav-entry')].map(entry=>{
         const row=entry.querySelector('.box-border.cursor-pointer, .eva-personal-entry__main');
         const label=entry.querySelector('[class*="text-14px"], .eva-personal-entry__label'),style=getComputedStyle(label);
-        return {height:row.getBoundingClientRect().height,font:style.fontSize,line:style.lineHeight,weight:style.fontWeight,
+        const rowStyle=getComputedStyle(row);
+        return {height:row.getBoundingClientRect().height,font:style.fontSize,line:style.lineHeight,weight:style.fontWeight,radius:rowStyle.borderRadius,
           selected:Boolean(entry.querySelector('[aria-current="page"]'))};
       })};
   }));
@@ -87,8 +88,10 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
     assert.equal(section.titleLine,'20px');
     assert.equal(section.titleWeight,'400');
     if(section.index>0){assert.equal(section.marginTop,'14px');assert.equal(section.paddingTop,'0px');assert.equal(section.borderTop,'0px');}
-    for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');}
+    for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');assert.equal(entry.radius,'8px');}
   }
+  const navigationSurface=await page.locator('.layout-sider').evaluate(element=>getComputedStyle(element).backgroundColor);
+  assert.equal(navigationSurface,'rgb(246, 247, 248)');
   const selected=page.locator('[data-eva-nav-id="new-chat"] .eva-personal-entry');
   const selectedColors=await selected.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('.eva-personal-entry__label'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
   assert.equal(selectedColors.background,'rgb(220, 233, 255)');
@@ -98,7 +101,7 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
   const idle=await target.evaluate(element=>getComputedStyle(element).backgroundColor);
   await target.hover();
   await page.waitForTimeout(200);
-  assert.notEqual(await target.evaluate(element=>getComputedStyle(element).backgroundColor),idle,'Hover feedback remains visible');
+  assert.equal(await target.evaluate(element=>getComputedStyle(element).backgroundColor),'rgb(237, 243, 255)','Hover feedback keeps the user-confirmed blue tint');
   await target.click();
   await page.waitForTimeout(300);
   const active=await target.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('[class*="text-14px"]'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
