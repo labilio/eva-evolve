@@ -1,0 +1,128 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { chromium } from 'playwright';
+import { createServer } from '../../tools/serve.mjs';
+
+test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选结构', async () => {
+  const server=createServer(new URL('../../dist',import.meta.url).pathname);
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try {
+    const context=await browser.newContext({viewport:{width:1200,height:800}});
+    await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+    const page=await context.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(origin+'/?picker-preview=create#/collab?evaProject=prod&evaTab=settings');
+    const dialog=page.getByRole('dialog').filter({hasText:'新建群聊'});
+    await dialog.waitFor();
+    const picker=dialog.locator('.eva-member-picker');
+    assert.equal(await picker.count(),1);
+    assert.equal(await picker.locator('.eva-member-picker__available').count(),1);
+    assert.equal(await picker.locator('.eva-member-picker__selected').count(),1);
+    assert.equal(await dialog.getByRole('textbox',{name:'搜索可选成员'}).count(),1);
+    assert.equal(await dialog.locator('.eva-picker-selected').count(),0,'不再显示旧版已选 chips 区');
+    await dialog.getByText('项目管理员',{exact:true}).waitFor();
+    assert.equal(await dialog.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'项目建群候选只显示短治理身份');
+
+    const first=picker.locator('.eva-member-picker__candidate').first();
+    await first.click();
+    assert.equal(await picker.locator('.eva-member-picker__selected-item').count(),1);
+    const avatarSize=await picker.locator('.eva-member-picker__selected-avatar').first().evaluate(node=>{
+      const box=node.getBoundingClientRect();
+      return [box.width,box.height];
+    });
+    assert.deepEqual(avatarSize,[28,28]);
+    await picker.locator('.eva-member-picker__selected-item button').click();
+    assert.equal(await picker.locator('.eva-member-picker__selected-item').count(),0);
+    await dialog.getByRole('button',{name:'取消',exact:true}).click();
+
+    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
+    await page.getByRole('tab',{name:'成员管理',exact:true}).click();
+    await page.getByRole('button',{name:'添加成员',exact:true}).click();
+    const actual=page.getByRole('dialog').filter({hasText:'添加项目成员'});
+    await actual.waitFor();
+    assert.equal(await actual.locator('.eva-member-picker').count(),1,'实际项目入口必须使用模板 A');
+    assert.equal(await actual.getByRole('textbox',{name:'搜索可选成员'}).count(),1);
+    assert.equal(await actual.locator('.eva-member-picker--selection-only').count(),1,'纯拉人使用无表单留白的双栏形态');
+    assert.equal(await actual.locator('.eva-member-picker__label').count(),0,'纯拉人不显示外层成员标签');
+    const purePickerGeometry=await actual.evaluate(node=>{
+      const root=node.querySelector('.eva-member-picker').getBoundingClientRect();
+      const panel=node.querySelector('.eva-member-picker__panel').getBoundingClientRect();
+      return {leftGap:Math.round(panel.left-root.left),widthGap:Math.round(root.width-panel.width)};
+    });
+    assert.deepEqual(purePickerGeometry,{leftGap:0,widthGap:0},'纯拉人的左右选择面板占满内容宽度');
+    await actual.getByRole('button',{name:'取消',exact:true}).click();
+
+    await page.goto(origin+'/#/messages');
+    await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
+    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    await page.getByRole('button',{name:'添加群聊成员',exact:true}).click();
+    const groupAdd=page.getByRole('dialog').filter({hasText:'添加群聊成员'});
+    await groupAdd.waitFor();
+    assert.equal(await groupAdd.locator('.eva-member-picker').count(),1,'聊天信息入口必须使用模板 A');
+    assert.equal(await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).count(),1);
+    assert.equal(await groupAdd.locator('.eva-member-picker--selection-only').count(),1,'群聊加人也使用纯拉人形态');
+    assert.equal(await groupAdd.getByText('00',{exact:true}).count(),0,'空候选分组不能渲染神秘数字');
+    await groupAdd.getByText(/^人类成员 \d+$/).waitFor();
+    await groupAdd.getByText('我的 AI 分身 1',{exact:true}).waitFor();
+    await groupAdd.getByText('王宜林的 AI 分身',{exact:true}).waitFor();
+    assert.equal(await groupAdd.getByText('同事',{exact:true}).count(),0,'人类候选分组不再使用“同事”称呼');
+    const humanGroup=groupAdd.locator('.eva-member-picker__candidate-group').filter({hasText:/人类成员/});
+    assert.ok(await humanGroup.locator('.eva-member-picker__candidate').count()>0,'普通群应保留可拉入的项目人类');
+    await humanGroup.getByText('HR',{exact:true}).waitFor();
+    const unassignedHuman=humanGroup.locator('.eva-member-picker__candidate').filter({hasText:'惠玲'});
+    assert.equal(await unassignedHuman.locator('.eva-members-human-role').count(),0,'未配置项目角色的人类第二行留空');
+    assert.equal(await groupAdd.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'不显示冗长的权限说明');
+    assert.equal(await groupAdd.locator('.eva-member-picker__candidate-group').filter({hasText:'我的 AI 分身'}).locator('.eva-member-picker__candidate').count(),1,'王宜林可同时看到自己已在项目中的 AI 分身');
+    await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).fill('不存在的成员');
+    await groupAdd.getByText('没有匹配的成员',{exact:true}).waitFor();
+    await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).fill('');
+    for(const candidate of await groupAdd.locator('.eva-member-picker__candidate').all())await candidate.click();
+    await groupAdd.getByRole('button',{name:'确认添加',exact:true}).click();
+    await page.getByRole('button',{name:'添加群聊成员',exact:true}).click();
+    await groupAdd.getByText('项目内可选成员均已加入当前群聊',{exact:true}).waitFor();
+    await groupAdd.getByText('如需添加其他人，请先将其加入项目',{exact:true}).waitFor();
+    const emptyCopyStyle=await groupAdd.locator('.eva-member-picker__empty').evaluate(node=>{
+      const title=getComputedStyle(node.querySelector('p'));
+      const description=getComputedStyle(node.querySelector('small'));
+      return {
+        title:{fontSize:title.fontSize,color:title.color,fontWeight:title.fontWeight},
+        description:{fontSize:description.fontSize,color:description.color,fontWeight:description.fontWeight,marginTop:description.marginTop}
+      };
+    });
+    assert.deepEqual(emptyCopyStyle,{
+      title:{fontSize:'13px',color:'rgb(107, 114, 128)',fontWeight:'400'},
+      description:{fontSize:'12px',color:'rgb(147, 147, 147)',fontWeight:'400',marginTop:'8px'}
+    },'空状态的状态说明与行动提示使用克制的灰色小字层级');
+    await groupAdd.getByRole('button',{name:'取消',exact:true}).click();
+
+    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
+    await page.getByRole('tab',{name:'成员管理',exact:true}).click();
+    await page.getByRole('button',{name:'添加成员',exact:true}).click();
+    let projectAdd=page.getByRole('dialog').filter({hasText:'添加项目成员'});
+    const projectCandidates=await projectAdd.locator('.eva-member-picker__candidate').all();
+    assert.ok(projectCandidates.length>0,'演示项目应有尚未加入的组织成员用于验证项目空状态');
+    for(const candidate of projectCandidates)await candidate.click();
+    await projectAdd.getByRole('button',{name:'确认添加',exact:true}).click();
+    await page.getByRole('button',{name:'添加成员',exact:true}).click();
+    projectAdd=page.getByRole('dialog').filter({hasText:'添加项目成员'});
+    await projectAdd.getByText('所有可添加成员均已加入项目',{exact:true}).waitFor();
+    assert.equal(await projectAdd.getByText('00',{exact:true}).count(),0,'项目空候选也不能渲染数字');
+    await projectAdd.getByRole('button',{name:'取消',exact:true}).click();
+
+    await page.goto(origin+'/#/messages');
+    await page.locator('.eva-message-invite').click();
+    await page.getByRole('menuitem',{name:'新建群聊',exact:true}).click();
+    const createGroup=page.getByRole('dialog').filter({hasText:'新建群聊'});
+    await createGroup.waitFor();
+    assert.equal(await createGroup.locator('.eva-member-picker').count(),1,'新建群聊入口必须使用模板 A');
+    assert.equal(await createGroup.locator('.eva-member-picker--selection-only').count(),0,'带名称的创建流程保留表单形态');
+    assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).count(),1);
+    assert.equal(await createGroup.getByRole('button',{name:'创建群聊',exact:true}).isDisabled(),true,'群名与成员为空时不能创建');
+    assert.deepEqual(errors,[]);
+  } finally {
+    await browser.close();
+    await new Promise(resolve=>server.close(resolve));
+  }
+});

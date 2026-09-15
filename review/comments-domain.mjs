@@ -75,6 +75,11 @@ export function isVisiblePin(row, pagePath, mode = 'all') {
   return true;
 }
 
+export function normalizePinMode(mode) {
+  if (mode === 'all' || mode === 'approved') return 'all';
+  return 'off';
+}
+
 export function buildAnchorRecord(snapshot = {}) {
   const clamp = value => Math.max(0, Math.min(1, Number.isFinite(Number(value)) ? Number(value) : 0.5));
   const record = {
@@ -138,6 +143,15 @@ export function clampFloatingPosition({ x, y, width, height, viewportWidth, view
   return {
     x: Math.min(maxX, Math.max(margin, Number(x) || 0)),
     y: Math.min(maxY, Math.max(margin, Number(y) || 0)),
+  };
+}
+
+export function floatingPositionStyle({ x, y } = {}) {
+  return {
+    left: `${Number(x) || 0}px`,
+    top: `${Number(y) || 0}px`,
+    right: 'auto',
+    bottom: 'auto',
   };
 }
 
