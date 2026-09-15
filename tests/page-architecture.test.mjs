@@ -580,7 +580,7 @@ test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏
   assert.match(source, /eva-sider-resize-handle/);
   assert.match(source, /onDoubleClick:\(\)=>\{if\(Kt\?\.includes\("eva-sider-resize-handle"\)\)/);
   // 连接中心图标改用 createLucideIcon，不再手写内联 svg（AGENTS.md:151）。
-  assert.match(source, /EvaConnectionCenterIcon=createLucideIcon\("unplug",/);
+  assert.match(source, /EvaConnectionCenterIcon=createLucideIcon\("cable",/);
 });
 
 test('折叠侧栏只承载一级导航并保持可滚动', () => {
