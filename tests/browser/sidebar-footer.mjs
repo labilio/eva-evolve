@@ -57,3 +57,52 @@ test('Shared footer is passive identity plus one functioning settings button, ex
     await verifyFooter();
   }
 });
+
+test('Expanded navigation shares the reviewed typography and group rhythm',async()=>{
+  await page.setViewportSize({width:1200,height:800});
+  await page.goto(`${origin}/#/guid`);
+  await page.locator('.eva-nav-section').first().waitFor();
+  const sections=await page.evaluate(()=>[...document.querySelectorAll('.eva-nav-section')].map((section,index)=>{
+    const title=section.querySelector('.eva-nav-section__title'),titleStyle=getComputedStyle(title),sectionStyle=getComputedStyle(section);
+    return {index,titleFont:titleStyle.fontSize,titleLine:titleStyle.lineHeight,titleWeight:titleStyle.fontWeight,
+      marginTop:sectionStyle.marginTop,paddingTop:sectionStyle.paddingTop,borderTop:sectionStyle.borderTopWidth,
+      entries:[...section.querySelectorAll('.eva-nav-entry')].map(entry=>{
+        const row=entry.querySelector('.box-border.cursor-pointer, .eva-personal-entry__main');
+        const label=entry.querySelector('[class*="text-14px"], .eva-personal-entry__label'),style=getComputedStyle(label);
+        return {height:row.getBoundingClientRect().height,font:style.fontSize,line:style.lineHeight,weight:style.fontWeight,
+          selected:Boolean(entry.querySelector('[aria-current="page"]'))};
+      })};
+  }));
+  const iconSnapshot=await page.evaluate(()=>[...document.querySelectorAll('.eva-nav-entry')].map(entry=>({
+    id:entry.dataset.evaNavId,
+    lucide:entry.querySelector('svg.lucide')?.getAttribute('class')||'',
+    agentAsset:entry.querySelector('.eva-my-ai-collaboration-icon')?.getAttribute('src')||'',
+    personalAvatar:entry.querySelector('.eva-personal-entry__logo img')?.getAttribute('src')||'',
+  })));
+  assert.equal(iconSnapshot.length,11);
+  assert.ok(iconSnapshot.every(icon=>icon.lucide||icon.agentAsset||icon.personalAvatar),'Every navigation entry retains its current icon implementation');
+  assert.equal(iconSnapshot.find(icon=>icon.id==='my-ai').agentAsset,'prototype/assets/my-ai-collaboration.svg');
+  for(const section of sections){
+    assert.equal(section.titleFont,'13px');
+    assert.equal(section.titleLine,'20px');
+    assert.equal(section.titleWeight,'400');
+    if(section.index>0){assert.equal(section.marginTop,'14px');assert.equal(section.paddingTop,'0px');assert.equal(section.borderTop,'0px');}
+    for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');}
+  }
+  const selected=page.locator('[data-eva-nav-id="new-chat"] .eva-personal-entry');
+  const selectedColors=await selected.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('.eva-personal-entry__label'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
+  assert.equal(selectedColors.background,'rgb(220, 233, 255)');
+  assert.equal(selectedColors.color,'rgb(21, 99, 235)');
+  assert.equal(selectedColors.weight,'500');
+  const target=page.locator('[data-eva-nav-id="workboard"] .box-border.cursor-pointer');
+  const idle=await target.evaluate(element=>getComputedStyle(element).backgroundColor);
+  await target.hover();
+  await page.waitForTimeout(200);
+  assert.notEqual(await target.evaluate(element=>getComputedStyle(element).backgroundColor),idle,'Hover feedback remains visible');
+  await target.click();
+  await page.waitForTimeout(300);
+  const active=await target.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('[class*="text-14px"]'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
+  assert.equal(active.background,'rgb(220, 233, 255)');
+  assert.equal(active.color,'rgb(21, 99, 235)');
+  assert.equal(active.weight,'500');
+});

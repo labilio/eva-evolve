@@ -6,9 +6,9 @@
 }
 
 .eva-nav-section + .eva-nav-section {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border-2, var(--semi-color-border, #e5e6eb));
+  margin-top: 14px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .eva-nav-section__title {
@@ -17,9 +17,9 @@
   display: flex;
   align-items: center;
   color: var(--semi-color-text-2, #8f959e);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
   user-select: none;
 }
 
@@ -28,6 +28,19 @@
   min-width: 0;
   flex-direction: column;
   gap: 2px;
+}
+
+/* Expanded navigation follows the reviewed designer rhythm. The route and
+ * component implementations still own behavior, icons and selection state. */
+.eva-nav-section:not(.is-collapsed) .eva-nav-entry .box-border.cursor-pointer {
+  box-sizing: border-box;
+  height: 38px !important;
+  min-height: 38px;
+}
+.eva-nav-section:not(.is-collapsed) .eva-nav-entry [class*="text-14px"],
+.eva-personal-entry:not(.is-collapsed) .eva-personal-entry__label {
+  font-size: 15px !important;
+  line-height: 22px !important;
 }
 
 .eva-space-picker__trigger,
