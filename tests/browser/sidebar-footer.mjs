@@ -9,7 +9,7 @@ before(async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   origin=`http://127.0.0.1:${server.address().port}`;
   browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
-  const context=await browser.newContext({viewport:{width:1200,height:800}});
+  const context=await browser.newContext({viewport:{width:1200,height:800},locale:'zh-CN'});
   await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   page=await context.newPage();
 });
