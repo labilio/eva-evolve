@@ -82,6 +82,7 @@
 .layout-sider {
   --bg-2: var(--eva-nav-surface);
   background: var(--eva-nav-surface);
+  background-clip: padding-box;
 }
 .layout-content {
   background: var(--eva-surface-primary);

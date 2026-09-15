@@ -90,8 +90,8 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
     if(section.index>0){assert.equal(section.marginTop,'14px');assert.equal(section.paddingTop,'0px');assert.equal(section.borderTop,'0px');}
     for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');assert.equal(entry.radius,'8px');}
   }
-  const navigationSurface=await page.locator('.layout-sider').evaluate(element=>getComputedStyle(element).backgroundColor);
-  assert.equal(navigationSurface,'rgb(246, 247, 248)');
+  const navigationSurface=await page.locator('.layout-sider').evaluate(element=>getComputedStyle(element).backgroundImage);
+  assert.match(navigationSurface,/linear-gradient\(212\.729deg, rgb\(245, 247, 251\) 19\.562%, rgb\(250, 250, 251\) 59\.04%, rgb\(251, 250, 250\) 94\.383%\)/);
   const selected=page.locator('[data-eva-nav-id="new-chat"] .eva-personal-entry');
   const selectedColors=await selected.evaluate(element=>{const style=getComputedStyle(element),label=getComputedStyle(element.querySelector('.eva-personal-entry__label'));return {background:style.backgroundColor,color:label.color,weight:label.fontWeight};});
   assert.equal(selectedColors.background,'rgb(220, 233, 255)');

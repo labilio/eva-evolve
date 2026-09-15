@@ -70,7 +70,7 @@
 
   /* Global navigation follows the reviewed designer surface while preserving
    * the user-confirmed blue interaction language. */
-  --eva-nav-surface: #f6f7f8;
+  --eva-nav-surface: linear-gradient(212.729deg, #f5f7fb 19.562%, #fafafb 59.04%, #fbfafa 94.383%);
   --eva-nav-hover: #edf3ff;
   --eva-nav-selected: #dce9ff;
   --eva-nav-accent: var(--eva-action-primary);
