@@ -109,9 +109,19 @@
 
 /* Recent conversations share unread semantics with the compact tree. */
 .ch-layout .wk-conversationlist-item-indicators { display:flex; align-items:center; gap:4px; flex:none; margin-left:8px; }
-.ch-layout .wk-conversationlist-item-name h3 { font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ch-layout .wk-conversationlist-item-name h3 { font-size:14px; font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ch-layout .wk-conversationlist-item-unread .wk-conversationlist-item-name h3 { font-weight:600; }
+.ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-name h3 { font-weight:600; }
 .ch-layout .wk-conversationlist-item-time { flex:none; white-space:nowrap; }
+/* 卡片留白与圆角对齐主菜单 radius.control(8px)；hover<选中，修正现状 hover 比选中还深的反色缺陷。 */
+.ch-layout .wk-conversationlist-item { padding:11px var(--wk-sp-2); border-radius:8px; }
+.ch-layout .wk-conversationlist-item:hover:not(.wk-conversationlist-item-selected) { background:var(--eva-conversation-row-hover); }
+.ch-layout .wk-conversationlist-item-selected,
+.ch-layout .wk-conversationlist-item-selected:hover { background:var(--eva-conversation-row-selected); }
+/* 蓝底选中态次要文字升一档，提对比度。 */
+.ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-time,
+.ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-lastmsg,
+.ch-layout .wk-conversationlist-item-selected .eva-chat-project-context { color:var(--eva-conversation-row-selected-meta); }
 
 /* Eva bubble trial: one presentation around the existing Octo content and events. */
 .ch-layout .ch-stream {
@@ -414,7 +424,7 @@
 .eva-im-mention-heading button { border:0; background:transparent; color:var(--eva-text-secondary); padding:4px; display:flex; cursor:pointer; }
 .eva-im-mention-options { max-height:240px; overflow-y:auto; }
 .eva-im-mention-options > button { display:flex; align-items:center; gap:10px; width:100%; height:48px; box-sizing:border-box; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-primary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
-.eva-im-mention-options > button.is-active { background:var(--eva-nav-selected); outline:none; }
+.eva-im-mention-options > button.is-active { background:var(--eva-list-option-selected); outline:none; }
 .eva-im-mention-broadcast-copy { display:flex; align-items:center; gap:8px; min-width:0; white-space:nowrap; }
 .eva-im-mention-options small { color:var(--eva-text-secondary); font-size:12px; overflow:hidden; text-overflow:ellipsis; }
 .eva-im-mention-all { width:32px; height:32px; display:grid; place-items:center; border-radius:var(--eva-radius-full); background:var(--eva-mention-background); color:var(--eva-action-primary); font-size:20px; flex-shrink:0; }

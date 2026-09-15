@@ -2,9 +2,18 @@
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] {
     display: flex;
     margin: 0;
-    /* Match the My AI header: 12px rail inset and one 34px control. */
-    padding: var(--gds-space-3);
-    background: #f6f7f8;
+    /* 与标题栏连成一体：Tab 贴标题下方，共享 16px 左内边距，去掉容器自身留白。 */
+    padding: 0 var(--gds-space-4);
+    background: transparent;
+  }
+
+  /* 标题栏与关注/最近 Tab 之间不再断开：仅在存在该 Tab 的消息 surface 下
+   * 去掉公共标题栏底线，由 Tab 自身的弱基线承接。其它入口的 .eva-rail-header
+   * 契约不受影响。 */
+  body.eva-message-hierarchy-ready
+    .eva-channel-surface:has(.wk-sidebar-tabbar[data-eva-project-recent-switcher="true"])
+    .ch-list__top.eva-rail-header {
+    border-bottom: 0;
   }
 
 
@@ -16,29 +25,56 @@
 
 
 
+  /* 线性 Tab：对齐项目详情 .collab-tabs 语言——透明容器、下划线选中、
+   * 无胶囊无投影。两项等宽二分，底部一条极弱基线（去分割线、保留弱基线）。
+   * 选中下划线由容器 ::before 承担并滑向目标项，满足《切换控件动效规范》
+   * 「同一指示器滑向目标」；线性形态下指示器即下划线，而非胶囊背景。 */
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container {
+    position: relative;
+    isolation: isolate;
     display: flex;
     gap: 0;
     width: 100%;
-    height: 36px;
     box-sizing: border-box;
-    padding: 3px;
-    border-radius: 999px;
-    background: #e5e7eb;
-    box-shadow: inset 0 0 0 1px rgb(31 35 41 / 4%);
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    border-bottom: var(--gds-border-standard) solid var(--eva-border-faint);
+  }
+
+  /* 滑动下划线：宽度为单个 Tab（两项等宽，各 50%），压在弱基线之上。 */
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 50%;
+    height: 2px;
+    background: var(--eva-action-primary);
+    pointer-events: none;
+    transition: transform var(--eva-switch-duration) var(--eva-switch-easing);
+  }
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container:has(.wk-sidebar-tabbar__btn:nth-child(2).wk-sidebar-tabbar__btn--active)::before {
+    transform: translateX(100%);
   }
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn {
-    min-height: 30px;
-    height: 30px;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 0;
+    /* 32px = GDS §14 触控下限，且与标题栏 32px 图标按钮同节奏。 */
+    min-height: 32px;
+    height: 32px;
     justify-content: center;
-    padding: 0 16px;
-    border-radius: 999px;
+    padding: 0 var(--gds-space-1);
+    border-radius: 0;
     background: transparent;
     color: var(--semi-color-text-2);
     font-size: 14px;
     font-weight: 400;
-    transition: background-color var(--eva-switch-color-duration) ease, color var(--eva-switch-color-duration) ease, box-shadow var(--eva-switch-color-duration) ease;
+    transition: color var(--eva-switch-color-duration) ease;
   }
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn:hover {
@@ -48,15 +84,19 @@
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active,
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active:hover {
-    background: #fff;
-    color: #1f2329;
-    font-weight: 500;
-    box-shadow: 0 1px 2px rgb(31 35 41 / 8%), 0 0 0 1px rgb(31 35 41 / 3%);
+    background: transparent;
+    color: var(--eva-action-primary);
+    font-weight: var(--eva-fw-medium);
+    box-shadow: none;
   }
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn:focus-visible {
-    outline: 2px solid #4d7f93;
-    outline-offset: 1px;
+    outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+    outline-offset: -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container::before { transition: none; }
   }
 
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__badge {
@@ -89,11 +129,11 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle:active,
 
 .eva-follow-category { margin-bottom: 8px; }
 .eva-follow-category-handle { left: 0; }
-.eva-follow-category-title { gap: 6px; min-height: 36px; margin-bottom: 4px; padding: 0 8px 0 14px; border-radius: 8px; }
+.eva-follow-category-title { gap: 6px; min-height: 32px; margin-bottom: 4px; padding: 0 8px 0 14px; border-radius: 8px; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title > .wk-category-header { padding: 0; background: transparent; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .wk-category-header__name { color: var(--semi-color-text-2); font-size: 13px; font-weight: 700; }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { padding-inline-start: var(--eva-rail-identity-content-inset); }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { padding-inline-start: var(--eva-rail-team-thread-inset); gap: 6px; }
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { min-height: 32px; padding-inline-start: var(--eva-rail-identity-content-inset); }
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { min-height: 28px; padding-inline-start: var(--eva-rail-team-thread-inset); gap: 6px; }
 .eva-follow-category-title > .wk-category-header { flex: 1; min-width: 0; }
 .eva-follow-category-title .eva-space-task-button { flex: none; }
 
@@ -113,43 +153,31 @@ body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact
 }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected,
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected:hover {
-  background: #f0f1f2;
+  background: var(--eva-conversation-row-selected);
+}
+
+/* 关注树名称梯度：群名 14/500，子区名 14/400；未读与选中升到 600。
+ * 靠字重+字色分层而非字号堆砌（EvaMate §4.2）。限定 .eva-follow-channel，
+ * 我的 AI（eva-ai-team__*）不受影响。 */
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--unread:not(.wk-conv-compact-item--thread) .wk-conv-compact-name,
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
+  font-weight: 600;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread .wk-conv-compact-name {
+  font-size: 14px;
+}
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread.wk-conv-compact-item--unread .wk-conv-compact-name,
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread.wk-conv-compact-item--selected .wk-conv-compact-name {
+  font-weight: 600;
+  color: var(--wk-text-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn { transition: none; }
-}
-
-/* One moving capsule makes the two-way selection explicit. */
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container {
-  position: relative;
-  isolation: isolate;
-}
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container::before {
-  content: "";
-  position: absolute;
-  inset: 3px auto 3px 3px;
-  width: calc((100% - 6px) / 2);
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(31 35 41 / 8%), 0 0 0 1px rgb(31 35 41 / 3%);
-  pointer-events: none;
-  transition: transform var(--eva-switch-duration) var(--eva-switch-easing);
-}
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container:has(.wk-sidebar-tabbar__btn:nth-child(2).wk-sidebar-tabbar__btn--active)::before {
-  transform: translateX(100%);
-}
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn {
-  position: relative;
-  z-index: 1;
-}
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active,
-body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn--active:hover {
-  background: transparent;
-  box-shadow: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__container::before { transition: none; }
 }
 
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .eva-space-task-button {

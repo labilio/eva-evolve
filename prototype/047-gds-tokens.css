@@ -10,7 +10,10 @@
    ============================================================ */
 
 :root {
-  --eva-conversation-row-hover: #f5f6f7;
+  --eva-conversation-row-hover: #f2f3f5;
+  --eva-conversation-row-selected: #EBF3FF;
+  /* 选中蓝底上次要文字升一档：.6→.72，把蓝底对比度从 ~4.36:1 提到 ~6:1。 */
+  --eva-conversation-row-selected-meta: rgba(28, 28, 35, 0.72);
   --eva-conversation-row-radius: 8px;
   /* 消息与我的 Agent 共用列表起点，禁止业务页另设缩进。 */
   --eva-rail-identity-avatar-size: 22px;
@@ -36,6 +39,21 @@
   --eva-c-mac-red: #ff5d56;
   --eva-c-mac-yellow: #feb52e;
   --eva-c-mac-green: #34c03f;
+
+  /* ---- color · primitive · dark scale (2.1.0, token layer only) ---- */
+  /* 供 057-gds-dark-tokens.css 的 [data-theme="dark"] 语义映射内部组合，不直接使用。 */
+  --eva-c-neutral-25: #f7f7f7;    /* dark: 正文 */
+  --eva-c-neutral-450: #b0b4bd;   /* dark: 高可读次级文本 */
+  --eva-c-neutral-600: #666666;   /* dark: 可见描边 */
+  --eva-c-neutral-800: #2a2a2a;   /* dark: 演示画布 / 次级边框 */
+  --eva-c-neutral-850: #232323;   /* dark: 备用中间调 */
+  --eva-c-neutral-875: #242424;   /* dark: 抬升卡片 / 面板 / 主工作区（比 canvas 亮）*/
+  --eva-c-neutral-900: #1e1e1e;   /* dark: 基础面（= ink，语义为面）*/
+  --eva-c-neutral-925: #1a1a1a;   /* dark: 画布 / 凹陷包裹（最深常规背景）*/
+  --eva-c-neutral-950: #0f0f0f;   /* dark: 下沉面 */
+  --eva-c-blue-50: #ebf3ff;       /* EvaMate 0.3.0 blue/50：选中表面 */
+  --eva-c-blue-300: #93b5ff;      /* dark: 链接 / 图标 / 焦点蓝 */
+  --eva-c-decor-dot-dark: #232948;/* dark: 装饰点阵 */
 
   /* ---- color · semantic (use these) ------------------------ */
   --eva-surface-primary: var(--eva-c-white);        /* main workspace, input panel */
@@ -68,12 +86,18 @@
   --eva-overlay-pressed: rgba(0, 0, 0, 0.09);
   --eva-overlay-dismiss: rgba(0, 0, 0, 0.2);        /* operation-card dismiss */
 
-  /* Global navigation follows the reviewed designer surface while preserving
-   * the user-confirmed blue interaction language. */
+  /* Global navigation surface follows the reviewed designer sample.
+   * hover/pressed 是覆盖层而非永久表面：GDS 2.0 §13 与 EvaMate 0.3.0
+   * DESIGN.md §71 对此一致，故消费公共覆盖层 token。
+   * 选中底色按 2026-09-15 用户裁决取 EvaMate 0.3.0 的 surface/selected
+   * = blue/50 (#EBF3FF)。文字沿用 action/primary 表达强选中；按 §71
+   * “避免多处并列强蓝”，不再叠加 border/selected 蓝色描边。
+   * 该取值同时把选中态文字对比度从 4.27 提升到 4.68，达到 WCAG AA。 */
   --eva-nav-surface: #f5f6f8;
   --eva-conversation-rail-surface: #fdfdfd;
-  --eva-nav-hover: #edf3ff;
-  --eva-nav-selected: #dce9ff;
+  --eva-nav-hover: var(--eva-overlay-hover);
+  --eva-nav-pressed: var(--eva-overlay-pressed);
+  --eva-nav-selected: var(--eva-c-blue-50);
   --eva-nav-accent: var(--eva-action-primary);
 
   /* Shared IM mention states, independent from navigation selection. */
@@ -85,8 +109,12 @@
   --eva-unread-text: #4f5b64;
   --eva-unread-indicator: var(--eva-c-mac-red);
   --eva-im-accent: var(--eva-action-primary);
-  /* User-confirmed: outgoing bubbles exactly match navigation selection. */
-  --eva-im-bubble-outgoing: var(--eva-nav-selected);
+  /* 解耦：外发气泡、@提及下拉选中项与一级导航选中态原为同一 token
+   * （--eva-nav-selected），三处语义不同却共用一个名字，现各自独立。
+   * @提及下拉选中项与导航选中同属「选中表面」语义，因此共用 EvaMate
+   * surface/selected；外发气泡不是选中表面，保持原有浅蓝值不变。 */
+  --eva-im-bubble-outgoing: #dce9ff;
+  --eva-list-option-selected: var(--eva-c-blue-50);
   --eva-im-bubble-incoming: #f2f2f2;
   --eva-im-bubble-radius: 14px;
   --eva-contacts-header-background: #F7F8FA;

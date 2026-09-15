@@ -133,7 +133,7 @@ body.eva-message-hierarchy-ready
   .eva-channel-surface[data-eva-channel-surface="project"]
   .eva-msg
   .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
-  min-height: 38px;
+  min-height: 32px;
   margin-top: 8px;
   padding: 6px 8px;
 }

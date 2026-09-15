@@ -17,9 +17,9 @@
   display: flex;
   align-items: center;
   color: var(--semi-color-text-2, #8f959e);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 16px;
   user-select: none;
 }
 
@@ -67,15 +67,15 @@
 .app-shell {
   border-radius: var(--eva-radius-window);
   overflow: hidden;
-  background: var(--eva-rail-backdrop);
+  /* Γ 形外壳：底色即导航面本色，工作区左上内凹圆角处露出的正是这层。 */
+  background: var(--eva-nav-surface);
 }
-/* Both independent shells use exactly the same single native border and rounded geometry. */
+/* Γ 形外壳：顶栏 + 侧栏连成同色导航面（无边框、无圆角、无缝），
+ * 工作区以单个左上内凹圆角嵌入，其余三角交给 app-shell 的窗口圆角裁切。 */
 .app-shell :is(.layout-sider, .layout-content) {
   position: relative;
   box-sizing: border-box;
   min-width: 0;
-  border: 1px solid var(--eva-border-subtle);
-  border-radius: var(--eva-radius-panel);
   overflow: hidden;
   isolation: isolate;
 }
@@ -85,7 +85,64 @@
   background-clip: padding-box;
 }
 .layout-content {
+  /* 工作区浮在导航面底层之上：完整描边 + 四角圆角，右侧与底部留出
+   * 导航面底色的呼吸位；顶与左仍咬合 Γ（顶栏在上、侧栏在左）。 */
+  border: 1px solid var(--eva-border-subtle);
+  border-radius: var(--eva-radius-panel);
+  margin-right: var(--eva-space-1-5);
+  margin-bottom: var(--eva-space-1-5);
   background: var(--eva-surface-primary);
+}
+/* 顶栏并入导航面：与侧栏同底色、去掉底边线，顶栏与主菜单连成一体。 */
+.app-shell .app-titlebar {
+  background: var(--eva-nav-surface);
+  border-bottom: 0;
+}
+/* 品牌已在顶栏，侧栏头部的隐藏身份槽位收成一条呼吸位，
+ * 让「个人」分组标题既不悬空也不贴死顶栏。 */
+.app-shell .layout-sider-header {
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 8px;
+}
+/* 顶栏交互项与左侧导航统一 hover/pressed：
+ * 1) 复用同一套覆盖层 token（--eva-nav-hover/pressed = 6%/9% 黑，暗色自动转白），
+ *    取代原来的不透明灰 #f2f3f5 与散写的 #00000014；
+ * 2) 顶栏 line-height 原为标题栏高（36px），span 项继承后再叠 4px 上下内边距
+ *    会撑到 44px、超出顶栏——这里把交互项行高重置为 normal 并固定 28px 舒适高度，
+ *    在 36px 顶栏内上下各留 4px 呼吸位。 */
+.app-shell .app-titlebar .eva-tb-item,
+.app-shell .app-titlebar__button {
+  line-height: normal;
+  transition: background-color .15s ease;
+}
+.app-shell .app-titlebar .eva-tb-item {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--eva-radius-key);
+}
+.app-shell .app-titlebar__button {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--eva-radius-key);
+}
+.app-shell .app-titlebar .eva-tb-item:hover,
+.app-shell .app-titlebar__button:hover {
+  background: var(--eva-nav-hover);
+  color: var(--eva-text-primary);
+}
+.app-shell .app-titlebar .eva-tb-item:active,
+.app-shell .app-titlebar__button:active {
+  background: var(--eva-nav-pressed);
+}
+/* 顶栏左簇（收起按钮 + 品牌）对齐侧栏内容左轴：侧栏 lucide 菜单图标列与分组标题
+ * 文字同在 x=20（行左 8 + 内边距 12）。收起图标原在 x=14，故左簇整体右移 6px 落到 20，
+ * 收起图标与图标列同轴、品牌顺势右移。 */
+.app-shell .app-titlebar__menu {
+  padding-left: 6px;
 }
 .app-shell :is(.layout-sider, .layout-content) > * {
   isolation: isolate;
@@ -98,13 +155,17 @@
 }
 
 /* Shared route-driven navigation colors, including the compact layout.
- * Keep runtime geometry and selection ownership; adapt its utility colors here. */
+ * Keep runtime geometry and selection ownership; adapt its utility colors here.
+ * hover 与 pressed 是覆盖层而非永久表面（GDS 2.0 §13 / EvaMate 0.3.0 §71），
+ * 因此两者与选中态分开表达，pressed 不再直接借用选中底色。 */
 .eva-nav-entry .box-border.cursor-pointer:hover,
 .eva-personal-entry:hover {
   background: var(--eva-nav-hover) !important;
 }
 .eva-nav-entry .box-border.cursor-pointer:active,
-.eva-personal-entry:active,
+.eva-personal-entry:active {
+  background: var(--eva-nav-pressed) !important;
+}
 .eva-nav-entry .box-border.cursor-pointer.bg-fill-3,
 .eva-personal-entry.is-selected {
   color: var(--eva-nav-accent) !important;

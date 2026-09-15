@@ -743,6 +743,30 @@
       "file": "prototype/058-project-skill-create.js",
       "bytes": 10470,
       "role": "prototype"
+    },
+    {
+      "order": 93,
+      "tag": "script",
+      "name": "theme-controller",
+      "file": "prototype/059-theme-controller.js",
+      "bytes": 2819,
+      "role": "prototype"
+    },
+    {
+      "order": 94,
+      "tag": "script",
+      "name": "appearance-theme",
+      "file": "prototype/058-appearance-theme.js",
+      "bytes": 3535,
+      "role": "prototype"
+    },
+    {
+      "order": 95,
+      "tag": "style",
+      "name": "gds-dark-tokens",
+      "file": "prototype/057-gds-dark-tokens.css",
+      "bytes": 4282,
+      "role": "prototype"
     }
   ]
 }

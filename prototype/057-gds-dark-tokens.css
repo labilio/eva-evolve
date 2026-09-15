@@ -1,0 +1,165 @@
+/* ============================================================
+   Eva GDS for AI · 暗色 token 层（2.1.0）
+   Source of truth: UI 规范/gds-for-ai2.0 → color.semanticDark / shadowDark
+   仅重指语义 token，不改业务用法。业务 CSS 只要消费语义 token，
+   即随 :root[data-theme="dark"] 自动进入暗色。
+   由主题控制器写 documentElement[data-theme] 触发；浅色为默认，不在此文件。
+   ============================================================ */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---- surface（保留浅色明度关系：primary 比 subtle 更亮更凸）---- */
+  --eva-surface-primary: var(--eva-c-neutral-875);  /* 卡片/面板/主工作区（抬升，较亮）*/
+  --eva-surface-subtle: var(--eva-c-neutral-925);   /* 画布/凹陷包裹（最深）*/
+  --eva-surface-paper: var(--eva-c-neutral-800);    /* 演示画布（略高于 primary）*/
+  --eva-surface-glass: rgba(36, 36, 36, 0.72);      /* 侧栏玻璃前景 */
+
+  /* ---- text ---- */
+  --eva-text-strong: var(--eva-c-paper);             /* #FEFEFE */
+  --eva-text-primary: var(--eva-c-neutral-25);
+  --eva-text-secondary: var(--eva-c-neutral-400);
+  --eva-text-muted: var(--eva-c-neutral-550);
+  --eva-text-secondary-accessible: var(--eva-c-neutral-450);
+  --eva-text-inverse: var(--eva-c-ink);
+
+  /* ---- action ---- */
+  --eva-action-primary: var(--eva-c-brand-blue);     /* 暗底填充仍成立，保持衍生色稳定 */
+  --eva-action-primary-text: var(--eva-c-white);
+  --eva-action-dark: var(--eva-c-neutral-200);       /* operation-card 深色 CTA 反相为浅块 */
+  --eva-action-disabled-fill: rgba(255, 255, 255, 0.09);
+
+  /* ---- border ---- */
+  --eva-border-default: var(--eva-c-neutral-600);
+  --eva-border-subtle: var(--eva-c-neutral-700);
+  --eva-border-faint: var(--eva-c-neutral-800);
+  --eva-border-focus: var(--eva-c-blue-300);
+  --eva-border-hairline: rgba(255, 255, 255, 0.12);
+
+  /* ---- decoration ---- */
+  --eva-decoration-dot: var(--eva-c-decor-dot-dark);
+
+  /* ---- overlay（黑透明 → 白透明；dismiss 加深）---- */
+  --eva-overlay-hover: rgba(255, 255, 255, 0.06);
+  --eva-overlay-pressed: rgba(255, 255, 255, 0.09);
+  --eva-overlay-dismiss: rgba(0, 0, 0, 0.55);
+
+  /* ---- 项目层扩展令牌（规范核心之外，但必须提供暗色对应）---- */
+  /* --eva-nav-hover / --eva-nav-pressed 已在浅色层改为引用 --eva-overlay-*，
+     上面第 43–44 行已把覆盖层翻转为白透明，故此处不再重列，避免二次硬编码。 */
+  --eva-nav-selected: #1e3a63;
+  /* 可访问性修复：暗底上 #1e3a63 配 action/primary(#1563EB) 文字对比度仅 2.18，
+     远低于 WCAG AA。按本规范 §3.4「链接/图标/焦点环提亮到 #93B5FF」把导航
+     accent 提亮，对比度升至 5.59 达标。暗色 surface/selected 未采用 EvaMate
+     的 blue/700，因其需要配套的前景色取值，而两套规范的明暗分工尚未划定。 */
+  --eva-nav-accent: var(--eva-c-blue-300);
+  --eva-nav-surface: var(--eva-surface-subtle);
+  --eva-conversation-rail-surface: var(--eva-surface-primary);
+  /* 会话行 hover/选中暗色对应：hover 用白透明覆盖层；选中沿用本层
+     导航/列表选项已约定的暗蓝 #1e3a63；选中文字升档转为白透明 .78。 */
+  --eva-conversation-row-hover: var(--eva-overlay-hover);
+  --eva-conversation-row-selected: #1e3a63;
+  --eva-conversation-row-selected-meta: rgba(255, 255, 255, 0.78);
+  /* 解耦后各自独立，不再经 --eva-nav-selected 间接取值。 */
+  --eva-im-bubble-outgoing: #1e3a63;
+  --eva-list-option-selected: #1e3a63;
+  --eva-unread-surface: #2c2f33;
+  --eva-unread-text: #c6cbd0;
+
+  /* ---- shadow / elevation（大扩散 + 白色发丝描边）---- */
+  --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);
+  --eva-shadow-hairline: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+  --eva-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.4);
+
+  /* 说明：--eva-rail-backdrop / --eva-mention-* / --eva-im-tint-*
+     均以 var() 引用上述基色，使用时惰性求值，自动随暗色重算，无需在此重列。 */
+}
+
+/* --gds-* 适配层：供消费 --gds-* 的团队组件同步进入暗色，映射与上表一致。 */
+:root[data-theme="dark"] {
+  --gds-color-surface-primary: #242424;
+  --gds-color-surface-subtle: #1A1A1A;
+  --gds-color-surface-paper: #2A2A2A;
+  --gds-color-surface-glass: rgba(36, 36, 36, 0.72);
+  --gds-color-text-strong: #FEFEFE;
+  --gds-color-text-primary: #F7F7F7;
+  --gds-color-text-secondary: #CCCCCC;
+  --gds-color-text-muted: #939393;
+  --gds-color-text-secondary-accessible: #B0B4BD;
+  --gds-color-text-inverse: #1E1E1E;
+  --gds-color-action-primary: #1563EB;
+  --gds-color-action-primary-text: #FFFFFF;
+  --gds-color-action-dark: #EBEBEB;
+  --gds-color-action-disabled-fill: rgba(255, 255, 255, 0.09);
+  --gds-color-border-default: #666666;
+  --gds-color-border-subtle: #4A4A4A;
+  --gds-color-border-faint: #2A2A2A;
+  --gds-color-border-focus: #93B5FF;
+  --gds-color-border-hairline: rgba(255, 255, 255, 0.12);
+  --gds-color-decoration-dot: #232948;
+  --gds-color-overlay-hover: rgba(255, 255, 255, 0.06);
+  --gds-color-overlay-pressed: rgba(255, 255, 255, 0.09);
+  --gds-color-overlay-dismiss: rgba(0, 0, 0, 0.55);
+  --gds-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);
+  --gds-shadow-hairline: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+  --gds-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   IM 消息面（016 message-hierarchy / 017 im-shell）暗色适配。
+   作用域覆盖：只在 [data-theme="dark"] 下重指，浅色规则原样不动。
+   这些是 016 中收敛到 CSS 变量的 space-card 子系统 + 少量硬编码浅底。
+   ============================================================ */
+
+/* 助手（incoming）气泡：浅色 #ebebeb → 暗色抬升灰（比会话底略亮，轻微凸出）。 */
+:root[data-theme="dark"] .eva-im-bubble-row {
+  --eva-bubble-incoming: var(--eva-c-neutral-800);
+  --eva-bubble-divider: var(--eva-c-neutral-700);
+}
+
+/* Space 卡片配色（默认 + 三种 tone）：暗色低饱和暗底 + 提亮的强调/通知文本。 */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-card-foundation {
+  --eva-space-card-surface: #22262b;
+  --eva-space-card-accent: #c6cbd0;
+  --eva-space-card-border: #343a41;
+  --eva-space-card-notice-surface: #262b31;
+  --eva-space-card-notice-text: #c6cbd0;
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-card-foundation[data-eva-space-tone="product"] {
+  --eva-space-card-surface: #1e2733;
+  --eva-space-card-accent: #93b5ff;
+  --eva-space-card-border: #2b3a4d;
+  --eva-space-card-notice-surface: #1f2a38;
+  --eva-space-card-notice-text: #93b5ff;
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-card-foundation[data-eva-space-tone="delivery"] {
+  --eva-space-card-surface: #1b2a26;
+  --eva-space-card-accent: #6fd0b0;
+  --eva-space-card-border: #294038;
+  --eva-space-card-notice-surface: #1e2f2a;
+  --eva-space-card-notice-text: #6fd0b0;
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-card-foundation[data-eva-space-tone="drive"] {
+  --eva-space-card-surface: #262234;
+  --eva-space-card-accent: #b3a3e0;
+  --eva-space-card-border: #383152;
+  --eva-space-card-notice-surface: #2a2540;
+  --eva-space-card-notice-text: #b3a3e0;
+}
+
+/* 卡片本体白底 → 抬升面；会话列表 / 内嵌项目面板 / 工作流白底 → 语义面。 */
+:root[data-theme="dark"] .eva-msg .eva-space-card,
+:root[data-theme="dark"] .eva-msg .eva-space-card .semi-card-body { background: var(--eva-surface-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .ch-list {
+  background: var(--eva-surface-subtle);
+  border-right-color: var(--eva-border-faint);
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel { background: var(--eva-surface-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node { background: var(--eva-surface-primary); }
+
+/* Space 卡片内会话行的 hover / 选中浅底 → 暗色叠层。 */
+:root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread):hover { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item--selected,
+:root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item--selected:hover { background: var(--eva-surface-subtle); }
+

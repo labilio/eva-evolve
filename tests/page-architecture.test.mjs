@@ -268,7 +268,7 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /--eva-rail-selected:\s*var\(--gds-color-surface-hover\)/);
   assert.match(aiTeamCss, /--eva-rail-group-hover:\s*var\(--eva-conversation-row-hover\)/);
   assert.match(messageSwitcherCss, /background:\s*var\(--eva-conversation-row-hover\)/);
-  assert.match(read('prototype/047-gds-tokens.css'), /--eva-conversation-row-hover:\s*#f5f6f7/);
+  assert.match(read('prototype/047-gds-tokens.css'), /--eva-conversation-row-hover:\s*#f2f3f5/);
   assert.match(aiTeamCss, /--eva-rail-group-radius:\s*7px/);
   assert.match(aiTeamCss, /--eva-rail-primary-row-radius:\s*var\(--wk-r-xs, 3px\)/);
   assert.match(aiTeamCss, /--eva-rail-nested-row-radius:\s*var\(--wk-r-xs, 3px\)/);

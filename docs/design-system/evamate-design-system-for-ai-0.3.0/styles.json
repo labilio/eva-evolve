@@ -1,0 +1,34 @@
+{
+  "meta": {"name": "EvaMate Figma Styles", "version": "0.3.0", "unit": "px"},
+  "textStyles": [
+    {"name": "EvaMate / Display / Hero", "fontFamily": "PingFang SC", "figmaFontStyle": "Medium", "fontWeight": 600, "fontSize": 32, "lineHeight": 40, "letterSpacing": 0, "usage": "首页 Hero 标题；Figma 以 Medium 兼容 Semibold，工程语义字重保持 600；每页最多一个"},
+    {"name": "EvaMate / Title / Medium", "fontFamily": "PingFang SC", "fontStyle": "Medium", "fontWeight": 500, "fontSize": 16, "lineHeight": 24, "letterSpacing": 0, "usage": "应用名、任务标题与一级界面标题"},
+    {"name": "EvaMate / Title / Small", "fontFamily": "PingFang SC", "fontStyle": "Medium", "fontWeight": 500, "fontSize": 14, "lineHeight": 22, "letterSpacing": 0, "usage": "栏目标题与紧凑标题"},
+    {"name": "EvaMate / Body / Large", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 15, "lineHeight": 24, "letterSpacing": 0, "usage": "对话、输入和主要正文"},
+    {"name": "EvaMate / Body / Large Medium", "fontFamily": "PingFang SC", "fontStyle": "Medium", "fontWeight": 500, "fontSize": 15, "lineHeight": 24, "letterSpacing": 0, "usage": "技能提及与重点正文"},
+    {"name": "EvaMate / Body / Medium", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 14, "lineHeight": 22, "letterSpacing": 0, "usage": "导航、列表和辅助正文"},
+    {"name": "EvaMate / Body / Small", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 14, "lineHeight": 20, "letterSpacing": 0, "usage": "场景胶囊与紧凑正文"},
+    {"name": "EvaMate / Label / Small", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 12, "lineHeight": 20, "letterSpacing": 0, "usage": "状态、文件元信息和工具标签"},
+    {"name": "EvaMate / Caption / Small", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 12, "lineHeight": 16, "letterSpacing": 0, "usage": "状态栏与次要说明"},
+    {"name": "EvaMate / Utility / Compact", "fontFamily": "PingFang SC", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 12, "lineHeight": 12, "letterSpacing": 0, "usage": "极紧凑编辑器工具文字"},
+    {"name": "EvaMate / Badge / Compact", "fontFamily": "PingFang SC", "fontStyle": "Medium", "fontWeight": 500, "fontSize": 13, "lineHeight": 22, "letterSpacing": 0, "usage": "紧凑徽标与文件类型标识"},
+    {"name": "EvaMate / Brand / Mascot", "fontFamily": "Praise", "fontStyle": "Regular", "fontWeight": 400, "fontSize": 23, "lineHeight": 28, "letterSpacing": 0, "usage": "Eva 气泡品牌文字；仅限装饰性品牌语气"}
+  ],
+  "effectStyles": [
+    {"name": "EvaMate / Elevation / Light / 01 Subtle", "theme": "Light", "effects": [{"type": "dropShadow", "x": 0, "y": 1, "blur": 2, "spread": 0, "color": "{alpha/black-04}"}]},
+    {"name": "EvaMate / Elevation / Light / 02 Floating", "theme": "Light", "effects": [{"type": "dropShadow", "x": 0, "y": 16, "blur": 48, "spread": -8, "color": "{alpha/black-06}"}, {"type": "dropShadow", "x": 0, "y": 0, "blur": 0, "spread": 0.5, "color": "{alpha/black-15}"}]},
+    {"name": "EvaMate / Elevation / Light / 03 Popover", "theme": "Light", "effects": [{"type": "dropShadow", "x": 0, "y": 5, "blur": 16, "spread": -4, "color": "{alpha/black-06}"}, {"type": "dropShadow", "x": 0, "y": 0, "blur": 0, "spread": 0.5, "color": "{alpha/black-15}"}]},
+    {"name": "EvaMate / Elevation / Light / 04 Editor Canvas", "theme": "Light", "effects": [{"type": "dropShadow", "x": 0, "y": 4, "blur": 80, "spread": 8, "color": "{alpha/black-04}"}, {"type": "dropShadow", "x": 0, "y": 3, "blur": 6, "spread": 0, "color": "{alpha/black-04}"}]},
+    {"name": "EvaMate / Elevation / Dark / 01 Subtle", "theme": "Dark", "effects": [{"type": "dropShadow", "x": 0, "y": 1, "blur": 2, "spread": 0, "color": "{alpha/black-40}"}]},
+    {"name": "EvaMate / Elevation / Dark / 02 Floating", "theme": "Dark", "effects": [{"type": "dropShadow", "x": 0, "y": 16, "blur": 48, "spread": -8, "color": "{alpha/black-40}"}, {"type": "dropShadow", "x": 0, "y": 0, "blur": 0, "spread": 0.5, "color": "{alpha/white-06}"}]},
+    {"name": "EvaMate / Elevation / Dark / 03 Popover", "theme": "Dark", "effects": [{"type": "dropShadow", "x": 0, "y": 5, "blur": 16, "spread": -4, "color": "{alpha/black-40}"}, {"type": "dropShadow", "x": 0, "y": 0, "blur": 0, "spread": 0.5, "color": "{alpha/white-06}"}]},
+    {"name": "EvaMate / Elevation / Dark / 04 Editor Canvas", "theme": "Dark", "effects": [{"type": "dropShadow", "x": 0, "y": 4, "blur": 80, "spread": 8, "color": "{alpha/black-40}"}, {"type": "dropShadow", "x": 0, "y": 3, "blur": 6, "spread": 0, "color": "{alpha/black-15}"}]},
+    {"name": "EvaMate / Glass / Blur / Small", "effects": [{"type": "backgroundBlur", "radius": 20}]},
+    {"name": "EvaMate / Glass / Blur / Medium", "effects": [{"type": "backgroundBlur", "radius": 90}]},
+    {"name": "EvaMate / Glass / Blur / Large", "effects": [{"type": "backgroundBlur", "radius": 100}]}
+  ],
+  "gridStyles": [
+    {"name": "EvaMate / Grid / Base / 4 px", "type": "grid", "sectionSize": 4, "color": "rgba(21, 99, 235, 0.08)"},
+    {"name": "EvaMate / Grid / Desktop / 12 columns", "type": "columns", "count": 12, "alignment": "stretch", "gutter": 16, "workspaceOffset": 82, "color": "rgba(21, 99, 235, 0.08)"}
+  ]
+}
