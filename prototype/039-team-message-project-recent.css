@@ -129,7 +129,9 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle:active,
 
 .eva-follow-category { margin-bottom: 8px; }
 .eva-follow-category-handle { left: 0; }
-.eva-follow-category-title { gap: 6px; min-height: 32px; margin-bottom: 4px; padding: 0 8px 0 14px; border-radius: 8px; }
+.eva-follow-category-title { gap: 6px; min-height: 32px; margin-bottom: 2px; padding: 0 8px 0 14px; border-radius: 8px; }
+/* 组间留白：连续频道块之间 4px 呼吸感（对齐密度稿优化列 --group-gap，首块紧跟项目头不加）。 */
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel + .eva-follow-channel { margin-top: 4px; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title > .wk-category-header { padding: 0; background: transparent; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .wk-category-header__name { color: var(--semi-color-text-2); font-size: 13px; font-weight: 700; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { min-height: 32px; padding-inline-start: var(--eva-rail-identity-content-inset); }
