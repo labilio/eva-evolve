@@ -234,26 +234,6 @@ function evaIssueDefaultCollapsedIds(rt,ct=issuesOf(),ut=3){const pt=new Set,mt=
 const EvaHierarchyIcon=createLucideIcon("Network",[["rect",{x:"16",y:"16",width:"6",height:"6",rx:"1",key:"network-right"}],["rect",{x:"2",y:"16",width:"6",height:"6",rx:"1",key:"network-left"}],["rect",{x:"9",y:"2",width:"6",height:"6",rx:"1",key:"network-root"}],["path",{d:"M5 16v-4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v4",key:"network-branches"}],["path",{d:"M12 12V8",key:"network-stem"}]]);
 function EvaIssueAssignee({issue:rt,size:ct=20,compact:ut=!1}){if(!rt.assignee_id)return React.createElement("span",{className:"eva-issue-assignee is-empty"+(ut?" is-compact":""),title:"负责人：未指派","aria-label":"负责人：未指派"},ut?"—":"未指派");const pt=rt.assignee_type||"member",mt={id:rt.assignee_id,name:rt.assignee_name||"未命名",type:pt},gt="负责人："+mt.name+(pt==="agent"?"（AI）":"");return React.createElement("span",{className:"eva-issue-assignee"+(ut?" is-compact":""),title:gt,"aria-label":ut?gt:void 0},React.createElement(EvaLoopIdentityAvatar,{person:mt,size:ct}),!ut&&React.createElement("span",{className:"eva-issue-assignee__name"},mt.name),!ut&&pt==="agent"&&window.EvaAIIdentity.badge(React.createElement))}
 function EvaIssueRelationMeta({issue:rt,variant:ct="card"}){const ut=evaIssueParentOf(rt),pt=evaIssueChildrenOf(rt.id);if(!ut&&!pt.length)return null;const mt=pt.filter(gt=>gt.status==="done").length,gt=pt.length?Math.round(mt/pt.length*100):0;return React.createElement("div",{className:"eva-issue-relation eva-issue-relation--"+ct},ut&&React.createElement("span",{className:"eva-issue-relation__parent"+(pt.length?" has-children":""),title:"父任务："+ut.identifier+" "+ut.title},React.createElement(ChevronRight,{size:12}),React.createElement("span",{className:"eva-issue-relation__label"},"父任务"),React.createElement("strong",{className:"eva-issue-relation__id"},ut.identifier)),pt.length>0&&React.createElement("span",{className:"eva-issue-relation__children",title:"直接子任务已完成 "+mt+" 项，共 "+pt.length+" 项"},React.createElement("span",{className:"eva-issue-relation__label"},"直接子任务"),React.createElement("strong",null,mt," / ",pt.length),React.createElement("span",{className:"eva-issue-relation__track","aria-hidden":!0},React.createElement("span",{style:{width:gt+"%"}}))))}
-function EvaBoardSubtaskTree({issue:rt,onOpen:ct,running:ut}){
-  const{t:pt}=useI18n$1(),mt=issuesOf(),gt=evaIssueChildrenOf(rt.id,mt),[St,Ct]=reactExports.useState({});
-  reactExports.useEffect(()=>Ct({}),[rt.id]);
-  if(!gt.length)return null;
-  const xt=gt.filter(Nt=>Nt.status==="done").length,Pt=(Nt,Mt,Dt)=>{
-    if(Dt.has(Nt.id))return null;
-    const Ft=evaIssueChildrenOf(Nt.id,mt),Qt=St[Nt.id]!==!1,Vt=ISSUE_STATUS_ICON[Nt.status],Ht=new Set(Dt);Ht.add(Nt.id);
-    return React.createElement("div",{key:Nt.id,className:"eva-board-subtask__node"},
-      React.createElement("div",{className:"eva-board-subtask__row",role:"treeitem","aria-level":Mt+1,"aria-expanded":Ft.length?Qt:void 0},
-        Ft.length?React.createElement("button",{type:"button",className:"eva-board-subtask__toggle","aria-label":Qt?"收起 "+Nt.identifier+" 的子任务":"展开 "+Nt.identifier+" 的子任务",onClick:Kt=>{Kt.stopPropagation(),Ct(nn=>({...nn,[Nt.id]:!Qt}))}},React.createElement(ChevronRight,{size:13,className:Qt?"is-open":""})):React.createElement("span",{className:"eva-board-subtask__toggle-spacer"}),
-        React.createElement(Vt,{size:15,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[Nt.status]},"aria-label":pt("loop.status."+Nt.status)}),
-        React.createElement("button",{type:"button",className:"eva-board-subtask__main",title:Nt.identifier+" "+Nt.title,onClick:Kt=>{Kt.stopPropagation(),ct(Nt.id)}},React.createElement("span",{className:"eva-board-subtask__id"},Nt.identifier),React.createElement("span",{className:"eva-board-subtask__title"},Nt.title)),
-        Ft.length>0&&React.createElement("span",{className:"eva-board-subtask__count",title:Ft.length+" 个直接子任务"},Ft.length),
-        React.createElement("span",{className:"eva-board-subtask__meta",title:Nt.due_date?"截止 "+formatShortDate(Nt.due_date):void 0},Nt.due_date&&React.createElement(CalendarClock,{size:12,className:"eva-board-subtask__due"}),React.createElement(EvaIssueAssignee,{issue:Nt,size:18,compact:!0}),ut?.has(Nt.id)&&React.createElement(RunningChip,null))),
-      Qt&&Ft.length>0&&React.createElement("div",{className:"eva-board-subtask__children"},Ft.map(Kt=>Pt(Kt,Mt+1,Ht))));
-  },Nt=St[rt.id]!==!1;
-  return React.createElement("div",{className:"eva-board-subtasks",onClick:Mt=>Mt.stopPropagation(),onKeyDown:Mt=>Mt.stopPropagation()},
-    React.createElement("div",{className:"eva-board-subtasks__head"},React.createElement("button",{type:"button",className:"eva-board-subtasks__toggle","aria-expanded":Nt,"aria-label":Nt?"收起直接子任务":"展开直接子任务",onClick:()=>Ct(Mt=>({...Mt,[rt.id]:!Nt}))},React.createElement(ChevronRight,{size:14,className:Nt?"is-open":""})),React.createElement("strong",null,"直接子任务 ",xt," / ",gt.length)),
-    Nt&&React.createElement("div",{className:"eva-board-subtasks__tree",role:"tree","aria-label":rt.identifier+" 的子任务"},gt.map(Mt=>Pt(Mt,0,new Set([rt.id])))));
-}
 function EvaIssueDetailSubtaskTree({rootIssue:rt,onOpen:ct,readOnly:ut=!1}){
   const{t:pt}=useI18n$1(),mt=issuesOf(),evaTreeSignature=mt.map(St=>St.id+":"+(St.parent_issue_id||"")).join("|"),[evaCollapsedIds,evaSetCollapsedIds]=reactExports.useState(()=>evaIssueDefaultCollapsedIds(rt.id,mt));
   reactExports.useEffect(()=>evaSetCollapsedIds(evaIssueDefaultCollapsedIds(rt.id,mt)),[rt.id,evaTreeSignature]);
@@ -277,28 +257,31 @@ function EvaIssueHierarchy({issues:rt,allIssues:ct,onOpen:ut,onCreateChild:pt,ru
 function IssueCard(`,'任务父子关系组件与层级视图');
     const evaIssueCardStart=source.indexOf('function IssueCard('),evaIssueCardEnd=source.indexOf('const{Text:Text$d}=Typography;',evaIssueCardStart);
     if(evaIssueCardStart<0||evaIssueCardEnd<evaIssueCardStart)throw new Error('IssueCard 组件边界不匹配');
-    source=root.__evaCut(source,source.slice(evaIssueCardStart,evaIssueCardEnd),String.raw`function IssueCard({issue:rt,onOpen:ct,running:ut,runningIssues:pt,showSubtasks:mt=!1,draggable:gt,dragging:St,onDragStart:Ct,onDragEnd:xt}){
-      const{t:Pt,format:Nt}=useI18n$1(),Mt=PRIORITY_ICON[rt.priority],Dt=ISSUE_STATUS_ICON[rt.status],Ft=()=>ct(rt.id);
-      return React.createElement("div",{className:"loop-card "+(St?"is-dragging":""),draggable:gt,tabIndex:0,onDragStart:Ct,onDragEnd:xt,onClick:Ft,onKeyDown:Qt=>{Qt.target===Qt.currentTarget&&(Qt.key==="Enter"||Qt.key===" ")&&(Qt.preventDefault(),Ft())}},
-        React.createElement("div",{className:"loop-card__top"},React.createElement("span",{className:"loop-card__icon",title:Pt("loop.priority."+rt.priority)},React.createElement(Mt,{size:14,strokeWidth:2,style:{color:PRIORITY_HEX[rt.priority]}})),React.createElement("span",{className:"loop-card__icon",title:Pt("loop.status."+rt.status)},React.createElement(Dt,{size:14,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[rt.status]}})),React.createElement("span",{className:"loop-card__id"},rt.identifier),ut&&React.createElement(RunningChip,null),React.createElement("time",{className:"loop-card__time"},formatRelativeTime$1(rt.updated_at??rt.created_at,Nt))),
+    source=root.__evaCut(source,source.slice(evaIssueCardStart,evaIssueCardEnd),String.raw`function IssueCard({issue:rt,onOpen:ct,running:ut,showRelation:pt=!0,draggable:mt,dragging:gt,onDragStart:St,onDragEnd:Ct}){
+      const{t:xt,format:Pt}=useI18n$1(),Nt=PRIORITY_ICON[rt.priority],Mt=ISSUE_STATUS_ICON[rt.status],Dt=()=>ct(rt.id);
+      return React.createElement("div",{className:"loop-card "+(gt?"is-dragging":""),draggable:mt,tabIndex:0,onDragStart:St,onDragEnd:Ct,onClick:Dt,onKeyDown:Ft=>{Ft.target===Ft.currentTarget&&(Ft.key==="Enter"||Ft.key===" ")&&(Ft.preventDefault(),Dt())}},
+        React.createElement("div",{className:"loop-card__top"},React.createElement("span",{className:"loop-card__icon",title:xt("loop.priority."+rt.priority)},React.createElement(Nt,{size:14,strokeWidth:2,style:{color:PRIORITY_HEX[rt.priority]}})),React.createElement("span",{className:"loop-card__icon",title:xt("loop.status."+rt.status)},React.createElement(Mt,{size:14,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[rt.status]}})),React.createElement("span",{className:"loop-card__id"},rt.identifier),ut&&React.createElement(RunningChip,null),React.createElement("time",{className:"loop-card__time"},formatRelativeTime$1(rt.updated_at??rt.created_at,Pt))),
         React.createElement("div",{className:"loop-card__title"},rt.title),
-        !mt&&React.createElement(EvaIssueRelationMeta,{issue:rt}),
+        pt&&React.createElement(EvaIssueRelationMeta,{issue:rt}),
         rt.labels&&rt.labels.length>0&&React.createElement("div",{className:"loop-card__labels"},React.createElement(LabelChips,{labels:rt.labels,max:3})),
-        React.createElement("div",{className:"loop-card__foot"},rt.project_name&&React.createElement("span",{className:"loop-card__project"},rt.project_name),rt.due_date&&React.createElement("span",{className:"loop-card__due",style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date)),React.createElement("span",{className:"loop-card__spacer"}),React.createElement(AssigneeBadge,{type:rt.assignee_type,name:rt.assignee_name??null})),
-        mt&&React.createElement(EvaBoardSubtaskTree,{issue:rt,onOpen:ct,running:pt}));
-    }`,'看板任务卡内嵌子任务树');
+        React.createElement("div",{className:"loop-card__foot"},rt.project_name&&React.createElement("span",{className:"loop-card__project"},rt.project_name),rt.due_date&&React.createElement("span",{className:"loop-card__due",style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date)),React.createElement("span",{className:"loop-card__spacer"}),React.createElement(AssigneeBadge,{type:rt.assignee_type,name:rt.assignee_name??null})));
+    }`,'任务卡支持按视图控制轻量父子关系提示');
 
     const evaIssueBoardStart=source.indexOf('function IssueBoard('),evaIssueBoardEnd=source.indexOf('function IssueGroupBoard(',evaIssueBoardStart);
     if(evaIssueBoardStart<0||evaIssueBoardEnd<evaIssueBoardStart)throw new Error('IssueBoard 组件边界不匹配');
     source=root.__evaCut(source,source.slice(evaIssueBoardStart,evaIssueBoardEnd),String.raw`function IssueBoard({issues:rt,onOpen:ct,onChanged:ut,running:pt}){
-      const{t:mt}=useI18n$1(),{requestStatus:gt,runConfirmModal:St}=useRunConfirm(),Ct=issuesOf(),xt=new Map(Ct.map(jt=>[jt.id,jt])),Pt=new Set;
-      for(const jt of rt){let tn=jt,Kt=new Set;while(tn?.parent_issue_id&&!Kt.has(tn.parent_issue_id)){Kt.add(tn.parent_issue_id);const nn=xt.get(tn.parent_issue_id);if(!nn)break;tn=nn}tn&&Pt.add(tn.id)}
-      const Nt=Ct.filter(jt=>Pt.has(jt.id)),Mt=new Set,Dt=jt=>{if(!jt||Mt.has(jt.id))return;Mt.add(jt.id),evaIssueChildrenOf(jt.id,Ct).forEach(Dt)};Nt.forEach(Dt);
-      const[Ft,Qt]=reactExports.useState(null),[Vt,Ht]=reactExports.useState(null),jt=tn=>{Ht(null);const Kt=Ft;if(Qt(null),!Kt)return;const nn=xt.get(Kt);!nn||nn.status===tn||gt(nn,tn,async rn=>{await updateIssue(Kt,{status:tn,...rn}),ut()})};
-      return React.createElement("div",{className:"loop-board eva-loop-board--nested"},ISSUE_STATUS_ORDER.map(tn=>{const Kt=Nt.filter(sn=>sn.status===tn),nn=Ct.filter(sn=>Mt.has(sn.id)&&sn.status===tn).length,rn=ISSUE_STATUS_ICON[tn];return React.createElement("div",{key:tn,className:"loop-board__col "+(Vt===tn?"is-drop":""),onDragOver:sn=>{sn.preventDefault(),Vt!==tn&&Ht(tn)},onDragLeave:sn=>{sn.currentTarget.contains(sn.relatedTarget)||Ht(cn=>cn===tn?null:cn)},onDrop:()=>jt(tn)},
-        React.createElement("div",{className:"loop-board__col-head"},React.createElement(rn,{size:14,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[tn]}}),React.createElement("span",{className:"loop-board__col-name"},mt("loop.status."+tn)),React.createElement("span",{className:"eva-board-col-count"},React.createElement("strong",null,"顶层 ",Kt.length),React.createElement("span",null,"全部任务 ",nn))),
-        React.createElement("div",{className:"loop-board__cards"},Kt.length?Kt.map(sn=>React.createElement(IssueCard,{key:sn.id,issue:sn,onOpen:ct,running:pt?.has(sn.id),runningIssues:pt,showSubtasks:!0,draggable:!0,dragging:Ft===sn.id,onDragStart:()=>Qt(sn.id),onDragEnd:()=>{Qt(null),Ht(null)}})):React.createElement("div",{className:"eva-loop-board__empty"},"暂无顶层任务")))}),St);
-    }`,'看板按顶层任务分栏并在卡片内展示子任务树');
+      const{t:mt}=useI18n$1(),{requestStatus:gt,runConfirmModal:St}=useRunConfirm(),[Ct,xt]=reactExports.useState(null),[Pt,Nt]=reactExports.useState(null),Mt=Dt=>{Nt(null);const Ft=Ct;if(xt(null),!Ft)return;const Qt=rt.find(Vt=>Vt.id===Ft);!Qt||Qt.status===Dt||gt(Qt,Dt,async Vt=>{await updateIssue(Ft,{status:Dt,...Vt}),ut()})};
+      return React.createElement("div",{className:"loop-board"},
+        ISSUE_STATUS_ORDER.map(Dt=>{
+          const Ft=rt.filter(Qt=>Qt.status===Dt),Vt=ISSUE_STATUS_ICON[Dt];
+          return React.createElement("div",{key:Dt,className:"loop-board__col "+(Pt===Dt?"is-drop":""),onDragOver:Qt=>{Qt.preventDefault(),Pt!==Dt&&Nt(Dt)},onDragLeave:Qt=>{Qt.currentTarget.contains(Qt.relatedTarget)||Nt(Ht=>Ht===Dt?null:Ht)},onDrop:()=>Mt(Dt)},
+            React.createElement("div",{className:"loop-board__col-head"},React.createElement(Vt,{size:14,strokeWidth:2,style:{color:ISSUE_STATUS_HEX[Dt]}}),React.createElement("span",{className:"loop-board__col-name"},mt("loop.status."+Dt)),React.createElement("em",null,Ft.length)),
+            React.createElement("div",{className:"loop-board__cards"},Ft.map(Qt=>React.createElement(IssueCard,{key:Qt.id,issue:Qt,onOpen:ct,running:pt?.has(Qt.id),showRelation:!1,draggable:!0,dragging:Ct===Qt.id,onDragStart:()=>xt(Qt.id),onDragEnd:()=>{xt(null),Nt(null)}})))
+          )
+        }),
+        St
+      );
+    }`,'看板将全部任务按自身状态平铺为独立卡片');
 
     const evaIssueGroupStart=source.indexOf('function IssueGroupBoard('),evaIssueGroupEnd=source.indexOf('function confirmDelete(',evaIssueGroupStart);
     if(evaIssueGroupStart<0||evaIssueGroupEnd<evaIssueGroupStart)throw new Error('IssueGroupBoard 组件边界不匹配');
