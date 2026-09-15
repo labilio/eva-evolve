@@ -521,6 +521,9 @@
 .loop-idp .loop-idp__crumbs > .loop-idp__crumb { flex: none; }
 .loop-idp .loop-idp__crumb-task,
 .loop-idp button.loop-idp__crumb-cur {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   box-sizing: border-box;
   min-height: 32px;
   padding: 3px 6px;
@@ -531,12 +534,31 @@
 }
 .loop-idp .loop-idp__crumb-task {
   flex: none;
-  max-width: 92px;
-  padding-inline: 3px;
+  max-width: min(280px, 28vw);
   overflow: hidden;
   color: var(--eva-text-secondary-accessible);
+  white-space: nowrap;
+}
+.loop-idp .loop-idp__crumb-task .loop-idp__crumb-id,
+.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-id { flex: none; }
+.loop-idp .loop-idp__crumb-task .loop-idp__crumb-title,
+.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-title {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.loop-idp .loop-idp__crumb-task .loop-idp__crumb-title {
+  color: var(--eva-text-primary);
+  font-weight: 500;
+}
+.loop-idp .loop-idp__crumb-ellipsis {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 32px;
+  flex: none;
+  color: var(--eva-text-secondary-accessible);
 }
 .loop-idp button.loop-idp__crumb-task,
 .loop-idp button.loop-idp__crumb-cur { cursor: pointer; }
@@ -554,12 +576,6 @@
   min-width: 112px;
   max-width: min(420px, 45vw);
   overflow: hidden;
-  white-space: nowrap;
-}
-.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .loop-idp .loop-idp__prop--parent { align-items: flex-start; }

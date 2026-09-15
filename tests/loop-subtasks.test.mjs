@@ -106,6 +106,18 @@ test('任务祖先链按根任务到直接父任务排序，并在异常循环�
   assert.deepEqual(Array.from(ctx.evaIssueAncestorChain(issues.find(issue=>issue.id==='grandchild'),issues),issue=>issue.id),['root','child']);
 });
 
+test('任务面包屑只保留离当前任务最近的三级',()=>{
+  const {ctx}=setup(),issues=[
+    {id:'root',identifier:'SC-101',title:'根任务',parent_issue_id:null},
+    {id:'level-1',identifier:'SC-102',title:'一级任务',parent_issue_id:'root'},
+    {id:'level-2',identifier:'SC-103',title:'二级任务',parent_issue_id:'level-1'},
+    {id:'level-3',identifier:'SC-104',title:'三级任务',parent_issue_id:'level-2'},
+    {id:'current',identifier:'SC-105',title:'当前任务',parent_issue_id:'level-3'},
+  ];
+  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[4],issues),issue=>issue.id),['level-2','level-3','current']);
+  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[1],issues),issue=>issue.id),['root','level-1']);
+});
+
 test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
   assert.ok(runtime.includes('["board","grouped","list","hierarchy"]'));
   assert.ok(runtime.includes('className:"eva-loop-subtasks__empty"'));
@@ -167,11 +179,18 @@ test('任务详情递归展示全部后代并按整棵子任务树统计进度',
   assert.match(taskStyles,/\.eva-loop-subtask-tree__depth-note\s*\{[\s\S]*justify-content:\s*flex-end/);
 });
 
-test('任务详情只保留层级树，并通过完整可点击面包屑原位切换详情',()=>{
+test('任务详情只保留层级树，并通过最近三级可点击面包屑原位切换详情',()=>{
   assert.ok(runtime.includes('function evaIssueAncestorChain('));
+  assert.ok(runtime.includes('function evaIssueBreadcrumbChain('));
   assert.ok(runtime.includes('evaAncestorIssues=evaIssueAncestorChain(xt)'));
-  assert.ok(runtime.includes('evaAncestorIssues.map(ki=>React.createElement(React.Fragment'));
+  assert.ok(runtime.includes('evaBreadcrumbIssues=evaIssueBreadcrumbChain(xt)'));
+  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues=evaBreadcrumbIssues.slice(0,-1)'));
+  assert.ok(runtime.includes('evaBreadcrumbHasHiddenAncestors=evaAncestorIssues.length>evaBreadcrumbAncestorIssues.length'));
+  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues.map(ki=>React.createElement(React.Fragment'));
   assert.ok(runtime.includes('className:"loop-idp__crumb-task"'));
+  assert.ok(runtime.includes('className:"loop-idp__crumb-id"},ki.identifier'));
+  assert.ok(runtime.includes('className:"loop-idp__crumb-title"},ki.title'));
+  assert.ok(runtime.includes('"aria-label":"已省略更早的任务层级"'));
   assert.ok(runtime.includes('"aria-current":"page"'));
   assert.ok(runtime.includes('onClick:Ct?void 0:()=>Ea(ki.id)'));
   assert.ok(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'));
@@ -198,7 +217,9 @@ test('任务详情只保留层级树，并通过完整可点击面包屑原位�
   ])assert.equal(runtime.includes(obsolete),false,`已移除能力不应残留：${obsolete}`);
   assert.doesNotMatch(taskStyles,/\.eva-task-breakdown/);
   assert.doesNotMatch(taskStyles,/\.loop-idp__boardbtn\.is-contextual/);
-  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task\s*\{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task,\s*[\s\S]*display:\s*inline-flex;[\s\S]*gap:\s*6px/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task \.loop-idp__crumb-title,[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
+  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-ellipsis\s*\{[\s\S]*width:\s*24px;[\s\S]*color:\s*var\(--eva-text-secondary-accessible\)/);
   assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-task:hover,[\s\S]*color:\s*var\(--eva-action-primary\)/);
   assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-cur:focus-visible\s*\{[\s\S]*outline:\s*var\(--eva-border-focus-w\) solid var\(--eva-border-focus\)/);
 });
