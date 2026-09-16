@@ -180,6 +180,17 @@ window.__EVA_PEOPLE = [
     url: 'prototype/assets/file-samples/A-2409现场复核清单.md',
     download_url: 'prototype/assets/file-samples/A-2409现场复核清单.md'
   }];
+  supplyIssues[3].attachments = [{
+    id: 'task-file-cost-variance-analysis',
+    name: '核心品类采购成本偏差.csv',
+    filename: '核心品类采购成本偏差.csv',
+    extension: 'csv',
+    content_type: 'text/csv',
+    size: 736,
+    version: 1,
+    url: 'prototype/assets/file-samples/核心品类采购成本偏差.csv',
+    download_url: 'prototype/assets/file-samples/核心品类采购成本偏差.csv'
+  }];
 
   var supplyTaskLabels = [
     {id: 'task-label-procurement', project_id: 'p-supply', name: '采购'},

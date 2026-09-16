@@ -178,16 +178,122 @@ html.eva-file-preview-resizing * {
   outline-offset: 2px;
 }
 
-.loop-idp button.eva-task-attachment-preview {
+.loop-idp .eva-task-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(720px, 100%);
+  margin-top: 16px;
+}
+
+.loop-idp .eva-task-attachment-card {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 12px;
+  background: var(--wk-bg-surface);
+  border: 1px solid var(--wk-border-subtle);
+  border-radius: var(--wk-r-input, 8px);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.loop-idp .eva-task-attachment-card:hover {
+  background: var(--wk-bg-hover);
+  border-color: var(--wk-border-strong);
+}
+
+.eva-task-attachment-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--wk-color-accent);
+  background: var(--wk-accent-tint-08);
+  border-radius: var(--wk-r-input, 8px);
+}
+
+.eva-task-attachment-card__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.loop-idp button.eva-task-attachment-card__name,
+.loop-idp button.eva-task-attachment-action {
   appearance: none;
+  padding: 0;
   font: inherit;
   text-align: left;
+  background: transparent;
+  border: 0;
   cursor: pointer;
 }
 
-.loop-idp button.eva-task-attachment-preview:focus-visible {
+.loop-idp button.eva-task-attachment-card__name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wk-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-task-attachment-card__meta {
+  color: var(--wk-text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.eva-task-attachment-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.loop-idp button.eva-task-attachment-action {
+  min-height: 28px;
+  padding: 0 8px;
+  color: var(--wk-text-secondary);
+  font-size: 12px;
+  line-height: 28px;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+
+.loop-idp button.eva-task-attachment-action:hover:not(:disabled),
+.loop-idp button.eva-task-attachment-action.is-saved {
+  color: var(--wk-text-accent);
+  background: var(--wk-accent-tint-08);
+}
+
+.loop-idp button.eva-task-attachment-action:disabled {
+  color: var(--wk-text-disabled);
+  cursor: not-allowed;
+}
+
+.loop-idp button.eva-task-attachment-preview:focus-visible,
+.loop-idp button.eva-task-attachment-action:focus-visible {
   outline: 2px solid var(--wk-color-accent);
   outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .loop-idp .eva-task-attachment-card {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .eva-task-attachment-card__actions {
+    grid-column: 2;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }
 
 @keyframes eva-pushed-preview-in {

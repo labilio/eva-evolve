@@ -85,14 +85,20 @@ test('文件库独立预览提供同一全屏状态与退出规则', async () =>
 test('任务附件接入统一预览并挂载在任务详情右栏', async () => {
   const patch = await read('prototype/009-6-patch-general.js');
   const supply = await read('prototype/009-2-data-supply.js');
-  assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview\}\)/);
+  assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview,onDownload:evaOnDownload,onSave:evaOnSave/);
+  assert.match(patch, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(patch, /evaOpenTaskAttachment=async/);
+  assert.match(patch, /saveTaskAttachment\(evaTaskFileActor,evaTaskSpaceId,ki,xt\)/);
   assert.match(patch, /eva-task-file-preview-pane/);
   assert.match(patch, /data-eva-file-preview-resizer/);
   assert.match(supply, /task-file-a2409-checklist[\s\S]*?A-2409现场复核清单\.md/);
+  assert.match(supply, /task-file-cost-variance-analysis[\s\S]*?核心品类采购成本偏差\.csv/);
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
   const {source} = createPatchedRuntime();
-  assert.match(source, /className:"loop-att eva-task-attachment-preview"/);
+  assert.match(source, /className:"eva-task-attachment-card"/);
+  assert.match(source, /"保存到项目文件库"/);
+  assert.match(source, /"前往项目文件库"/);
+  assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(source, /evaTaskFilePreview\?" eva-task-file-preview-open"/);
   assert.match(source, /className:"eva-task-file-preview-pane"[\s\S]*?React\.createElement\(FilePreviewHost/);
 });
