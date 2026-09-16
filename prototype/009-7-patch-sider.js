@@ -18,12 +18,18 @@
             'storageKey:"eva-unified-sider-width-px-v2"'
           ],
           [
+            /* 全局导航只有展开/折叠两态（规范：默认 180px、折叠 80px），不参与自由拖拽。
+             * 直接不渲染 Semi Sider 自带的 resize 手柄，连同其默认粗高亮线与双击行为一起去掉；
+             * 折叠/展开仍由顶栏按钮和 ⌘B 驱动，不受影响。 */
             '!mt&&$r({className:"z-20",style:{right:"-4px",width:"8px"},linePlacement:"start"})',
-            '!mt&&$r({className:"z-20 eva-sider-resize-handle",style:{right:"-4px",width:"8px"},linePlacement:"start"})'
+            'null'
           ],
           [
+            /* 宽度锁死在 180：min=max=defaultWidth。useResizableSplit 初始化时只采用
+             * 落在 [min,max] 内的存储值，任何历史拖拽宽度（如曾被拖到的 600px）都会
+             * 落在范围外而被丢弃，回退到默认 180px；无需迁移 storageKey 即可自愈。 */
             'minWidth:SIDER_MIN_WIDTH,maxWidth:Math.max(SIDER_MIN_WIDTH,Math.round(St*.5)),storageKey:"eva-unified-sider-width-px-v2",collapseThreshold:SIDER_MIN_WIDTH,collapsedWidth:DESKTOP_COLLAPSED_WIDTH,collapsed:ut,onCollapsedChange:pt',
-            'minWidth:DEFAULT_SIDER_WIDTH,maxWidth:Math.max(SIDER_MIN_WIDTH,Math.round(St*.5)),storageKey:"eva-unified-sider-width-px-v2",collapseThreshold:SIDER_MIN_WIDTH,collapsedWidth:DESKTOP_COLLAPSED_WIDTH,collapsed:ut,onCollapsedChange:pt'
+            'minWidth:DEFAULT_SIDER_WIDTH,maxWidth:DEFAULT_SIDER_WIDTH,storageKey:"eva-unified-sider-width-px-v2",collapseThreshold:SIDER_MIN_WIDTH,collapsedWidth:DESKTOP_COLLAPSED_WIDTH,collapsed:ut,onCollapsedChange:pt'
           ],
           [
             'style:{"--eva-sider-w":`${ut?0:Ir}px`}',
