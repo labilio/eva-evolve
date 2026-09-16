@@ -117,6 +117,39 @@ test('全局侧栏保留既定入口语义并统一使用 Lucide 功能图标', 
   assert.doesNotMatch(source, /className:"eva-logout"[^}]+},"⏻"/);
 });
 
+test('通讯录与连接中心侧栏图标使用匹配 Lucide 官方名称的节点', () => {
+  const patch = read('prototype/009-7-patch-sider.js');
+  const domIcons = read('prototype/050-lucide-dom.js');
+
+  assert.match(patch, /EvaContactsIcon=createLucideIcon\("book-user",/);
+  assert.match(patch, /\["circle",\{cx:"12",cy:"8",r:"2",key:"book-user-avatar"\}\]/);
+  assert.doesNotMatch(patch, /d:"M17 18a5 5 0 0 0-10 0",key:"book-user-profile"/);
+  assert.match(patch, /EvaConnectionCenterIcon=createLucideIcon\("cable",/);
+  assert.doesNotMatch(patch, /EvaConnectionCenterIcon=createLucideIcon\("unplug",/);
+  assert.match(domIcons, /'book-user': \[\["path",\{d:"M15 13a3 3 0 1 0-6 0"[^\n]+\["circle", \{cx:"12", cy:"8", r:"2"\}\]\]/);
+  assert.match(domIcons, /'cable': \[\["path",\{d:"M17 19/);
+  assert.doesNotMatch(domIcons, /'unplug': \[\["path",\{d:"M17 19/);
+});
+
+test('项目维护的 Lucide 节点与 0.577.0 官方定义一致', () => {
+  const domIcons = read('prototype/050-lucide-dom.js');
+  const sidebar = read('prototype/009-7-patch-sider.js');
+  const general = read('prototype/009-6-patch-general.js');
+  const im = read('prototype/009-5-patch-im.js');
+
+  assert.match(domIcons, /'chart-column': \[\["path", \{d:"M3 3v16a2 2 0 0 0 2 2h16"\}\]/);
+  assert.match(domIcons, /'database': \[\["ellipse", \{cx:"12",cy:"5",rx:"9",ry:"3"\}\], \["path", \{d:"M3 5V19A9 3 0 0 0 21 19V5"\}\]/);
+  assert.match(domIcons, /'file-spreadsheet': \[\["path", \{d:"M6 22a2 2 0 0 1-2-2V4/);
+  assert.match(domIcons, /'git-branch': \[\["path", \{d:"M15 6a9 9 0 0 0-9 9V3"\}\]/);
+  assert.match(domIcons, /'link-2': [^\n]+M15 7h2a5 5 0 1 1 0 10h-2/);
+  assert.match(domIcons, /'minimize-2': \[\["path", \{d: "m14 10 7-7"\}\]/);
+  assert.match(domIcons, /'zap': \[\["path", \{d:"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2/);
+  assert.match(sidebar, /createLucideIcon\("chart-column",\[\["path",\{d:"M3 3v16a2 2 0 0 0 2 2h16"/);
+  assert.match(sidebar, /createLucideIcon\("link-2",[^\n]+M15 7h2a5 5 0 1 1 0 10h-2/);
+  assert.match(general, /createLucideIcon\("Network",[^\n]+M5 16v-3a1 1 0 0 1 1-1h12/);
+  assert.match(im, /createLucideIcon\("Minimize2",\[\["path",\{d:"m14 10 7-7"/);
+});
+
 test('全项目禁止新增手写 SVG、Unicode 与 CSS 字符功能图标', () => {
   for (const file of [...allowedSvgAssets, ...allowedSvgImplementationFiles]) {
     assert.ok(prototypeFiles.includes(file), `图标门禁豁免文件不存在：${file}`);
