@@ -26,6 +26,7 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     assert.match(await seededCard.innerText(), /核心品类采购成本偏差\.csv[\s\S]*736 B/);
     assert.equal(await seededCard.locator('.wk-message-file-name').innerText(), '核心品类采购成本偏差.csv');
     assert.equal(await seededCard.locator('.wk-message-file-ext').innerText(), 'CSV');
+    assert.equal(await seededCard.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'X');
     assert.match(await seededCard.getAttribute('class'), /wk-message-file/);
     const seededGeometry = await seededCard.evaluate(card => {
       const icon = card.querySelector('.wk-message-file-icon').getBoundingClientRect();
@@ -63,15 +64,51 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     assert.equal(download.suggestedFilename(), '核心品类采购成本偏差.csv');
 
     const uploadInput = detail.locator('.loop-idp__main input[type="file"]').first();
-    await uploadInput.setInputFiles({
-      name: '采购成本补充说明.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('补充说明：芯片品类包含紧急空运费用。', 'utf8')
+    assert.equal(await uploadInput.getAttribute('multiple'), '');
+    await uploadInput.setInputFiles([
+      {
+        name: '采购成本补充说明.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('补充说明：芯片品类包含紧急空运费用。', 'utf8')
+      },
+      {
+        name: '采购金额差异复核.xlsx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        buffer: Buffer.from('xlsx-demo', 'utf8')
+      },
+      {
+        name: '采购成本分析.pdf',
+        mimeType: 'application/pdf',
+        buffer: Buffer.from('%PDF-1.4\n% demo', 'utf8')
+      }
+    ]);
+    const uploadedText = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购成本补充说明.txt' });
+    const uploadedSheet = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购金额差异复核.xlsx' });
+    const uploadedPdf = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购成本分析.pdf' });
+    await uploadedText.waitFor();
+    await uploadedSheet.waitFor();
+    await uploadedPdf.waitFor();
+    assert.match(await uploadedText.innerText(), /采购成本补充说明\.txt[\s\S]*[0-9.]+ (?:B|KB)/);
+    assert.equal(await uploadedText.locator('.wk-message-file-ext').innerText(), 'TXT');
+    assert.equal(await uploadedText.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'TXT');
+    assert.equal(await uploadedSheet.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'X');
+    assert.equal(await uploadedPdf.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'PDF');
+
+    const attachmentLayout = await detail.locator('.eva-task-attachments').evaluate(list => {
+      const cards = [...list.querySelectorAll('.eva-task-attachment-card')].map(card => card.getBoundingClientRect());
+      const description = list.parentElement.querySelector('.loop-idp__desc')?.getBoundingClientRect();
+      return {
+        count: cards.length,
+        lefts: cards.map(card => card.left),
+        heights: cards.map(card => card.height),
+        gaps: cards.slice(1).map((card, index) => card.top - cards[index].bottom),
+        descriptionLeft: description?.left ?? null
+      };
     });
-    const uploadedCard = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购成本补充说明.txt' });
-    await uploadedCard.waitFor();
-    assert.match(await uploadedCard.innerText(), /采购成本补充说明\.txt[\s\S]*[0-9.]+ (?:B|KB)/);
-    assert.equal(await uploadedCard.locator('.wk-message-file-ext').innerText(), 'TXT');
+    assert.equal(attachmentLayout.count, 4);
+    assert.deepEqual([...new Set(attachmentLayout.lefts)], [attachmentLayout.descriptionLeft]);
+    assert.deepEqual(attachmentLayout.heights, [64, 64, 64, 64]);
+    assert.deepEqual(attachmentLayout.gaps, [4, 4, 4]);
 
     await seededCard.getByRole('button', { name: '保存到项目文件库', exact: true }).click();
     const openLibrary = seededCard.getByRole('button', { name: '前往项目文件库', exact: true });

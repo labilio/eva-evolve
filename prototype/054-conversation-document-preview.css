@@ -181,9 +181,11 @@ html.eva-file-preview-resizing * {
 .loop-idp .eva-task-attachments {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
   gap: 4px;
   width: min(304px, 100%);
-  margin-top: 16px;
+  margin: 16px 0 0;
 }
 
 .loop-idp .eva-task-attachment-card {
@@ -218,14 +220,56 @@ html.eva-file-preview-resizing * {
 }
 
 .eva-task-attachment-card__filetype {
+  --eva-task-file-color: var(--eva-text-secondary);
+
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  color: var(--eva-text-secondary);
-  background: var(--eva-surface-primary, #fff);
+  color: var(--eva-task-file-color);
+  background: color-mix(in srgb, var(--eva-task-file-color) 9%, var(--eva-surface-primary));
   border-radius: 8px;
+}
+
+.eva-task-attachment-card__filetype.is-pdf {
+  --eva-task-file-color: var(--semi-color-danger);
+}
+
+.eva-task-attachment-card__filetype.is-sheet {
+  --eva-task-file-color: var(--semi-color-success);
+}
+
+.eva-task-attachment-card__filetype:is(.is-document, .is-image, .is-audio, .is-video) {
+  --eva-task-file-color: var(--eva-action-primary);
+}
+
+.eva-task-attachment-card__filetype:is(.is-presentation, .is-archive) {
+  --eva-task-file-color: var(--semi-color-warning);
+}
+
+.eva-task-attachment-card__filetype-icon {
+  display: block;
+  stroke-width: 1.75;
+}
+
+.eva-task-attachment-card__filetype-label {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  color: var(--eva-task-file-color);
+  font: var(--eva-fw-semibold) 8px/14px var(--eva-font-sans);
+  background: var(--eva-surface-primary);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--eva-task-file-color) 20%, transparent);
 }
 
 .eva-task-attachment-card__content {
