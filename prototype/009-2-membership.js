@@ -166,6 +166,13 @@
         availableChannels.filter(c=>allowed.has(c.id)).forEach(c=>{if(api.conversationCategory(uid,c)===id&&!channelIds.includes(c.id))assignments[c.id]='scope:other';});
         channelIds.forEach(cid=>assignments[cid]=id);notify();return id;
       },
+      moveConversationCategory(uid,channel,categoryId){
+        requireHuman(uid);
+        if(!api.conversationCategories(uid).some(c=>c.id===categoryId))fail('分组不存在');
+        if(state.threads[channel.id]||channel.category?.startsWith('space:')||projectId(channel.id))fail('只能移动非项目大群或私聊');
+        if(!api.canReadForwardSource(channel.id,uid))fail('无会话访问权限');
+        state.conversationCategoryAssignments||={};state.conversationCategoryAssignments[uid]||={};state.conversationCategoryAssignments[uid][channel.id]=categoryId;notify();
+      },
       followOrder(uid,bucket,items){
         const order=state.followOrders?.[uid]?.[bucket]||[],rank=new Map(order.map((id,index)=>[id,index]));
         return [...items].sort((a,b)=>(rank.get(a.id)??order.length)-(rank.get(b.id)??order.length));
@@ -245,6 +252,11 @@
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
+      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length;notify();},
+      recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length<=count;},
+      conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
+      conversationUnread(id,uid,seed=0){const count=state.chatPreferences[uid]?.[id]?.readMessageCount;return count===undefined?seed:Math.max(0,[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length-count);},
+      clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify();},
       chatPreferences(id,uid){return JSON.parse(JSON.stringify(state.chatPreferences[uid]?.[id]||{}));},
       setChatSettings(id,uid,patch){
         const sid=id.startsWith('all:')?id.slice(4):id;

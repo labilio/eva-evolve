@@ -1,6 +1,135 @@
 (function (root) {
   'use strict';
   root.__evaPatch('im', function (source) {
+function evaRailIcon(name){
+ const nodes={'Pin':[
+  ["path", { d: "M12 17v5", key: "bb1du9" }],
+  [
+    "path",
+    {
+      d: "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z",
+      key: "1nkz8b"
+    }
+  ]
+],'PinOff':[
+  ["path", { d: "M12 17v5", key: "bb1du9" }],
+  ["path", { d: "M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89", key: "znwnzq" }],
+  ["path", { d: "m2 2 20 20", key: "1ooewy" }],
+  [
+    "path",
+    {
+      d: "M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11",
+      key: "c9qhm2"
+    }
+  ]
+],'Bell':[
+  ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
+  [
+    "path",
+    {
+      d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
+      key: "11g9vi"
+    }
+  ]
+],'BellOff':[
+  ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
+  [
+    "path",
+    {
+      d: "M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742",
+      key: "178tsu"
+    }
+  ],
+  ["path", { d: "m2 2 20 20", key: "1ooewy" }],
+  ["path", { d: "M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05", key: "1hqiys" }]
+],'BrushCleaning':[
+  ["path", { d: "m16 22-1-4", key: "1ow2iv" }],
+  [
+    "path",
+    {
+      d: "M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1",
+      key: "11gii7"
+    }
+  ],
+  ["path", { d: "M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z", key: "bju7h4" }],
+  ["path", { d: "m8 22 1-4", key: "s3unb" }]
+],'EyeOff':[
+  [
+    "path",
+    {
+      d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49",
+      key: "ct8e1f"
+    }
+  ],
+  ["path", { d: "M14.084 14.158a3 3 0 0 1-4.242-4.242", key: "151rxh" }],
+  [
+    "path",
+    {
+      d: "M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143",
+      key: "13bj9a"
+    }
+  ],
+  ["path", { d: "m2 2 20 20", key: "1ooewy" }]
+],'FolderPlus':[
+  ["path", { d: "M12 10v6", key: "1bos4e" }],
+  ["path", { d: "M9 13h6", key: "1uhe8q" }],
+  [
+    "path",
+    {
+      d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z",
+      key: "1kt360"
+    }
+  ]
+],'FolderInput':[
+  [
+    "path",
+    {
+      d: "M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1",
+      key: "fm4g5t"
+    }
+  ],
+  ["path", { d: "M2 13h10", key: "pgb2dq" }],
+  ["path", { d: "m9 16 3-3-3-3", key: "6m91ic" }]
+],'Pencil':[
+  [
+    "path",
+    {
+      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+      key: "1a8usu"
+    }
+  ],
+  ["path", { d: "m15 5 4 4", key: "1mk7zo" }]
+],'ChevronRight':[["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]]};
+ evaRailIcon.components||={};const Icon=evaRailIcon.components[name]||=createLucideIcon(name,nodes[name]);return React.createElement(Icon,{size:16,strokeWidth:1.7,className:'ctx-icon','aria-hidden':true});
+}
+function EvaSharedContextMenus({menus=[],onHide},forwardedRef){
+ const h=React.createElement,[position,setPosition]=reactExports.useState(null),[submenu,setSubmenu]=reactExports.useState(null),ref=reactExports.useRef(null),opener=reactExports.useRef(null);
+ const hide=()=>{setPosition(null);setSubmenu(null);onHide?.();if(opener.current?.isConnected)opener.current.focus({preventScroll:true});};
+ reactExports.useImperativeHandle(forwardedRef,()=>({show:event=>{event.preventDefault();event.stopPropagation();opener.current=event.currentTarget;const rect=event.currentTarget.getBoundingClientRect();setSubmenu(null);setPosition({x:event.clientX||rect.left,y:event.clientY||rect.bottom,minY:document.querySelector('.topbar')?.getBoundingClientRect().bottom||0});},hide,isShow:()=>!!position}));
+ reactExports.useLayoutEffect(()=>{if(!position||!ref.current)return;const n=ref.current,r=n.getBoundingClientRect();n.style.left=Math.max(8,Math.min(position.x+5,innerWidth-r.width-8))+'px';n.style.top=Math.max(position.minY+8,Math.min(position.y,innerHeight-r.height-8))+'px';n.querySelector('[role="menuitem"]')?.focus();},[position]);
+ reactExports.useEffect(()=>{if(!position)return;const close=event=>{if(!ref.current?.contains(event.target))hide();};const key=event=>{if(event.key==='Escape'){event.preventDefault();hide();}};document.addEventListener('pointerdown',close);document.addEventListener('keydown',key);window.addEventListener('resize',hide);return()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',key);window.removeEventListener('resize',hide);};},[position]);
+ const keyboard=event=>{const item=event.target.closest('[role="menuitem"]'),list=item?.parentElement;if(!item||!list)return;const items=[...list.children].filter(n=>n.getAttribute('role')==='menuitem'),index=items.indexOf(item);if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus();}else if(event.key==='ArrowRight'&&item.dataset.children){event.preventDefault();setSubmenu(Number(item.dataset.index));requestAnimationFrame(()=>item.querySelector('[role="menuitem"]')?.focus());}else if(event.key==='ArrowLeft'&&list.classList.contains('eva-context-submenu')){event.preventDefault();setSubmenu(null);list.parentElement.focus();}else if(event.key==='Enter'||event.key===' '){event.preventDefault();item.click();}else if(event.key==='Tab'){hide();}};
+ const render=(item,index,child=false)=>item.separator?h('div',{key:index,className:'wk-ctx-sep',role:'separator'}):h('li',{key:index,role:'menuitem',tabIndex:-1,className:item.danger?'wk-ctx-danger':'','data-index':index,'data-children':item.children?'true':undefined,'aria-haspopup':item.children?'menu':undefined,'aria-expanded':item.children?submenu===index:undefined,onMouseEnter:()=>{if(!child)setSubmenu(item.children?index:null);},onClick:event=>{event.stopPropagation();if(item.children){setSubmenu(index);return;}hide();item.onClick?.();}},item.icon,h('span',null,item.title),item.children&&h(React.Fragment,null,evaRailIcon('ChevronRight'),submenu===index&&h('ul',{className:'eva-context-submenu',role:'menu',ref:n=>{if(n){n.style.left='100%';n.style.right='auto';n.style.top='0px';const r=n.getBoundingClientRect();if(r.right>innerWidth-8){n.style.left='auto';n.style.right='100%';}if(r.bottom>innerHeight-8)n.style.top=Math.min(0,innerHeight-8-r.bottom)+'px';}}},item.children.map((c,i)=>render(c,i,true)))));
+ return position?h('div',{ref,className:'wk-contextmenus wk-contextmenus-open eva-context-menu',style:{left:position.x,top:position.y,maxHeight:'calc(100vh - '+(position.minY+16)+'px)'},onKeyDown:keyboard,onContextMenu:event=>event.preventDefault()},h('ul',{role:'menu'},menus.map((item,i)=>render(item,i)))):null;
+}
+function evaConversationRailMenus({store,actorId,channel,thread,recent,onEditCategory}){
+ const id=thread?.id||channel.id,prefs=store.chatPreferences(id,actorId),mute=store.conversationMuted(id,actorId),menus=[];
+ const item=(title,icon,onClick)=>({title,icon:evaRailIcon(icon),onClick});
+ if(recent)menus.push(item(prefs.top?'取消置顶':'置顶会话',prefs.top?'PinOff':'Pin',()=>store.setChatPreferences(id,actorId,{top:!prefs.top})));
+ if((thread?.unread??channel.unread)>0)menus.push(item('清除未读','BrushCleaning',()=>store.clearConversationUnread(id,actorId)));
+ menus.push(item(mute?'取消免打扰':'设为免打扰',mute?'BellOff':'Bell',()=>store.setChatPreferences(id,actorId,{mute:!mute})));
+ if(recent)menus.push({separator:true},item('不显示该会话','EyeOff',()=>store.hideRecentConversation(id,actorId)));
+ if(!recent&&thread){menus.push({separator:true},item('隐藏子区','EyeOff',()=>store.setChatPreferences(id,actorId,{hidden:true})));}
+ if(!recent&&!thread&&!store.conversationContext(id,actorId)){
+  const categories=store.conversationCategories(actorId),current=store.conversationCategory(actorId,channel);
+  const children=categories.filter(c=>c.id!==current).map(c=>({title:c.name,onClick:()=>store.moveConversationCategory(actorId,channel,c.id)}));
+  if(children.length)children.push({separator:true});
+  children.push(item('新建分组','FolderPlus',()=>onEditCategory({initialChannelIds:[id]})));
+  menus.push({separator:true},{title:'移动到分组',icon:evaRailIcon('FolderInput'),children});
+ }
+ return menus;
+}
+
 function evaForwardTargets(actorId) {
   const channels=messageSource('all').channels;
   if(actorId!=='u-wangyilin')return channels;
@@ -768,7 +897,7 @@ function EvaAITeamPage() {
     function EvaConversationCategoryEditor({store,actorId,record,channels,onClose,onSaved}){
       const h=React.createElement, [name,setName]=reactExports.useState(record.name||''),[error,setError]=reactExports.useState('');
       const available=channels.filter(c=>!c.category?.startsWith('space:'));
-      const [selected,setSelected]=reactExports.useState(()=>record.id?available.filter(c=>c.category===record.id).map(c=>c.id):[]);
+      const [selected,setSelected]=reactExports.useState(()=>record.id?available.filter(c=>c.category===record.id).map(c=>c.id):(record.initialChannelIds||[]));
       return h(Modal,{visible:true,title:record.id?'编辑分组':'创建分组',width:440,okText:record.id?'保存':'创建',cancelText:'取消',onCancel:onClose,onOk:()=>{try{store.saveConversationCategory(actorId,{id:record.id,name,channelIds:selected,availableChannels:available});onSaved();}catch(e){setError(e.message);}}},
         h(ForwardInput,{value:name,onChange:setName,maxLength:50,placeholder:'输入分组名称','aria-label':'分组名称',autoFocus:true}),
         h('p',null,'选择放入此分组的非项目会话（可选）'),
@@ -777,11 +906,11 @@ function EvaAITeamPage() {
           h('img',{src:window.EvaAvatar.conversationUri(c),width:22,height:22,alt:''}),h('span',null,c.name)))),
         error&&h('p',{role:'alert'},error));
     }
-    function EvaFollowCategory({categoryId,sortableItems,children,title,extra}){
+    function EvaFollowCategory({categoryId,sortableItems,children,title,extra,onContextMenu}){
       const drag=useSortable({id:'category:'+categoryId,data:{type:'category'}});
       const project=categoryId.startsWith('space:')?loadSpaces().find(p=>p.id===categoryId.slice(6)):null;
       return React.createElement('section',{ref:drag.setNodeRef,className:'eva-follow-category'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform?{...drag.transform,scaleX:1,scaleY:1}:null),transition:drag.transition},'aria-label':title.props.name},
-        React.createElement('div',{className:'eva-follow-category-title'},
+        React.createElement('div',{className:'eva-follow-category-title',onContextMenu},
           React.createElement('button',{type:'button',className:'eva-follow-category-handle',...drag.attributes,...drag.listeners,ref:drag.setActivatorNodeRef,'aria-label':'拖动分组：'+title.props.name,onClick:e=>e.stopPropagation()},React.createElement(EvaFollowGrip)),title,project&&extra?React.cloneElement(extra,{icon:React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(project).accent},"aria-hidden":true})}):extra),
         React.createElement(SortableContext,{items:sortableItems.map(id=>'item:'+id),strategy:verticalListSortingStrategy},children));
     }
@@ -933,6 +1062,7 @@ function EvaAITeamPage() {
     evaThreadBody=root.__evaCut(evaThreadBody,',React.createElement(evaMembers().ui.ChatSettings.Row,{title:"离开子区",danger:!0,onClick:()=>Nt(null)}),React.createElement(evaMembers().ui.ChatSettings.Row,{title:"删除子区",danger:!0,onClick:()=>Ia(fa)})','','子区信息底部只保留归档');
     const threadToggle=field=>`React.createElement(evaMembers().ui.ChatSettings.Row,{title:"${field==='top'?'置顶子区':'隐藏子区'}",value:React.createElement(Switch,{size:"small","aria-label":"${field==='top'?'置顶子区':'隐藏子区'}",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).${field},onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{${field}:checked})})})`;
     evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(Switch,{size:"small"})))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','React.createElement(Switch,{size:"small"}))),'+threadToggle('top')+','+threadToggle('hidden')+',!!evaMemberStore.chatPreferences(fa.id,evaActorId).hidden&&React.createElement(\"div\",{className:\"eva-thread-mention-option\"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:\"被 @ 时自动取消隐藏\",value:React.createElement(Switch,{size:\"small\",\"aria-label\":\"被 @ 时自动取消隐藏\",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).restoreOnMention,onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{restoreOnMention:checked})})}))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','子区个人开关同组，归档单独分区');
+    evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(Switch,{size:"small"})','React.createElement(Switch,{size:"small","aria-label":"子区消息免打扰",checked:evaMemberStore.conversationMuted(fa.id,evaActorId),onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{mute:checked})})','子区免打扰与列表共用偏好');
     evaThreadBody=root.__evaCut(evaThreadBody,
       'React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?',
       'React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:"清空聊天记录",danger:!0,onClick:()=>Modal.confirm({title:"清空聊天记录",content:"只清空你在此设备的当前子区记录，父群、其他子区和其他成员的记录不受影响。",okText:"清空",cancelText:"取消",okButtonProps:{type:"danger"},onOk:()=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{clearedCount:evaAllMessages.length})})})),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?',
@@ -1006,7 +1136,7 @@ function EvaAITeamPage() {
       'tabIndex:0,title:"提及","aria-label":"提及",onClick:()=>{if(evaMentionScope){evaMentionRange.current=evaComposerMentionRange(mt.current)?.range||null;setEvaMentionQuery("");setEvaMentionIndex(0);setEvaMentionOpen(true);mt.current?.focus();}},onKeyDown:evaEvent=>{if(evaMentionScope&&(evaEvent.key==="Enter"||evaEvent.key===" ")){evaEvent.preventDefault();setEvaMentionOpen(true)}}},React.createElement(AtSign','提及按钮接入');
     source=root.__evaCut(source,'!fa&&ct?.sidebarVariant!=="ai-sessions"&&React.createElement("span",{className:`op','!fa&&!Sa.id.startsWith("dm-")&&Sa.chatType!=="direct"&&ct?.sidebarVariant!=="ai-sessions"&&React.createElement("span",{className:`op','Hide group subzones in direct chat');
     source=root.__evaCut(source,'pt=evaMembershipProjectId?evaMemberStore.channels(evaMembershipProjectId,evaActorId,evaChannelDrafts):ct?[...ct.channels,...evaChannelDrafts.filter(evaC=>evaC.id.startsWith("dm-")&&!ct.channels.some(evaKnown=>evaKnown.id===evaC.id))]:evaChannelDrafts,gt=',
-      'evaBaseChannels=evaMembershipProjectId?evaMemberStore.channels(evaMembershipProjectId,evaActorId,evaChannelDrafts):ct?[...ct.channels,...evaChannelDrafts.filter(evaC=>evaC.id.startsWith("dm-")&&!ct.channels.some(evaKnown=>evaKnown.id===evaC.id))]:evaChannelDrafts,pt=evaBaseChannels.map(evaC=>{const evaP=evaMemberStore.chatPreferences(evaC.id,evaActorId),evaS=evaMemberStore.chatSettings(evaC.id);return {...evaC,...evaS,name:evaS.name||evaC.name,identityAvatarUrl:evaS.avatar||evaC.identityAvatarUrl,unread:evaP.mute?0:evaC.unread,evaPinned:!!evaP.top}}).sort((a,b)=>Number(b.evaPinned)-Number(a.evaPinned)),gt=', 'Project shared conversation preferences');
+      'evaBaseChannels=evaMembershipProjectId?evaMemberStore.channels(evaMembershipProjectId,evaActorId,evaChannelDrafts):ct?[...ct.channels,...evaChannelDrafts.filter(evaC=>evaC.id.startsWith("dm-")&&!ct.channels.some(evaKnown=>evaKnown.id===evaC.id))]:evaChannelDrafts,pt=evaBaseChannels.map(evaC=>{const evaP=evaMemberStore.chatPreferences(evaC.id,evaActorId),evaS=evaMemberStore.chatSettings(evaC.id);return {...evaC,...evaS,name:evaS.name||evaC.name,identityAvatarUrl:evaS.avatar||evaC.identityAvatarUrl,unread:evaMemberStore.conversationMuted(evaC.id,evaActorId)?0:evaMemberStore.conversationUnread(evaC.id,evaActorId,evaC.unread),atMe:evaP.readMessageCount===undefined&&evaC.atMe,threads:(evaC.threads||[]).map(t=>({...t,unread:evaMemberStore.conversationMuted(t.id,evaActorId)?0:evaMemberStore.conversationUnread(t.id,evaActorId,t.unread||0)})),evaPinned:!!evaP.top}}).sort((a,b)=>Number(b.evaPinned)-Number(a.evaPinned)),gt=', 'Project shared conversation preferences');
     cut('!fa&&ct?.sidebarVariant!=="ai-sessions"&&Zi.push', '!fa&&!Sa.id.startsWith("dm-")&&Sa.chatType!=="direct"&&ct?.sidebarVariant!=="ai-sessions"&&Zi.push', 'group-only message subzone menu');
 
     source=root.__evaCut(source,
@@ -1086,7 +1216,7 @@ function EvaAITeamPage() {
     cut('React.createElement("div",{className:"ch-list__scroll"}',
       'ut&&!ct?.conversationOnly&&React.createElement("div",{className:"wk-sidebar-tabbar","data-eva-project-recent-switcher":true},React.createElement("div",{className:"wk-sidebar-tabbar__container"},["follow","recent"].map(mode=>React.createElement("button",{key:mode,type:"button",className:"wk-sidebar-tabbar__btn"+(Cn===mode?" wk-sidebar-tabbar__btn--active":""),"aria-pressed":Cn===mode,onClick:()=>ir(mode)},React.createElement("span",{className:"wk-sidebar-tabbar__label"},mode==="follow"?"关注":"最近"))))),React.createElement(EvaOverlayListScroll,{enabled:ut&&!ct?.conversationOnly,className:"ch-list__scroll"}', '关注最近 React 入口');
     cut('threadsExpanded:evaThreadsExpanded}){return React.createElement("div",{className:classNames("wk-conv-compact-item"',
-      'threadsExpanded:evaThreadsExpanded,dragHandleProps:evaDragHandleProps}){return React.createElement("div",{className:classNames("wk-conv-compact-item"', '关注手柄属性');
+      'threadsExpanded:evaThreadsExpanded,dragHandleProps:evaDragHandleProps,railMenu:evaRailMenu}){return React.createElement("div",{className:classNames("wk-conv-compact-item"', '关注手柄属性');
     const handleStart=source.indexOf('!pt&&React.createElement("span",{className:"wk-conv-compact-drag-handle"'),handleEnd=source.indexOf(',React.createElement("span",{className:"wk-conv-compact-icon"}',handleStart);
     if(handleStart<0||handleEnd<0)throw new Error('Octo compact drag handle boundary changed');
     cut(source.slice(handleStart,handleEnd),'!pt&&evaDragHandleProps&&React.createElement("button",{type:"button",className:"wk-conv-compact-drag-handle",...evaDragHandleProps,onClick:e=>e.stopPropagation()},React.createElement(EvaFollowGrip))','Octo 六点手柄');
@@ -1266,6 +1396,7 @@ function EvaAITeamPage() {
     cut('classNames("wk-msg-row",rt&&', 'classNames("wk-msg-row",evaBubbleKind&&"eva-im-bubble-row",evaBubbleKind==="text"&&"eva-im-bubble-row--text",rt&&', '共享气泡样式边界');
     cut('className:"ch-list__top"', 'className:"ch-list__top eva-rail-header"', '统一消息与项目中栏标题栏');
     source=root.__evaCut(source,'za=ci=>ci.threads.filter(Zi=>Zi.status===1)','evaThreadPrefs=thread=>evaMemberStore.chatPreferences(thread.id,evaActorId),evaSortThreads=items=>[...items].sort((a,b)=>Number(!!evaThreadPrefs(b).top)-Number(!!evaThreadPrefs(a).top)),za=ci=>evaSortThreads(ci.threads.filter(Zi=>Zi.status===1&&!evaThreadPrefs(Zi).hidden))','子区个人置顶与隐藏列表');
+    source=root.__evaCut(source,'return ci.filter(Fi=>!Zi||Fi.name.includes(Zi)||(Fi.crumb??"").includes(Zi))','return ci.filter(Fi=>!(ut&&!ct?.conversationOnly&&Cn==="recent"&&!Zi&&evaMemberStore.recentConversationHidden(Fi.th?.id||Fi.ch.id,evaActorId))&&(!Zi||Fi.name.includes(Zi)||(Fi.crumb??"").includes(Zi)))','不显示仅移出最近列表，保留搜索与关注入口');
     source=root.__evaCut(source,'Fi.threads.filter(Ki=>Ki.status===1).forEach','evaSortThreads(Fi.threads.filter(Ki=>Ki.status===1&&!evaThreadPrefs(Ki).hidden)).forEach','最近列表过滤隐藏子区');
     source=root.__evaCut(source,'ls=Sa.threads.filter(ci=>ci.status===2)','ls=evaSortThreads(Sa.threads.filter(ci=>ci.status===2&&!evaThreadPrefs(ci).hidden)),evaHiddenThreads=evaSortThreads(Sa.threads.filter(ci=>evaThreadPrefs(ci).hidden))','归档与隐藏分别管理');
     source=root.__evaCut(source,'React.createElement(Dropdown.Item,{onClick:()=>{Ra(Es),Ma(Es.name)}},t("base.threadPanel.editNameTitle")),','React.createElement(Dropdown.Item,{onClick:()=>{Ra(Es),Ma(Es.name)}},t("base.threadPanel.editNameTitle")),React.createElement(Dropdown.Item,{onClick:()=>evaMemberStore.setChatPreferences(Es.id,evaActorId,{top:!evaThreadPrefs(Es).top})},evaThreadPrefs(Es).top?"取消置顶":"置顶子区"),React.createElement(Dropdown.Item,{onClick:()=>evaMemberStore.setChatPreferences(Es.id,evaActorId,{hidden:!evaThreadPrefs(Es).hidden})},evaThreadPrefs(Es).hidden?"恢复显示":"隐藏子区"),','子区侧栏菜单共用个人偏好');
@@ -1279,6 +1410,19 @@ function EvaAITeamPage() {
     source=root.__evaCut(source,source.slice(threadItemStart,threadItemEnd),'','删除旧子区条目渲染');
     source=root.__evaCut(source,',[ha,ga]=reactExports.useState(!0),[Oa,ka]=reactExports.useState(!1)','','删除旧子区分组折叠状态');
     cut('fa&&ct?.presentation!=="ai-direct"?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"},React.createElement(ThreadIcon,{size:18,color:"var(--wk-text-secondary, #5C6070)"})):Sa.identityAppearance?', 'Sa.identityAppearance?', '子区标题继承父大群头像');
-    return EvaOverlayListScroll.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardTargets.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    const menuStart=source.indexOf('EvaContextMenus=reactExports.forwardRef('),menuEnd=source.indexOf(',EMPTY_CHANNEL=',menuStart);
+    if(menuStart<0||menuEnd<0)throw new Error('共享右键菜单边界变化');
+    cut(source.slice(menuStart,menuEnd),'EvaContextMenus=reactExports.forwardRef(EvaSharedContextMenus)','复用 Octo 菜单交互');
+    cut('[evaCategoryEditor,setEvaCategoryEditor]=reactExports.useState(null),','[evaRailMenus,setEvaRailMenus]=reactExports.useState([]),evaRailMenuRef=reactExports.useRef(null),evaOpenRailMenu=(event,channel,thread,recent)=>{if(!ut||ct?.conversationOnly)return;setEvaRailMenus(evaConversationRailMenus({store:evaMemberStore,actorId:evaActorId,channel,thread,recent,onEditCategory:setEvaCategoryEditor}));evaRailMenuRef.current?.show(event);},[evaCategoryEditor,setEvaCategoryEditor]=reactExports.useState(null),','右键菜单由会话组件持有');
+    cut('React.createElement(I18nProvider,null,evaCategoryEditor&&','React.createElement(I18nProvider,null,React.createElement(EvaContextMenus,{ref:evaRailMenuRef,menus:evaRailMenus}),evaCategoryEditor&&','挂载唯一会话列表菜单');
+    cut('key:ci.key,className:classNames("wk-conversationlist-item",','key:ci.key,onContextMenu:event=>evaOpenRailMenu(event,ci.ch,ci.th,true),className:classNames("wk-conversationlist-item",','最近右键入口');
+    cut('role:"button",tabIndex:0,onClick:()=>ci.isThread?', 'role:"button",tabIndex:0,onKeyUp:event=>{if(event.key==="ContextMenu"||(event.shiftKey&&event.key==="F10"))evaOpenRailMenu(event,ci.ch,ci.th,true);},onClick:()=>ci.isThread?', '最近键盘菜单入口');
+    cut('name:ci.name,iconColor:ci.color,','name:ci.name,railMenu:event=>evaOpenRailMenu(event,ci,null,false),iconColor:ci.color,','关注父群右键入口');
+    cut('key:ro.id,isThread:!0,name:ro.name,','key:ro.id,isThread:!0,railMenu:event=>evaOpenRailMenu(event,ci,ro,false),name:ro.name,','关注子区右键入口');
+    cut('className:classNames("wk-conv-compact-item",','onContextMenu:evaRailMenu,onKeyUp:event=>{if(evaRailMenu&&(event.key==="ContextMenu"||(event.shiftKey&&event.key==="F10")))evaRailMenu(event);},className:classNames("wk-conv-compact-item",','紧凑行透传菜单');
+    cut('categoryId:ci.id,sortableItems:Fi.map(c=>c.id),','categoryId:ci.id,onContextMenu:ci.id.startsWith("scope:")?event=>{setEvaRailMenus([{title:"编辑分组",icon:evaRailIcon("Pencil"),onClick:()=>setEvaCategoryEditor(ci)}]);evaRailMenuRef.current?.show(event);}:undefined,sortableItems:Fi.map(c=>c.id),','个人分类复用编辑器');
+    cut('setEvaCategoryEditor(null);},[evaMembershipProjectId,evaActorId])','setEvaCategoryEditor(null);evaRailMenuRef.current?.hide();},[evaMembershipProjectId,evaActorId])','身份变化关闭菜单');
+    cut('evaContactOpenEffect=reactExports.useEffect(', 'evaRailMenuReset=reactExports.useEffect(()=>{evaRailMenuRef.current?.hide();},[Cn,Va]),evaContactOpenEffect=reactExports.useEffect(', '列表模式变化关闭菜单');
+    return EvaSharedContextMenus.toString()+'\n'+evaConversationRailMenus.toString()+'\n'+evaRailIcon.toString()+'\n'+EvaOverlayListScroll.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardTargets.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

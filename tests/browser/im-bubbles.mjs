@@ -15,6 +15,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
  const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/#/messages');
+ await page.getByRole('region',{name:'供应链运营协同',exact:true}).locator('.eva-follow-channel > .wk-conv-compact-item').filter({hasText:'全员群'}).first().click();
  await page.locator('.eva-im-bubble-row').first().waitFor();
  const directions=await page.locator('.eva-im-bubble-row').evaluateAll(rows=>rows.map(e=>{const a=e.querySelector('.wk-msg-row-avatar').getBoundingClientRect(),b=e.querySelector('.wk-msg-row-body').getBoundingClientRect();return{send:e.classList.contains('wk-msg-row--send'),a:a.x,b:b.x,right:b.right};}));
  assert.ok(directions.some(r=>r.send));assert.ok(directions.some(r=>!r.send));
