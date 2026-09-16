@@ -23,9 +23,12 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     await detail.waitFor();
     const seededCard = detail.locator('[data-eva-task-attachment="task-file-cost-variance-analysis"]');
     await seededCard.waitFor();
-    assert.match(await seededCard.innerText(), /核心品类采购成本偏差\.csv[\s\S]*CSV[\s\S]*预览[\s\S]*下载[\s\S]*保存到项目文件库/);
+    assert.match(await seededCard.innerText(), /核心品类采购成本偏差\.csv[\s\S]*736 B/);
+    assert.equal(await seededCard.locator('.eva-task-attachment-card__filetype-label').innerText(), 'CSV');
+    assert.equal(await seededCard.locator('.eva-task-attachment-card__format').innerText(), 'CSV');
+    assert.equal(await seededCard.locator('.eva-task-attachment-card__filetype').getAttribute('class'), 'eva-task-attachment-card__filetype is-sheet');
 
-    const previewButton = seededCard.getByRole('button', { name: '预览', exact: true });
+    const previewButton = seededCard.getByRole('button', { name: '预览 核心品类采购成本偏差.csv', exact: true });
     await previewButton.click();
     const preview = detail.locator('.eva-task-file-preview-pane');
     await preview.waitFor();
@@ -35,7 +38,7 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
 
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      seededCard.getByRole('button', { name: '下载', exact: true }).click()
+      seededCard.getByRole('button', { name: '下载 核心品类采购成本偏差.csv', exact: true }).click()
     ]);
     assert.equal(download.suggestedFilename(), '核心品类采购成本偏差.csv');
 
@@ -47,7 +50,10 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     });
     const uploadedCard = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购成本补充说明.txt' });
     await uploadedCard.waitFor();
-    assert.match(await uploadedCard.innerText(), /TXT[\s\S]*预览[\s\S]*下载[\s\S]*保存到项目文件库/);
+    assert.match(await uploadedCard.innerText(), /采购成本补充说明\.txt[\s\S]*[0-9.]+ (?:B|KB)/);
+    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__filetype-label').innerText(), 'TXT');
+    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__format').innerText(), 'TXT');
+    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__filetype').getAttribute('class'), 'eva-task-attachment-card__filetype is-document');
 
     await seededCard.getByRole('button', { name: '保存到项目文件库', exact: true }).click();
     const openLibrary = seededCard.getByRole('button', { name: '前往项目文件库', exact: true });

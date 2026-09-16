@@ -137,7 +137,7 @@ test('文件库、项目文件、任务附件与消息统一使用可缩放的�
     await page.getByText('处理关键供应商来料质量异常', { exact: true }).click();
     const detail = page.locator('.loop-idp').last();
     await detail.waitFor();
-    const attachment = detail.locator('.eva-task-attachment-card__name').first();
+    const attachment = detail.locator('.eva-task-attachment-card__preview').first();
     await attachment.waitFor();
     const detailWidth = await detail.locator('.loop-idp__body').evaluate(element => element.getBoundingClientRect().width);
     await attachment.click();

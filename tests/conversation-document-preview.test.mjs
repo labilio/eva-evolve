@@ -96,6 +96,9 @@ test('任务附件接入统一预览并挂载在任务详情右栏', async () =>
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
   const {source} = createPatchedRuntime();
   assert.match(source, /className:"eva-task-attachment-card"/);
+  assert.match(source, /className:"eva-task-attachment-card__filetype "\+fileKind/);
+  assert.match(source, /React\.createElement\(Archive,\{size:24/);
+  assert.match(source, /React\.createElement\(Download\$5,\{size:24/);
   assert.match(source, /"保存到项目文件库"/);
   assert.match(source, /"前往项目文件库"/);
   assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
