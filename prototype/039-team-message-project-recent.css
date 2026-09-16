@@ -204,3 +204,8 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 .eva-list-scroll-track { opacity:0;visibility:hidden;transition:opacity 150ms ease,visibility 150ms; }
 .eva-list-scroll-track.is-visible { opacity:1;visibility:visible; }
 @media(prefers-reduced-motion:reduce) { .eva-list-scroll-track { transition:none; } }
+
+/* Pin is a persistent recent-list state; selection and hover keep their existing feedback. */
+.ch-layout .wk-conversationlist-item.eva-recent-conversation-pinned:not(.wk-conversationlist-item-selected):not(:hover) {
+  background: var(--eva-surface-subtle);
+}

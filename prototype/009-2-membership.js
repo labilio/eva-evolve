@@ -628,6 +628,18 @@
       saved.seededAllProjectPinsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
+    const recentPins=root.__EVA_RECENT_PIN_DEMO;
+    if(recentPins&&!saved.seededRecentPinsV1){
+      const access=create(saved,undefined,resolveProjectInfo);
+      saved.chatPreferences||={};
+      const preferences=saved.chatPreferences[recentPins.actorId]||={};
+      for(const id of recentPins.conversationIds){
+        if(!access.canRead(id,recentPins.actorId)||preferences[id]?.top!==undefined)continue;
+        preferences[id]={...preferences[id],top:true};
+      }
+      saved.seededRecentPinsV1=true;
+      try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{

@@ -1108,6 +1108,9 @@ function EvaAITeamPage() {
       'const id=evaMemberStore.openDirect(evaActorId,ci);Fa("");ir("recent");La(id)', '搜索私聊显示最近');
     cut('ut&&Cn==="follow"&&Qa===0&&gt.every(ci=>pt.every(Zi=>Zi.category!==ci.id))',
       'ut&&Cn==="follow"&&evaFollowCategories.length===0', '关注空状态使用真实分类');
+    // Recent-only pin presentation derives from the existing per-account preference.
+    cut('classNames("wk-conversationlist-item",Zi&&"wk-conversationlist-item-selected"',
+      'classNames("wk-conversationlist-item",ut&&!ct?.conversationOnly&&Cn==="recent"&&!Va.trim()&&!ci.isThread&&ci.ch.evaPinned&&"eva-recent-conversation-pinned",Zi&&"wk-conversationlist-item-selected"', '最近群聊与私聊置顶底色，不包含搜索与子区');
     cut('name:Fi.name,at:Fi.lastAt??""','name:Fi.name,crumb:evaMemberStore.conversationContext(Fi.id,evaActorId)?.path,at:Fi.lastAt??""','最近项目群归属');
     cut('crumb:Fi.name,at:Ki.updated_at','crumb:evaMemberStore.conversationContext(Ki.id,evaActorId)?.path||Fi.name,at:Ki.updated_at','最近子区项目路径');
     cut(',Fi&&React.createElement("div",{className:"wk-conv-group-hash-badge"},React.createElement(GroupIcon,{size:10}))','', '最近列表群头像不显示子区角标');
