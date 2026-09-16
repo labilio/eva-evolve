@@ -237,6 +237,9 @@
       spaceId,parentId||0,source.type,source.ownerId||null,source.conversationId||source.groupId||null,
       source.messageId,sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceFile.version||1
     ]);
+    const taskAttachmentIdentity=(spaceId,sourceFile,task)=>JSON.stringify([
+      spaceId,task.id||task.identifier,sourceFile.id||sourceFile.attachmentId||sourceFile.name,sourceFile.version||1
+    ]);
     const availableName=(spaceId,parentId,name)=>{
       const occupied=new Set(records.filter(item=>!item.deletedAt&&item.spaceId===spaceId&&item.parent_id===(parentId||0)).map(item=>item.name));
       if(!occupied.has(name))return name;
@@ -374,6 +377,25 @@
         const fileIdentity=sourceFile.id||sourceFile.attachmentId||(source.messageId+':'+sourceFile.name),sourceProjectId=source.type==='group'&&source.projectId?source.projectId:null;
         const found=records.find(item=>!item.deletedAt&&item.conversationArtifact&&item.conversationArtifact.sourceType===source.type&&item.conversationArtifact.conversationId===(source.conversationId||source.groupId)&&item.conversationArtifact.messageId===source.messageId&&item.conversationArtifact.fileIdentity===fileIdentity&&(item.sourceVersion||1)===(sourceFile.version||1)&&(!sourceProjectId||item.spaceId===sourceProjectId)&&Boolean(role(item.spaceId,actorId)));
         return found?clone(found):null;
+      },
+      findTaskAttachment(actorId,targetSpaceId,sourceFile,task){
+        if(!sourceFile||!(sourceFile.name||sourceFile.filename)||!task?.id||!role(targetSpaceId,actorId))return null;
+        const identity=taskAttachmentIdentity(targetSpaceId,sourceFile,task),found=records.find(item=>!item.deletedAt&&item.taskArtifact&&item.identity===identity&&Boolean(role(item.spaceId,actorId)));
+        return found?clone(found):null;
+      },
+      saveTaskAttachment(actorId,targetSpaceId,sourceFile,task){
+        const sourceName=String(sourceFile?.name||sourceFile?.filename||'').trim();
+        if(!sourceName)fail('附件不存在');
+        if(!task?.id||!task?.identifier)fail('任务来源信息不完整');
+        const taskSpaceId=task.workspace_id||task.spaceId||targetSpaceId;
+        if(taskSpaceId!==targetSpaceId)fail('任务不属于当前项目');
+        requireAction('upload',targetSpaceId,actorId);
+        const identity=taskAttachmentIdentity(targetSpaceId,sourceFile,task),old=records.find(item=>!item.deletedAt&&item.identity===identity);
+        if(old)return old.id;
+        const now=stamp(),area=areaForSpace(targetSpaceId),name=availableName(targetSpaceId,0,sourceName),sourceFileId=sourceFile.id||sourceFile.attachmentId||sourceName;
+        const previewUrl=sourceFile.previewUrl||sourceFile.url||sourceFile.download_url||null,url=sourceFile.url||sourceFile.download_url||sourceFile.previewUrl||null;
+        const id='task-saved-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),item={id,identity,spaceId:targetSpaceId,projectId:projectForSpace(targetSpaceId),area,parent_id:0,name,type:'blob',size:Number(sourceFile.size||0),extension:sourceFile.extension||ext(name),contentType:sourceFile.content_type||sourceFile.mime_type||null,sourceVersion:sourceFile.version||1,sourceFileName:sourceName,previewUrl,url,download_url:sourceFile.download_url||url,source:{type:'task-copy',label:'从任务附件保存',taskId:task.id,taskIdentifier:task.identifier},systemRelations:[relation('task',task.id,task.identifier+' · '+task.title,'任务附件')],tags:normalizeTags(sourceFile.tags||[]),taskArtifact:{taskId:task.id,taskIdentifier:task.identifier,fileIdentity:sourceFileId},creator:actorName(actorId),editor:'未编辑过',createdBy:actorName(actorId),updatedBy:actorName(actorId),createdAt:now,updated_at:now,description:'从任务附件保存到项目文件库的独立文件'};
+        records.unshift(item);notify();return id;
       },
       saveConversationFile(actorId,targetSpaceId,targetParentId,sourceFile,source){
         if(!sourceFile?.name)fail('文件不存在');

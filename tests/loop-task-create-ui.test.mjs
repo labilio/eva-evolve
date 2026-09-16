@@ -44,6 +44,13 @@ test('upload completion after project change cannot create a task in either proj
   h.all().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[{name:'a.txt'}],value:''}});h.render();
   const pending=h.button('创建').props.onClick();h.deps.project={id:'other'};h.render();h.render();resolve({id:'old-upload'});await pending;assert.equal(h.calls.length,0);
 });
+test('新建任务支持一次选择多个附件并按选择顺序上传',async()=>{
+  const uploaded=[];const h=harness({uploadAttachment:async file=>{uploaded.push(file.name);return{id:'att-'+file.name};}});h.fill();
+  const input=h.all().find(n=>n.type==='input'&&n.props.type==='file');assert.equal(input.props.multiple,true);
+  input.props.onChange({target:{files:[{name:'成本明细.xlsx'},{name:'分析报告.pdf'}],value:'selected'}});h.render();
+  assert.ok(h.all().some(n=>n.children.includes?.('成本明细.xlsx')));assert.ok(h.all().some(n=>n.children.includes?.('分析报告.pdf')));
+  await h.button('创建').props.onClick();assert.deepEqual(uploaded,['成本明细.xlsx','分析报告.pdf']);assert.deepEqual(Array.from(h.calls[0].attachment_ids),['att-成本明细.xlsx','att-分析报告.pdf']);
+});
 test('AI assignment stays todo and human avatars use stable identity ids',async()=>{
   const h=harness();h.fill();const label=h.find('执行负责人').props.optionList[0].label;assert.equal(label.children[0].props.src,'avatar:u1');
   h.find('执行负责人').props.onChange('c1');h.render();await h.button('创建').props.onClick();assert.equal(h.calls[0].assignee_type,'agent');assert.equal(h.calls[0].status,'todo');

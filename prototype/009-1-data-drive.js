@@ -160,7 +160,8 @@ Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"EVA-上传恢复排查清单.md":
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {
   'A-2409现场复核清单.md': 'prototype/assets/file-samples/A-2409现场复核清单.md',
   'A-2409排产影响测算.html': 'prototype/assets/file-samples/A-2409排产影响测算.html',
-  'A-2409临时放行评审纪要.docx': 'prototype/assets/file-samples/A-2409临时放行评审纪要.docx.html'
+  'A-2409临时放行评审纪要.docx': 'prototype/assets/file-samples/A-2409临时放行评审纪要.docx.html',
+  '核心品类采购成本偏差.csv': 'prototype/assets/file-samples/核心品类采购成本偏差.csv'
 });
 
 Object.assign(window.__EVA_FILE_SAMPLE_URLS, {"供应链晨会行动清单.md":"prototype/assets/file-samples/供应链晨会行动清单.md","A-2409整改证据检查表.csv":"prototype/assets/file-samples/A-2409整改证据检查表.csv","采购合同评审提纲.md":"prototype/assets/file-samples/采购合同评审提纲.md"});

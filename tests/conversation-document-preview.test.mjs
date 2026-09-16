@@ -85,16 +85,47 @@ test('文件库独立预览提供同一全屏状态与退出规则', async () =>
 test('任务附件接入统一预览并挂载在任务详情右栏', async () => {
   const patch = await read('prototype/009-6-patch-general.js');
   const supply = await read('prototype/009-2-data-supply.js');
-  assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview\}\)/);
+  assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview,onDownload:evaOnDownload,onSave:evaOnSave/);
+  assert.match(patch, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(patch, /evaOpenTaskAttachment=async/);
+  assert.match(patch, /saveTaskAttachment\(evaTaskFileActor,evaTaskSpaceId,ki,xt\)/);
   assert.match(patch, /eva-task-file-preview-pane/);
   assert.match(patch, /data-eva-file-preview-resizer/);
   assert.match(supply, /task-file-a2409-checklist[\s\S]*?A-2409现场复核清单\.md/);
+  assert.match(supply, /task-file-cost-variance-analysis[\s\S]*?核心品类采购成本偏差\.csv/);
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
   const {source} = createPatchedRuntime();
-  assert.match(source, /className:"loop-att eva-task-attachment-preview"/);
+  assert.match(source, /function evaTaskAttachmentVisual\(extension\)/);
+  assert.match(source, /ext==="pdf"\)return\{tone:"is-pdf",label:"PDF"/);
+  assert.match(source, /\["csv","xls","xlsx","numbers"\]\.includes\(ext\)\)return\{tone:"is-sheet",label:"X"/);
+  assert.match(source, /className:"loop-atts eva-task-attachments","aria-label":"任务附件",role:"list"/);
+  assert.match(source, /className:"wk-message-file wk-message-file--clickable eva-task-attachment-card"/);
+  assert.match(source, /role:"listitem"/);
+  assert.match(source, /className:"wk-message-file-icon eva-task-attachment-card__filetype "\+visual\.tone/);
+  assert.match(source, /"data-eva-file-type":visual\.label/);
+  assert.match(source, /React\.createElement\(visual\.Icon,\{size:28,className:"eva-task-attachment-card__filetype-icon"\}\)/);
+  assert.match(source, /className:"wk-message-file-info eva-task-attachment-card__content"/);
+  assert.match(source, /className:"wk-message-file-actions eva-task-attachment-card__actions"/);
+  assert.match(source, /React\.createElement\(FileDriveIcon,\{action:"saveDrive"\}\)/);
+  assert.match(source, /React\.createElement\(FileDriveIcon,\{action:"viewDrive"\}\)/);
+  assert.match(source, /React\.createElement\(Download\$5,\{size:18/);
+  assert.match(source, /"保存到项目文件库"/);
+  assert.match(source, /"前往项目文件库"/);
+  assert.doesNotMatch(source, /eva-task-attachment-action is-saved/);
+  assert.match(source, /evaOpenTaskFileLibrary=evaSavedFile=>\{const evaTargetProjectId=evaSavedFile\?\.spaceId\|\|evaSavedFile\?\.projectId\|\|evaTaskSpaceId/);
+  assert.match(source, /evaProject="\+encodeURIComponent\(evaTargetProjectId\)\+"&evaTab=files"/);
+  assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(source, /evaTaskFilePreview\?" eva-task-file-preview-open"/);
   assert.match(source, /className:"eva-task-file-preview-pane"[\s\S]*?React\.createElement\(FilePreviewHost/);
+});
+
+test('任务附件列表左对齐并按文件类型使用语义标识', async () => {
+  const css = await read('prototype/054-conversation-document-preview.css');
+  assert.match(css, /\.loop-idp \.eva-task-attachments\s*\{[\s\S]*?align-items:\s*flex-start[\s\S]*?gap:\s*4px[\s\S]*?width:\s*100%[\s\S]*?margin:\s*16px auto 0/);
+  assert.doesNotMatch(css, /\.eva-task-attachment-action\.is-saved/);
+  assert.match(css, /\.eva-task-attachment-card__filetype\.is-pdf\s*\{[\s\S]*?--eva-task-file-color:\s*var\(--semi-color-danger\)/);
+  assert.match(css, /\.eva-task-attachment-card__filetype\.is-sheet\s*\{[\s\S]*?--eva-task-file-color:\s*var\(--semi-color-success\)/);
+  assert.match(css, /\.eva-task-attachment-card__filetype-label\s*\{[\s\S]*?position:\s*absolute[\s\S]*?font:\s*var\(--eva-fw-semibold\) 8px\/14px var\(--eva-font-sans\)/);
 });
 
 test('文档预览令牌只作用于预览右栏，不覆盖全局 Octo 表面令牌', async () => {
