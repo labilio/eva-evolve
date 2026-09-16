@@ -95,10 +95,14 @@ test('任务附件接入统一预览并挂载在任务详情右栏', async () =>
   assert.match(supply, /task-file-cost-variance-analysis[\s\S]*?核心品类采购成本偏差\.csv/);
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
   const {source} = createPatchedRuntime();
-  assert.match(source, /className:"eva-task-attachment-card"/);
-  assert.match(source, /className:"eva-task-attachment-card__filetype "\+fileKind/);
-  assert.match(source, /React\.createElement\(Archive,\{size:24/);
-  assert.match(source, /React\.createElement\(Download\$5,\{size:24/);
+  assert.match(source, /className:"wk-message-file wk-message-file--clickable eva-task-attachment-card"/);
+  assert.match(source, /className:"wk-message-file-icon eva-task-attachment-card__filetype"/);
+  assert.match(source, /React\.createElement\(FileTypeIcon,\{extension,name\}\)/);
+  assert.match(source, /className:"wk-message-file-info eva-task-attachment-card__content"/);
+  assert.match(source, /className:"wk-message-file-actions eva-task-attachment-card__actions"/);
+  assert.match(source, /React\.createElement\(FileDriveIcon,\{action:"saveDrive"\}\)/);
+  assert.match(source, /React\.createElement\(FileDriveIcon,\{action:"viewDrive"\}\)/);
+  assert.match(source, /React\.createElement\(Download\$5,\{size:18/);
   assert.match(source, /"保存到项目文件库"/);
   assert.match(source, /"前往项目文件库"/);
   assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);

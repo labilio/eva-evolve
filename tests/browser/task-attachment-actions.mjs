@@ -24,9 +24,29 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     const seededCard = detail.locator('[data-eva-task-attachment="task-file-cost-variance-analysis"]');
     await seededCard.waitFor();
     assert.match(await seededCard.innerText(), /核心品类采购成本偏差\.csv[\s\S]*736 B/);
-    assert.equal(await seededCard.locator('.eva-task-attachment-card__filetype-label').innerText(), 'CSV');
-    assert.equal(await seededCard.locator('.eva-task-attachment-card__format').innerText(), 'CSV');
-    assert.equal(await seededCard.locator('.eva-task-attachment-card__filetype').getAttribute('class'), 'eva-task-attachment-card__filetype is-sheet');
+    assert.equal(await seededCard.locator('.wk-message-file-name').innerText(), '核心品类采购成本偏差.csv');
+    assert.equal(await seededCard.locator('.wk-message-file-ext').innerText(), 'CSV');
+    assert.match(await seededCard.getAttribute('class'), /wk-message-file/);
+    const seededGeometry = await seededCard.evaluate(card => {
+      const icon = card.querySelector('.wk-message-file-icon').getBoundingClientRect();
+      const actions = [...card.querySelectorAll('.wk-message-file-action')].map(action => {
+        const rect = action.getBoundingClientRect();
+        const svg = action.querySelector('svg').getBoundingClientRect();
+        return { width: rect.width, height: rect.height, iconWidth: svg.width, iconHeight: svg.height };
+      });
+      const rect = card.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, iconWidth: icon.width, iconHeight: icon.height, actions };
+    });
+    assert.deepEqual(seededGeometry, {
+      width: 304,
+      height: 64,
+      iconWidth: 40,
+      iconHeight: 40,
+      actions: [
+        { width: 44, height: 44, iconWidth: 18, iconHeight: 18 },
+        { width: 44, height: 44, iconWidth: 18, iconHeight: 18 }
+      ]
+    });
 
     const previewButton = seededCard.getByRole('button', { name: '预览 核心品类采购成本偏差.csv', exact: true });
     await previewButton.click();
@@ -51,9 +71,7 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     const uploadedCard = detail.locator('.eva-task-attachment-card').filter({ hasText: '采购成本补充说明.txt' });
     await uploadedCard.waitFor();
     assert.match(await uploadedCard.innerText(), /采购成本补充说明\.txt[\s\S]*[0-9.]+ (?:B|KB)/);
-    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__filetype-label').innerText(), 'TXT');
-    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__format').innerText(), 'TXT');
-    assert.equal(await uploadedCard.locator('.eva-task-attachment-card__filetype').getAttribute('class'), 'eva-task-attachment-card__filetype is-document');
+    assert.equal(await uploadedCard.locator('.wk-message-file-ext').innerText(), 'TXT');
 
     await seededCard.getByRole('button', { name: '保存到项目文件库', exact: true }).click();
     const openLibrary = seededCard.getByRole('button', { name: '前往项目文件库', exact: true });

@@ -181,29 +181,32 @@ html.eva-file-preview-resizing * {
 .loop-idp .eva-task-attachments {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: min(720px, 100%);
+  gap: 4px;
+  width: min(304px, 100%);
   margin-top: 16px;
 }
 
 .loop-idp .eva-task-attachment-card {
   display: flex;
   align-items: center;
-  gap: var(--eva-space-3);
-  min-height: 96px;
-  padding: var(--eva-space-3) var(--eva-space-4) var(--eva-space-3) var(--eva-space-3);
-  box-sizing: border-box;
-  background: var(--eva-surface-subtle);
+  gap: 12px;
+  width: 280px;
+  max-width: calc(100% - 24px);
+  height: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+  box-sizing: content-box;
+  background: var(--eva-im-bubble-incoming, #f2f2f2);
   border: 0;
-  border-radius: var(--eva-radius-window);
+  border-radius: 12px;
 }
 
 .loop-idp button.eva-task-attachment-card__preview {
   display: grid;
   flex: 1;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
-  gap: var(--eva-space-4);
+  gap: 12px;
   min-width: 0;
   padding: 0;
   color: inherit;
@@ -215,56 +218,21 @@ html.eva-file-preview-resizing * {
 }
 
 .eva-task-attachment-card__filetype {
-  --eva-task-file-color: var(--eva-action-primary);
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  color: var(--eva-task-file-color);
-  background: color-mix(in srgb, var(--eva-task-file-color) 12%, var(--eva-surface-primary));
-  border-radius: var(--eva-radius-panel);
-}
-
-.eva-task-attachment-card__filetype.is-pdf {
-  --eva-task-file-color: var(--semi-color-danger);
-}
-
-.eva-task-attachment-card__filetype.is-sheet {
-  --eva-task-file-color: var(--semi-color-success);
-}
-
-.eva-task-attachment-card__filetype.is-presentation,
-.eva-task-attachment-card__filetype.is-archive {
-  --eva-task-file-color: var(--semi-color-warning);
-}
-
-.eva-task-attachment-card__filetype-icon {
-  stroke-width: 1.75;
-}
-
-.eva-task-attachment-card__filetype-label {
-  position: absolute;
-  bottom: 13px;
-  left: 50%;
-  max-width: 42px;
-  padding: 0 var(--eva-space-1);
-  overflow: hidden;
-  color: var(--eva-text-inverse);
-  font: var(--eva-fw-semibold) 10px/16px var(--eva-font-sans);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  background: var(--eva-task-file-color);
-  border-radius: var(--eva-radius-small);
-  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  color: var(--eva-text-secondary);
+  background: var(--eva-surface-primary, #fff);
+  border-radius: 8px;
 }
 
 .eva-task-attachment-card__content {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: var(--eva-space-1);
+  gap: 4px;
 }
 
 .loop-idp button.eva-task-attachment-action {
@@ -282,7 +250,7 @@ html.eva-file-preview-resizing * {
   min-width: 0;
   overflow: hidden;
   color: var(--eva-text-primary);
-  font: var(--eva-fw-semibold) 17px/24px var(--eva-font-sans);
+  font: var(--eva-fw-medium) 14px/20px var(--eva-font-sans);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -290,22 +258,18 @@ html.eva-file-preview-resizing * {
 .eva-task-attachment-card__meta {
   display: flex;
   align-items: center;
-  gap: var(--eva-space-2);
+  gap: 8px;
   min-width: 0;
-  color: var(--eva-text-secondary-accessible);
-  font: var(--eva-fw-regular) 14px/20px var(--eva-font-sans);
+  color: var(--eva-text-secondary);
+  font: var(--eva-fw-regular) 12px/18px var(--eva-font-sans);
 }
 
 .eva-task-attachment-card__format {
-  max-width: 72px;
-  padding: 0 var(--eva-space-2);
+  max-width: 52px;
   overflow: hidden;
   color: var(--eva-text-secondary);
-  font-weight: var(--eva-fw-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--eva-overlay-hover);
-  border-radius: var(--eva-radius-small);
 }
 
 .eva-task-attachment-card__actions {
@@ -313,15 +277,17 @@ html.eva-file-preview-resizing * {
   align-items: center;
   justify-content: flex-end;
   flex: none;
-  gap: var(--eva-space-2);
+  gap: 4px;
+  width: 92px;
+  height: 44px;
 }
 
 .loop-idp button.eva-task-attachment-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   color: var(--eva-text-primary);
   border-radius: var(--eva-radius-control);
 }
@@ -344,23 +310,6 @@ html.eva-file-preview-resizing * {
 .loop-idp button.eva-task-attachment-action:focus-visible {
   outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
   outline-offset: 2px;
-}
-
-@media (max-width: 900px) {
-  .loop-idp .eva-task-attachment-card {
-    gap: var(--eva-space-2);
-    padding-right: var(--eva-space-3);
-  }
-
-  .loop-idp button.eva-task-attachment-card__preview {
-    grid-template-columns: 56px minmax(0, 1fr);
-    gap: var(--eva-space-3);
-  }
-
-  .eva-task-attachment-card__filetype {
-    width: 56px;
-    height: 56px;
-  }
 }
 
 @keyframes eva-pushed-preview-in {
