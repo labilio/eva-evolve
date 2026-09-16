@@ -1108,6 +1108,8 @@ function EvaAITeamPage() {
       'const id=evaMemberStore.openDirect(evaActorId,ci);Fa("");ir("recent");La(id)', '搜索私聊显示最近');
     cut('ut&&Cn==="follow"&&Qa===0&&gt.every(ci=>pt.every(Zi=>Zi.category!==ci.id))',
       'ut&&Cn==="follow"&&evaFollowCategories.length===0', '关注空状态使用真实分类');
+    cut('.sort((Fi,Ki)=>Ki.at.localeCompare(Fi.at))},[pt,Va,oa,ct])',
+      '.sort((Fi,Ki)=>(ut&&!ct?.conversationOnly&&!Va.trim()?Number(!!evaMemberStore.chatPreferences(Ki.th?.id||Ki.ch.id,evaActorId).top)-Number(!!evaMemberStore.chatPreferences(Fi.th?.id||Fi.ch.id,evaActorId).top):0)||Ki.at.localeCompare(Fi.at))},[pt,Va,oa,ct])', '最近会话先按自身置顶状态排序，同组内按时间排序');
     // Recent-only pin presentation derives from the existing per-account preference.
     cut('classNames("wk-conversationlist-item",Zi&&"wk-conversationlist-item-selected"',
       'classNames("wk-conversationlist-item",ut&&!ct?.conversationOnly&&Cn==="recent"&&!Va.trim()&&!ci.isThread&&ci.ch.evaPinned&&"eva-recent-conversation-pinned",Zi&&"wk-conversationlist-item-selected"', '最近群聊与私聊置顶底色，不包含搜索与子区');
