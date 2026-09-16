@@ -1181,6 +1181,8 @@ function EvaAITeamPage() {
       'fa=(ct?.selectedThreadId??Pt)?Sa.threads.find(ci=>ci.id===(ct?.selectedThreadId??Pt))??null:null', 'AI selected topic uses Octo thread state');
     cut('fa?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}',
       'fa&&ct?.presentation!=="ai-direct"?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}', 'AI topic keeps identity avatar');
+    cut('React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"},fa&&ct?.presentation!=="ai-direct"?',
+      'React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"+(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")?" is-settings-trigger":""),...(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")?{role:"button",tabIndex:0,title:"聊天信息","aria-label":"打开聊天信息",onClick:()=>Dt(value=>value==="info"?"none":"info"),onKeyDown:event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();Dt(value=>value==="info"?"none":"info")}}}:{})},fa&&ct?.presentation!=="ai-direct"?', 'group avatar reuses chat information panel');
     cut('fa?React.createElement("span",{className:"wk-chat-conversation-header-channel-info-name wk-chat-conversation-header-channel-info-name--thread"}',
       'fa&&ct?.presentation!=="ai-direct"?React.createElement("span",{className:"wk-chat-conversation-header-channel-info-name wk-chat-conversation-header-channel-info-name--thread"}', 'AI topic keeps direct title');
     cut('title:fa?"子区信息":"聊天信息"', 'title:fa&&ct?.presentation!=="ai-direct"?"子区信息":"聊天信息"', 'AI direct info label');

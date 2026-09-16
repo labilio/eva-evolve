@@ -307,6 +307,16 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-t
   border-radius: 0;
 }
 
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar.is-settings-trigger {
+  cursor: pointer;
+}
+
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar.is-settings-trigger:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid var(--semi-color-focus-border);
+  outline-offset: 2px;
+}
+
 body.eva-message-hierarchy-ready .eva-msg .wk-category-header:focus-visible,
 body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item:focus-visible,
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar__btn:focus-visible {
