@@ -578,7 +578,7 @@
   height: 72px;
   flex: none;
   background: var(--eva-surface-primary);
-  border-bottom: 1px solid var(--eva-border-faint);
+  border-bottom: 1px solid var(--eva-rail-divider);
   display: flex;
   align-items: center;
   gap: 4px;

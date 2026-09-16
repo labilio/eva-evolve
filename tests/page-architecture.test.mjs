@@ -281,7 +281,10 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__roles\s*\{[^}]*padding:\s*var\(--gds-space-2\) var\(--gds-space-2-5\) var\(--gds-space-3\)/s);
   assert.match(aiTeamCss, /eva-ai-team__sidebar-header \.semi-button\s*\{[^}]*height:\s*34px/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar\[data-eva-project-recent-switcher="true"\]\s*\{[^}]*padding:\s*0 var\(--gds-space-4\)/s);
-  assert.match(messageSwitcherCss, /wk-sidebar-tabbar__container\s*\{[^}]*padding:\s*0[^}]*border-bottom:\s*var\(--gds-border-standard\) solid var\(--eva-border-faint\)/s);
+  // Tab 基线自 2026-09-16 起与「我的 Agent」的区域分界线同档：统一走
+  // --eva-rail-divider（= border/subtle）。原先取 border/faint 的「极弱基线」
+  // 在暗色下 ΔL* 仅 2.9（faint 撞上抬升面色）而不可见，故升档并收敛到语义别名。
+  assert.match(messageSwitcherCss, /wk-sidebar-tabbar__container\s*\{[^}]*padding:\s*0[^}]*border-bottom:\s*var\(--gds-border-standard\) solid var\(--eva-rail-divider\)/s);
   assert.match(messageSwitcherCss, /wk-sidebar-tabbar__btn\s*\{[^}]*min-height:\s*32px/s);
   assert.match(aiTeamCss, /eva-rail-header\s*\{[^}]*display:\s*flex/s);
   assert.match(imPatch, /EvaAIIdentityAvatar,\{appearance:evaIdentityAppearance\(i\),size:22\}/);
