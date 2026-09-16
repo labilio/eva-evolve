@@ -182,10 +182,9 @@ html.eva-file-preview-resizing * {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  align-self: flex-start;
   gap: 4px;
-  width: min(304px, 100%);
-  margin: 16px 0 0;
+  width: 100%;
+  margin: 16px auto 0;
 }
 
 .loop-idp .eva-task-attachment-card {
@@ -336,13 +335,8 @@ html.eva-file-preview-resizing * {
   border-radius: var(--eva-radius-control);
 }
 
-.loop-idp button.eva-task-attachment-action:hover:not(:disabled),
-.loop-idp button.eva-task-attachment-action.is-saved {
+.loop-idp button.eva-task-attachment-action:hover:not(:disabled) {
   background: var(--eva-overlay-hover);
-}
-
-.loop-idp button.eva-task-attachment-action.is-saved {
-  color: var(--eva-action-primary);
 }
 
 .loop-idp button.eva-task-attachment-action:disabled {

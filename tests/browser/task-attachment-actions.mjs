@@ -94,29 +94,36 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     assert.equal(await uploadedSheet.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'X');
     assert.equal(await uploadedPdf.locator('[data-eva-file-type]').getAttribute('data-eva-file-type'), 'PDF');
 
+    await page.setViewportSize({ width: 1920, height: 1080 });
     const attachmentLayout = await detail.locator('.eva-task-attachments').evaluate(list => {
       const cards = [...list.querySelectorAll('.eva-task-attachment-card')].map(card => card.getBoundingClientRect());
-      const description = list.parentElement.querySelector('.loop-idp__desc')?.getBoundingClientRect();
+      const title = list.parentElement.querySelector('.loop-idp__title')?.getBoundingClientRect();
       return {
         count: cards.length,
         lefts: cards.map(card => card.left),
         heights: cards.map(card => card.height),
         gaps: cards.slice(1).map((card, index) => card.top - cards[index].bottom),
-        descriptionLeft: description?.left ?? null
+        titleLeft: title?.left ?? null
       };
     });
     assert.equal(attachmentLayout.count, 4);
-    assert.deepEqual([...new Set(attachmentLayout.lefts)], [attachmentLayout.descriptionLeft]);
+    assert.deepEqual([...new Set(attachmentLayout.lefts)], [attachmentLayout.titleLeft]);
     assert.deepEqual(attachmentLayout.heights, [64, 64, 64, 64]);
     assert.deepEqual(attachmentLayout.gaps, [4, 4, 4]);
 
     await seededCard.getByRole('button', { name: '保存到项目文件库', exact: true }).click();
     const openLibrary = seededCard.getByRole('button', { name: '前往项目文件库', exact: true });
     await openLibrary.waitFor();
+    assert.doesNotMatch(await openLibrary.getAttribute('class'), /is-saved/);
+    assert.equal(await openLibrary.getAttribute('aria-pressed'), null);
+    const savedActionColor = await openLibrary.evaluate(button => getComputedStyle(button).color);
+    const downloadActionColor = await seededCard.getByRole('button', { name: '下载 核心品类采购成本偏差.csv', exact: true }).evaluate(button => getComputedStyle(button).color);
+    assert.equal(savedActionColor, downloadActionColor);
     await openLibrary.click();
 
     const files = page.locator('.eva-project-files');
     await files.waitFor();
+    assert.equal(new URL(page.url()).hash, '#/collab?evaProject=prod&evaTab=files');
     assert.equal(await page.getByRole('tab', { name: '文件', exact: true }).getAttribute('aria-selected'), 'true');
     assert.equal(await files.getByText('核心品类采购成本偏差.csv', { exact: true }).count(), 1);
     assert.deepEqual(errors, []);

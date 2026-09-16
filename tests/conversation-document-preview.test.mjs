@@ -111,6 +111,9 @@ test('任务附件接入统一预览并挂载在任务详情右栏', async () =>
   assert.match(source, /React\.createElement\(Download\$5,\{size:18/);
   assert.match(source, /"保存到项目文件库"/);
   assert.match(source, /"前往项目文件库"/);
+  assert.doesNotMatch(source, /eva-task-attachment-action is-saved/);
+  assert.match(source, /evaOpenTaskFileLibrary=evaSavedFile=>\{const evaTargetProjectId=evaSavedFile\?\.spaceId\|\|evaSavedFile\?\.projectId\|\|evaTaskSpaceId/);
+  assert.match(source, /evaProject="\+encodeURIComponent\(evaTargetProjectId\)\+"&evaTab=files"/);
   assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(source, /evaTaskFilePreview\?" eva-task-file-preview-open"/);
   assert.match(source, /className:"eva-task-file-preview-pane"[\s\S]*?React\.createElement\(FilePreviewHost/);
@@ -118,7 +121,8 @@ test('任务附件接入统一预览并挂载在任务详情右栏', async () =>
 
 test('任务附件列表左对齐并按文件类型使用语义标识', async () => {
   const css = await read('prototype/054-conversation-document-preview.css');
-  assert.match(css, /\.loop-idp \.eva-task-attachments\s*\{[\s\S]*?align-items:\s*flex-start[\s\S]*?align-self:\s*flex-start[\s\S]*?gap:\s*4px[\s\S]*?margin:\s*16px 0 0/);
+  assert.match(css, /\.loop-idp \.eva-task-attachments\s*\{[\s\S]*?align-items:\s*flex-start[\s\S]*?gap:\s*4px[\s\S]*?width:\s*100%[\s\S]*?margin:\s*16px auto 0/);
+  assert.doesNotMatch(css, /\.eva-task-attachment-action\.is-saved/);
   assert.match(css, /\.eva-task-attachment-card__filetype\.is-pdf\s*\{[\s\S]*?--eva-task-file-color:\s*var\(--semi-color-danger\)/);
   assert.match(css, /\.eva-task-attachment-card__filetype\.is-sheet\s*\{[\s\S]*?--eva-task-file-color:\s*var\(--semi-color-success\)/);
   assert.match(css, /\.eva-task-attachment-card__filetype-label\s*\{[\s\S]*?position:\s*absolute[\s\S]*?font:\s*var\(--eva-fw-semibold\) 8px\/14px var\(--eva-font-sans\)/);
