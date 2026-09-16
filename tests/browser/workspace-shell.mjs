@@ -4,7 +4,6 @@ import { chromium } from 'playwright';
 import { unzlibSync } from 'fflate';
 import { createServer } from '../../tools/serve.mjs';
 import { fileURLToPath } from 'node:url';
-import { readdirSync, readFileSync } from 'node:fs';
 
 let server, browser, page, origin;
 before(async () => {
@@ -58,7 +57,12 @@ const routes=[
   ['/scheduled','.eva-page-header'],
   ['/eva-stub/数字员工','.eva-digital-center__head'],
 ];
-test('All level-one pages share the same actually painted workspace boundary',async()=>{
+
+// Γ 形外壳（见 docs/三栏式现行视觉规范.md「2026-09-16 外壳订正为 Γ 形」）：
+// 顶栏 + 侧栏连成同色导航面（无边框、无圆角、无缝），工作区是唯一浮起的圆角卡片。
+// 只有工作区（.layout-content）的四个圆角会露出背后的导航面；侧栏本身是连续不透明面，
+// 只有其贴着窗口外圆角的角（左下）会被 app-shell 的 overflow 裁掉而露出窗口背景。
+test('All level-one pages float the workspace as the single rounded card over the nav surface',async()=>{
   for(const width of [1200,1000]) {
     await page.setViewportSize({width,height:800});
     for(const [route,selector] of routes) {
@@ -79,36 +83,53 @@ test('The paint gate rejects broken clipping even when CSS radius remains correc
   await verifyExposedBackdrop();
 });
 
-async function verifyFrame(selector='.layout-content') {
-  const actual=await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return {border:s.borderWidth,color:s.borderColor,radius:s.borderRadius,overflow:s.overflow,mask:s.maskImage,after:getComputedStyle(el,'::after').content};});
+// 工作区：唯一浮起卡片——单层 1px 原生描边 + 16px 圆角，四角描边弧真实可见。
+async function verifyContentCard() {
+  const actual=await page.locator('.layout-content').evaluate(el=>{const s=getComputedStyle(el);return {border:s.borderWidth,color:s.borderColor,radius:s.borderRadius,overflow:s.overflow,mask:s.maskImage,after:getComputedStyle(el,'::after').content};});
   assert.deepEqual(actual,{border:'1px',color:'rgb(219, 219, 219)',radius:'16px',overflow:'hidden',mask:'none',after:'none'});
-  const style=await page.addStyleTag({content:`${selector}{border-color:rgb(255,0,255)!important}`});
+  const style=await page.addStyleTag({content:'.layout-content{border-color:rgb(255,0,255)!important}'});
   try {
-    const r=await page.locator(selector).boundingBox();
+    const r=await page.locator('.layout-content').boundingBox();
     for(const y of [r.y,r.y+r.height-20]) {
       const pixel=pixels(await page.screenshot({clip:{x:r.x,y,width:20,height:20}}));
       let visible=0;
       for(let py=0;py<20;py++)for(let px=0;px<20;px++){const [red,green,blue]=pixel(px,py);if(red>220&&blue>220&&green<180)visible++;}
-      assert.ok(visible>=10,'Native border arcs must remain visible');
+      assert.ok(visible>=10,'Native border arcs must remain visible on the workspace card');
     }
   } finally {await style.evaluate(el=>el.remove());}
 }
-test('Every module and navigation use one visible native border without overlay frames',async()=>{
-  for(const [route,selector] of routes){await page.goto(`${origin}/#${route}`);await page.locator(selector).first().waitFor();await verifyFrame();await verifyFrame('.layout-sider');}
+
+// 侧栏：与顶栏连成同色导航面——无独立描边、无圆角、无伪元素外框，底色与 app-shell 导航面一致。
+async function verifySiderFlush() {
+  const shell=await page.locator('.app-shell').evaluate(el=>getComputedStyle(el).backgroundColor);
+  const actual=await page.locator('.layout-sider').evaluate(el=>{const s=getComputedStyle(el);return {border:s.borderWidth,radius:s.borderRadius,bg:s.backgroundColor,mask:s.maskImage,after:getComputedStyle(el,'::after').content,before:getComputedStyle(el,'::before').content};});
+  assert.deepEqual(actual,{border:'0px',radius:'0px',bg:shell,mask:'none',after:'none',before:'none'},'Sider must be a seamless part of the nav surface, not an independent bordered/rounded card');
+  // 绘制门：染红 app-shell/body/html 后，侧栏作为连续不透明导航面覆盖其矩形内部三角（左上/右上/右下）——
+  // 不像浮卡那样在内侧留圆角露底；只有贴窗口外圆角的左下角允许被裁出背景。
+  const style=await page.addStyleTag({content:'.app-shell,body,html{background:rgb(255,0,0)!important}'});
+  try {
+    const r=await page.locator('.layout-sider').boundingBox();
+    for(const [x,y,px,py,name] of [[r.x,r.y,2,2,'top-left'],[r.x+r.width-20,r.y,17,2,'top-right'],[r.x+r.width-20,r.y+r.height-20,17,17,'bottom-right']]) {
+      const pixel=pixels(await page.screenshot({clip:{x,y,width:20,height:20}}));
+      assert.notDeepEqual(pixel(px,py),[255,0,0],`Sider ${name} corner must stay on the opaque nav surface, not expose the backdrop like a floating card`);
+    }
+  } finally {await style.evaluate(el=>el.remove());}
+}
+test('Every module floats one rounded workspace card over a seamless flush nav sider',async()=>{
+  for(const [route,selector] of routes){await page.goto(`${origin}/#${route}`);await page.locator(selector).first().waitFor();await verifyContentCard();await verifySiderFlush();}
 });
+// 只有工作区（.layout-content）是四角圆角卡片，其圆角必须真实露出背后的导航面；侧栏不参与。
 async function verifyExposedBackdrop() {
   const style=await page.addStyleTag({content:'.app-shell,body,html{background:rgb(255,0,0)!important}'});
   try {
-    for(const selector of ['.layout-sider','.layout-content']) {
-      const r=await page.locator(selector).boundingBox();
-      for(const [x,y,px,py] of [[r.x,r.y,2,2],[r.x+r.width-20,r.y,17,2],[r.x,r.y+r.height-20,2,17],[r.x+r.width-20,r.y+r.height-20,17,17]]) {
-        const pixel=pixels(await page.screenshot({clip:{x,y,width:20,height:20}}));
-        assert.deepEqual(pixel(px,py),[255,0,0],page.url()+' '+selector+' '+x+','+y+' Only the shared backdrop may appear outside either shell; no rectangular surface bleed');
-      }
+    const r=await page.locator('.layout-content').boundingBox();
+    for(const [x,y,px,py] of [[r.x,r.y,2,2],[r.x+r.width-20,r.y,17,2],[r.x,r.y+r.height-20,2,17],[r.x+r.width-20,r.y+r.height-20,17,17]]) {
+      const pixel=pixels(await page.screenshot({clip:{x,y,width:20,height:20}}));
+      assert.deepEqual(pixel(px,py),[255,0,0],page.url()+' .layout-content '+x+','+y+' The workspace card corners must expose the nav surface; no rectangular surface bleed');
     }
   } finally {await style.evaluate(el=>el.remove());}
 }
-test('Actual filtered surfaces leave no rectangular backing outside rounded shells',async()=>{
+test('Actual filtered surfaces leave no rectangular backing outside the rounded workspace card',async()=>{
   for(const [route,selector] of routes) {
     await page.goto(`${origin}/#${route}`);
     await page.locator(selector).first().waitFor({state:'visible'});
