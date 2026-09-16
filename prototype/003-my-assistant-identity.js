@@ -20,7 +20,7 @@ window.EvaAIIdentity = (() => {
     const label=appearance.markerKind==='bot'?appearance.name+'，Eva 云端项目 AI':appearance.name+'，来自'+(appearance.sourceName||'Eva');
     const src=appearance.avatar||appearance.logo;
     return render('span',{className:'eva-identity-avatar',role:'img','aria-label':label,title:label,style:{'--eva-identity-avatar-size':size+'px',...(appearance.project?{'--eva-identity-avatar-background':window.EvaProjectAppearance.css(appearance.project).surface}:{})}},
-      render('img',{className:'eva-identity-avatar__logo',src,alt:''}));
+      render('img',{className:'eva-identity-avatar__logo',src,alt:'',draggable:false}));
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
   // Fixed clone identity comes from its owner; detail retains the navigable relationship.

@@ -177,6 +177,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     let teamInfo = page.locator('.eva-chat-settings');
     await teamInfo.waitFor();
     await teamInfo.getByRole('heading', { name: '聊天信息（2）', exact: true }).waitFor();
+    assert.equal(await teamInfo.locator('.eva-chat-member-grid img').evaluateAll(images => images.every(image => image.draggable === false)), true, '聊天信息中的成员头像只能查看，不能拖动');
     assert.equal(await teamInfo.getByRole('button', { name: '添加 AI 团队成员', exact: true }).count(), 1);
     assert.equal(await teamInfo.getByRole('button', { name: '编辑 AI 团队', exact: true }).count(), 0);
     await teamInfo.getByRole('button', { name: /^团队名称/ }).click();
