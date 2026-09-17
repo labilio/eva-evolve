@@ -55,8 +55,44 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await actual.getByRole('button',{name:'取消',exact:true}).click();
 
     await page.goto(origin+'/#/messages');
+    await page.locator('.wk-conv-compact-item').filter({hasText:'全员群'}).first().click();
+    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    let chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
+    assert.equal(await chatSettings.getByText('项目中的成员自动加入全员群，无法退出。',{exact:true}).count(),0,'全员群设置首页不重复成员规则说明');
+    await chatSettings.getByRole('button',{name:/^查看全部 \d+ 名成员$/}).click();
+    await chatSettings.getByRole('heading',{name:/^群聊成员（\d+）$/}).waitFor();
+    const allMemberSearch=chatSettings.getByRole('textbox',{name:'搜索群聊成员'});
+    await allMemberSearch.waitFor();
+    const allMemberNote=chatSettings.getByText('全员群成员与项目成员同步，不能在群内单独增删或退出。',{exact:true});
+    await allMemberNote.waitFor();
+    const allMemberSearchAndNote=await chatSettings.evaluate(node=>{
+      const search=node.querySelector('.eva-chat-member-search').getBoundingClientRect();
+      const note=node.querySelector('.eva-chat-member-page-note').getBoundingClientRect();
+      return {searchBottom:Math.round(search.bottom),noteTop:Math.round(note.top)};
+    });
+    assert.ok(allMemberSearchAndNote.noteTop>=allMemberSearchAndNote.searchBottom,'全员群规则说明应位于搜索框下方');
+    assert.equal(await chatSettings.getByRole('button',{name:'前往项目成员管理',exact:true}).count(),0,'全员群成员页不提供跳转按钮');
+    const allMemberRows=chatSettings.locator('.eva-chat-member-list-row');
+    assert.ok(await allMemberRows.count()>1,'全员群成员页应展示完整成员列表');
+    await chatSettings.getByRole('button',{name:'返回聊天信息',exact:true}).click();
+    await chatSettings.getByRole('button',{name:'关闭聊天信息',exact:true}).click();
+
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
+    assert.equal(await chatSettings.getByRole('button',{name:'添加群聊成员',exact:true}).count(),1,'聊天信息预览保留加号拉人入口');
+    await chatSettings.getByRole('button',{name:/^查看全部 \d+ 名成员$/}).click();
+    await chatSettings.getByRole('heading',{name:/^群聊成员（\d+）$/}).waitFor();
+    const memberSearch=chatSettings.getByRole('textbox',{name:'搜索群聊成员'});
+    await memberSearch.waitFor();
+    assert.equal(await chatSettings.getByRole('button',{name:'添加成员',exact:true}).count(),0,'完整成员页不提供第二个拉人入口');
+    assert.ok(await chatSettings.getByRole('button',{name:'移除',exact:true}).count()>0,'完整成员页保留已发布的有权限成员移除入口');
+    const memberRows=chatSettings.locator('.eva-chat-member-list-row');
+    const memberCount=await memberRows.count();
+    assert.ok(memberCount>1,'完整成员页应展示多名成员');
+    await memberSearch.fill('林晓');
+    assert.equal(await memberRows.count(),1,'完整成员页搜索按成员名称过滤');
+    await chatSettings.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await page.getByRole('button',{name:'添加群聊成员',exact:true}).click();
     const groupAdd=page.getByRole('dialog').filter({hasText:'添加群聊成员'});
     await groupAdd.waitFor();

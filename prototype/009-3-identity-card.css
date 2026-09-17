@@ -22,7 +22,10 @@
 .eva-person-card__field .semi-button{height:auto;min-height:var(--gds-space-8);padding:0;max-width:100%;vertical-align:top;text-align:left;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height);font-weight:var(--gds-font-weight-regular)}
 .eva-person-card__person-link .semi-button-content{display:flex;align-items:center;gap:var(--gds-space-2);min-width:0}
 .eva-person-card__person-link .semi-button-content>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.eva-person-card__project-link .semi-button-content{white-space:normal;overflow-wrap:anywhere}
+.eva-person-card__project-link .semi-button-content{display:flex;min-width:0;max-width:100%}
+.eva-project-identity{display:inline-flex;align-items:center;gap:var(--gds-space-1);min-width:0;max-width:100%;color:inherit}
+.eva-project-identity svg{flex:none}
+.eva-project-identity__name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-person-card__actions{flex:none;padding:0 var(--gds-space-7) var(--gds-space-6)}
 .eva-person-card__actions>.semi-button{height:var(--gds-space-8);line-height:var(--gds-type-label-line-height);border-radius:var(--eva-radius-control);font-size:var(--gds-type-label-font-size);font-weight:var(--gds-font-weight-medium)}
 .eva-person-card__hint{margin:0;padding:var(--gds-space-3) var(--gds-space-4);border-radius:var(--eva-radius-control);background:var(--semi-color-fill-0);color:var(--semi-color-text-1);font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-chip-line-height)}

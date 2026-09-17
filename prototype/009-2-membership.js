@@ -7,7 +7,7 @@
     return {conversationId, messageId:reply.messageId, fromName:reply.fromName, digest:reply.digest};
   }
   function create(seed, persist, resolveProjectInfo){
-    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},memberAdditions:[],sequence:0,...seed}));
+    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},groupGovernance:{},memberAdditions:[],sequence:0,...seed}));
     // Consolidate legacy records by stable owner ID. Existing memberships and
     // messages follow the same owner's canonical identity, never another person.
     const cloneAliases={...(state.cloneAliases||{})},byOwner=new Map();
@@ -42,12 +42,28 @@
     const humanRows=id=>scope(id).humans;
     const requireHuman=id=>person(id)||fail('仅已激活的内部人类用户可操作');
     const member=(id,uid)=>humanRows(id).some(m=>m.id===uid);
-    const manager=(id,uid)=>{const s=scope(id);if(!member(id,uid))return false;if(s.ownerId===uid)return true;const p=state.projects[projectId(id)];return !!p&&p.humans.some(m=>m.id===uid&&['owner','admin'].includes(m.role));};
+    const groupKey=id=>{const target=state.threads[id]||id;if(target?.startsWith('all:')&&state.projects[target.slice(4)])return target;if(state.groups[target])return target;return null;};
+    const groupScope=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.groups[key]);};
+    const groupProject=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.projects[state.groups[key]?.projectId]);};
+    const inheritedManagers=id=>{
+      const group=groupScope(id),project=groupProject(id);
+      if(!group||!project)return [];
+      const roles=new Set(project.humans.filter(item=>item.id===project.ownerId||['owner','admin'].includes(item.role)).map(item=>item.id));
+      return group.humans.filter(item=>person(item.id)&&roles.has(item.id)).map(item=>item.id);
+    };
+    const governanceRecord=id=>state.groupGovernance?.[groupKey(id)]||{};
+    const ensureGovernance=id=>{const key=groupKey(id)||fail('群聊不存在');state.groupGovernance||={};return state.groupGovernance[key]||={managerIds:[],botAdminIds:[],allowNoMention:true,groupMd:''};};
+    const manager=(id,uid)=>{
+      const key=groupKey(id);
+      if(!key){const s=scope(id);if(!member(id,uid))return false;if(s.ownerId===uid)return true;const p=state.projects[projectId(id)];return !!p&&p.humans.some(m=>m.id===uid&&['owner','admin'].includes(m.role));}
+      const s=groupScope(key);if(!s.humans.some(m=>m.id===uid))return false;if(s.ownerId===uid)return true;
+      return (governanceRecord(key).managerIds||[]).includes(uid)||inheritedManagers(key).includes(uid);
+    };
     const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids.map(canonicalId))].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
-    const drop=(id,uid)=>{const s=scope(id);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid).forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId!==uid);};
-    const dissolve=id=>{delete state.groups[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
+    const drop=(id,uid)=>{const s=scope(id),removedCloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];removedCloneIds.forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>!removedCloneIds.includes(cid));const record=state.groupGovernance?.[state.projects[id]?'all:'+id:id];if(record){record.managerIds=(record.managerIds||[]).filter(item=>item!==uid);record.botAdminIds=(record.botAdminIds||[]).filter(item=>!removedCloneIds.includes(item));}};
+    const dissolve=id=>{delete state.groups[id];delete state.groupGovernance?.[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
     const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:root.EvaAIIdentity.projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:root.EvaAIIdentity.projectAgentAppearance(projectInfo(pid))}:null;
@@ -183,7 +199,7 @@
       },
 
       addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
-      removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[eid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);});notify();},
+      removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[eid];const keys=[state.projects[id]?'all:'+id:id];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);keys.push(g.id);});keys.forEach(key=>{const record=state.groupGovernance?.[key];if(record)record.botAdminIds=(record.botAdminIds||[]).filter(x=>x!==eid);});notify();},
       openDirect(uid,target){
         requireHuman(uid);const p=requireHuman(target);if(uid===target)fail('不能给自己发消息');
         state.directConversations||={};
@@ -251,6 +267,26 @@
       },
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
+      groupGovernance(id){
+        const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key),record=governanceRecord(key);
+        const humanIds=new Set(s.humans.map(item=>item.id)),manualManagerIds=(record.managerIds||[]).filter(uid=>humanIds.has(uid)&&uid!==s.ownerId);
+        const inheritedManagerIds=inheritedManagers(key);
+        const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid)||inheritedManagerIds.includes(uid));
+        const botIds=new Set(api.groupMembers(key).filter(item=>item.kind!=='human').map(item=>item.id));
+        return {groupId:key,manualManagerIds,inheritedManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),allowNoMention:record.allowNoMention!==false,groupMd:String(record.groupMd||'')};
+      },
+      setGroupManager(id,uid,target,enabled){
+        requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
+        if(s.ownerId!==uid)fail('仅群主可设置群管理员');if(target===s.ownerId||!s.humans.some(item=>item.id===target))fail('只能设置群内其他人类成员');
+        const record=ensureGovernance(key),ids=new Set(record.managerIds||[]);enabled?ids.add(target):ids.delete(target);record.managerIds=[...ids];notify();
+      },
+      setGroupBotAdmin(id,uid,target,enabled){
+        requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可设置 Bot 管理员');
+        if(!api.groupMembers(key).some(item=>item.id===target&&item.kind!=='human'))fail('只能设置当前群内的 AI 成员');
+        const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify();
+      },
+      setGroupAllowNoMention(id,uid,enabled){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可修改 Bot 回复规则');ensureGovernance(key).allowNoMention=!!enabled;notify();},
+      setGroupMd(id,uid,value){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可编辑 GROUP.md');ensureGovernance(key).groupMd=String(value||'');notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length;notify();},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length<=count;},
@@ -259,8 +295,7 @@
       clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify();},
       chatPreferences(id,uid){return JSON.parse(JSON.stringify(state.chatPreferences[uid]?.[id]||{}));},
       setChatSettings(id,uid,patch){
-        const sid=id.startsWith('all:')?id.slice(4):id;
-        if(!api.canRead(id,uid)||!manager(sid,uid))fail('仅群主或群内管理员可修改');
+        if(!api.canRead(id,uid)||!manager(id,uid))fail('仅群主或群内管理员可修改');
         const allowed=['name','notice','avatar'];
         if(Object.keys(patch).some(k=>!allowed.includes(k)))fail('未知群设置');
         if(patch.name!==undefined&&(!patch.name.trim()||patch.name.length>50))fail('群名须为 1–50 个字符');
@@ -382,7 +417,7 @@
         notify();return target;
       },
       addClone(id,uid,cid){cid=canonicalId(cid);const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
-      removeClone(id,uid,cid){cid=canonicalId(cid);if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);});notify();},
+      removeClone(id,uid,cid){cid=canonicalId(cid);if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];const keys=[state.projects[id]?'all:'+id:id];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);keys.push(g.id);});keys.forEach(key=>{const record=state.groupGovernance?.[key];if(record)record.botAdminIds=(record.botAdminIds||[]).filter(x=>x!==cid);});notify();},
       transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
       setAdmin(id,uid,target,enabled){const s=state.projects[id]||fail('仅项目可设置管理员');if(s.ownerId!==uid||target===uid||!member(id,target))fail('无设置权限');s.humans.find(m=>m.id===target).role=enabled?'admin':'member';notify();},
       leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通群可退出');if(!member(id,uid))fail('成员已离开');if(g.ownerId===uid){const successor=g.humans.find(item=>item.id!==uid&&person(item.id));if(!successor){dissolve(id);notify();return {type:'dissolved'};}g.ownerId=successor.id;drop(id,uid);notify();return {type:'left',successorId:successor.id};}drop(id,uid);notify();return {type:'left'};},
@@ -442,6 +477,8 @@
       }
       saved=seed;
     }
+    const registeredProjects=new Map(projects.map(project=>[project.id,project]));
+    for(const [id,project] of Object.entries(saved.projects||{}))saved.projects[id]=root.EvaProjectAppearance.normalize({...registeredProjects.get(id),...project});
     // Add account records only: preserve local profile edits, inactive flags, membership removals and drafts.
     saved.people||=[];
     for(const p of humans){

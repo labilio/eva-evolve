@@ -11,6 +11,7 @@ test('member identity uses its one shared avatar at every supported size',()=>{
     assert.equal(a.props['aria-label'],'采购分身，来自Eva');
     assert.equal(a.children.length,1);
     assert.equal(a.children[0].props.src,'https://example.test/procurement.png');
+    assert.equal(a.children[0].props.draggable,false,'identity portraits are display-only');
     assert.equal(a.props.style['--eva-identity-avatar-size'],size+'px');
   }
 });
