@@ -70,7 +70,16 @@
      的 blue/700，因其需要配套的前景色取值，而两套规范的明暗分工尚未划定。 */
   --eva-nav-accent: var(--eva-c-blue-300);
   --eva-nav-surface: var(--eva-surface-subtle);
-  --eva-conversation-rail-surface: var(--eva-surface-primary);
+  /* 中栏：三栏由左到右「由深到浅」递进，中栏是导航面与工作区之间的过渡层，
+     必须落在两者之间。浅色基准 导航 #f5f6f8 → 中栏 #fdfdfd → 工作区 #ffffff，
+     中栏明显偏工作区侧（距工作区 ΔL* 0.69、距导航 3.14）。
+     暗色同向取 #222222：导航 #1a1a1a → 中栏 #222222 → 工作区 #242424，
+     距工作区 ΔL*≈0.9、距导航≈4.0，比例与浅色一致。
+     不可取比工作区更亮的值（如 #2a2a2a）——那会让中栏跳到三栏最亮端，
+     递进变成「深→最亮→中」，破坏并列分区的空间语义。
+     注：GDS §3.4「越靠上越亮」讲的是 Z 轴高程（浮层 vs 底层），
+     三栏是同一平面的并列分区，不适用该原则。 */
+  --eva-conversation-rail-surface: #222222;
   /* 会话行 hover/选中暗色对应：hover 用白透明覆盖层；选中沿用本层
      导航/列表选项已约定的暗蓝 #1e3a63；选中文字升档转为白透明 .78。 */
   --eva-conversation-row-hover: var(--eva-overlay-hover);
@@ -215,12 +224,17 @@ body .semi-always-dark {
 :root[data-theme="dark"] .eva-msg .eva-space-card,
 :root[data-theme="dark"] .eva-msg .eva-space-card .semi-card-body { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .ch-list {
-  /* 与自身标题栏 .ch-list__top（surface-primary）保持同色：原先主体取 subtle、
-     标题栏取 primary，造成同一列上下两截色（实测 #1a1a1a vs #242424）。
-     列与会话区的分界改由右侧 1px 边线承担，不再靠底色明度差。 */
-  background: var(--eva-surface-primary);
+  /* 中栏主体与列内标题栏 .ch-list__top 必须同色，否则同一列上下两截
+     （历史上曾是主体 subtle #1a1a1a vs 标题栏 primary #242424）。
+     两者现统一消费 --eva-conversation-rail-surface（见上方该 token 的取值说明），
+     与个人 Eva / 我的 Agent / 文件库三处中栏同一来源。 */
+  background: var(--eva-conversation-rail-surface);
   border-right-color: var(--eva-border-faint);
 }
+/* 列内标题栏：056 的公共契约取 --gds-color-surface-primary（=工作区色），
+   中栏改色后会与主体错开，故在暗色下跟随中栏。该类只挂在两处中栏标题栏
+   （.ch-list__top、.eva-ai-team__sidebar-header），不影响工作区。 */
+:root[data-theme="dark"] .eva-rail-header { background: var(--eva-conversation-rail-surface); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow { background: var(--eva-surface-subtle); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node { background: var(--eva-surface-primary); }
