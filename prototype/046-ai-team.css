@@ -113,8 +113,12 @@
 }
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
+/* 焦点态用 :has(:focus-visible) 而非 :focus-within：后者在鼠标点击后仍然成立，
+   会把 hover 灰残留在行上，读起来像一个「灰色的选中态」，与真正的选中态（蓝）
+   并列出现。容器本身不可聚焦，故用 :has() 下探到内部按钮。
+   键盘导航仍保留可见焦点（evamate §10 要求 focus-visible 可辨认）。 */
 .eva-ai-team__team-heading:hover,
-.eva-ai-team__team-heading:focus-within { background: var(--eva-rail-hover); }
+.eva-ai-team__team-heading:has(:focus-visible) { background: var(--eva-rail-hover); }
 .eva-ai-team__team-heading.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__team-toggle {
   display: grid;
@@ -206,8 +210,12 @@
   border-radius: var(--eva-rail-primary-row-radius);
   transition: background-color 120ms ease;
 }
+/* 同 team-heading：改用 :has(:focus-visible)，避免点击后灰色残留。
+   身份容器是展开/收起的 disclosure（onClick 只切 aria-expanded，不改变当前会话），
+   本身不是选中目标，因此不给它 --eva-rail-selected 的浅蓝：那会造出一个假的选中项，
+   与真正被选中的会话行并列成两处强蓝，违反 evamate §3.1「避免多处并列强蓝」。 */
 .eva-ai-team__identity-heading:hover,
-.eva-ai-team__identity-heading:focus-within { background: var(--eva-rail-hover); }
+.eva-ai-team__identity-heading:has(:focus-visible) { background: var(--eva-rail-hover); }
 .eva-ai-team__identity-button,
 .eva-ai-team__session,
 .eva-ai-team__digital-button {
