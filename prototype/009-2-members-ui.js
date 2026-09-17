@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   // Components receive the runtime's existing React and Semi instances.
-  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CloseIcon,BackIcon,SearchIcon,ProjectIcon,useNavigate},store,files){
+  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,ProjectIcon,useNavigate},store,files){
     const h=R.createElement;
     function HumanIdentity({id,detail,compact=false}){const person=store.person(id);return h('span',{className:'eva-members-human-identity'+(compact?' is-compact':'')},h('img',{className:'eva-members-human-avatar',alt:'',src:root.EvaAvatar.personUri(id),draggable:false}),h('span',{className:'eva-members-human-copy'},h('span',{className:'eva-members-human-name'},person?.name||id),detail&&h('span',{className:'eva-members-human-role'},detail)));}
     function CloneIdentity({clone}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(root.EvaAIIdentity.cloneAppearance(store.person(clone.ownerId)),32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},clone.name),root.EvaAIIdentity.badge(h))));}
@@ -166,7 +166,7 @@
           query.trim()&&!matched.length&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,ProjectIcon,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,useNavigate},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,useNavigate},store);
     return {...cards,HumanIdentity,ChatSettings,Members,CloneChoice,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker};
   }};
 })(window);
