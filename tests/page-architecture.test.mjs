@@ -597,16 +597,27 @@ test('侧栏展开默认宽度为 180、折叠宽度为 80 且不渲染广告栏
   assert.match(source, /EvaConnectionCenterIcon=createLucideIcon\("cable",/);
 });
 
-test('折叠侧栏只承载一级导航并保持可滚动', () => {
+test('折叠侧栏只承载一级导航，超出高度的入口收进「更多」而不是滚动', () => {
   const { source } = createPatchedRuntime();
 
-  // vendor 宿主 .flex-1.min-h-0.overflow-hidden 会裁掉一切溢出，而三段导航都是
-  // shrink-0：折叠态 11 个 entry 各 56px + 3 个分组标题实测 700px > 宿主 662px。
-  // 所以注入内容必须自己套一层 flex-1 min-h-0 overflow-y-auto 的滚动容器。
+  // vendor 宿主 .flex-1.min-h-0 会裁掉溢出，而三段导航都是 shrink-0：折叠态 11 个 entry
+  // 各 56px + 3 个分组标题实测 700px，矮视口下放不下。一级导航不应靠滚动藏入口（可发现
+  // 性差、位置漂移），改为 Priority+ 收纳：放不下的收进底部「更多」，点击以二级浮层弹出。
   assert.match(
     source,
-    /React\.createElement\("div",\{className:classNames\("flex-1 min-h-0 flex flex-col gap-2px overflow-y-auto",siderStyles\.scrollArea\)\},React\.createElement\(EvaSidebarNavigation,/
+    /React\.createElement\("div",\{className:classNames\("flex-1 min-h-0 flex flex-col",siderStyles\.scrollArea\)\},React\.createElement\(EvaSidebarNavigation,/
   );
+  // 旧的滚动容器必须彻底移除，否则又会出现导航滚动条。
+  assert.doesNotMatch(source, /overflow-y-auto",siderStyles\.scrollArea\)\},React\.createElement\(EvaSidebarNavigation,/);
+
+  // 收纳机制：按可用高度实测切分 + 「更多」触发器 + 分组保留的二级浮层。
+  assert.match(source, /new ResizeObserver\(\(\)=>setPhase\("measure"\)\)/);
+  assert.match(source, /className:classNames\("eva-nav-section eva-nav-section--more"/);
+  assert.match(source, /className:"eva-nav-more__label"\},"更多"/);
+  assert.match(source, /className:"eva-nav-more-menu"/);
+  // 活动项永不进溢出：选中态必须始终留在可见区。
+  assert.match(source, /!visSet\.has\(rt\.activeNavId\)/);
+
   assert.doesNotMatch(source, /WorkspaceGroupedHistory\$1,\{\.\.\.pr\}/);
   assert.doesNotMatch(source, /EvaPersonalWorkspacePanel/);
 });
