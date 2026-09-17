@@ -4,6 +4,8 @@ let SettingsDialog;
 root.EvaSettingsUI={render(props,deps){SettingsDialog||=create(deps);return deps.React.createElement(SettingsDialog,props);}};
 function create({React:R,Modal,Button,icons,pages}){
 const h=R.createElement;
+// icons 由调用方按菜单 id 注入，不含关闭图标，就地内联一枚 lucide x。
+const CloseIcon=()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.75,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},h('path',{d:'M18 6 6 18'}),h('path',{d:'m6 6 12 12'}));
 function Usage({onOpen}){
 const [scope,setScope]=R.useState('me'),[domain,setDomain]=R.useState(''),[opened,setOpened]=R.useState(null);
 const store=root.EvaDigitalEmployeesStore;
@@ -29,7 +31,10 @@ const [tab,setTab]=R.useState('general');
 const [popupHost,setPopupHost]=R.useState(null);
 R.useLayoutEffect(()=>{const host=document.createElement('div');host.className='eva-settings-portal';document.body.appendChild(host);setPopupHost(host);return()=>host.remove();},[]);
 const menus=[['general','通用'],['appearance','外观'],['engine','助理引擎'],['im','IM 机器人'],['browser','浏览器'],['mail','邮箱'],['memory','记忆'],['shortcuts','快捷键'],['usage','用量看板'],['about','关于']];
-return h(R.Fragment,null,popupHost&&h(Modal,{visible,title:'设置',getPopupContainer:()=>popupHost,className:'eva-settings-dialog',width:'min(1080px, calc(100vw - 48px))',footer:null,onCancel:onClose,closeOnEsc:true,maskClosable:false},h('div',{className:'eva-settings-dialog__layout'},h('nav',{'aria-label':'设置菜单'},menus.map(([id,label])=>h(Button,{key:id,icon:h(icons[id],{size:16,strokeWidth:1.5}),theme:tab===id?'light':'borderless',block:true,onClick:()=>setTab(id),'aria-current':tab===id?'page':undefined},label))),h('div',{className:'eva-settings-dialog__content'},tab==='usage'?h(Usage,{onOpen:(id,kind)=>{onClose();navigate(id==='a_eva'?'/guid':kind==='twin'?'/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id):'/messages?evaEmployee='+encodeURIComponent(id));}}):h(R.Suspense,{fallback:h('p',null,'加载中…')},h(pages[tab],{key:tab}))))));
+// 标题栏由本组件接管（Modal 传 header:null 抑制自带头部），使左栏能从模态顶边通栏到底。
+// id 沿用 Semi 的 aria-labelledby 目标（semi-modal-title），换掉头部后对话框仍有可访问名。
+const title=(menus.find(([id])=>id===tab)||[,'设置'])[1];
+return h(R.Fragment,null,popupHost&&h(Modal,{visible,header:null,getPopupContainer:()=>popupHost,className:'eva-settings-dialog',width:'min(1080px, calc(100vw - 48px))',footer:null,onCancel:onClose,closeOnEsc:true,maskClosable:false},h('div',{className:'eva-settings-dialog__layout'},h('div',{className:'eva-settings-dialog__side'},h('h1',{className:'eva-settings-dialog__brand'},'设置'),h('nav',{'aria-label':'设置菜单'},menus.map(([id,label])=>h(Button,{key:id,icon:h(icons[id],{size:16,strokeWidth:1.5}),theme:tab===id?'light':'borderless',block:true,onClick:()=>setTab(id),'aria-current':tab===id?'page':undefined},label)))),h('div',{className:'eva-settings-dialog__main'},h('header',{className:'eva-settings-dialog__titlebar'},h('h2',{className:'eva-settings-dialog__title',id:'semi-modal-title'},title),h(Button,{className:'eva-settings-dialog__close',theme:'borderless',icon:h(CloseIcon),'aria-label':'关闭设置',onClick:onClose})),h('div',{className:'eva-settings-dialog__content'},tab==='usage'?h(Usage,{onOpen:(id,kind)=>{onClose();navigate(id==='a_eva'?'/guid':kind==='twin'?'/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id):'/messages?evaEmployee='+encodeURIComponent(id));}}):h(R.Suspense,{fallback:h('p',null,'加载中…')},h(pages[tab],{key:tab})))))));
 };
 }
 })(window);

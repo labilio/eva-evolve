@@ -2,14 +2,35 @@
 .eva-settings-portal .semi-modal-mask,.eva-settings-portal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}
 .eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(720px, calc(100vh - var(--topbar-height) - 48px));max-height:100%;max-width:100%;padding:0}
 .eva-settings-dialog .semi-modal-content{box-sizing:border-box;height:100%;max-height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating)}
-.eva-settings-dialog .semi-modal-header{flex-shrink:0;margin:0;padding:16px 24px;border-bottom:1px solid var(--semi-color-border)}
 .eva-settings-portal .eva-settings-dialog{overflow:hidden;padding:0;box-sizing:border-box}
 .eva-settings-dialog .semi-modal-body{flex:1;min-height:0;overflow:hidden;margin:0}
 .eva-settings-dialog__layout{height:100%;display:flex;color:var(--semi-color-text-0);font-family:var(--gds-font-family-sans);font-size:14px;line-height:22px}
-.eva-settings-dialog__layout>nav{box-sizing:border-box;width:168px;flex:none;padding:12px 10px;border-right:1px solid var(--semi-color-border);overflow:auto}
-.eva-settings-dialog__layout>nav .semi-button{justify-content:flex-start;margin-bottom:4px;font-size:14px;font-weight:500;line-height:22px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
-.eva-settings-dialog__layout>nav .semi-button[aria-current="page"]{color:var(--semi-color-primary)}
-.eva-settings-dialog__content{flex:1;min-width:0;overflow:auto;padding:24px}
+/* 左栏 = 固定的「设置」大标题 + 可滚动菜单。标题与右栏页标题同为 GDS
+ * typography.style.header（16/24/500）：规范的字号阶只有 12/14/15/16/32，
+ * 16 之上直接跳 heroTitle（32/40/600，首屏问候语专用），23/28 被 Praise
+ * 品牌字占用，都不能挪作面板标题，故两个标题同档成对。 */
+.eva-settings-dialog__side{box-sizing:border-box;width:220px;flex:none;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--semi-color-border)}
+/* 左轴对齐：菜单项图标落在 nav 的 10px + 按钮的 12px = 22px 处，
+ * 「设置」跟着取 22px，与图标列同轴；按钮内边距显式钉住，不吃 Semi 默认值。 */
+.eva-settings-dialog__brand{flex:none;box-sizing:border-box;display:flex;align-items:center;min-height:56px;margin:0;padding:8px 12px 8px 22px;font-size:16px;line-height:24px;font-weight:500;color:var(--semi-color-text-0)}
+.eva-settings-dialog__side>nav{flex:1;min-height:0;overflow:auto;padding:0 10px 12px}
+.eva-settings-dialog__side>nav .semi-button{justify-content:flex-start;margin-bottom:4px;padding-left:12px;font-size:14px;font-weight:500;line-height:22px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
+.eva-settings-dialog__side>nav .semi-button[aria-current="page"]{color:var(--semi-color-primary)}
+/* 右栏 = 标题栏 + 滚动内容。标题栏只盖右栏、不跨左栏，且不带下分割线；
+ * 两栏之间那条 1px 由 __side 的 border-right 承担，从模态顶边通到底边。 */
+.eva-settings-dialog__main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--eva-surface-primary)}
+.eva-settings-dialog__titlebar{flex:none;box-sizing:border-box;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px 8px 24px}
+.eva-settings-dialog__title{flex:1;min-width:0;margin:0;font-size:16px;line-height:24px;font-weight:500;color:var(--semi-color-text-0);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-settings-dialog__close.semi-button{flex:none;width:32px;height:32px;padding:0;border-radius:var(--gds-radius-control);color:var(--gds-color-text-secondary-accessible)}
+.eva-settings-dialog__close.semi-button:hover{color:var(--semi-color-text-0)}
+.eva-settings-dialog__content{flex:1;min-height:0;overflow:auto;padding:0 24px 24px}
+/* 页标题已提到标题栏，隐藏 legacy 页内重复标题（用量看板保留其下的描述与筛选）。 */
+.eva-settings-dialog__content .eva-set h1,
+.eva-settings-dialog__content .eva-usage__heading h2{display:none}
+/* 扁平化：legacy 的 settings-page-wrapper/-content 自带一层 padding + 限宽，
+ * 与 __content 的 padding 和 .eva-set-inner 的 max-width 三层叠加，全部清零。 */
+.eva-settings-dialog__content .settings-page-wrapper{min-height:0;padding:0;overflow:visible}
+.eva-settings-dialog__content .settings-page-content{max-width:none;margin:0;padding:0}
 .eva-usage{max-width:960px;margin:0 auto;padding:0}
 .eva-usage h2{font-size:16px;line-height:24px;font-weight:500;margin:0 0 8px}.eva-usage h3{font-size:14px;line-height:22px;font-weight:500;margin:24px 0 8px}.eva-usage p,.eva-usage small{color:var(--semi-color-text-2);font-size:12px}
 .eva-usage__heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.eva-usage__filters{display:flex;gap:6px;flex-wrap:wrap}.eva-usage__kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.eva-usage__kpi{padding:16px;display:flex;flex-direction:column;gap:10px;border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-chip)}.eva-usage__kpi>strong{font-size:32px;line-height:40px;font-weight:600}.eva-usage__list{border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-chip);overflow:hidden}.eva-usage__row{width:100%;border:0;border-top:1px solid var(--semi-color-border);background:var(--semi-color-bg-0);color:inherit;display:flex;align-items:center;gap:12px;padding:14px;text-align:left;cursor:pointer;font:inherit}.eva-usage__row:first-child{border-top:0}.eva-usage__row:hover{background:var(--semi-color-fill-0)}.eva-usage__avatar{width:32px;height:32px;border-radius:50%}.eva-usage__identity{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}.eva-usage__identity strong{font-size:14px;font-weight:500}.eva-usage__identity small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.eva-usage__number{min-width:64px;text-align:right;font-variant-numeric:tabular-nums}.eva-usage__heat{display:flex;gap:3px}.eva-usage__heat i{width:10px;height:16px;border-radius:3px;background:var(--semi-color-fill-1)}.eva-usage__heat i[data-level="1"]{background:color-mix(in srgb,var(--semi-color-primary) 18%,var(--semi-color-bg-0))}.eva-usage__heat i[data-level="2"]{background:color-mix(in srgb,var(--semi-color-primary) 38%,var(--semi-color-bg-0))}.eva-usage__heat i[data-level="3"]{background:color-mix(in srgb,var(--semi-color-primary) 65%,var(--semi-color-bg-0))}.eva-usage__heat i[data-level="4"]{background:var(--semi-color-primary)}.eva-usage__detail{padding:16px 24px;background:var(--semi-color-fill-0)}.eva-usage__days{display:flex;align-items:end;gap:12px;margin:16px 0}.eva-usage__days>div{display:flex;flex:1;align-items:center;flex-direction:column;justify-content:end;gap:6px}.eva-usage__days i{display:block;width:100%;max-width:32px;background:var(--semi-color-primary);border-radius:4px 4px 0 0}.eva-usage__breakdown{display:flex;gap:32px;margin:18px 0}.eva-usage__breakdown span{display:flex;flex-direction:column;gap:6px}.eva-usage__breakdown strong{font-size:18px}
@@ -20,12 +41,10 @@
 .eva-usage__filters .semi-button{font-size:14px;font-weight:500}
 @media(max-width:1000px){.eva-usage__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.eva-usage__heat{gap:2px}.eva-usage__heat i{width:7px}.eva-usage__breakdown{gap:16px;flex-wrap:wrap}}
 
-.eva-settings-dialog .semi-modal-title{font-size:16px;line-height:24px;font-weight:600;color:var(--semi-color-text-0)}
-.eva-settings-dialog__layout>nav .semi-button-content{gap:10px}
-.eva-settings-dialog__layout>nav .semi-button[aria-current="page"]{background:var(--semi-color-primary-light-default)}
+.eva-settings-dialog__side>nav .semi-button-content{gap:10px}
+.eva-settings-dialog__side>nav .semi-button[aria-current="page"]{background:var(--semi-color-primary-light-default)}
 .eva-settings-dialog__content .eva-set{padding:0;min-height:0;height:auto}
 .eva-settings-dialog__content .eva-set-inner{width:100%;max-width:960px;padding:0;margin:0 auto;box-sizing:border-box}
-.eva-settings-dialog__content .eva-set h1{font-size:16px;line-height:24px;font-weight:500;color:var(--semi-color-text-0);margin:0 0 20px}
 .eva-settings-dialog__content .eva-set-group{margin:0 0 24px}
 .eva-settings-dialog__content .eva-set-group h3{font-size:14px;line-height:22px;font-weight:500;color:var(--semi-color-text-1);margin:0 0 8px}
 .eva-settings-dialog__content .eva-set-card{border:1px solid var(--semi-color-border);border-radius:16px;overflow:hidden;background:var(--semi-color-bg-0)}
@@ -33,27 +52,44 @@
 .eva-settings-dialog__content .eva-set-row .nm{font-size:14px;line-height:22px;font-weight:400;color:var(--semi-color-text-0)}
 .eva-settings-dialog__content .eva-set-row .ds{font-size:12px;line-height:18px;margin-top:4px;color:var(--semi-color-text-2)}
 .eva-settings-dialog__content .eva-set-row .ctl{font-size:14px;color:var(--semi-color-text-1);flex-shrink:0}
-@media(max-width:1000px){.eva-settings-dialog__content{padding:24px}.eva-settings-dialog__layout>nav{width:160px}}
+@media(max-width:1000px){.eva-settings-dialog__content{padding:0 24px 24px}.eva-settings-dialog__side{width:200px}}
 
 /* Settings are window-level, outside the filtered navigation stacking context. */
 .eva-settings-portal .eva-settings-dialog { position:absolute;inset:0;height:100%;pointer-events:none; }
-.eva-settings-dialog__layout > nav { background:var(--eva-surface-subtle);padding:12px; }
+.eva-settings-dialog__side { background:var(--eva-surface-subtle); }
 .eva-settings-dialog__content { scrollbar-gutter:stable; }
 .eva-settings-dialog__content .eva-set-row .ds,.eva-usage p,.eva-usage small { color:var(--gds-color-text-secondary-accessible);line-height:16px; }
 .eva-settings-dialog__content .eva-set-row { min-height:64px; }
 .eva-settings-dialog__content .eva-set-row .ctl { max-width:50%; }
 .eva-settings-dialog__content .eva-set-row .nm { line-height:22px; }
-.eva-settings-dialog .semi-modal-title { font-weight:500; }
 .eva-usage__row { min-height:64px;padding:12px 16px; }
 .eva-usage__detail { padding:16px; }
 .eva-usage__days { overflow:auto; }
 .eva-usage__days > div { min-width:18px; }
 @media(max-width:900px) { .eva-usage__heat { display:none; } .eva-settings-dialog__content .eva-set-row { flex-wrap:wrap;gap:8px; } .eva-settings-dialog__content .eva-set-row .ctl { max-width:100%; } }
 
+/* Arco 控件：vendor 里实际类名是 .arco-select-view / .arco-input，
+ * 原先写的 .arco-select-view-single / .arco-input-wrapper 在 bundle 中不存在，已更正。 */
 .eva-settings-dialog .arco-switch-checked { background:var(--eva-action-primary); }
-.eva-settings-dialog :is(.arco-btn,.arco-select-view-single,.arco-input-wrapper) { min-height:32px;border-radius:8px;font-size:14px; }
-.eva-settings-dialog :is(.arco-switch,.arco-btn,.arco-select-view-single,.arco-input):focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
-.eva-settings-dialog .arco-select-view-single { background:var(--eva-surface-primary);border:1px solid var(--eva-border-subtle); }
+.eva-settings-dialog :is(.arco-btn,.arco-select-view,.arco-input) { min-height:32px;border-radius:8px;font-size:14px; }
+.eva-settings-dialog :is(.arco-switch,.arco-btn,.arco-select-view,.arco-input):focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
+.eva-settings-dialog .arco-select-view { background:var(--eva-surface-primary);border:1px solid var(--eva-border-subtle);color:var(--eva-text-primary); }
+
+/* ---- legacy 设置页去色层（vendor/eva-legacy.css 里的硬编码浅色值）-----------
+ * vendor 不改，全部在本作用域内重指语义令牌，浅/暗两档共用一套规则。 */
+/* 这块白底就是暗色下漏白的根因：.eva-set{background:#fff}。
+ * 面色统一由 .eva-settings-dialog__main 持有，页面容器自己不上色。 */
+.eva-settings-dialog__content .eva-set { background:transparent; }
+.eva-settings-dialog .eva-set-mono { color:var(--gds-color-text-secondary-accessible); }
+.eva-settings-dialog .eva-set-empty { color:var(--gds-color-text-secondary-accessible); }
+/* 绿点走 Semi 的 success，其暗色包会自动提亮；原值 #00b42a 在暗底不达 AA。 */
+.eva-settings-dialog .eva-set-st { color:var(--semi-color-success); }
+.eva-settings-dialog .eva-set-kbd { color:var(--eva-text-secondary-accessible);background:var(--eva-surface-subtle);border-color:var(--eva-border-subtle); }
+/* 二维码刻意保留白底：扫码需要高对比，不随主题翻转；只把外描边接回令牌。 */
+.eva-settings-dialog .eva-set-qr { border-color:var(--eva-border-subtle); }
+/* 原值 #6a5cff 是遗留紫，越过品牌蓝；浅暗两档统一改回 action.primary。 */
+.eva-settings-dialog .eva-set-primary { background:var(--eva-action-primary)!important;border-color:var(--eva-action-primary)!important;color:var(--eva-action-primary-text)!important; }
+.eva-settings-dialog .eva-set-primary:hover { background:var(--eva-action-primary-hover)!important;border-color:var(--eva-action-primary-hover)!important; }
 
 /* Shared navigation footer: passive identity and one settings action. */
 .eva-sider-footer { box-sizing:border-box;flex:0 0 auto;margin-top:auto;min-height:56px;display:flex;align-items:center;gap:8px;padding:8px 0 12px; }
