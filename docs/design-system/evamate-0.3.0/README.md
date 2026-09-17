@@ -73,5 +73,6 @@ node validate.mjs
 
 修改令牌时只编辑 `tokens.json`，随后运行 `node build-artifacts.mjs` 重新生成 DTCG 与 CSS，再运行验证。生成文件带有源文件哈希，验证器会阻止漂移。
 
-正式名称：**EvaMate Design System 0.3.0**  
+正式名称：**EvaMate Design System 0.3.0**
+
 来源核验日期：2026-09-09
