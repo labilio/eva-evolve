@@ -265,7 +265,10 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(aiTeamCss, /eva-ai-team__identity-button > \.eva-identity-avatar\s*\{[^}]*margin-right:\s*var\(--eva-rail-identity-avatar-trailing\)/s);
   assert.match(aiTeamCss, /--eva-rail-secondary:\s*var\(--gds-color-text-secondary\)/);
   assert.match(aiTeamCss, /--eva-rail-hover:\s*var\(--eva-conversation-row-hover\)/);
-  assert.match(aiTeamCss, /--eva-rail-selected:\s*var\(--gds-color-surface-hover\)/);
+  // 选中态自 2026-09-17 起与「我的消息」同源（EvaMate surface/selected）。
+  // 原值 var(--gds-color-surface-hover) 引用了全仓未定义的变量且无 fallback，
+  // 实测解析为空字符串使声明失效，选中底实际由 016 的硬编码 #f0f1f2 兜住。
+  assert.match(aiTeamCss, /--eva-rail-selected:\s*var\(--eva-conversation-row-selected\)/);
   assert.match(aiTeamCss, /--eva-rail-group-hover:\s*var\(--eva-conversation-row-hover\)/);
   assert.match(messageSwitcherCss, /background:\s*var\(--eva-conversation-row-hover\)/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-conversation-row-hover:\s*#f2f3f5/);

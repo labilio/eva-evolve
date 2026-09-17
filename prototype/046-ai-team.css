@@ -25,7 +25,12 @@
   --eva-rail-secondary: var(--gds-color-text-secondary);
   --eva-rail-time: var(--gds-color-text-muted);
   --eva-rail-hover: var(--eva-conversation-row-hover);
-  --eva-rail-selected: var(--gds-color-surface-hover);
+  /* 选中态与「我的消息」同源：EvaMate 0.3.0 surface/selected（Light blue/50
+     #EBF3FF）。原值 var(--gds-color-surface-hover) 有两处问题：该变量全仓从未
+     定义且此处未写 fallback，实测解析为空字符串使所有消费声明失效；且它是
+     hover 语义的名字，与「选中」语义错配。选中底此前实际由 016 的硬编码
+     #f0f1f2 兜住，而该值不在两份规范的调色板内（evamate §12 禁止未定义颜色）。 */
+  --eva-rail-selected: var(--eva-conversation-row-selected);
   --eva-rail-group-hover: var(--eva-conversation-row-hover);
   --eva-rail-group-radius: 7px;
   --eva-rail-primary-row-radius: var(--wk-r-xs, 3px);
@@ -84,7 +89,9 @@
 .eva-ai-team__identity-heading:hover .eva-ai-team__identity-action,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-action,
 .eva-ai-team__new-session.is-active { opacity: 1; pointer-events: auto; }
-.eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
+/* 图标按钮的 hover 是覆盖层而非选中表面（evamate §3.1「hover 与 pressed 是
+   覆盖层，不是新的永久表面」），故走中性 hover，不用 selected 的浅蓝。 */
+.eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-hover); }
 .eva-ai-team__edit-config:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__new-session.is-active { background: transparent; color: var(--eva-rail-secondary); }
 .eva-ai-team__new-session:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
@@ -242,7 +249,7 @@
 .eva-ai-team__session-actions { position: absolute; z-index: 1; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; opacity: 0; pointer-events: none; }
 .eva-ai-team__session-actions .semi-button { width: 24px; height: 24px; min-height: 24px; padding: 0; color: var(--eva-rail-time); }
 .eva-ai-team__session-actions .semi-button:hover,
-.eva-ai-team__session-actions .semi-button[aria-pressed="true"] { color: var(--eva-rail-primary); background: var(--eva-rail-selected); }
+.eva-ai-team__session-actions .semi-button[aria-pressed="true"] { color: var(--eva-rail-primary); background: var(--eva-rail-hover); }
 .eva-ai-team__session-row:hover .eva-ai-team__session-actions,
 .eva-ai-team__session-row:focus-within .eva-ai-team__session-actions { opacity: 1; pointer-events: auto; }
 .eva-ai-team__session-row .eva-ai-team__session { width: 100%; grid-template-columns: minmax(0, 1fr) auto; padding-right: var(--gds-space-2); }
@@ -569,6 +576,14 @@
   background: var(--eva-rail-hover);
   border-radius: var(--eva-conversation-row-radius);
 }
-.eva-ai-team__team-thread-row.is-selected .wk-conv-compact-item--thread:hover {
+/* 子区行选中态：静态与 hover 同色（选中不因悬停而改变）。
+   016 有一条 body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item--selected
+   的硬编码 #f0f1f2 作用于 .eva-msg 下所有选中行，「我的消息」由 039 覆盖成
+   surface/selected，我的 Agent 此前没有对应覆盖而留在灰色。这里补齐，使两页
+   选中态一致。
+   必须带 body.eva-message-hierarchy-ready 前缀：016 那条是 (0,3,1)，本规则若只写
+   两个 Agent 类 + 选中类是 (0,3,0)，类数相同而元素数少，会输给 016。 */
+body.eva-message-hierarchy-ready .eva-ai-team__team-thread-row.is-selected .wk-conv-compact-item--selected,
+body.eva-message-hierarchy-ready .eva-ai-team__team-thread-row.is-selected .wk-conv-compact-item--thread:hover {
   background: var(--eva-rail-selected);
 }
