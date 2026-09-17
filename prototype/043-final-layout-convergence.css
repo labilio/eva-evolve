@@ -112,7 +112,15 @@
   .eva-personal-folder-menu button svg { width: 14px; height: 14px; flex: none; }
   .eva-personal-folder-menu button:hover, .eva-personal-folder-menu button:active { background: var(--eva-overlay-hover); }
   .eva-personal-thread { position: relative; display: flex; align-items: center; min-height: 36px; border-radius: var(--eva-radius-control); }
-  .eva-personal-thread.is-selected { background: var(--eva-overlay-hover); }
+  /* 选中态与「我的消息」/「我的 Agent」同源：EvaMate 0.3.0 surface/selected。
+     原先取 --eva-overlay-hover，与 :hover(行 94) 和 :active(行 123) 三者同值，
+     选中与悬停完全无法区分，且是 hover 语义的 token 用在永久选中表面上
+     （evamate §3.1「hover 与 pressed 是覆盖层，不是新的永久表面」）。 */
+  .eva-personal-thread.is-selected { background: var(--eva-conversation-row-selected); }
+  /* 蓝底上次要文字升一档提对比度，与「我的消息」对选中行的处理一致
+     （017-im-shell.css 对 .wk-conversationlist-item-selected 的时间/摘要同样处理）。
+     实测时间文字在蓝底上仅 2.75(浅)/3.71(暗)，升档后达 AA。 */
+  .eva-personal-thread.is-selected .eva-personal-thread__time { color: var(--eva-conversation-row-selected-meta); }
   .eva-personal-thread__main { flex: 1; min-height: 36px; padding: 0 var(--eva-space-2); font-size: 14px; line-height: 20px; }
   .eva-personal-thread__time { margin-right: var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
   .eva-personal-thread__actions { display: none; flex: none; margin-right: 4px; }
@@ -120,7 +128,9 @@
   .eva-personal-thread:hover .eva-personal-thread__time, .eva-personal-thread:focus-within .eva-personal-thread__time { display: none; }
   .eva-personal-folder-menu .is-pinned svg, .eva-personal-thread__actions [aria-pressed="true"] svg { fill: currentColor; stroke-width: 1.8; }
   .eva-personal-folder-menu .is-pinned, .eva-personal-thread__actions [aria-pressed="true"] { color: var(--semi-color-text-0, #1c1f23); }
-  .eva-personal-folder__row:active, .eva-personal-thread:active { background: var(--eva-overlay-hover); }
+  /* pressed 比 hover 深一档（6% → 9%），与导航 --eva-nav-pressed 的分工一致；
+     原先与 hover 同值，按下没有任何反馈。 */
+  .eva-personal-folder__row:active, .eva-personal-thread:active { background: var(--eva-overlay-pressed); }
   .eva-personal-rail-more { display: block; padding: var(--eva-space-2); border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
   .eva-personal-rail-empty { padding: var(--eva-space-2); color: var(--eva-text-muted); }
   .eva-personal-rail-form { display: flex; flex-direction: column; gap: var(--eva-space-2); margin: var(--eva-space-1) 0 var(--eva-space-3); padding: var(--eva-space-3); background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); }

@@ -396,7 +396,12 @@ test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标
   const convergence = read('prototype/043-final-layout-convergence.css');
   assert.match(workspace, /icon\('folder',18/);
   assert.match(convergence, /eva-personal-thread:hover[^}]*var\(--eva-overlay-hover\)/s);
-  assert.match(convergence, /eva-personal-thread\.is-selected[^}]*var\(--eva-overlay-hover\)/s);
+  // 2026-09-17：选中态改用 surface/selected，与「我的消息」「我的 Agent」一致。
+  // 原先取 --eva-overlay-hover，与 :hover 和 :active 三者同值，选中与悬停无法区分，
+  // 且把 hover 语义的覆盖层用作永久选中表面（evamate §3.1）。
+  assert.match(convergence, /eva-personal-thread\.is-selected[^}]*var\(--eva-conversation-row-selected\)/s);
+  // 蓝底上次要文字升一档（实测时间文字 2.75 → 6.33，暗色 3.71 → 7.62）。
+  assert.match(convergence, /eva-personal-thread\.is-selected \.eva-personal-thread__time[^}]*var\(--eva-conversation-row-selected-meta\)/s);
   assert.match(workspace, /aria-current="page"/);
   assert.doesNotMatch(convergence, /eva-personal-folder\.is-current/);
 });
