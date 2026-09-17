@@ -442,6 +442,8 @@
       }
       saved=seed;
     }
+    const registeredProjects=new Map(projects.map(project=>[project.id,project]));
+    for(const [id,project] of Object.entries(saved.projects||{}))saved.projects[id]=root.EvaProjectAppearance.normalize({...registeredProjects.get(id),...project});
     // Add account records only: preserve local profile edits, inactive flags, membership removals and drafts.
     saved.people||=[];
     for(const p of humans){

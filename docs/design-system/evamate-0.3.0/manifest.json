@@ -1,0 +1,58 @@
+{
+  "name": "EvaMate Design System",
+  "version": "0.3.0",
+  "packageType": "ai-design-contract",
+  "language": "zh-CN",
+  "lastVerified": "2026-09-09",
+  "source": {
+    "type": "figma",
+    "fileKey": "YfmZumn8azSodYXTmQXbC4",
+    "pageId": "0:1",
+    "url": "https://www.figma.com/design/YfmZumn8azSodYXTmQXbC4/Eva%E5%90%8C%E5%AD%A6%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83-%E5%86%85%E6%B5%8B%E7%89%880909?node-id=0-1"
+  },
+  "scope": {
+    "foundations": true,
+    "pageAssembly": true,
+    "lightMode": true,
+    "darkMode": true,
+    "components": false,
+    "mobileNative": false,
+    "marketing": false
+  },
+  "readOrder": [
+    "AGENTS.md",
+    "DESIGN.md",
+    "tokens.dtcg.json",
+    "tokens.json",
+    "styles.json",
+    "layout-contracts.json",
+    "QUALITY-GATES.md"
+  ],
+  "inventory": {
+    "variableCollections": 5,
+    "variables": 187,
+    "primitiveColors": 44,
+    "semanticColors": 56,
+    "dimensions": 56,
+    "typographyVariables": 21,
+    "behaviorVariables": 10,
+    "textStyles": 12,
+    "effectStyles": 11,
+    "gridStyles": 2,
+    "paintStyles": 0,
+    "components": 0
+  },
+  "modes": {
+    "color": ["Light", "Dark"],
+    "default": "Light",
+    "htmlAttribute": "data-theme"
+  },
+  "entrypoints": {
+    "ai": "AGENTS.md",
+    "human": "DESIGN.md",
+    "portableTokens": "tokens.dtcg.json",
+    "compactTokens": "tokens.json",
+    "web": "tokens.css",
+    "validation": "validate.mjs"
+  }
+}

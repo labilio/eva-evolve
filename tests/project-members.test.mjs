@@ -42,6 +42,14 @@ test('演示项目默认全部置顶，按访问范围初始化且取消置顶�
  assert.deepEqual(Array.from(restored.pinnedProjects('u-wangyilin')),['p1']);
 });
 
+test('旧项目记录缺少 colorKey 时从项目注册表恢复统一配色',()=>{
+ const saved=JSON.stringify({schema:2,actorId:'u-wangyilin',people:[],clones:[],projects:{prod:{id:'prod',name:'供应链运营协同',ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'owner'}],cloneIds:[]}},groups:{},threads:{}});
+ const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:()=>saved,setItem:()=>{}}};loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});
+ const s=window.EvaMembership.bootstrap([{uid:'u-wangyilin',name:'王宜林'}],[{id:'prod',name:'供应链运营协同',colorKey:'blue',members:[]}],{});
+ assert.equal(s.snapshot().projects.prod.colorKey,'blue');
+ assert.equal(s.conversationContext('all:prod','u-wangyilin').colorKey,'blue');
+});
+
 test('项目专员自动覆盖本项目所有群和子区，首条欢迎包含创建信息',()=>{
  const s=setup();s.createProject('p','交付项目','a',[],'按期交付');const agent=s.projectAgent('p');assert.equal(agent.kind,'project-agent');
  const welcome=s.messagesFor('all:p','a')[0];assert.equal(welcome.sender.uid,agent.id);assert.ok(welcome.text.startsWith('@所有人'));assert.ok(welcome.text.includes('按期交付'));assert.ok(welcome.text.includes('甲'));

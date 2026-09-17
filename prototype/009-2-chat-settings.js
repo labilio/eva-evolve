@@ -6,7 +6,7 @@
 (function(root){
 'use strict';
 root.EvaChatSettings={create(ui,store){
- const {React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard,useNavigate}=ui,h=R.createElement;
+ const {React:R,Button,Modal,Input,Switch,PlusIcon,CloseIcon,BackIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard,ProjectIdentity,useNavigate}=ui,h=R.createElement;
  function Row({title,value,onClick,danger=false}){return h(onClick?'button':'div',{type:onClick?'button':undefined,className:'eva-chat-setting-row'+(danger?' is-danger':''),onClick},h('span',null,title),value!==undefined&&h('span',{className:'eva-chat-setting-value'},value));}
  function Toggle({title,value,onChange}){return h('div',{className:'eva-chat-setting-row'},h('span',null,title),h(Switch,{'aria-label':title,checked:!!value,onChange,size:'small'}));}
  function EditRow({title,value='',maxLength=50,multiline=false,allowEmpty=true,onSave,readOnly=false}){
@@ -45,7 +45,7 @@ root.EvaChatSettings={create(ui,store){
      !fixed&&group&&section(h(EditRow,{title:'群聊名称',value:name,allowEmpty:false,readOnly:!manage,onSave:v=>update({name:v})}),h(Row,{title:'群头像',value:h('img',{className:'eva-chat-group-avatar',src:settings.avatar||root.EvaAvatar.groupUri(id,channel.color),alt:''}),onClick:manage?()=>setPicker('avatar'):undefined}),h(EditRow,{title:'群公告',value:settings.notice,multiline:true,maxLength:400,readOnly:!manage,onSave:v=>update({notice:v})}),!all&&owner&&h(Row,{title:'转让群主',onClick:()=>setPicker('transfer')})),
      fixedGroupActions&&section(h(EditRow,{title:'团队名称',value:name,allowEmpty:false,onSave:fixedGroupActions.onRename})),
      fixedGroupActions&&section(h(Row,{title:'解散 AI 团队',danger:true,onClick:()=>openFixedAction(fixedGroupActions.onDissolve)})),
-     group&&allowed&&store.conversationContext(id,actor)&&section(h(Row,{title:'所属项目',value:store.conversationContext(id,actor).projectName,onClick:()=>{const context=store.conversationContext(id,actor);if(context)navigate('/collab?evaProject='+encodeURIComponent(context.projectId));}})),
+     group&&allowed&&store.conversationContext(id,actor)&&section(h(Row,{title:'所属项目',value:h(ProjectIdentity,{project:store.conversationContext(id,actor),name:store.conversationContext(id,actor).projectName}),onClick:()=>{const context=store.conversationContext(id,actor);if(context)navigate('/collab?evaProject='+encodeURIComponent(context.projectId));}})),
      prefRows,
      all&&h('p',{className:'eva-chat-settings-note'},'项目中的成员自动加入全员群，无法退出。'),
      !group&&section(h(Row,{title:'清空聊天记录',danger:true,onClick:()=>setConfirm('clear')})),
