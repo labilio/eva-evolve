@@ -9,7 +9,7 @@
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
-      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
+      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',source:'',dueDate:'',labels:[]});
       const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
       R.useEffect(()=>{
@@ -23,7 +23,8 @@
       const employees=(scope?.employeeIds||[]).map(id=>members.employee(id)).filter(Boolean);
       const projectAgent=scope?members.projectAgent(pid):null;
       const candidates=[...humans.map(p=>({...p,type:'member'})),...clones.map(p=>({...p,type:'agent'})),...employees.map(p=>({...p,type:'agent'})),...(projectAgent?[{...projectAgent,type:'agent'}]:[])];
-      const selected=candidates.find(p=>p.id===form.assignee),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
+      const sourceCandidates=[...clones.map(p=>({...p,type:'agent'})),...employees.map(p=>({...p,type:'agent'})),...(projectAgent?[{...projectAgent,type:'agent'}]:[])];
+      const selected=candidates.find(p=>p.id===form.assignee),selectedSource=sourceCandidates.find(p=>p.id===form.source),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
       const popup=()=>host.current;
       function identity(person){
         if(person.type!=='agent'&&deps.HumanIdentity)return h(deps.HumanIdentity,{id:person.id,compact:true});
@@ -37,12 +38,13 @@
         if(!scope||!project?.id||!members.canRead(pid,snapshot.actorId)){setError('请从具体项目中创建任务。');return;}
         if(!form.title.trim()){setError('请填写任务标题。');return;}
         if(form.assignee&&!selected){setError('负责人已不在当前项目，请重新选择。');return;}
+        if(!selectedSource){setError('请选择来源者（必须是本项目的 AI）。');return;}
         lock.current=true;setBusy(true);setError('');const token=generation.current;
         try{
           const attachmentIds=[];
           for(const file of files){if(!uploaded.current.has(file)){const result=await uploadAttachment(file);if(token!==generation.current)return;if(!result?.id)throw new Error('附件上传失败');uploaded.current.set(file,result.id);}attachmentIds.push(uploaded.current.get(file));}
           if(token!==generation.current)return;
-          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
+          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,source_id:selectedSource?.id||null,source_type:'agent',source_name:selectedSource?.name||null,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
           if(!created.current?.id)throw new Error('任务创建未返回任务编号，请重试。');
           for(const id of form.labels){if(!attached.current.has(id)){await attachLabel(created.current.id,id);if(token!==generation.current)return;attached.current.add(id);}}
           if(token===generation.current){onCreated?.(created.current);onClose();}
@@ -88,7 +90,8 @@
               h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
               h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
               h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||'')}),
-              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')})),
+              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')}),
+              h(Select,{className:'eva-loop-task-create__assignee eva-loop-task-create__source',value:form.source||undefined,optionList:sourceCandidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'来源者（必选）','aria-label':'来源者',showClear:false,disabled,getPopupContainer:popup,onChange:value=>patch('source',value||'')})),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),
             error&&h('p',{className:'eva-loop-task-create__error',role:'alert'},error),

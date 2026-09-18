@@ -6,7 +6,7 @@
 root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,useNavigate},store){
  const h=R.createElement,model=root.EvaContactIdentities.create(store);
  function Appearance({profile,size=32}){
-  return profile.appearance?root.EvaAIIdentity.avatar(profile.appearance,size,h):h('img',{className:'eva-profile-human-avatar',src:profile.avatar,alt:'',width:size,height:size});
+  return profile.appearance?root.EvaAIIdentity.avatar(profile.appearance,size,h):h('img',{className:'eva-profile-human-avatar',src:profile.avatar,alt:'',width:size,height:size,draggable:false});
  }
  function ProjectIdentity({project,name}){
   const label=name||project?.name||project?.projectName||'',appearance=root.EvaProjectAppearance.css(project||{});
