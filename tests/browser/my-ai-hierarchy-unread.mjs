@@ -62,17 +62,17 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       };
     });
     const aligned=(actual,expected)=>Number.isFinite(actual)&&Number.isFinite(expected)&&Math.abs(actual-expected)<1;
-    assert.ok(aligned(myAiColumns.teamAvatar,messageColumns.avatar),JSON.stringify({myAiColumns,messageColumns}));
     assert.ok(aligned(myAiColumns.identityAvatar,messageColumns.avatar));
-    assert.ok(aligned(myAiColumns.roleName,messageColumns.avatar));
-    assert.ok(aligned(myAiColumns.teamName,messageColumns.name));
     assert.ok(aligned(myAiColumns.identityName,messageColumns.name));
+    assert.ok(aligned(myAiColumns.teamAvatar,myAiColumns.roleName),JSON.stringify({myAiColumns,messageColumns}));
+    assert.ok(myAiColumns.teamAvatar < myAiColumns.identityAvatar, '团队头像和角色标题去掉左侧箭头占位并向左移动');
+    assert.ok(myAiColumns.teamName < myAiColumns.identityName, '团队名称随头像向左移动');
     assert.ok(aligned(myAiColumns.childIcon,messageColumns.childIcon));
     assert.ok(aligned(myAiColumns.childName,messageColumns.childName));
-    assert.ok(aligned(myAiColumns.childName,myAiColumns.teamName),'团队子区名称与父团队名称对齐');
     assert.ok(aligned(messageColumns.childName,messageColumns.name),'消息子区名称与父群名称对齐');
-    const disclosureBox=await page.locator('.eva-ai-team__team-toggle').first().boundingBox();
-    assert.ok(disclosureBox && disclosureBox.width >= 24 && disclosureBox.height >= 32, '收紧缩进后团队展开按钮仍可操作');
+    assert.equal(await page.locator('.eva-ai-team__team-toggle').count(), 0, '团队父行不再显示左侧展开箭头');
+    const teamButtonBox=await page.locator('.eva-ai-team__team-button').first().boundingBox();
+    assert.ok(teamButtonBox && teamButtonBox.height >= 32, '团队父行仍是完整键盘操作目标');
     for (const label of ['云端分身', '个人助理', '数字员工']) {
       const roleGroup = page.locator(`.eva-ai-team__role-group[aria-label="${label}"]`);
       const titleBox = await roleGroup.locator('.eva-ai-team__group-title').boundingBox();
@@ -96,7 +96,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
     assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的AI团队');
-    assert.equal(await systemTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
     assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
@@ -123,7 +123,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     });
     const customTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 ${fixture.customGroupName}"])`);
     await customTeam.waitFor();
-    assert.equal(await customTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
+    assert.equal(await customTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
     await page.waitForFunction(() => document.querySelector('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-threads-more'));
     assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3, '系统团队默认仅展示最新三个子区');
     const more = systemTeam.locator('.eva-ai-team__team-threads-more');
@@ -192,6 +192,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.deepEqual(viewport, { scrollX: 0, overflow: 0 }, '展开长会话名后页面不得横向滚动或溢出');
 
     await customTeam.locator('.eva-ai-team__team-button').click();
+    assert.equal(await customTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '进入自定义团队时同步展开子区');
     assert.equal(await customTeam.locator('.eva-ai-team__team-menu').count(), 0, '中栏不再保留第二套团队治理菜单');
     await page.getByRole('button', { name: '聊天信息', exact: true }).click();
     let teamInfo = page.locator('.eva-chat-settings');

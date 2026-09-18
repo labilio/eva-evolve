@@ -119,21 +119,7 @@
 .eva-ai-team__team-heading:hover,
 .eva-ai-team__team-heading:has(:focus-visible) { background: var(--eva-rail-hover); }
 .eva-ai-team__team-heading.is-selected { background: var(--eva-rail-selected); }
-.eva-ai-team__team-toggle {
-  display: grid;
-  width: var(--eva-rail-identity-content-inset);
-  min-height: var(--eva-rail-identity-height);
-  flex: 0 0 var(--eva-rail-identity-content-inset);
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-  color: var(--gds-color-text-secondary);
-  cursor: pointer;
-}
 .eva-ai-team__team-button { display: flex; min-width: 0; min-height: var(--eva-rail-identity-height); flex: 1; align-items: center; gap: var(--gds-space-2); padding: 0 var(--gds-space-2) 0 0; border: 0; border-radius: inherit; background: transparent; color: var(--eva-rail-primary); text-align: left; font: inherit; cursor: pointer; }
-.eva-ai-team__team-toggle:focus-visible,
 .eva-ai-team__team-button:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__team-avatar { width: var(--eva-rail-identity-avatar-size); height: var(--eva-rail-identity-avatar-size); flex: 0 0 var(--eva-rail-identity-avatar-size); border-radius: 50%; object-fit: cover; }
 .eva-ai-team__team-name { min-width: 0; flex: 1; overflow: hidden; color: var(--eva-rail-primary); font-size: var(--eva-rail-name-size); font-weight: var(--gds-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
@@ -176,7 +162,7 @@
   min-height: 32px;
   align-items: center;
   gap: var(--gds-space-1);
-  padding: 0 var(--gds-space-2) 0 var(--eva-rail-identity-content-inset);
+  padding: 0 var(--gds-space-2) 0 0;
   border: 0;
   border-radius: var(--eva-rail-group-radius);
   background: transparent;

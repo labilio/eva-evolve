@@ -312,8 +312,9 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0px/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*width:\s*var\(--eva-rail-identity-content-inset\)[^}]*flex:\s*0 0 var\(--eva-rail-identity-content-inset\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-identity-content-inset\)/s);
+  assert.doesNotMatch(imPatch, /className:'eva-ai-team__team-toggle'/);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-toggle/);
+  assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
   assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
@@ -340,35 +341,31 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
 });
 
-test('我的 AI 团队父群将子区展开与进入会话拆分为两个键盘按钮', () => {
+test('我的 AI 团队父群去掉左侧箭头并由父群行同时切换子区', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const start = imPatch.indexOf('function teamGroupItem(group)');
   const end = imPatch.indexOf('const personas=', start);
   const teamGroupItem = imPatch.slice(start, end);
-  const toggleStart = teamGroupItem.indexOf("h('button',{type:'button',className:'eva-ai-team__team-toggle'");
   const conversationStart = teamGroupItem.indexOf("h('button',{type:'button',className:'eva-ai-team__team-button'");
-  const toggleButton = teamGroupItem.slice(toggleStart, conversationStart);
   const conversationButton = teamGroupItem.slice(conversationStart, teamGroupItem.indexOf("h('img'", conversationStart));
 
   assert.ok(start >= 0 && end > start, '未找到 AI 团队父群渲染函数');
-  assert.ok(toggleStart >= 0 && conversationStart > toggleStart, '展开按钮与父群会话按钮未独立渲染');
-  assert.match(toggleButton, /'aria-label':\(expanded\?'收起':'展开'\)\+' '\+group\.name\+' 子区'/);
-  assert.match(toggleButton, /'aria-expanded':expanded/);
-  assert.match(toggleButton, /'aria-controls':threadsId/);
-  assert.match(toggleButton, /onClick:\(\)=>setCollapsed/);
-  assert.doesNotMatch(toggleButton, /choose\(/);
+  assert.ok(conversationStart >= 0, '未找到团队父群按钮');
+  assert.doesNotMatch(teamGroupItem, /className:'eva-ai-team__team-toggle'/);
+  assert.doesNotMatch(teamGroupItem, /h\(ChevronRight,\{size:12,className:'eva-ai-team__group-chevron'/);
   assert.match(conversationButton, /'aria-label':'进入团队会话 '\+group\.name/);
   assert.match(conversationButton, /'aria-current':selected&&!selection\.sessionId\?'true':undefined/);
-  assert.match(conversationButton, /onClick:\(\)=>choose\(group\.id,null\)/);
-  assert.doesNotMatch(conversationButton, /'aria-expanded'|setCollapsed/);
+  assert.match(conversationButton, /'aria-expanded':expanded/);
+  assert.match(conversationButton, /'aria-controls':threadsId/);
+  assert.match(conversationButton, /onClick:\(\)=>\{if\(!expanded\)setCollapsed\(.+\[group\.id\]:false.+choose\(group\.id,null\);\}/s);
   assert.match(teamGroupItem, /hasUnread=groupStore\.hasUnread\(group\.id\)/);
   assert.match(teamGroupItem, /hasUnread&&unreadDot\(group\.name\+'有未读消息'\)/);
   assert.match(teamGroupItem, /className:'eva-ai-team__team-thread-row'/);
   assert.match(teamGroupItem, /h\(ConvCompactItem,\{isThread:true,name:item\.name,unread:item\.unread/);
   assert.match(teamGroupItem, /teamThreadMenu\(group,item\)/);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*min-height:\s*var\(--eva-rail-identity-height\)[^}]*cursor:\s*pointer/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-toggle:focus-visible,[\s\S]*\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-toggle/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
 });
 
 test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新三条', () => {
