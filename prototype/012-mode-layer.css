@@ -1118,6 +1118,7 @@
 
 .eva-nav-more {
   box-sizing: border-box;
+  position: relative;
   display: flex;
   width: 100%;
   height: 38px;
@@ -1175,15 +1176,48 @@
 .eva-nav-more-menu .eva-nav-section + .eva-nav-section { margin-top: 8px; }
 .eva-nav-more-menu .eva-nav-section__title { height: 24px; padding: 0 8px; }
 
-/* 头像只作身份标识，不参与浏览器原生拖拽。 */
-img.eva-tb-portrait,
-img.eva-sider-account__avatar,
-img.wk-avatar,
-img.wk-msg-avatar-img,
-img.wk-msg-row-avatar,
-img.wk-conv-compact-entity-avatar,
-img.wk-chat-conversation-header-channel-avatar,
-img.collab-avatar,
-img.group-create-avatar-image {
-  -webkit-user-drag: none;
+/* 「我的消息」未读红点：展开态贴按钮容器右侧，折叠态落在图标右上角；
+   数据源为团队 IM 会话（009-7 evaMessagesHasUnread 聚合），沿用公共未读语义色。 */
+.eva-nav-msg { position: relative; width: 100%; }
+.eva-nav-msg-unread,
+.eva-nav-more__unread {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eva-unread-indicator);
+  pointer-events: none;
+}
+.eva-nav-msg-unread--edge,
+.eva-nav-more__unread {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+}
+.eva-nav-msg-iconwrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.eva-nav-msg-unread--icon {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  box-shadow: 0 0 0 2px var(--eva-nav-surface);
+}
+/* 折叠态「更多」为 56px 方块（图标上、文字下），红点贴图标右上角。 */
+.eva-nav-section--more.is-collapsed .eva-nav-more__unread {
+  top: 8px;
+  right: calc(50% - 12px);
+  transform: none;
+  box-shadow: 0 0 0 2px var(--eva-nav-surface);
+}
+/* 折叠态「我的消息」同为 56px 方块，桌面仍走展开 DOM（保留文字标签），
+   故红点仍是 --edge，此处把它从右侧居中改到图标右上角。 */
+.eva-nav-section.is-collapsed .eva-nav-msg-unread--edge {
+  top: 8px;
+  right: calc(50% - 12px);
+  transform: none;
+  box-shadow: 0 0 0 2px var(--eva-nav-surface);
 }
