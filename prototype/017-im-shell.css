@@ -420,9 +420,7 @@
 .wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-inputbox { flex:none; width:100%; margin-right:0; }
 .wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-actionbox { align-self:flex-end; max-width:100%; flex-wrap:wrap; }
 
-.eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:420px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
-.eva-im-mention-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:500; }
-.eva-im-mention-heading button { border:0; background:transparent; color:var(--eva-text-secondary); padding:4px; display:flex; cursor:pointer; }
+.eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:420px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-popover),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
 .eva-im-mention-options { max-height:304px; overflow-y:auto; }
 .eva-im-mention-options > button { display:flex; align-items:center; gap:10px; width:100%; height:48px; box-sizing:border-box; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-primary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
 .eva-im-mention-options > button.is-active { background:var(--eva-list-option-selected); outline:none; }
@@ -432,6 +430,20 @@
 .eva-im-mention-empty { padding:12px 8px; color:var(--eva-text-secondary); font-size:13px; }
 
 .eva-im-mention-group { padding:10px 8px 4px; color:var(--eva-text-secondary); font-size:12px; line-height:18px; }
+
+/* 表情选择面板：复用输入区浮层视觉语言（与 mention-picker 同规格），网格布局，明暗随 token 自动适配 */
+.eva-im-emoji-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:320px; max-width:calc(100% - 32px); max-height:280px; box-sizing:border-box; padding:12px; overflow-y:auto; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-popover),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
+.eva-im-emoji-picker__group + .eva-im-emoji-picker__group { margin-top:4px; }
+.eva-im-emoji-picker__title { margin:0 0 4px; padding:0 4px; color:var(--eva-text-secondary); font-size:12px; font-weight:500; line-height:18px; }
+.eva-im-emoji-picker__grid { display:grid; grid-template-columns:repeat(8,1fr); gap:2px; }
+.eva-im-emoji-picker__cell { display:grid; place-items:center; width:100%; aspect-ratio:1; padding:0; border:0; border-radius:var(--eva-radius-control); background:transparent; font-size:20px; line-height:1; cursor:pointer; transition:background .12s; }
+.eva-im-emoji-picker__cell:hover { background:var(--eva-overlay-hover); }
+.eva-im-emoji-picker__cell:active { background:var(--eva-overlay-pressed); }
+.eva-im-emoji-picker__cell:focus-visible { outline:2px solid var(--eva-border-focus); outline-offset:-2px; }
+/* 暗色：输入区浮层再上抬一层——从 primary(#242424) 提到 paper(#2a2a2a)，
+   靠明度分层与触发面(输入面板)拉开层级，符合暗色规范「越靠上越亮」。 */
+:root[data-theme="dark"] .eva-im-mention-picker,
+:root[data-theme="dark"] .eva-im-emoji-picker { background:var(--eva-surface-paper); }
 
 /* Delete confirmation belongs to the client content area, never to the batch bar. */
 .eva-im-delete-portal { position:fixed; inset:var(--topbar-height) 0 0; z-index:1100; pointer-events:none; }

@@ -151,6 +151,12 @@
         if(row.top<bounds.top)list.scrollTop-=bounds.top-row.top;
         else if(row.bottom>bounds.bottom)list.scrollTop+=row.bottom-bounds.bottom;
       },[visible,activeIndex,query]);
+      R.useEffect(()=>{
+        if(!visible)return;
+        const onDoc=e=>{if(panel.current&&!panel.current.contains(e.target)&&!(e.target.closest&&e.target.closest('[aria-label="提及"]')))onClose();};
+        document.addEventListener('mousedown',onDoc);
+        return ()=>document.removeEventListener('mousedown',onDoc);
+      },[visible]);
       if(!visible)return null;
       const choose=(name,id)=>{onChoose(name,id);onClose();};
       const needle=query.normalize('NFKC').toLocaleLowerCase();
@@ -160,7 +166,6 @@
       const candidateProps=()=>{const index=itemIndex++;return {className:index===activeIndex?'is-active':'',onMouseMove:()=>onActiveChange?.(index),onFocus:()=>onActiveChange?.(index)};};
       const memberButton=m=>h('button',{type:'button',key:m.id,...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose(m.name,m.id)},m.identityAppearance?h('span',{className:'eva-members-human-identity'},root.EvaAIIdentity.avatar(m.identityAppearance,32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},m.name),root.EvaAIIdentity.badge(h)))):['project-agent','employee'].includes(m.kind)?h(ProjectAgentIdentity,{agent:m}):m.kind==='clone'?h(CloneIdentity,{clone:store.clone(m.id)}):h(HumanIdentity,{id:m.id}));
       return h('section',{ref:panel,className:'eva-im-mention-picker',role:'dialog','aria-label':'提及成员',onKeyDown:e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();onClose();}if(e.key==='ArrowDown'||e.key==='ArrowUp'){const items=Array.from(panel.current.querySelectorAll('input,button'));const index=items.indexOf(document.activeElement);e.preventDefault();items[(index+(e.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();}}},
-        h('div',{className:'eva-im-mention-heading'},h('span',null,'提及成员'),h('button',{type:'button','aria-label':'关闭提及',onClick:onClose},h(CloseIcon,{size:16}))),
         h('div',{className:'eva-im-mention-options'},!query&&h(R.Fragment,null,h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有人','all')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},'所有人',h('small',null,'通知会话中的人类成员'))),h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有 AI','ai')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},'所有 AI',h('small',null,'通知会话中的全部 AI（分身与数字员工）')))),
           query.trim()?matched.map(memberButton):groups.map(group=>h(R.Fragment,{key:group.title},groups.length>1&&h('div',{className:'eva-im-mention-group'},group.title),group.items.map(memberButton))),
           query.trim()&&!matched.length&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
