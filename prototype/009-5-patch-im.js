@@ -655,7 +655,7 @@ function EvaOverlayListScroll({enabled,children,className}) {
  return h('div',{className:'eva-list-scroll-overlay',onPointerEnter:reveal,onPointerMove:reveal},h('div',{className:className+' eva-list-scroll-native',ref:scroll,id},h('div',{className:'eva-list-scroll-content',ref:content},children)),bar.max>0&&h('div',{className:'eva-list-scroll-track'+(visible?' is-visible':''),'aria-hidden':true},h('div',{className:'eva-list-scroll-thumb',style:{height:bar.height,transform:'translateY('+bar.top+'px)'},onPointerDown:e=>{e.preventDefault();reveal();clearTimeout(timer.current);drag.current={y:e.clientY,value:scroll.current.scrollTop};e.currentTarget.setPointerCapture(e.pointerId);},onPointerMove:move,onPointerUp:()=>{drag.current=null;reveal();},onPointerCancel:()=>{drag.current=null;reveal();}})));
 }
 
-function EvaThreadList({group,active,archived,hidden,store,actorId,onOpen,onCreate,onClose,onRename,onArchive,onDelete}) {
+function EvaThreadList({group,active,archived,hidden,store,actorId,onOpen,onCreate,onClose,onRename,onArchive}) {
  const h=React.createElement,[tab,setTab]=reactExports.useState('active');
  const tabs=[['active','活跃中',active],['hidden','已隐藏',hidden],['archived','已归档',archived]],items=tabs.find(item=>item[0]===tab)[2];
  return h('section',{className:'eva-thread-list','aria-label':'子区列表'},
@@ -671,8 +671,7 @@ function EvaThreadList({group,active,archived,hidden,store,actorId,onOpen,onCrea
        h(Dropdown.Item,{onClick:()=>onRename(thread)},'重命名'),
        h(Dropdown.Item,{onClick:()=>store.setChatPreferences(thread.id,actorId,{top:!prefs.top})},prefs.top?'取消置顶':'置顶子区'),
        h(Dropdown.Item,{onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:!prefs.hidden})},prefs.hidden?'恢复显示':'隐藏子区'),
-       h(Dropdown.Item,{onClick:()=>onArchive(thread)},thread.status===2?'取消归档':'归档子区'),
-       h(Dropdown.Item,{type:'danger',onClick:()=>onDelete(thread)},'删除子区'))},h(Button,{theme:'borderless',size:'small',icon:h(Ellipsis,{size:16}),'aria-label':'子区操作 '+thread.name}))),
+       h(Dropdown.Item,{onClick:()=>onArchive(thread)},thread.status===2?'取消归档':'归档子区'))},h(Button,{theme:'borderless',size:'small',icon:h(Ellipsis,{size:16}),'aria-label':'子区操作 '+thread.name}))),
      h('button',{type:'button',className:'eva-thread-list-summary',onClick:()=>onOpen(thread.id)},thread.last_message_content?(thread.last_message_sender_name?thread.last_message_sender_name+'：':'')+thread.last_message_content:'暂无消息'),
      h('div',{className:'eva-thread-list-meta'},h('span',null,(thread.message_count||0)+' 条回复 · '+(thread.member_count||0)+' 人参与'),tab==='hidden'&&thread.status===2&&h('span',null,'已归档'),h('time',null,formatRelativeTime(thread.updated_at))),
      tab==='hidden'&&h(Button,{theme:'borderless',size:'small',className:'eva-thread-list-restore',onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:false})},'恢复显示'));
@@ -780,8 +779,7 @@ function EvaAITeamPage() {
         h(Dropdown.Item,{onClick:()=>openRename(group.id,record)},'重命名'),
         h(Dropdown.Item,{onClick:()=>threadPreferenceStore.setChatPreferences(record.id,threadPreferenceActor,{top:!threadPreferenceStore.chatPreferences(record.id,threadPreferenceActor).top})},threadPreferenceStore.chatPreferences(record.id,threadPreferenceActor).top?'取消置顶':'置顶子区'),
         h(Dropdown.Item,{onClick:()=>threadPreferenceStore.setChatPreferences(record.id,threadPreferenceActor,{hidden:!threadPreferenceStore.chatPreferences(record.id,threadPreferenceActor).hidden})},threadPreferenceStore.chatPreferences(record.id,threadPreferenceActor).hidden?'恢复显示':'隐藏子区'),
-        h(Dropdown.Item,{onClick:()=>groupStore.updateThread(group.id,record.id,{status:record.status===2?1:2})},record.status===2?'取消归档':'归档子区'),
-        h(Dropdown.Item,{onClick:()=>{groupStore.updateThread(group.id,record.id,{deleted:true});if(selection.identityId===group.id&&selection.sessionId===record.id)choose(group.id,null);}},'删除'))},
+        h(Dropdown.Item,{onClick:()=>groupStore.updateThread(group.id,record.id,{status:record.status===2?1:2})},record.status===2?'取消归档':'归档子区'))},
       h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon),title:'会话操作','aria-label':'会话操作 '+record.name})));
   }
   function assistantConfigAction(i){
@@ -937,6 +935,11 @@ function EvaAITeamPage() {
     }
 
     function cut(needle,replacement,label){source=root.__evaCut(source,needle,replacement,'IM '+label);}
+    cut('"module.createThread.nameLabel":"话题名称"','"module.createThread.nameLabel":"子区名称"','创建子区字段名称');
+    cut('"module.createThread.namePlaceholder":"输入讨论话题..."','"module.createThread.namePlaceholder":"输入子区名称"','创建子区输入提示');
+    cut('"module.createThread.nameRequired":"话题名称不能为空"','"module.createThread.nameRequired":"子区名称不能为空"','创建子区必填提示');
+    cut('"threadCreate.nameMaxLength":"子区名称不能超过100个字符"','"threadCreate.nameMaxLength":"子区名称不能超过30个字符"','创建子区长度提示');
+    cut('THREAD_NAME_MAX_LENGTH=100','THREAD_NAME_MAX_LENGTH=30','子区名称长度限制');
     const evaThreadIconStart=source.indexOf('ThreadIcon=({size:');
     const evaThreadIconEnd=source.indexOf(';function ConvCompactItem',evaThreadIconStart);
     if(evaThreadIconStart<0||evaThreadIconEnd<evaThreadIconStart)throw new Error('IM 统一子区图标边界不匹配');
@@ -1406,7 +1409,7 @@ function EvaAITeamPage() {
     const threadListStart=source.indexOf('):React.createElement(React.Fragment,null,React.createElement("div",{className:"wk-thread-panel-header"},React.createElement("div",{className:"wk-thread-panel-header-title"}');
     const threadListEnd=source.indexOf(':Mt==="file"',threadListStart);
     if(threadListStart<0||threadListEnd<threadListStart)throw new Error('子区列表替换边界不匹配');
-    source=root.__evaCut(source,source.slice(threadListStart,threadListEnd),'):React.createElement(EvaThreadList,{key:Sa.id+":"+evaActorId,group:Sa,active:no,archived:ls,hidden:evaHiddenThreads,store:evaMemberStore,actorId:evaActorId,onOpen:id=>Da(id),onCreate:()=>pa(true),onClose:()=>Dt("none"),onRename:thread=>{Ra(thread);Ma(thread.name)},onArchive:Ka,onDelete:Ia}))','子区列表状态页签与卡片');
+    source=root.__evaCut(source,source.slice(threadListStart,threadListEnd),'):React.createElement(EvaThreadList,{key:Sa.id+":"+evaActorId,group:Sa,active:no,archived:ls,hidden:evaHiddenThreads,store:evaMemberStore,actorId:evaActorId,onOpen:id=>Da(id),onCreate:()=>pa(true),onClose:()=>Dt("none"),onRename:thread=>{Ra(thread);Ma(thread.name)},onArchive:Ka}))','子区列表状态页签与卡片');
     const threadItemStart=source.indexOf(',Wi=ci=>{const Zi=(ci.unread??0)>0'),threadItemEnd=source.indexOf(',no=za(Sa)',threadItemStart);
     if(threadItemStart<0||threadItemEnd<threadItemStart)throw new Error('旧子区条目边界不匹配');
     source=root.__evaCut(source,source.slice(threadItemStart,threadItemEnd),'','删除旧子区条目渲染');
