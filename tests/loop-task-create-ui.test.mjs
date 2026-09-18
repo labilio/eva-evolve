@@ -14,7 +14,7 @@ function harness(overrides={}){
   const all=(node=tree)=>node&&typeof node==='object'?[node,...node.children.filter(x=>x!==undefined).flatMap(x=>all(x)),...(node.props.footer?all(node.props.footer):[]),...(node.props.content?all(node.props.content):[])]:[];
   const find=label=>all().find(n=>n.props['aria-label']===label);
   const button=label=>all().find(n=>n.type==='Button'&&n.children.includes(label));
-  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){find(label).props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
+  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1'],['来源者','c1']]){find(label).props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
   render();render();return {render,find,button,fill,calls,props,deps,state,all};
 }
 test('creates project-bound task with original fields and only current project candidates',async()=>{

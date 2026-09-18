@@ -1174,3 +1174,16 @@
 }
 .eva-nav-more-menu .eva-nav-section + .eva-nav-section { margin-top: 8px; }
 .eva-nav-more-menu .eva-nav-section__title { height: 24px; padding: 0 8px; }
+
+/* 头像只作身份标识，不参与浏览器原生拖拽。 */
+img.eva-tb-portrait,
+img.eva-sider-account__avatar,
+img.wk-avatar,
+img.wk-msg-avatar-img,
+img.wk-msg-row-avatar,
+img.wk-conv-compact-entity-avatar,
+img.wk-chat-conversation-header-channel-avatar,
+img.collab-avatar,
+img.group-create-avatar-image {
+  -webkit-user-drag: none;
+}

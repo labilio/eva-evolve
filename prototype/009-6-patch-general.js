@@ -406,12 +406,16 @@ function IssueCard(`,'任务父子关系组件与层级视图');
       if(!String(rt.title||"").trim())return Promise.reject(new Error("请填写任务名称"));
       const allowed=[...scope.humans.map(p=>p.id),...(scope.cloneIds||[]),...(scope.employeeIds||[]),store.projectAgent(pid)?.id];
       if(rt.assignee_id&&!allowed.includes(rt.assignee_id))return Promise.reject(new Error("负责人已不在本项目，请重新选择"));
+      const agentIds=[...(scope.cloneIds||[]),...(scope.employeeIds||[]),store.projectAgent(pid)?.id].filter(Boolean);
+      if(rt.source_id&&!agentIds.includes(rt.source_id))return Promise.reject(new Error("来源者必须来自本项目的 AI，请重新选择"));
+      if(!rt.source_id)return Promise.reject(new Error("请选择来源者"));
       if(rt.reviewer_id&&!scope.humans.some(p=>p.id===rt.reviewer_id))return Promise.reject(new Error("验收人已不在本项目，请重新选择"));
       const list=ISSUES_BY_SPACE[pid]||(ISSUES_BY_SPACE[pid]=[]);
       if(rt.parent_issue_id&&!list.some(i=>i.id===rt.parent_issue_id))return Promise.reject(new Error("父任务不属于当前项目"));
       const prefix=evaProjectIssuePrefix(project),number=1+Math.max(0,...list.map(i=>{const match=String(i.identifier||"").match(/-(\d+)$/);return match?Number(match[1]):Number(i.number)||0;})),now=new Date().toISOString(),creator=store.person(snapshot.actorId),attachments=(rt.attachment_ids||[]).map(id=>evaLoopTaskAttachments.get(id)).filter(Boolean),attachmentText=attachments.length?"\n\n## 参考附件\n"+attachments.map(a=>"- ["+a.name.replace(/[\[\]]/g,"")+"]("+a.url+")").join("\n"):"";
       const isHuman=scope.humans.some(p=>p.id===rt.assignee_id),assignee=rt.assignee_id?(isHuman?store.person(rt.assignee_id):(scope.cloneIds||[]).includes(rt.assignee_id)?store.clone(rt.assignee_id):(scope.employeeIds||[]).includes(rt.assignee_id)?store.employee(rt.assignee_id):store.projectAgent(pid)):null;
-      const ut={...rt,id:"issue-"+pid+"-"+prefix+"-"+number,title:rt.title.trim(),description:(rt.description||"")+attachmentText,workspace_id:pid,project_id:pid==='prod'?'p-supply':null,project_name:project.name,number,identifier:prefix+"-"+number,status:rt.status||"todo",priority:rt.priority||"none",due_date:rt.due_date||null,assignee_id:rt.assignee_id||null,assignee_type:assignee?(isHuman?"member":"agent"):null,assignee_name:assignee?.name||null,creator_id:snapshot.actorId,creator_name:creator?.name||"",creator_avatar:creator?.avatar||window.__EVA_CURRENT_USER_PORTRAIT,created_at:now,updated_at:now,position:list.length+1,attachments};
+      const sourceAgent=rt.source_id?((scope.cloneIds||[]).includes(rt.source_id)?store.clone(rt.source_id):(scope.employeeIds||[]).includes(rt.source_id)?store.employee(rt.source_id):store.projectAgent(pid)):null;
+      const ut={...rt,id:"issue-"+pid+"-"+prefix+"-"+number,title:rt.title.trim(),description:(rt.description||"")+attachmentText,workspace_id:pid,project_id:pid==='prod'?'p-supply':null,project_name:project.name,number,identifier:prefix+"-"+number,status:rt.status||"todo",priority:rt.priority||"none",due_date:rt.due_date||null,assignee_id:rt.assignee_id||null,assignee_type:assignee?(isHuman?"member":"agent"):null,assignee_name:assignee?.name||null,source_id:rt.source_id||null,source_type:"agent",source_name:sourceAgent?.name||null,creator_id:snapshot.actorId,creator_name:creator?.name||"",creator_avatar:creator?.avatar||window.__EVA_CURRENT_USER_PORTRAIT,created_at:now,updated_at:now,position:list.length+1,attachments};
       list.push(ut);return Promise.resolve(ut);
     }`,'项目任务完整编号');
     const evaCreateStart=source.indexOf('function CreateIssueModal('),evaCreateEnd=source.indexOf('const{Text:Text$c}=Typography;',evaCreateStart);
@@ -568,6 +572,11 @@ function IssueCard(`,'任务父子关系组件与层级视图');
     source=root.__evaCut(source,source.slice(contributionStart,contributionEnd),String.raw`getAgentContributions=rt=>listAgentTasks(rt).then(runs=>{const counts=new Map();for(const run of runs){const day=String(run.created_at||'').slice(0,10);if(day)counts.set(day,(counts.get(day)||0)+1);}const end=new Date();end.setUTCHours(0,0,0,0);return Array.from({length:120},(_,index)=>{const date=new Date(end.getTime()-(119-index)*864e5).toISOString().slice(0,10);return {date,count:counts.get(date)||0};});})`,'专家活跃统计取自同一运行记录');
     source=root.__evaCut(source,'ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}})', 'bi.terminalCount?ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}}):"暂无已结束运行，成功率与耗时尚不可用"', '专家无运行时不显示虚构成功率');
     source=root.__evaCut(source,'St("loop.field.creator")','"下达者"','详情下达者文案');
+    // 来源者：与下达者同级展示，必选，且只能是 AI。
+    source=root.__evaCut(source,
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},"来源者"),xt.source_id?React.createElement("span",{className:"loop-idp__prop-person"},React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.source_id,name:xt.source_name,type:"agent"}}),React.createElement(EvaLoopIdentityName,{person:{id:xt.source_id,name:xt.source_name,type:"agent"}})):React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},"未设置")),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
+      '详情来源者展示');
     source=root.__evaCut(source,'function CreateIssueModal(props){',String.raw`function EvaChatTaskList({projectId,conversationId,messages=[],onClose,onCreate}){
       const h=React.createElement,store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
       const actor=store.snapshot().actorId,allowed=store.canRead(projectId,actor)&&store.canRead(conversationId,actor),text=messages.map(m=>m.text||m.content||"").join(" ");
@@ -603,7 +612,16 @@ function IssueCard(`,'任务父子关系组件与层级视图');
     // Loop task status compatibility belongs to the shared data adapter, not a view.
     source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
     function evaNormalizeTaskStatus(status){return status==='backlog'?'todo':status}
-    function evaNormalizeTaskList(issues){for(const issue of issues)issue.status=evaNormalizeTaskStatus(issue.status);return issues}
+    function evaNormalizeTaskList(issues){for(const issue of issues){issue.status=evaNormalizeTaskStatus(issue.status);evaEnsureTaskSource(issue);}return issues}
+    function evaEnsureTaskSource(issue){
+      if(issue.source_id)return issue;
+      const pid=issue.workspace_id||issue.project_id;
+      if(!pid||typeof loadSpaces!=='function'||!window.EvaAIIdentity)return issue;
+      const project=loadSpaces().find(p=>p.id===pid);
+      if(!project)return issue;
+      issue.source_id='project-agent:'+pid;issue.source_name=window.EvaAIIdentity.projectAgentName(project);issue.source_type='agent';
+      return issue;
+    }
     function groupIssuesByAssignee`,'旧任务状态兼容');
     source=root.__evaCut(source,'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues,official:window.__EVA_OFFICIAL_TASKS,lab:window.__EVA_CLIENT_TASKS}',
       'ISSUES_BY_SPACE={prod:evaNormalizeTaskList(window.__EVA_SUPPLY_CHAIN_DEMO.issues),"drive-design":evaNormalizeTaskList(window.__EVA_DRIVE_DEMO.issues),official:evaNormalizeTaskList(window.__EVA_OFFICIAL_TASKS),lab:evaNormalizeTaskList(window.__EVA_CLIENT_TASKS)}','所有项目初始任务状态兼容');

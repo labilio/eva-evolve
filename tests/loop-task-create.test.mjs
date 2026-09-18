@@ -18,6 +18,9 @@ function setup() {
   vm.runInNewContext(runtime.slice(start,end),ctx);
   const ga=runtime.indexOf('getIssue=rt=>{'),gb=runtime.indexOf('},',ga)+1;
   assert.ok(ga>=0&&gb>ga);vm.runInNewContext(runtime.slice(ga,gb),ctx);
+  // 来源者为本轮新增的必填字段；这些回归只覆盖原有字段，统一补一个合法 AI 来源者。
+  const rawCreateIssue=ctx.createIssue;
+  ctx.createIssue=payload=>rawCreateIssue({source_id:'clone',...payload});
   return {ctx,store,lists,setCurrent:id=>{current=id;}};
 }
 test('新任务写入明确指定项目，使用该项目前缀和序号，不污染当前其他项目',async()=>{
