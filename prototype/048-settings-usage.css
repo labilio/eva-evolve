@@ -14,7 +14,7 @@
  * 「设置」跟着取 22px，与图标列同轴；按钮内边距显式钉住，不吃 Semi 默认值。 */
 .eva-settings-dialog__brand{flex:none;box-sizing:border-box;display:flex;align-items:center;min-height:56px;margin:0;padding:8px 12px 8px 22px;font-size:16px;line-height:24px;font-weight:500;color:var(--semi-color-text-0)}
 .eva-settings-dialog__side>nav{flex:1;min-height:0;overflow:auto;padding:0 10px 12px}
-.eva-settings-dialog__side>nav .semi-button{justify-content:flex-start;margin-bottom:4px;padding-left:12px;font-size:14px;font-weight:500;line-height:22px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
+.eva-settings-dialog__side>nav .semi-button{justify-content:flex-start;margin-bottom:4px;padding-left:12px;font-size:14px;font-weight:400;line-height:22px;min-height:34px;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
 .eva-settings-dialog__side>nav .semi-button[aria-current="page"]{color:var(--semi-color-primary)}
 /* 右栏 = 标题栏 + 滚动内容。标题栏只盖右栏、不跨左栏，且不带下分割线；
  * 两栏之间那条 1px 由 __side 的 border-right 承担，从模态顶边通到底边。 */

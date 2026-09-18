@@ -36,6 +36,8 @@ const WHITE=new Set(['rgb(255, 255, 255)','rgba(255, 255, 255, 1)','#fff','#ffff
 
 // GDS typography.style.header：面板级标题的唯一档位（16 之上只有 heroTitle 32/40/600）。
 const HEADER_TYPE=Object.freeze({fontSize:'16px',lineHeight:'24px',fontWeight:'500'});
+// GDS typography.style.label：导航/列表用 14/22/400（labelMedium 500 是给 CTA/强调标签的）。
+const LABEL_TYPE=Object.freeze({fontSize:'14px',lineHeight:'22px',fontWeight:'400'});
 
 test('Settings shell: side column spans full height, titlebar sits only above the right column',async()=>{
   await openSettings('light');
@@ -51,11 +53,12 @@ test('Settings shell: side column spans full height, titlebar sits only above th
     const title=document.querySelector('.eva-settings-dialog__title');
     const main=document.querySelector('.eva-settings-dialog__main');
     const navIcon=nav.querySelector('.semi-button svg');
+    const navLabel=nav.querySelector('.semi-button .semi-button-content');
     // 标题的 padding 会让元素盒左缘 ≠ 文字左缘，用 Range 量真实的字形起点。
     const textBox=el=>{const r=document.createRange();r.selectNodeContents(el);return box(r);};
     return {content:box(content),side:box(side),nav:box(nav),brand:box(brand),bar:box(bar),main:box(main),
       navIcon:box(navIcon),brandText:textBox(brand),title:box(title),card:box(document.querySelector('.eva-set-card')),
-      brandType:type(brand),titleType:type(title),brandText_:brand.textContent.trim(),
+      brandType:type(brand),titleType:type(title),navLabelType:type(navLabel),brandText_:brand.textContent.trim(),
       sideWidth:side.getBoundingClientRect().width,
       barBorderBottom:getComputedStyle(bar).borderBottomWidth,
       brandBorderBottom:getComputedStyle(brand).borderBottomWidth,
@@ -75,6 +78,7 @@ test('Settings shell: side column spans full height, titlebar sits only above th
   assert.equal(geo.brandText_,'设置','左栏顶部是「设置」大标题');
   assert.deepEqual(geo.brandType,HEADER_TYPE,'「设置」走 GDS header 档 16/24/500');
   assert.deepEqual(geo.titleType,HEADER_TYPE,'右栏页标题同档，两者成对');
+  assert.deepEqual(geo.navLabelType,LABEL_TYPE,'左栏菜单项走 GDS label 档 14/22/400（导航不用 labelMedium）');
   assert.equal(geo.brandBorderBottom,'0px','左栏标题下无分割线');
   assert.ok(Math.abs(geo.brand.b-geo.bar.b)<=1,`两个标题行等高收边 (${geo.brand.b} vs ${geo.bar.b})`);
   // 菜单在标题之下独立滚动，不会把标题一起滚走。
