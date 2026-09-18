@@ -62,11 +62,9 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       };
     });
     const aligned=(actual,expected)=>Number.isFinite(actual)&&Number.isFinite(expected)&&Math.abs(actual-expected)<1;
-    assert.ok(aligned(myAiColumns.identityAvatar,messageColumns.avatar));
-    assert.ok(aligned(myAiColumns.identityName,messageColumns.name));
     assert.ok(aligned(myAiColumns.teamAvatar,myAiColumns.identityAvatar),JSON.stringify({myAiColumns,messageColumns}));
     assert.ok(aligned(myAiColumns.teamName,myAiColumns.identityName),'团队头像与名称分别对齐 AI 身份的头像与名称列');
-    assert.ok(myAiColumns.roleName < myAiColumns.teamAvatar, '角色标题去掉左侧箭头占位并保持更靠左的分组起点');
+    assert.ok(Math.abs(myAiColumns.teamAvatar-myAiColumns.roleName-8)<1, '二级团队与身份相对角色标题只保留 8px 紧凑缩进');
     assert.ok(aligned(myAiColumns.childIcon,messageColumns.childIcon));
     assert.ok(aligned(myAiColumns.childName,messageColumns.childName));
     assert.ok(aligned(messageColumns.childName,messageColumns.name),'消息子区名称与父群名称对齐');

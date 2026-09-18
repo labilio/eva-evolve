@@ -261,10 +261,11 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--eva-rail-level-indent\)\)/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0px/);
-  assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-rail-identity-content-inset\)/s);
+  assert.match(aiTeamCss, /--eva-ai-team-secondary-inset:\s*var\(--gds-space-2\)/);
+  assert.match(aiTeamCss, /eva-ai-team__identity-button\s*\{[^}]*padding:\s*0 0 0 var\(--eva-ai-team-secondary-inset\)/s);
   assert.match(aiTeamCss, /eva-ai-team__team-threads \.wk-conv-compact-item--thread\s*\{[^}]*padding-left:\s*var\(--eva-rail-team-thread-inset\)/s);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-identity-avatar-size:\s*22px/);
-  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-identity-avatar-trailing\)\)/);
+  assert.match(aiTeamCss, /--eva-rail-session-indent:\s*calc\(var\(--eva-ai-team-secondary-inset\) \+ var\(--eva-rail-identity-avatar-size\) \+ var\(--gds-space-2\) \+ var\(--eva-rail-identity-avatar-trailing\)\)/);
   assert.match(aiTeamCss, /eva-ai-team__identity-button > \.eva-identity-avatar\s*\{[^}]*margin-right:\s*var\(--eva-rail-identity-avatar-trailing\)/s);
   assert.match(aiTeamCss, /--eva-rail-secondary:\s*var\(--gds-color-text-secondary\)/);
   assert.match(aiTeamCss, /--eva-rail-hover:\s*var\(--eva-conversation-row-hover\)/);
@@ -314,7 +315,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__team-toggle'/);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-toggle/);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-button\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-identity-content-inset\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-button\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-ai-team-secondary-inset\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
