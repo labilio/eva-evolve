@@ -166,7 +166,10 @@ body .semi-always-dark {
   --semi-color-bg-4: var(--eva-c-neutral-600);
   --semi-color-fill-2: var(--eva-overlay-pressed);
   --semi-color-nav-bg: var(--eva-surface-subtle);   /* Semi 默认 #232429 → Eva 面 */
-  --semi-color-overlay-bg: var(--eva-surface-primary);
+  /* 蒙层不是又一个「面板背景槎位」：语义是半透明遮罩，不能跟着 surface 走
+     （曾错指 --eva-surface-primary，实心 #242424 糊死了背后内容）。
+     对齐 046-ai-team.css 已在用的蒙层语义令牌。 */
+  --semi-color-overlay-bg: var(--gds-color-overlay-dismiss);
   --semi-color-disabled-text: var(--eva-text-muted);
   --semi-color-disabled-bg: var(--eva-action-disabled-fill);
   --semi-color-link: var(--eva-c-blue-300);         /* 暗底链接走提亮蓝 */
