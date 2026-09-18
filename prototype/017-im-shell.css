@@ -440,10 +440,13 @@
 .eva-im-emoji-picker__cell:hover { background:var(--eva-overlay-hover); }
 .eva-im-emoji-picker__cell:active { background:var(--eva-overlay-pressed); }
 .eva-im-emoji-picker__cell:focus-visible { outline:2px solid var(--eva-border-focus); outline-offset:-2px; }
-/* 暗色：输入区浮层再上抬一层——从 primary(#242424) 提到 paper(#2a2a2a)，
-   靠明度分层与触发面(输入面板)拉开层级，符合暗色规范「越靠上越亮」。 */
+/* 暗色：输入区浮层要比其触发面（.wk-messageinput-card）更亮一档。
+   .wk-messageinput-card 在暗色下已抬升到 surface-paper(#2a2a2a)（见 057），
+   若弹窗也取 surface-paper 会与触发面同色，贴边只剩 1px 描边，等于没有分层。
+   按与「收到气泡取画布+白6%」同一手法，在 surface-paper 上再叠一层白 6%，
+   得到比触发面更亮、又不需要新增语义 token 的第三级抬升。 */
 :root[data-theme="dark"] .eva-im-mention-picker,
-:root[data-theme="dark"] .eva-im-emoji-picker { background:var(--eva-surface-paper); }
+:root[data-theme="dark"] .eva-im-emoji-picker { background:color-mix(in srgb, var(--eva-surface-paper) 94%, white 6%); }
 
 /* Delete confirmation belongs to the client content area, never to the batch bar. */
 .eva-im-delete-portal { position:fixed; inset:var(--topbar-height) 0 0; z-index:1100; pointer-events:none; }
