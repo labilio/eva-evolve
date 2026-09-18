@@ -124,6 +124,7 @@
     });
 
     document.querySelectorAll('.eva-msg input[placeholder="搜索"]').forEach(function (input) {
+      if (input.closest('.eva-chat-member-search')) return;
       input.placeholder = '搜索群聊、子区或联系人';
       input.setAttribute('aria-label', '搜索群聊、子区或联系人');
     });

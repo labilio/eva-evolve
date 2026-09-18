@@ -146,3 +146,10 @@ body {
   font-weight: var(--eva-fw-semibold);
   white-space: nowrap;
 }
+
+/* 会话头底边线：vendor 写死 1px solid #EBEDF0，是不在 token 体系内的野值，
+ * 实测浅色 ΔL*=6.3、暗色下更是变成一条近白亮线。它与栏分界、Tab 基线同属
+ * 「区域分界」，故统一收编到 --eva-rail-divider（= border/subtle）。
+ * 这里不分模式：别名本身随 057 的暗色重指自动跟随，一处声明两模式生效。
+ * 特异度与 vendor 的 .ch-head 相同，靠后加载取胜。 */
+.ch-head { border-bottom-color: var(--eva-rail-divider); }

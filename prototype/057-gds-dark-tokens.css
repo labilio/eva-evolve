@@ -23,16 +23,32 @@
   --eva-text-secondary-accessible: var(--eva-c-neutral-450);
   --eva-text-inverse: var(--eva-c-ink);
 
-  /* ---- action ---- */
-  --eva-action-primary: var(--eva-c-brand-blue);     /* 暗底填充仍成立，保持衍生色稳定 */
-  --eva-action-primary-text: var(--eva-c-white);
-  --eva-action-dark: var(--eva-c-neutral-200);       /* operation-card 深色 CTA 反相为浅块 */
+  /* ---- action（EvaMate 优先立场：暗底品牌蓝整体提亮，配深色前景）----
+     决策点：EvaMate action.primary Dark = blue/400(#6d98f7)，且 on-primary Dark
+     = neutral/950(近黑)。GDS §3.4 相反（填充锁死 #1563EB + 白字）。本项目按用户
+     指定的「EvaMate 优先」采用前者。若验收时想退回 GDS 蓝，只改下面这 4 行即可。
+     注意：这会全局影响所有 Eva 主按钮/选中态/品牌标签（经 --eva-action-primary
+     派生的一切），不仅是 Semi。 */
+  --eva-action-primary: var(--eva-c-blue-400);        /* 暗底填充提亮，避免深蓝"沉底" */
+  --eva-action-primary-hover: var(--eva-c-blue-300);  /* hover 再亮一档 */
+  --eva-action-primary-08: rgba(109, 152, 247, 0.12); /* 低饱和罩层，随提亮蓝重算 */
+  --eva-action-primary-text: var(--eva-c-neutral-950);/* 亮蓝底配近黑字（AA，≈6.2:1）*/
+  --eva-action-dark: var(--eva-c-neutral-200);        /* operation-card 深色 CTA 反相为浅块 */
   --eva-action-disabled-fill: rgba(255, 255, 255, 0.09);
 
   /* ---- border ---- */
   --eva-border-default: var(--eva-c-neutral-600);
   --eva-border-subtle: var(--eva-c-neutral-700);
-  --eva-border-faint: var(--eva-c-neutral-800);
+  /* faint 档改用白透明叠加，而非规范字面的实色 #2A2A2A。
+     原因：§3.4 同时把 #2A2A2A 定为「次级边框」与「抬升面」，两者撞色——
+     实测 #2A2A2A 落在 #242424 面上 ΔL*=2.9（浅色同档为 6.3），基本不可见，
+     卡片描边/表格线/菜单边框在暗色下集体消失。改为 6% 白后，在 #1a1a1a /
+     #242424 / #2a2a2a 上分别为 ΔL*≈6.8 / 6.2 / 5.9，与浅色 6.3 对齐，
+     且永远相对所在面成立，不会再与任何面撞色。
+     依据：§3.4 自身的「遮罩翻转：hover/pressed/disabled 由黑透明翻转为白透明」
+     原则，以及 --eva-border-hairline 已采用 rgba(255,255,255,.12) 的先例。
+     这是对规范字面值的一处有意偏离，须记入规范修订项。 */
+  --eva-border-faint: rgba(255, 255, 255, 0.06);
   --eva-border-focus: var(--eva-c-blue-300);
   --eva-border-hairline: rgba(255, 255, 255, 0.12);
 
@@ -54,7 +70,16 @@
      的 blue/700，因其需要配套的前景色取值，而两套规范的明暗分工尚未划定。 */
   --eva-nav-accent: var(--eva-c-blue-300);
   --eva-nav-surface: var(--eva-surface-subtle);
-  --eva-conversation-rail-surface: var(--eva-surface-primary);
+  /* 中栏：三栏由左到右「由深到浅」递进，中栏是导航面与工作区之间的过渡层，
+     必须落在两者之间。浅色基准 导航 #f5f6f8 → 中栏 #fdfdfd → 工作区 #ffffff，
+     中栏明显偏工作区侧（距工作区 ΔL* 0.69、距导航 3.14）。
+     暗色同向取 #222222：导航 #1a1a1a → 中栏 #222222 → 工作区 #242424，
+     距工作区 ΔL*≈0.9、距导航≈4.0，比例与浅色一致。
+     不可取比工作区更亮的值（如 #2a2a2a）——那会让中栏跳到三栏最亮端，
+     递进变成「深→最亮→中」，破坏并列分区的空间语义。
+     注：GDS §3.4「越靠上越亮」讲的是 Z 轴高程（浮层 vs 底层），
+     三栏是同一平面的并列分区，不适用该原则。 */
+  --eva-conversation-rail-surface: #222222;
   /* 会话行 hover/选中暗色对应：hover 用白透明覆盖层；选中沿用本层
      导航/列表选项已约定的暗蓝 #1e3a63；选中文字升档转为白透明 .78。 */
   --eva-conversation-row-hover: var(--eva-overlay-hover);
@@ -87,13 +112,13 @@
   --gds-color-text-muted: #939393;
   --gds-color-text-secondary-accessible: #B0B4BD;
   --gds-color-text-inverse: #1E1E1E;
-  --gds-color-action-primary: #1563EB;
-  --gds-color-action-primary-text: #FFFFFF;
+  --gds-color-action-primary: #6d98f7;
+  --gds-color-action-primary-text: #0f0f0f;
   --gds-color-action-dark: #EBEBEB;
   --gds-color-action-disabled-fill: rgba(255, 255, 255, 0.09);
   --gds-color-border-default: #666666;
   --gds-color-border-subtle: #4A4A4A;
-  --gds-color-border-faint: #2A2A2A;
+  --gds-color-border-faint: rgba(255, 255, 255, 0.06);
   --gds-color-border-focus: #93B5FF;
   --gds-color-border-hairline: rgba(255, 255, 255, 0.12);
   --gds-color-decoration-dot: #232948;
@@ -106,14 +131,65 @@
 }
 
 /* ============================================================
+   Semi 暗色桥接（core）
+   059 通过 body[theme-mode="dark"] 触发 Semi 官方暗色样式包后，其规则
+   （body[theme-mode=dark], body .semi-always-dark，特异度 0,1,1）会夺回
+   049 在裸 body（特异度 0,0,1）上做的 --semi-color-* 重指，令 Semi 组件回退
+   成 Semi 自带冷灰暗色（bg≈#232429、primary=#54A9FF），偏离 Eva 品牌。
+   解法：用同特异度（0,1,1）且后加载的选择器把 049 的重指「平移」到暗色，
+   右侧全走 var(--eva-*)，自动解析为本文件上方定义的暗色值，无需写死 hex。
+   除 049 已覆盖的 13 个外，补齐 049 未管、开触发后会露出 Semi 默认值的槽位。
+   ⚠️ 改这段时特异度不能降到裸 body，否则重新被 Semi 官方规则夺回。
+   ⚠️ body[theme-mode="dark"] 是真正生效的一条；.semi-always-dark 一并列出是
+      为兼容「class 挂在子树」的局部暗色用法（Semi 官方 class 需挂 body 后代）。
+   ============================================================ */
+body[theme-mode="dark"],
+body .semi-always-dark {
+  /* —— 平移 049 已覆盖的 13 个 —— */
+  --semi-color-primary: var(--eva-action-primary);
+  --semi-color-primary-hover: var(--eva-action-primary-hover);
+  --semi-color-primary-active: var(--eva-action-primary-hover);
+  --semi-color-primary-light-default: var(--eva-action-primary-08);
+  --semi-color-text-0: var(--eva-text-primary);
+  --semi-color-text-1: var(--eva-text-secondary);
+  --semi-color-text-2: var(--eva-text-secondary-accessible);
+  --semi-color-text-3: var(--eva-text-muted);
+  --semi-color-bg-0: var(--eva-surface-primary);
+  --semi-color-bg-1: var(--eva-surface-primary);
+  --semi-color-border: var(--eva-border-faint);
+  --semi-color-fill-0: var(--eva-surface-subtle);
+  --semi-color-fill-1: var(--eva-overlay-hover);
+
+  /* —— 补齐 049 未覆盖、开触发后会露出 Semi 默认值的槽位 —— */
+  --semi-color-bg-2: var(--eva-surface-paper);      /* 抬升层（比 primary 亮）*/
+  --semi-color-bg-3: var(--eva-c-neutral-700);
+  --semi-color-bg-4: var(--eva-c-neutral-600);
+  --semi-color-fill-2: var(--eva-overlay-pressed);
+  --semi-color-nav-bg: var(--eva-surface-subtle);   /* Semi 默认 #232429 → Eva 面 */
+  /* 蒙层不是又一个「面板背景槎位」：语义是半透明遮罩，不能跟着 surface 走
+     （曾错指 --eva-surface-primary，实心 #242424 糊死了背后内容）。
+     对齐 046-ai-team.css 已在用的蒙层语义令牌。 */
+  --semi-color-overlay-bg: var(--gds-color-overlay-dismiss);
+  --semi-color-disabled-text: var(--eva-text-muted);
+  --semi-color-disabled-bg: var(--eva-action-disabled-fill);
+  --semi-color-link: var(--eva-c-blue-300);         /* 暗底链接走提亮蓝 */
+  --semi-color-focus-border: var(--eva-border-focus);
+  /* danger/success/warning 暂留 Semi 自带暗色（red/green/orange-5，方向一致、
+     都是暗底提亮），如走查发现具体不达标再单独补。 */
+}
+
+/* ============================================================
    IM 消息面（016 message-hierarchy / 017 im-shell）暗色适配。
    作用域覆盖：只在 [data-theme="dark"] 下重指，浅色规则原样不动。
    这些是 016 中收敛到 CSS 变量的 space-card 子系统 + 少量硬编码浅底。
    ============================================================ */
 
-/* 助手（incoming）气泡：浅色 #ebebeb → 暗色抬升灰（比会话底略亮，轻微凸出）。 */
+/* 助手（incoming）气泡：浅色 #ebebeb → 暗色抬升灰。
+   取 neutral-750 (#313131)：与画布 #242424 对比 1.19，气泡边界可辨识；
+   原 neutral-800 (#2a2a2a) 与画布仅差 6 个灰阶（CR 1.08），气泡轮廓消失。
+   不再上调是为保住与发出气泡 #1e3a63 的区分（1.14；再亮会掉到 1.0x）。 */
 :root[data-theme="dark"] .eva-im-bubble-row {
-  --eva-bubble-incoming: var(--eva-c-neutral-800);
+  --eva-bubble-incoming: var(--eva-c-neutral-750);
   --eva-bubble-divider: var(--eva-c-neutral-700);
 }
 
@@ -151,9 +227,17 @@
 :root[data-theme="dark"] .eva-msg .eva-space-card,
 :root[data-theme="dark"] .eva-msg .eva-space-card .semi-card-body { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .ch-list {
-  background: var(--eva-surface-subtle);
+  /* 中栏主体与列内标题栏 .ch-list__top 必须同色，否则同一列上下两截
+     （历史上曾是主体 subtle #1a1a1a vs 标题栏 primary #242424）。
+     两者现统一消费 --eva-conversation-rail-surface（见上方该 token 的取值说明），
+     与个人 Eva / 我的 Agent / 文件库三处中栏同一来源。 */
+  background: var(--eva-conversation-rail-surface);
   border-right-color: var(--eva-border-faint);
 }
+/* 列内标题栏：056 的公共契约取 --gds-color-surface-primary（=工作区色），
+   中栏改色后会与主体错开，故在暗色下跟随中栏。该类只挂在两处中栏标题栏
+   （.ch-list__top、.eva-ai-team__sidebar-header），不影响工作区。 */
+:root[data-theme="dark"] .eva-rail-header { background: var(--eva-conversation-rail-surface); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow { background: var(--eva-surface-subtle); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node { background: var(--eva-surface-primary); }
@@ -162,4 +246,357 @@
 :root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread):hover { background: var(--eva-overlay-hover); }
 :root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item--selected,
 :root[data-theme="dark"] .eva-msg .eva-space-card .wk-conv-compact-item--selected:hover { background: var(--eva-surface-subtle); }
+
+/* ============================================================
+   Part 1 · Octo-Web --wk-* 命名空间桥接（IM 统一到 GDS 暗色）
+   IM（009-2 chat-settings / 016 / 017）走自有的 --wk-* 变量体系。开启
+   body[theme-mode="dark"] 后 vendor 会激活 Octo 自带的 --wk-* 暗色（冷灰、
+   与 GDS 中性灰不是一套），此处用同特异度(0,1,1)+后加载把核心 --wk-* 重指到
+   --eva-*，使 IM 暗色与全站一致。品牌/强调/代码色（--wk-brand-* / --wk-text-accent
+   / --wk-purple-500 / --wk-color-error）已由 049/017 接到 dark-aware 令牌或有独立
+   语义，不在此覆盖。⚠️ 特异度不可降到裸 body，否则被 vendor 的 --wk-* 暗色夺回。 */
+body[theme-mode="dark"] {
+  --wk-bg-base: var(--eva-surface-primary);
+  --wk-bg-surface: var(--eva-surface-primary);
+  --wk-bg-hover: var(--eva-overlay-hover);
+  --wk-bg-selected: var(--eva-conversation-row-selected);
+  --wk-text-primary: var(--eva-text-primary);
+  --wk-text-strong: var(--eva-text-strong);
+  --wk-text-secondary: var(--eva-text-secondary);
+  --wk-text-tertiary: var(--eva-text-secondary-accessible);
+  --wk-text-muted: var(--eva-text-muted);
+  --wk-text-disabled: var(--eva-text-muted);
+  --wk-text-inverse: var(--eva-text-inverse);
+  --wk-icon-muted: var(--eva-text-secondary-accessible);
+  --wk-border-subtle: var(--eva-border-faint);
+  --wk-border-strong: var(--eva-border-default);
+  --wk-color-secondary: var(--eva-surface-subtle);
+  --wk-text-legacy-secondary: var(--eva-text-secondary);
+  --wk-text-legacy-tertiary: var(--eva-text-secondary);
+  --wk-bg-legacy-card: var(--eva-overlay-hover);
+  --wk-border-legacy-medium: var(--eva-border-default);
+
+  /* —— 以下是 vendor 自身消费、但 vendor 暗色块未覆盖的角色变量 ——
+     排查方法：取 vendor+prototype 中全部 var(--wk-*) 引用，减去 vendor
+     body[theme-mode=dark] 已定义的 61 个，得到 124 个缺口，其中与主题相关
+     （深墨色/黑透明/未定义角色）的挑出如下。间距/圆角/字号/状态色无需处理。 */
+
+  /* 图标与次级墨色：浅色模式的深墨 rgba(28,28,35,.6)，落暗底即隐形。
+     实测 .wk-conv-compact-item--thread .wk-conv-compact-name 正是取 icon-default，
+     这就是子区行「只剩箭头、文字看不见」的直接原因。 */
+  --wk-icon-default: var(--eva-text-secondary-accessible);
+  --wk-icon-hover: var(--eva-text-primary);
+
+  /* 从未被定义的角色变量：消费方只能吃自带的浅色 fallback。 */
+  --wk-text-item: var(--eva-text-primary);
+  --wk-text-item-second: var(--eva-text-secondary);
+  --wk-text-quaternary: var(--eva-text-muted);
+  --wk-color-item: var(--eva-surface-primary);
+  --wk-bg-tertiary: var(--eva-surface-subtle);
+  --wk-border-color: var(--eva-border-faint);
+  --wk-line: var(--eva-border-faint);
+
+  /* 覆盖层翻转（gds §3.4 / evamate §3.3：暗色下 hover/pressed 由黑透明翻转为白透明）。
+     .30/.40/.50 属 dismiss 遮罩，保持黑透明以压暗背景，不在此翻转。 */
+  --wk-bg-item-hover: var(--eva-overlay-hover);
+  --wk-bg-tab: var(--eva-overlay-hover);
+  --wk-black-alpha-05: rgba(255, 255, 255, 0.05);
+  --wk-black-alpha-06: rgba(255, 255, 255, 0.06);
+  --wk-black-alpha-08: rgba(255, 255, 255, 0.08);
+  --wk-black-alpha-12: rgba(255, 255, 255, 0.12);
+  --wk-black-alpha-14: rgba(255, 255, 255, 0.14);
+
+  /* 中性叠层 tint：rgba(28,28,35,α)，浅底上充当 hover/分隔，暗底需同样翻转。
+     保持「中性不泛蓝」——与 049 刻意不把这族刷成品牌蓝的决定一致。 */
+  --wk-brand-tint-04: rgba(255, 255, 255, 0.04);
+  --wk-brand-tint-06: rgba(255, 255, 255, 0.06);
+  --wk-brand-tint-08: rgba(255, 255, 255, 0.08);
+  --wk-brand-tint-10: rgba(255, 255, 255, 0.10);
+  --wk-brand-tint-15: rgba(255, 255, 255, 0.15);
+  --wk-brand-tint-35: rgba(255, 255, 255, 0.35);
+}
+
+/* ============================================================
+   Part 2 · 016 message-hierarchy 剩余硬编码的暗色覆盖（不改 016 本体）
+   016 里约 83 处是 Octo 自有浅灰硬编码(#f6f7f8/#e8ebed/#c6cbd0…)，且分卡片视图
+   与扁平视图两套定义、相互覆盖，就地转 token 会牵动浅色渲染并有回归风险。故此处
+   只在暗色下按选择器补值，浅色零改动。tone/状态色沿用上方 space-card 的暗色蓝本。
+   选择器沿用本文件既有的 :root[data-theme="dark"] body.eva-message-hierarchy-ready
+   前缀以赢得特异度。已在上文覆盖过的 .ch-list / inline-project-panel / space-workflow
+   / space-card 交互不再重复。
+   ============================================================ */
+
+/* —— 2A 中栏列表骨架：分类头 / 选中行 / 分区分隔 / 会话头 scope / 滚动条 —— */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .ch-list__scroll { scrollbar-color: var(--eva-c-neutral-600) transparent; }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-category-header { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-category-header:hover { background: var(--eva-overlay-hover); color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-category-header__arrow { color: var(--eva-text-muted); }
+/* 选中行取全局统一的会话选中蓝（与 039 的 .eva-follow-channel 选中态一致）。
+   注意不可用中性面色：本规则特异度高于 039，若取 surface-* 会把 039 的选中蓝
+   一并覆盖掉，导致选中态退化成灰块。 */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item--selected { background: var(--eva-conversation-row-selected); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-dm-scope,
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-org-scope { border-top-color: var(--eva-border-faint); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .ch-head__scope { border-color: var(--eva-border-default); background: var(--eva-surface-subtle); color: var(--eva-text-secondary); }
+
+/* —— 2B 扁平 space-card 交互：折叠开关 / 任务按钮 / 子区(thread)行与连接线 —— */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:hover,
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:focus-visible { background: var(--eva-overlay-hover); color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .eva-space-task-button { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .eva-space-task-button:hover { background: var(--eva-overlay-hover); color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread:hover { background: var(--eva-overlay-hover); color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread .wk-conv-compact-icon { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread::before { border-bottom-color: var(--eva-border-subtle); border-left-color: var(--eva-border-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item--thread:has(+ .wk-conv-compact-item--thread)::after { border-left-color: var(--eva-border-subtle); }
+
+/* —— 2C Space 工作台（eva-space-workbench）：面/边/文字重指 + tone 强调暗色化 —— */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench {
+  --eva-space-accent: #9b9ff2;      /* indigo：暗底提亮 */
+  --eva-space-accent-soft: #232445;
+  --eva-space-accent-line: #383a63;
+  border-color: var(--eva-border-faint);
+  background: var(--eva-surface-primary);
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench--delivery {
+  --eva-space-accent: #5fd0b0;      /* teal：暗底提亮 */
+  --eva-space-accent-soft: #16302a;
+  --eva-space-accent-line: #244038;
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench__identity strong { color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench__identity em { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench__enter { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench__enter:hover { background: var(--eva-surface-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workbench__projects h3 { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project { border-color: var(--eva-border-faint); background: var(--eva-surface-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project:hover { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project strong { color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project em { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project__progress { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project > b { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-project--risk em,
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__warning,
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation__error { color: #e0a458 !important; } /* 琥珀警示：暗底提亮 */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__connector { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node em,
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node small { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node strong { color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node--result .eva-space-workflow__icon { color: #6fd0b0; background: #1b2a26; }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation { border-top-color: var(--eva-border-faint); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation__label { color: var(--eva-text-muted); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation > button { color: var(--eva-text-secondary); background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation > button:hover { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation strong { color: var(--eva-text-primary); }
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-foundation em { color: var(--eva-text-muted); }
+
+/* ============================================================
+   Part 3 · 顶栏元信息（B1）
+   .eva-tb-item（✦100M Token / 帮助中心 / 反馈问题）基态未声明颜色、只继承标题栏，
+   暗色下实测对比度 3.19 未达 AA；.eva-tb-updated 走 --text-tertiary（049 映射到
+   --eva-text-muted），同样偏暗。这里按「承载必要信息的小字不得用 muted」的规范要求
+   （gds §14 / evamate §10）在暗色下提档到 secondary 档。
+   .eva-edition-badge 无需处理：其底色走 --eva-action-primary、文字走 --eva-text-inverse，
+   已随 Part 0 的品牌蓝提亮自动变成「亮蓝底 + 近黑字」，对比度达标。
+   ============================================================ */
+:root[data-theme="dark"] .app-shell .app-titlebar .eva-tb-item { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] .eva-tb-updated { color: var(--eva-text-secondary-accessible); }
+
+/* ============================================================
+   Part 4 · vendor 内写死浅色的容器（token 桥接够不到，只能按选择器覆盖）
+   vendor/eva-legacy.css 里有一批容器把背景直接写成 #fff / #f2f3f5 等浅色，
+   不经任何 CSS 变量，因此 Part 1 的 --wk-* 与 --semi-* 桥接对它们无效。
+   实测证据：整图 PNG 解码采样聊天区三点均为 [255,255,255]，元素栈中第一个
+   不透明背景为 .ch-main{background:#fff}（vendor 原始声明）。
+   这是「暗色下聊天主区仍是纯白」的直接原因。
+   ============================================================ */
+
+/* —— IM 外壳主面：列表(subtle) < 聊天主区(primary)，保持浅色的明度关系 —— */
+:root[data-theme="dark"] .eva-msg,
+:root[data-theme="dark"] .ch-main { background: var(--eva-surface-primary); }
+:root[data-theme="dark"] .ch-right-panel { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] .ch-item.is-active { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] .ch-thread-item:hover { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] .ch-sink-btn,
+:root[data-theme="dark"] .ch-refcard__ask { background: var(--eva-surface-primary); }
+
+/* —— 消息输入框：给常驻操作面一个真实的「抬升」——
+   实测三页（Eva 同学 / 我的消息 / 我的 Agent）输入框底与画布同为 #242424，
+   ΔL*=0.00，整块「陷」进画布。浅色靠白底上的 #dbdbdb 描边撑住边界，暗色里
+   描边降到 #4a4a4a 后已托不住，且无任何底色差或投影。
+   按 GDS §3.4「层级用中性阶表达，越靠上越亮」——输入框是浮于会话画布之上的
+   常驻操作面，取比画布高一档的 surface-paper(#2a2a2a)，ΔL*≈2.9。
+   同时把描边降一档到 faint：既有面就不需要强描边，避免双重强调。 */
+:root[data-theme="dark"] .wk-messageinput-card,
+:root[data-theme="dark"] .eva-personal-workspace .eva-composer {
+  background: var(--eva-surface-paper);
+}
+/* 描边只作用于非聚焦态：用 :not(:focus-within) 让开，否则本规则 (0,3,0) 的
+   特异度会压过 vendor/051 的 :focus-within 聚焦边框，暗色下聚焦不变蓝。
+   聚焦态的边框与光环由 017 / 051 的 :focus-within 规则负责（暗色下
+   --eva-border-focus 已提亮为 blue-300，低饱和光环随 --eva-action-primary-08
+   重算，无需在此重列）。 */
+:root[data-theme="dark"] .wk-messageinput-card:not(:focus-within),
+:root[data-theme="dark"] .eva-personal-workspace .eva-composer:not(:focus-within) {
+  border-color: var(--eva-border-faint);
+}
+/* 系统提示胶囊（「派生了任务」「创建了子区」等）：vendor 底 #f2f3f4 + 文字
+   rgba(28,28,35,.4)。原先只接管了底（→ subtle，保持浅色「比画布略下沉」的
+   关系），文字没接管，暗色下变成黑字压黑底（实测合成后 CR 1.01，完全隐形）。
+   文字承载「谁 · 做了什么 · 对象编号」，按 GDS §14 Production 取 accessible 档。 */
+:root[data-theme="dark"] .wk-msg-system-tag {
+  background: var(--eva-surface-subtle);
+  color: var(--eva-text-secondary-accessible);
+}
+:root[data-theme="dark"] .wk-msg-system-tag-close { color: var(--eva-text-muted); }
+:root[data-theme="dark"] .wk-msg-system-tag-close:hover { color: var(--eva-text-primary); }
+:root[data-theme="dark"] .wk-msg-row-checkbox-inner { background: var(--eva-surface-primary); border-color: var(--eva-border-default); }
+
+/* —— 会话内引用卡（任务 / Loop / 文件等 refcard）——
+   vendor 把整套状态写死为浅色：底 #fff、hover 叠「黑 2%」、图标槽叠「黑 5%」、
+   三级文字为黑的不同透明度。暗色下只有文字被 Eva token 接管、表面没接管，
+   形成白底白字（实测 .ch-refcard__tx CR 1.07、__ic CR 1.00）。
+   这里补齐表面与交互态。关键是按 GDS §3.4「遮罩翻转」把叠加方向从
+   黑透明翻成白透明——否则 hover 在暗色下会把卡片压得更暗，语义反了。 */
+:root[data-theme="dark"] .ch-refcard {
+  background: var(--eva-c-neutral-750);          /* 气泡之上再抬升一级 */
+  border-color: var(--eva-border-subtle);        /* 暗色靠可见描边界定边界 */
+}
+:root[data-theme="dark"] .ch-refcard:hover {
+  /* 真正的「叠加」而非换色：在抬升面之上压一层白 6%，与 GDS §3.4
+     遮罩翻转一致，且 hover 必然比静态更亮。 */
+  background-color: var(--eva-c-neutral-750);
+  background-image: linear-gradient(var(--eva-overlay-hover), var(--eva-overlay-hover));
+  border-color: var(--eva-border-default);
+}
+:root[data-theme="dark"] .ch-refcard__ic {
+  background: var(--eva-overlay-hover);          /* 白 6%，取代浅色的黑 5% */
+  color: var(--eva-text-secondary);
+}
+:root[data-theme="dark"] .ch-refcard__nm { color: var(--eva-text-primary); }
+/* 元信息承载「项目 · 类型 · 负责人 · 截止」等必要内容，按 GDS §14 Production
+   模式取 secondary-accessible（暗色 #b0b4bd，CR 6.26）而非 muted（4.23，未达 AA）；
+   .src 仍高一级，保持浅色原有的两级层次。箭头是装饰，留在 muted。 */
+:root[data-theme="dark"] .ch-refcard__mt { color: var(--eva-text-secondary-accessible); }
+:root[data-theme="dark"] .ch-refcard__mt .src { color: var(--eva-text-secondary); }
+:root[data-theme="dark"] .ch-refcard__act { color: var(--eva-text-muted); }
+
+/* 锁定态：浅色是「更淡的底 + 虚线」。暗色保持虚线，但改为比常规卡更「下沉」，
+   而不是更亮；hover 仍明确压回静态值，表达不可交互。 */
+:root[data-theme="dark"] .ch-refcard--locked,
+:root[data-theme="dark"] .ch-refcard--locked:hover {
+  background: var(--eva-surface-subtle);
+  border-color: var(--eva-border-subtle);
+}
+:root[data-theme="dark"] .ch-refcard--locked .ch-refcard__nm { color: var(--eva-text-secondary); }
+
+/* 卡内按钮：静态底已在上方给出，这里补文字与禁用态（禁用同样翻成白透明）。 */
+:root[data-theme="dark"] .ch-refcard__ask {
+  border-color: var(--eva-border-subtle);
+  color: var(--eva-text-secondary);
+}
+:root[data-theme="dark"] .ch-refcard__ask:disabled {
+  background: var(--eva-overlay-hover);
+  color: var(--eva-text-muted);
+}
+
+/* —— 数字员工市场 / 技能 / 书签 / 运行时宿主等页面的浅色硬编码块 —— */
+:root[data-theme="dark"] .eva-ma,
+:root[data-theme="dark"] .eva-ma-search .arco-input-inner-wrapper { background: var(--eva-surface-primary); }
+:root[data-theme="dark"] .eva-ma-tr:hover { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] .eva-ma-tr .src,
+:root[data-theme="dark"] .eva-am-peers .ava,
+:root[data-theme="dark"] .eva-bm-hd .back,
+:root[data-theme="dark"] .eva-rt-host .host-hd .ic,
+:root[data-theme="dark"] .eva-rt-host .engine .src { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] .eva-am-foot .pill { background: var(--eva-surface-subtle); }
+:root[data-theme="dark"] .eva-bm-entries .entry:hover,
+:root[data-theme="dark"] .eva-row-pill:hover { background: var(--eva-overlay-hover); }
+:root[data-theme="dark"] .eva-am-skills .card.on { background: var(--eva-list-option-selected); }
+:root[data-theme="dark"] .eva-user-row .eva-logout:hover { background: rgba(245, 74, 69, 0.15); }
+
+/* ============================================================
+   Part 5 · vendor 内写死深墨文字的元素
+   与 Part 4 同源问题的另一面：vendor 把一批文字颜色直接写成 #1c1c23 / #1f2329
+   （浅底上的主文字），不经变量，暗底上即深字压深底。实测 .ch-head .t（会话标题
+   「全员群」）对比度仅 1.09；.eva-tb-brand 即左上角「Eva 同学」品牌字。
+   统一重指到 --eva-text-primary。
+   ============================================================ */
+:root[data-theme="dark"] .ch-head .t,
+:root[data-theme="dark"] .ch-item .ch-name,
+:root[data-theme="dark"] .ch-scope__opt .nm,
+:root[data-theme="dark"] .ch-contact .nm,
+:root[data-theme="dark"] .ch-thread-item,
+:root[data-theme="dark"] .ch-refcard__ask:hover:not(:disabled),
+:root[data-theme="dark"] .ch-head .ops .op:hover,
+:root[data-theme="dark"] .ch-head .ops .op.is-on,
+:root[data-theme="dark"] .wk-thread-created-preview,
+:root[data-theme="dark"] .eva-tb-brand,
+:root[data-theme="dark"] .eva-assistant-row .ops .op:hover,
+:root[data-theme="dark"] .eva-am-h2,
+:root[data-theme="dark"] .eva-am-peers .nm,
+:root[data-theme="dark"] .eva-am-foot .pill,
+:root[data-theme="dark"] .eva-ma-head h1,
+:root[data-theme="dark"] .eva-ma-tr .more:hover,
+:root[data-theme="dark"] .eva-ad-card .hd .nm,
+:root[data-theme="dark"] .eva-ad-card dd,
+:root[data-theme="dark"] .eva-bm-list .nm,
+:root[data-theme="dark"] .eva-rt-head h1,
+:root[data-theme="dark"] .eva-rt-host .engine { color: var(--eva-text-primary); }
+
+/* @提及：填充蓝 #6d98f7 在提及底上实测 4.07，略低于 AA 4.5。按 gds §3.4
+   「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
+:root[data-theme="dark"] :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-c-blue-300); }
+
+/* —— 「创建了子区」消息卡 ——
+   vendor 写死浅色：底 #1c1c230a（黑 4%）、左竖线 rgba(28,28,35,.8)（近不透明黑）。
+   暗色下只有文字被 token 接管，底与竖线未接管 → 黑底叠暗底更黑、黑竖线在暗底上
+   几乎不可见（实测两者在暗色下与浅色完全相同）。
+   按 GDS §3.4 遮罩翻转：底改白透明叠加；竖线是该消息类型的身份标识，改用
+   子区链接同源的提亮蓝，让装饰条与「子区」语义一致而非单纯的中性条。 */
+:root[data-theme="dark"] .wk-thread-created-card {
+  background: var(--eva-overlay-hover);
+  border-left-color: var(--eva-c-blue-300);
+}
+:root[data-theme="dark"] .wk-thread-created-card:hover {
+  background: var(--eva-overlay-pressed);
+}
+:root[data-theme="dark"] .wk-thread-created-participants { color: var(--eva-text-secondary-accessible); }
+
+/* 会话头底边线已在 049 收编为 --eva-rail-divider（两模式一处声明），
+   此处不再重复暗色专用规则，避免同一件事两处维护。 */
+
+/* 功能页画布（任务看板 / 自动化 / 项目详情等）已在 024 的基线规则改取
+   surface-primary，两模式一处声明即可，故此处不再需要暗色专用覆盖。 */
+
+/* ============================================================
+   Part 6 · 状态徽章与表头（原 11 页审计的 C5 / C7 / C9）
+   这三处是浅色状态底（浅绿 / 浅紫 / 浅灰）直接写死或走只有浅色值的 token，
+   在暗底上表现为「亮块漂浮」——evamate §3.3 与 gds §3.4 均点名禁止。
+   暗色取值沿用本文件 space-card 已确立的 tone 语言（低饱和暗底 + 提亮前景），
+   不新造色系。
+   注：C8（文件库类型标）已随 012/050 的 token 化自然修复，无需在此处理。
+   ============================================================ */
+
+/* C7 · 通讯录表头：三个 token 在 047 只有浅色值，此处补暗色对应。 */
+:root[data-theme="dark"] {
+  --eva-contacts-header-background: var(--eva-surface-subtle);
+  --eva-contacts-header-border: var(--eva-border-faint);
+  --eva-contacts-header-text: var(--eva-text-secondary-accessible);
+}
+
+/* C5 · 连接中心状态徽章：浅绿 #e9f7ee / #27804d → 暗底低饱和绿 + 提亮前景
+   （与 space-card delivery tone 及 workflow result 图标同一枚绿，保持一致）。 */
+:root[data-theme="dark"] .eva-connection-card__status {
+  background: #1b2a26;
+  color: #6fd0b0;
+}
+
+/* C9 · 「官方」徽章：浅紫 #f1f0ff / #e2e0fa / #6862be → 复用 space-card
+   drive tone 的暗色三件套，避免另立紫色。 */
+:root[data-theme="dark"] .eva-official-badge {
+  background: #262234;
+  border-color: #383152;
+  color: #b3a3e0;
+}
 

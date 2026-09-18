@@ -307,6 +307,16 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-t
   border-radius: 0;
 }
 
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar.is-settings-trigger {
+  cursor: pointer;
+}
+
+body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar.is-settings-trigger:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid var(--semi-color-focus-border);
+  outline-offset: 2px;
+}
+
 body.eva-message-hierarchy-ready .eva-msg .wk-category-header:focus-visible,
 body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-item:focus-visible,
 body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar__btn:focus-visible {
@@ -479,7 +489,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item-
 body.eva-message-hierarchy-ready .eva-msg .eva-space-card .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-thread-tag {
   display: none;
 }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle {
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle {
   display: inline-grid;
   width: 32px;
   height: 22px;
@@ -494,18 +507,36 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle {
   color: #7c8790;
   cursor: pointer;
 }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:hover,
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:focus-visible {
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle:hover,
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle:focus-visible {
   background: #e4e7ea;
   color: #3f4851;
 }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle:focus-visible {
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle:focus-visible {
   outline: 2px solid var(--eva-action-primary);
   outline-offset: 1px;
 }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle > svg { display: block; }
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle,
-body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-thread-toggle.is-collapsed { transform: none; }
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle > svg { display: block; }
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle,
+body.eva-message-hierarchy-ready :is(
+  .eva-msg,
+  .collab-frame.eva-channel-surface[data-eva-channel-surface="project"]
+) .wk-conv-compact-thread-toggle.is-collapsed { transform: none; }
 
 .eva-msg .eva-space-card .wk-conv-compact-item--thread {
   margin-top: 1px;

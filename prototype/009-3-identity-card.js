@@ -3,10 +3,14 @@
  */
 (function(root){
 'use strict';
-root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,useNavigate},store){
+root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,useNavigate},store){
  const h=R.createElement,model=root.EvaContactIdentities.create(store);
  function Appearance({profile,size=32}){
   return profile.appearance?root.EvaAIIdentity.avatar(profile.appearance,size,h):h('img',{className:'eva-profile-human-avatar',src:profile.avatar,alt:'',width:size,height:size});
+ }
+ function ProjectIdentity({project,name}){
+  const label=name||project?.name||project?.projectName||'',appearance=root.EvaProjectAppearance.css(project||{});
+  return h('span',{className:'eva-project-identity',title:label},h(ProjectIcon,{size:16,style:{color:appearance.accent},'aria-hidden':true}),h('span',{className:'eva-project-identity__name'},label));
  }
  function IdentityCard({identity,onClose}){
   const navigate=useNavigate(),popupHost=R.useRef(null);
@@ -45,12 +49,12 @@ root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,useNavigate},store){
       owner&&field('所属人',h(Button,{className:'eva-person-card__person-link',theme:'borderless',type:'tertiary','aria-label':'所属人：'+owner.name,onClick:()=>setOwnerId(owner.id)},h(Appearance,{profile:owner,size:24}),h('span',null,owner.name))),
       profile.description&&field('简介',h('p',null,profile.description),true),
       profile.ownership&&field('归属',profile.ownership),
-      profile.project&&field('服务项目',h(Button,{className:'eva-person-card__project-link',theme:'borderless',type:'tertiary',onClick:openProject},profile.project.name)))),
+      profile.project&&field('所属项目',h(Button,{className:'eva-person-card__project-link',theme:'borderless',type:'tertiary',onClick:openProject},h(ProjectIdentity,{project:profile.project}))))),
     (profile.action||profile.hint||error)&&h('footer',{className:'eva-person-card__actions'},
      error&&h('p',{role:'alert',className:'eva-person-card__error'},error),
      profile.action?h(Button,{theme:'solid',type:'primary',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
    ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看。'))));
  }
- return {IdentityCard,IdentityAppearance:Appearance,identityModel:model};
+ return {IdentityCard,IdentityAppearance:Appearance,ProjectIdentity,identityModel:model};
 }};
 })(window);

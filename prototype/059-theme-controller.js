@@ -36,7 +36,15 @@
   function paint(resolved) {
     try {
       document.documentElement.setAttribute('data-theme', resolved);
-      if (document.body) document.body.setAttribute('arco-theme', resolved);
+      if (document.body) {
+        document.body.setAttribute('arco-theme', resolved);
+        // Semi 官方暗色样式包（已打包在 vendor/eva-legacy.css）靠 body[theme-mode=dark]
+        // 触发（实测 vendor 选择器为 body[theme-mode=dark],body .semi-always-dark,…；
+        // class 形态要求挂在 body 的「后代」上，不能挂 body 自身，故用属性触发）。
+        // 不设它，Semi 组件在暗色下停留在浅色 CSS，落在暗底上不可读。
+        if (resolved === 'dark') document.body.setAttribute('theme-mode', 'dark');
+        else document.body.removeAttribute('theme-mode');
+      }
     } catch (e) {}
   }
 
@@ -101,7 +109,9 @@
       var want = resolve(getMode());
       var htmlNow = document.documentElement.getAttribute('data-theme');
       var bodyNow = document.body && document.body.getAttribute('arco-theme');
-      if (htmlNow !== want || bodyNow !== want) {
+      var semiNow = document.body && document.body.getAttribute('theme-mode');
+      var semiWant = want === 'dark' ? 'dark' : null;
+      if (htmlNow !== want || bodyNow !== want || semiNow !== semiWant) {
         enforcing = true;
         paint(want);
         enforcing = false;
@@ -110,7 +120,8 @@
     var mo = new MutationObserver(enforce);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     var observeBody = function () {
-      if (document.body) mo.observe(document.body, { attributes: true, attributeFilter: ['arco-theme'] });
+      // theme-mode 一并纳管：运行时/组件可能改写它，擦掉我们的 Semi 暗色触发。
+      if (document.body) mo.observe(document.body, { attributes: true, attributeFilter: ['arco-theme', 'theme-mode'] });
     };
     if (document.body) observeBody();
     else document.addEventListener('DOMContentLoaded', observeBody, { once: true });

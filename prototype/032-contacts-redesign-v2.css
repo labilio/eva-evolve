@@ -9,7 +9,7 @@
 .eva-contacts__main-head {
   display:flex;align-items:center;justify-content:flex-start;
   flex:none;
-  border-bottom:var(--gds-border-standard) solid var(--gds-color-border-faint);
+  border-bottom:var(--gds-border-standard) solid var(--eva-rail-divider);
 }
 .eva-contacts__title {display:flex;align-items:baseline;gap:var(--gds-space-3);white-space:nowrap}
 .eva-contacts__title strong {}

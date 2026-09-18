@@ -1,0 +1,33 @@
+{
+  "name": "Eva design-system integration",
+  "version": "1.0.0",
+  "packages": {
+    "foundations": {
+      "path": "evamate-0.3.0",
+      "name": "EvaMate Design System",
+      "version": "0.3.0",
+      "owns": ["semantic-tokens", "light-dark-themes", "typography", "spacing", "radius", "effects", "motion", "layout-contracts", "quality-gates"],
+      "doesNotOwn": ["product-components", "page-state-reference-images", "product-behavior"]
+    },
+    "pageEvidence": {
+      "path": "gds-for-ai2.0",
+      "name": "Eva GDS for AI",
+      "version": "2.0.0",
+      "owns": ["component-contracts", "six-page-states", "reference-images", "brand-assets", "content-assets"],
+      "doesNotOwn": ["dark-theme", "current-product-policy"]
+    }
+  },
+  "sharedBaseline": {
+    "viewport": {"width": 1200, "height": 800},
+    "standardShell": {"sidebarWidth": 260, "workspaceWidth": 940, "contentWidth": 776},
+    "completedShell": {"conversationWidth": 390, "editorWidth": 810},
+    "primaryBlue": "#1563EB"
+  },
+  "priority": [
+    "current-user-decision",
+    "repository-product-contracts",
+    "confirmed-current-page-design",
+    "evamate-0.3.0-foundations",
+    "gds-for-ai2.0-component-and-page-evidence"
+  ]
+}

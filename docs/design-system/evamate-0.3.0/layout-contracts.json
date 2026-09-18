@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "name": "EvaMate page layout contracts",
+    "version": "0.3.0",
+    "unit": "px",
+    "componentsIncluded": false
+  },
+  "referenceViewport": {
+    "width": 1200,
+    "height": 800,
+    "baseGrid": 4,
+    "validationTolerance": 1
+  },
+  "contracts": {
+    "standard-workspace": {
+      "useWhen": ["首页", "输入", "对话生成中", "技能选择", "单工作区任务"],
+      "regions": {
+        "window": {"x": 0, "y": 0, "width": 1200, "height": 800, "radiusToken": "radius/20", "clip": true},
+        "sidebar": {"x": 0, "y": 0, "width": 260, "height": 800, "surface": "color/surface/sidebar"},
+        "workspace": {"x": 260, "y": 0, "width": 940, "height": 800, "surface": "color/surface/base"},
+        "topbar": {"x": 260, "y": 0, "width": 940, "height": 52, "optional": true},
+        "content": {"x": 342, "width": 776, "workspaceInset": 82},
+        "composer": {"width": 768, "height": 118, "safeBottom": 14}
+      },
+      "invariants": [
+        "sidebar.width + workspace.width = window.width",
+        "content.x = sidebar.width + content.workspaceInset",
+        "content is centered inside workspace",
+        "composer.width <= content.width",
+        "topbar controls never shrink before title truncates"
+      ]
+    },
+    "editor-workspace": {
+      "useWhen": ["生成完成", "结果编辑", "对话与编辑并列"],
+      "regions": {
+        "window": {"x": 0, "y": 0, "width": 1200, "height": 800, "radiusToken": "radius/20", "clip": true},
+        "dialogPane": {"x": 0, "y": 0, "width": 390, "height": 800, "surface": "color/surface/base"},
+        "editorPane": {"x": 390, "y": 0, "width": 810, "height": 800, "surface": "color/surface/sunken"},
+        "thumbnailRail": {"x": 390, "y": 100, "width": 230, "height": 660},
+        "editorCanvasRegion": {"x": 620, "y": 100, "width": 580, "height": 660},
+        "statusbar": {"x": 390, "y": 760, "width": 810, "height": 40}
+      },
+      "invariants": [
+        "dialogPane.width + editorPane.width = window.width",
+        "thumbnailRail.width + editorCanvasRegion.width = editorPane.width",
+        "editor chrome remains fixed while the document canvas may scroll or zoom",
+        "dialog and editor preserve independent scrolling contexts"
+      ]
+    }
+  },
+  "responsive": {
+    "wide": {
+      "condition": "viewportWidth > 1200",
+      "rules": [
+        "Keep sidebar and content preferred widths",
+        "Center or expand workspace gutters before expanding readable content",
+        "Do not scale typography or controls with viewport width"
+      ]
+    },
+    "reference": {
+      "condition": "viewportWidth = 1200",
+      "rules": ["Use contract geometry exactly within 1px tolerance"]
+    },
+    "compactDesktop": {
+      "condition": "960 <= viewportWidth < 1200",
+      "rules": [
+        "Allow sidebar to collapse to icon navigation or temporary drawer",
+        "Keep workspace content fluid with 24px minimum side padding",
+        "Keep composer at min(768px, availableWidth)",
+        "For editor-workspace, reduce dialog pane before editor canvas"
+      ]
+    },
+    "narrow": {
+      "condition": "viewportWidth < 960",
+      "rules": [
+        "Use one primary pane at a time",
+        "Move sidebar and secondary editor rail into dismissible drawers",
+        "Never scale the full desktop frame",
+        "Treat this as an adaptive web fallback, not a native mobile specification"
+      ]
+    }
+  },
+  "layerOrder": [
+    "canvas",
+    "persistent-navigation",
+    "workspace",
+    "content",
+    "sticky-controls",
+    "popover",
+    "modal-scrim",
+    "modal"
+  ],
+  "overflowRules": [
+    "Page shell clips only at the outer window radius",
+    "Scrollable regions own their overflow; ancestors do not hide focus rings",
+    "Single-line titles truncate before adjacent actions shrink",
+    "Overlays are positioned relative to their trigger or viewport and remain inside safe edges"
+  ]
+}

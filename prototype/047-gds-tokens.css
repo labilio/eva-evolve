@@ -45,6 +45,7 @@
   --eva-c-neutral-25: #f7f7f7;    /* dark: 正文 */
   --eva-c-neutral-450: #b0b4bd;   /* dark: 高可读次级文本 */
   --eva-c-neutral-600: #666666;   /* dark: 可见描边 */
+  --eva-c-neutral-750: #313131;   /* dark: 画布之上的抬升面（= 画布 + 6% 白覆盖层，与列表 hover 同层级）*/
   --eva-c-neutral-800: #2a2a2a;   /* dark: 演示画布 / 次级边框 */
   --eva-c-neutral-850: #232323;   /* dark: 备用中间调 */
   --eva-c-neutral-875: #242424;   /* dark: 抬升卡片 / 面板 / 主工作区（比 canvas 亮）*/
@@ -52,7 +53,9 @@
   --eva-c-neutral-925: #1a1a1a;   /* dark: 画布 / 凹陷包裹（最深常规背景）*/
   --eva-c-neutral-950: #0f0f0f;   /* dark: 下沉面 */
   --eva-c-blue-50: #ebf3ff;       /* EvaMate 0.3.0 blue/50：选中表面 */
-  --eva-c-blue-300: #93b5ff;      /* dark: 链接 / 图标 / 焦点蓝 */
+  --eva-c-blue-200: #bdd2ff;      /* EvaMate blue/200：dark action pressed */
+  --eva-c-blue-300: #93b5ff;      /* dark: 链接 / 图标 / 焦点蓝 / action hover */
+  --eva-c-blue-400: #6d98f7;      /* EvaMate blue/400：dark action 填充（暗底提亮）*/
   --eva-c-decor-dot-dark: #232948;/* dark: 装饰点阵 */
 
   /* ---- color · semantic (use these) ------------------------ */
@@ -99,6 +102,16 @@
   --eva-nav-pressed: var(--eva-overlay-pressed);
   --eva-nav-selected: var(--eva-c-blue-50);
   --eva-nav-accent: var(--eva-action-primary);
+
+  /* 区域分界线（借鉴我的 Agent 的 046 --eva-rail-divider 做法，升为全局约定）：
+   * 栏与栏的分界、栏头部底线、Tab 基线等「大区块边界」统一走这一枚，
+   * 取 border/subtle（gds §5.3「#DBDBDB 用于结构分隔」、evamate §6
+   * 「结构分隔使用 border/secondary 或 tertiary」，两份规范均明文允许）。
+   * 组件内部的弱分隔、卡片描边、表格线仍用 --eva-border-faint，保留两档层级——
+   * 不可把 faint 一并提到这一档，否则每张卡片描边都加重，违背
+   * gds §1.1「安静、轻盈」与 evamate §1「不使用浓重装饰制造层次」。
+   * 暗色无需另设：本别名引用 border/subtle，随 057 的暗色重指自动跟随。 */
+  --eva-rail-divider: var(--eva-border-subtle);
 
   /* Shared IM mention states, independent from navigation selection. */
   --eva-mention-background: color-mix(in srgb, var(--eva-action-primary) 8%, transparent);

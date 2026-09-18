@@ -33,7 +33,7 @@
     align-items: center;
 
 
-    border-bottom: 1px solid var(--eva-border-faint);
+    border-bottom: 1px solid var(--eva-rail-divider);
   }
 
   .eva-connection-center__head h1 {
@@ -52,7 +52,7 @@
   .eva-connection-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid var(--eva-border-faint);
+    border-bottom: 1px solid var(--eva-rail-divider);
   }
 
   .eva-connection-tab {

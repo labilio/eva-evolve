@@ -178,15 +178,175 @@ html.eva-file-preview-resizing * {
   outline-offset: 2px;
 }
 
-.loop-idp button.eva-task-attachment-preview {
-  appearance: none;
+.loop-idp .eva-task-attachments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  margin: 16px auto 0;
+}
+
+.loop-idp .eva-task-attachment-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 280px;
+  max-width: calc(100% - 24px);
+  height: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+  box-sizing: content-box;
+  background: var(--eva-im-bubble-incoming, #f2f2f2);
+  border: 0;
+  border-radius: 12px;
+}
+
+.loop-idp button.eva-task-attachment-card__preview {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  color: inherit;
   font: inherit;
   text-align: left;
+  background: transparent;
+  border: 0;
   cursor: pointer;
 }
 
-.loop-idp button.eva-task-attachment-preview:focus-visible {
-  outline: 2px solid var(--wk-color-accent);
+.eva-task-attachment-card__filetype {
+  --eva-task-file-color: var(--eva-text-secondary);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--eva-task-file-color);
+  background: color-mix(in srgb, var(--eva-task-file-color) 9%, var(--eva-surface-primary));
+  border-radius: 8px;
+}
+
+.eva-task-attachment-card__filetype.is-pdf {
+  --eva-task-file-color: var(--semi-color-danger);
+}
+
+.eva-task-attachment-card__filetype.is-sheet {
+  --eva-task-file-color: var(--semi-color-success);
+}
+
+.eva-task-attachment-card__filetype:is(.is-document, .is-image, .is-audio, .is-video) {
+  --eva-task-file-color: var(--eva-action-primary);
+}
+
+.eva-task-attachment-card__filetype:is(.is-presentation, .is-archive) {
+  --eva-task-file-color: var(--semi-color-warning);
+}
+
+.eva-task-attachment-card__filetype-icon {
+  display: block;
+  stroke-width: 1.75;
+}
+
+.eva-task-attachment-card__filetype-label {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  color: var(--eva-task-file-color);
+  font: var(--eva-fw-semibold) 8px/14px var(--eva-font-sans);
+  background: var(--eva-surface-primary);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--eva-task-file-color) 20%, transparent);
+}
+
+.eva-task-attachment-card__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loop-idp button.eva-task-attachment-action {
+  appearance: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.eva-task-attachment-card__name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--eva-text-primary);
+  font: var(--eva-fw-medium) 14px/20px var(--eva-font-sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-task-attachment-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--eva-text-secondary);
+  font: var(--eva-fw-regular) 12px/18px var(--eva-font-sans);
+}
+
+.eva-task-attachment-card__format {
+  max-width: 52px;
+  overflow: hidden;
+  color: var(--eva-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eva-task-attachment-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: none;
+  gap: 4px;
+  width: 92px;
+  height: 44px;
+}
+
+.loop-idp button.eva-task-attachment-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--eva-text-primary);
+  border-radius: var(--eva-radius-control);
+}
+
+.loop-idp button.eva-task-attachment-action:hover:not(:disabled) {
+  background: var(--eva-overlay-hover);
+}
+
+.loop-idp button.eva-task-attachment-action:disabled {
+  color: var(--eva-text-muted);
+  cursor: not-allowed;
+}
+
+.loop-idp button.eva-task-attachment-card__preview:focus-visible,
+.loop-idp button.eva-task-attachment-action:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
   outline-offset: 2px;
 }
 

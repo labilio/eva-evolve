@@ -57,7 +57,18 @@ test('个人助理在我的 Agent 内用共享弹窗新建，并通过点击头�
     }, name);
 
     const createdIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: name });
-    await createdIdentity.locator('.eva-ai-team__identity-heading').hover();
+    const identityHeading = createdIdentity.locator('.eva-ai-team__identity-heading');
+    await identityHeading.hover();
+    const inlineActions = identityHeading.locator('.eva-ai-team__identity-action:visible');
+    assert.equal(await inlineActions.count(), 1, '助理行 hover 只显示一个快捷操作');
+    assert.equal(await inlineActions.getAttribute('aria-label'), '新建会话');
+    assert.equal(await identityHeading.locator(':scope > .eva-ai-team__menu-anchor').count(), 0, '助理行不再显示更多或编辑图标');
+    await createdIdentity.locator('.eva-ai-team__identity-button').click({ button: 'right' });
+    const contextMenu = page.locator('.eva-context-menu');
+    await contextMenu.getByRole('menuitem', { name: '新建会话', exact: true }).waitFor();
+    await contextMenu.getByRole('menuitem', { name: '编辑配置', exact: true }).waitFor();
+    await page.keyboard.press('Escape');
+    await contextMenu.waitFor({ state: 'detached' });
     await createdIdentity.getByRole('button', { name: `编辑配置 ${name}` }).click();
     await editor.locator('.eva-create-assistant-modal').waitFor();
     assert.equal(await editor.getByRole('tab', { name: '协作', exact: true }).count(), 0);

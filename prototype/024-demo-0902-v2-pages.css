@@ -8,7 +8,12 @@
     bottom: 0;
     left: var(--eva-drive-left, 260px);
     overflow: auto;
-    background: var(--eva-surface-subtle);
+    /* 画布取 surface-primary，与其余 9 个页面一致（实测浅色下 9/10 个页面的
+     * 画布为 #ffffff，仅本页原取 subtle 而呈灰色；暗色同理 #242424 vs #1a1a1a）。
+     * 看板列 / 筛选条 / 统计卡仍为 subtle，于是自然成为画布上的凹陷井，
+     * 两个模式下都有明确边界，不再依赖描边。
+     * 一处声明两模式生效：subtle/primary 的暗色值由 057 重指。 */
+    background: var(--eva-surface-primary);
     color: var(--eva-text-primary);
   }
 
@@ -21,7 +26,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
-    border-bottom: 1px solid var(--eva-border-faint);
+    border-bottom: 1px solid var(--eva-rail-divider);
   }
 
   .eva-feature-head h1 { margin: 0; font-size: 20px; line-height: 28px; }
@@ -72,7 +77,7 @@
   @media (max-width: 900px) { .eva-board-filter__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   .eva-auto-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-  .eva-auto-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--eva-border-faint); }
+  .eva-auto-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--eva-rail-divider); }
   .eva-auto-tab { position: relative; padding: 0 10px 13px; border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; font-weight: 600; cursor: pointer; }
   .eva-auto-tab.is-active { color: var(--eva-text-primary); }
   .eva-auto-tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #7417f2; content: ''; }
@@ -111,11 +116,11 @@
   .eva-project-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 999px; background: #eee7ff; color: #6d2bd1; font-size: 11px; font-weight: 500; }
   .eva-project-tag--org { background: #e8f5ef; color: #18764d; }
   .eva-project-detail-page { padding: 0; }
-  .eva-project-detail-head { display: flex; height: 62px; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--eva-border-faint); }
+  .eva-project-detail-head { display: flex; height: 62px; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--eva-rail-divider); }
   .eva-project-detail-head h1 { margin: 0; font-size: 18px; }
   .eva-project-detail-head .eva-project-tag { margin-left: 10px; }
   @media (prefers-reduced-motion: reduce) { .collab-space-card { transition: none; } }
-  .eva-project-tabs { display: flex; align-items: center; gap: 4px; padding: 10px 22px 0; border-bottom: 1px solid var(--eva-border-faint); }
+  .eva-project-tabs { display: flex; align-items: center; gap: 4px; padding: 10px 22px 0; border-bottom: 1px solid var(--eva-rail-divider); }
   .eva-project-tab { padding: 9px 13px 11px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
   .eva-project-tab.is-active { border-bottom-color: #7417f2; color: var(--eva-text-primary); font-weight: 600; }
   .eva-project-detail-body { padding: 24px; }

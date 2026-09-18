@@ -517,3 +517,9 @@ window.__EVA_MOCK_LAYOUT = {
     {id:'official-release',projectId:'official',name:'版本发布跟进',create:true,topics:['本轮更新范围确认','发布前验收问题核对','使用指引文档完善']}
   ]
 };
+
+// Three existing conversations exercise project and non-project pin states.
+window.__EVA_RECENT_PIN_DEMO = {
+  actorId:'u-wangyilin',
+  conversationIds:['c-eva','th-msg-architecture','community-feedback-roundup']
+};

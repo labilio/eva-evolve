@@ -1,17 +1,41 @@
 
+  /* Match the task toolbar's 8px content inset plus 20px header padding. */
+  .collab-frame > .collab-tabs {
+    padding-inline: 28px;
+  }
+
+  .eva-project-directory-button.semi-button {
+    order: 1;
+    flex: none;
+    margin-left: auto;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 7px;
+    border-color: var(--semi-color-border);
+    color: var(--semi-color-text-1);
+    background: var(--semi-color-bg-0);
+  }
+
+  .eva-project-directory-button.semi-button:hover {
+    color: var(--semi-color-text-0, #1c1f23);
+    background: var(--semi-color-fill-1, #f2f3f5);
+  }
+
   .eva-project-switcher-anchor {
     display: inline-flex;
     flex: none;
   }
 
   body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher {
+    box-sizing: border-box;
     width: auto;
     max-width: 176px;
     min-height: 32px;
     margin-bottom: 2px;
     padding: 0 10px;
+    border: 1px solid var(--semi-color-border, #dfe3e8);
     border-radius: 7px;
-    background: var(--semi-color-fill-0, #f7f8fa);
+    background: var(--semi-color-bg-0, #fff);
     color: var(--semi-color-text-0, #1c1f23);
     font-family: inherit;
     font-size: 15px;

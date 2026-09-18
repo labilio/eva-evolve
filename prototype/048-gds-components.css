@@ -145,6 +145,8 @@
 .eva-composer {
   width: 768px;
   height: 118px;
+  box-sizing: border-box;
+  border: 1px solid var(--eva-border-subtle);
   border-radius: var(--eva-radius-panel);
   background: var(--eva-surface-primary);
   backdrop-filter: blur(var(--eva-blur-floating));
@@ -578,7 +580,7 @@
   height: 72px;
   flex: none;
   background: var(--eva-surface-primary);
-  border-bottom: 1px solid var(--eva-border-faint);
+  border-bottom: 1px solid var(--eva-rail-divider);
   display: flex;
   align-items: center;
   gap: 4px;

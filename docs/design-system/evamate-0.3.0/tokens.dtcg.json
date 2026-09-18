@@ -1,0 +1,2803 @@
+{
+  "$description": "EvaMate Design System 0.3.0。由 tokens.json 自动生成，请勿直接编辑。",
+  "$extensions": {
+    "com.evamate.meta": {
+      "version": "0.3.0",
+      "source": "Figma YfmZumn8azSodYXTmQXbC4",
+      "defaultTheme": "Light",
+      "themes": [
+        "Light",
+        "Dark"
+      ],
+      "generatedBy": "build-artifacts.mjs",
+      "sourceSha256": "b63a528394595c8cbf1b5ee1353c8b09243c37b2d81bab02e6d9130601aee18e"
+    }
+  },
+  "color": {
+    "primitive": {
+      "neutral": {
+        "0": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              1,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#FFFFFF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-0"
+            }
+          }
+        },
+        "10": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.996078431372549,
+              0.996078431372549,
+              0.996078431372549
+            ],
+            "alpha": 1,
+            "hex": "#FEFEFE"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-10"
+            }
+          }
+        },
+        "25": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9686274509803922,
+              0.9686274509803922,
+              0.9686274509803922
+            ],
+            "alpha": 1,
+            "hex": "#F7F7F7"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-25"
+            }
+          }
+        },
+        "50": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9607843137254902,
+              0.9607843137254902,
+              0.9607843137254902
+            ],
+            "alpha": 1,
+            "hex": "#F5F5F5"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-50"
+            }
+          }
+        },
+        "100": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9215686274509803,
+              0.9215686274509803,
+              0.9215686274509803
+            ],
+            "alpha": 1,
+            "hex": "#EBEBEB"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-100"
+            }
+          }
+        },
+        "200": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.8588235294117647,
+              0.8588235294117647,
+              0.8588235294117647
+            ],
+            "alpha": 1,
+            "hex": "#DBDBDB"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-200"
+            }
+          }
+        },
+        "300": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.8,
+              0.8,
+              0.8
+            ],
+            "alpha": 1,
+            "hex": "#CCCCCC"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-300"
+            }
+          }
+        },
+        "400": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.5764705882352941,
+              0.5764705882352941,
+              0.5764705882352941
+            ],
+            "alpha": 1,
+            "hex": "#939393"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-400"
+            }
+          }
+        },
+        "500": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.45098039215686275,
+              0.45098039215686275,
+              0.45098039215686275
+            ],
+            "alpha": 1,
+            "hex": "#737373"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-500"
+            }
+          }
+        },
+        "600": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.4,
+              0.4,
+              0.4
+            ],
+            "alpha": 1,
+            "hex": "#666666"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-600"
+            }
+          }
+        },
+        "700": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.2901960784313726,
+              0.2901960784313726,
+              0.2901960784313726
+            ],
+            "alpha": 1,
+            "hex": "#4A4A4A"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-700"
+            }
+          }
+        },
+        "800": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.16470588235294117,
+              0.16470588235294117,
+              0.16470588235294117
+            ],
+            "alpha": 1,
+            "hex": "#2A2A2A"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-800"
+            }
+          }
+        },
+        "900": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.11764705882352941,
+              0.11764705882352941,
+              0.11764705882352941
+            ],
+            "alpha": 1,
+            "hex": "#1E1E1E"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-900"
+            }
+          }
+        },
+        "950": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.058823529411764705,
+              0.058823529411764705,
+              0.058823529411764705
+            ],
+            "alpha": 1,
+            "hex": "#0F0F0F"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-950"
+            }
+          }
+        },
+        "1000": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 1,
+            "hex": "#000000"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-neutral-1000"
+            }
+          }
+        }
+      },
+      "blue": {
+        "50": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9215686274509803,
+              0.9529411764705882,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#EBF3FF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-50"
+            }
+          }
+        },
+        "100": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.8666666666666667,
+              0.9137254901960784,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#DDE9FF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-100"
+            }
+          }
+        },
+        "200": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.7411764705882353,
+              0.8235294117647058,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#BDD2FF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-200"
+            }
+          }
+        },
+        "300": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.5764705882352941,
+              0.7098039215686275,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#93B5FF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-300"
+            }
+          }
+        },
+        "400": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.42745098039215684,
+              0.596078431372549,
+              0.9686274509803922
+            ],
+            "alpha": 1,
+            "hex": "#6D98F7"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-400"
+            }
+          }
+        },
+        "600": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.08235294117647059,
+              0.38823529411764707,
+              0.9215686274509803
+            ],
+            "alpha": 1,
+            "hex": "#1563EB"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-600"
+            }
+          }
+        },
+        "700": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.058823529411764705,
+              0.3137254901960784,
+              0.7803921568627451
+            ],
+            "alpha": 1,
+            "hex": "#0F50C7"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-blue-700"
+            }
+          }
+        }
+      },
+      "red": {
+        "50": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.996078431372549,
+              0.9529411764705882,
+              0.9490196078431372
+            ],
+            "alpha": 1,
+            "hex": "#FEF3F2"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-red-50"
+            }
+          }
+        },
+        "300": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9921568627450981,
+              0.6352941176470588,
+              0.6078431372549019
+            ],
+            "alpha": 1,
+            "hex": "#FDA29B"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-red-300"
+            }
+          }
+        },
+        "500": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9411764705882353,
+              0.26666666666666666,
+              0.2196078431372549
+            ],
+            "alpha": 1,
+            "hex": "#F04438"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-red-500"
+            }
+          }
+        },
+        "700": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.7058823529411765,
+              0.13725490196078433,
+              0.09411764705882353
+            ],
+            "alpha": 1,
+            "hex": "#B42318"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-red-700"
+            }
+          }
+        }
+      },
+      "amber": {
+        "50": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              0.9803921568627451,
+              0.9215686274509803
+            ],
+            "alpha": 1,
+            "hex": "#FFFAEB"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-amber-50"
+            }
+          }
+        },
+        "300": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.996078431372549,
+              0.7843137254901961,
+              0.29411764705882354
+            ],
+            "alpha": 1,
+            "hex": "#FEC84B"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-amber-300"
+            }
+          }
+        },
+        "500": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9686274509803922,
+              0.5647058823529412,
+              0.03529411764705882
+            ],
+            "alpha": 1,
+            "hex": "#F79009"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-amber-500"
+            }
+          }
+        },
+        "700": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.7098039215686275,
+              0.2784313725490196,
+              0.03137254901960784
+            ],
+            "alpha": 1,
+            "hex": "#B54708"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-amber-700"
+            }
+          }
+        }
+      },
+      "green": {
+        "50": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9254901960784314,
+              0.9921568627450981,
+              0.9529411764705882
+            ],
+            "alpha": 1,
+            "hex": "#ECFDF3"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-green-50"
+            }
+          }
+        },
+        "300": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.4235294117647059,
+              0.9137254901960784,
+              0.6509803921568628
+            ],
+            "alpha": 1,
+            "hex": "#6CE9A6"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-green-300"
+            }
+          }
+        },
+        "500": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.07058823529411765,
+              0.7176470588235294,
+              0.41568627450980394
+            ],
+            "alpha": 1,
+            "hex": "#12B76A"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-green-500"
+            }
+          }
+        },
+        "700": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.00784313725490196,
+              0.47843137254901963,
+              0.2823529411764706
+            ],
+            "alpha": 1,
+            "hex": "#027A48"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-green-700"
+            }
+          }
+        }
+      },
+      "alpha": {
+        "black-04": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 0.04
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-black-04"
+            }
+          }
+        },
+        "black-06": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 0.06
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-black-06"
+            }
+          }
+        },
+        "black-09": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 0.09
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-black-09"
+            }
+          }
+        },
+        "black-15": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 0.15
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-black-15"
+            }
+          }
+        },
+        "black-40": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 0.4
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-black-40"
+            }
+          }
+        },
+        "white-06": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              1,
+              1
+            ],
+            "alpha": 0.06
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-white-06"
+            }
+          }
+        },
+        "white-09": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              1,
+              1
+            ],
+            "alpha": 0.09
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-white-09"
+            }
+          }
+        },
+        "white-80": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              1,
+              1
+            ],
+            "alpha": 0.8
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-alpha-white-80"
+            }
+          }
+        }
+      },
+      "decor": {
+        "dot-light": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9411764705882353,
+              0.9490196078431372,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#F0F2FF"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-decor-dot-light"
+            }
+          }
+        },
+        "dot-dark": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.13725490196078433,
+              0.1607843137254902,
+              0.2823529411764706
+            ],
+            "alpha": 1,
+            "hex": "#232948"
+          },
+          "$extensions": {
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Primitive",
+              "cssVariable": "--evamate-primitive-decor-dot-dark"
+            }
+          }
+        }
+      }
+    },
+    "semantic": {
+      "surface": {
+        "canvas": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-canvas"
+            }
+          }
+        },
+        "sidebar": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.900}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-sidebar"
+            }
+          }
+        },
+        "base": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.900}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-base"
+            }
+          }
+        },
+        "subtle": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.50}",
+              "Dark": "{color.primitive.neutral.800}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-subtle"
+            }
+          }
+        },
+        "raised": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.800}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-raised"
+            }
+          }
+        },
+        "sunken": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.50}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-sunken"
+            }
+          }
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{color.primitive.alpha.black-06}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.alpha.black-06}",
+              "Dark": "{color.primitive.alpha.white-06}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-hover"
+            }
+          }
+        },
+        "pressed": {
+          "$type": "color",
+          "$value": "{color.primitive.alpha.black-09}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.alpha.black-09}",
+              "Dark": "{color.primitive.alpha.white-09}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-pressed"
+            }
+          }
+        },
+        "selected": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.50}",
+              "Dark": "{color.primitive.blue.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-selected"
+            }
+          }
+        },
+        "inverse": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.900}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.900}",
+              "Dark": "{color.primitive.neutral.25}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-inverse"
+            }
+          }
+        },
+        "scrim": {
+          "$type": "color",
+          "$value": "{color.primitive.alpha.black-40}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.alpha.black-40}",
+              "Dark": "{color.primitive.alpha.black-40}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-scrim"
+            }
+          }
+        },
+        "glass": {
+          "$type": "color",
+          "$value": "{color.primitive.alpha.white-80}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.alpha.white-80}",
+              "Dark": "{color.primitive.neutral.900}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-surface-glass"
+            }
+          }
+        }
+      },
+      "text": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.900}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.900}",
+              "Dark": "{color.primitive.neutral.25}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-primary"
+            }
+          }
+        },
+        "secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.700}",
+              "Dark": "{color.primitive.neutral.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-secondary"
+            }
+          }
+        },
+        "tertiary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.400}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.400}",
+              "Dark": "{color.primitive.neutral.400}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-tertiary"
+            }
+          }
+        },
+        "placeholder": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.400}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.400}",
+              "Dark": "{color.primitive.neutral.400}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-placeholder"
+            }
+          }
+        },
+        "disabled": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.400}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.400}",
+              "Dark": "{color.primitive.neutral.600}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-disabled"
+            }
+          }
+        },
+        "inverse": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-inverse"
+            }
+          }
+        },
+        "brand": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-brand"
+            }
+          }
+        },
+        "link": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-link"
+            }
+          }
+        },
+        "danger": {
+          "$type": "color",
+          "$value": "{color.primitive.red.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.red.700}",
+              "Dark": "{color.primitive.red.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-danger"
+            }
+          }
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "{color.primitive.amber.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.amber.700}",
+              "Dark": "{color.primitive.amber.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-warning"
+            }
+          }
+        },
+        "success": {
+          "$type": "color",
+          "$value": "{color.primitive.green.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.green.700}",
+              "Dark": "{color.primitive.green.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-text-success"
+            }
+          }
+        }
+      },
+      "icon": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.900}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.900}",
+              "Dark": "{color.primitive.neutral.25}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-primary"
+            }
+          }
+        },
+        "secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.700}",
+              "Dark": "{color.primitive.neutral.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-secondary"
+            }
+          }
+        },
+        "tertiary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.400}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.400}",
+              "Dark": "{color.primitive.neutral.400}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-tertiary"
+            }
+          }
+        },
+        "disabled": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.400}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.400}",
+              "Dark": "{color.primitive.neutral.600}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-disabled"
+            }
+          }
+        },
+        "inverse": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-inverse"
+            }
+          }
+        },
+        "brand": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-brand"
+            }
+          }
+        },
+        "danger": {
+          "$type": "color",
+          "$value": "{color.primitive.red.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.red.700}",
+              "Dark": "{color.primitive.red.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-danger"
+            }
+          }
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "{color.primitive.amber.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.amber.700}",
+              "Dark": "{color.primitive.amber.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-warning"
+            }
+          }
+        },
+        "success": {
+          "$type": "color",
+          "$value": "{color.primitive.green.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.green.700}",
+              "Dark": "{color.primitive.green.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-icon-success"
+            }
+          }
+        }
+      },
+      "border": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.300}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.300}",
+              "Dark": "{color.primitive.neutral.600}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-primary"
+            }
+          }
+        },
+        "secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.200}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.200}",
+              "Dark": "{color.primitive.neutral.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-secondary"
+            }
+          }
+        },
+        "tertiary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.100}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.100}",
+              "Dark": "{color.primitive.neutral.800}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-tertiary"
+            }
+          }
+        },
+        "strong": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.700}",
+              "Dark": "{color.primitive.neutral.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-strong"
+            }
+          }
+        },
+        "focus": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-focus"
+            }
+          }
+        },
+        "selected": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.400}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-selected"
+            }
+          }
+        },
+        "danger": {
+          "$type": "color",
+          "$value": "{color.primitive.red.500}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.red.500}",
+              "Dark": "{color.primitive.red.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-danger"
+            }
+          }
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "{color.primitive.amber.500}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.amber.500}",
+              "Dark": "{color.primitive.amber.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-warning"
+            }
+          }
+        },
+        "success": {
+          "$type": "color",
+          "$value": "{color.primitive.green.500}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.green.500}",
+              "Dark": "{color.primitive.green.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-border-success"
+            }
+          }
+        }
+      },
+      "action": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.600}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.600}",
+              "Dark": "{color.primitive.blue.400}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-primary"
+            }
+          }
+        },
+        "primary-hover": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.700}",
+              "Dark": "{color.primitive.blue.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-primary-hover"
+            }
+          }
+        },
+        "primary-pressed": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.700}",
+              "Dark": "{color.primitive.blue.200}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-primary-pressed"
+            }
+          }
+        },
+        "primary-disabled": {
+          "$type": "color",
+          "$value": "{color.primitive.alpha.black-09}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.alpha.black-09}",
+              "Dark": "{color.primitive.alpha.white-06}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-primary-disabled"
+            }
+          }
+        },
+        "on-primary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-on-primary"
+            }
+          }
+        },
+        "secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.900}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.900}",
+              "Dark": "{color.primitive.neutral.25}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-secondary"
+            }
+          }
+        },
+        "on-secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.neutral.0}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.neutral.0}",
+              "Dark": "{color.primitive.neutral.950}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-action-on-secondary"
+            }
+          }
+        }
+      },
+      "feedback": {
+        "danger-subtle": {
+          "$type": "color",
+          "$value": "{color.primitive.red.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.red.50}",
+              "Dark": "{color.primitive.red.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-danger-subtle"
+            }
+          }
+        },
+        "danger-strong": {
+          "$type": "color",
+          "$value": "{color.primitive.red.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.red.700}",
+              "Dark": "{color.primitive.red.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-danger-strong"
+            }
+          }
+        },
+        "warning-subtle": {
+          "$type": "color",
+          "$value": "{color.primitive.amber.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.amber.50}",
+              "Dark": "{color.primitive.amber.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-warning-subtle"
+            }
+          }
+        },
+        "warning-strong": {
+          "$type": "color",
+          "$value": "{color.primitive.amber.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.amber.700}",
+              "Dark": "{color.primitive.amber.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-warning-strong"
+            }
+          }
+        },
+        "success-subtle": {
+          "$type": "color",
+          "$value": "{color.primitive.green.50}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.green.50}",
+              "Dark": "{color.primitive.green.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-success-subtle"
+            }
+          }
+        },
+        "success-strong": {
+          "$type": "color",
+          "$value": "{color.primitive.green.700}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.green.700}",
+              "Dark": "{color.primitive.green.300}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-feedback-success-strong"
+            }
+          }
+        }
+      },
+      "decoration": {
+        "dot": {
+          "$type": "color",
+          "$value": "{color.primitive.decor.dot-light}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.decor.dot-light}",
+              "Dark": "{color.primitive.decor.dot-dark}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-decoration-dot"
+            }
+          }
+        },
+        "focus-halo": {
+          "$type": "color",
+          "$value": "{color.primitive.blue.100}",
+          "$extensions": {
+            "com.evamate.modes": {
+              "Light": "{color.primitive.blue.100}",
+              "Dark": "{color.primitive.blue.700}"
+            },
+            "com.evamate.figma": {
+              "collection": "EvaMate / Color / Semantic",
+              "cssVariable": "--evamate-color-decoration-focus-halo"
+            }
+          }
+        }
+      }
+    }
+  },
+  "space": {
+    "0": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-0"
+        }
+      }
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-2"
+        }
+      }
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-4"
+        }
+      }
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-6"
+        }
+      }
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-8"
+        }
+      }
+    },
+    "10": {
+      "$type": "dimension",
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-10"
+        }
+      }
+    },
+    "12": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-12"
+        }
+      }
+    },
+    "14": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-14"
+        }
+      }
+    },
+    "16": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-16"
+        }
+      }
+    },
+    "20": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-20"
+        }
+      }
+    },
+    "22": {
+      "$type": "dimension",
+      "$value": {
+        "value": 22,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-22"
+        }
+      }
+    },
+    "24": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-24"
+        }
+      }
+    },
+    "26": {
+      "$type": "dimension",
+      "$value": {
+        "value": 26,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-26"
+        }
+      }
+    },
+    "32": {
+      "$type": "dimension",
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-32"
+        }
+      }
+    },
+    "40": {
+      "$type": "dimension",
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-40"
+        }
+      }
+    },
+    "48": {
+      "$type": "dimension",
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-48"
+        }
+      }
+    },
+    "64": {
+      "$type": "dimension",
+      "$value": {
+        "value": 64,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-64"
+        }
+      }
+    },
+    "80": {
+      "$type": "dimension",
+      "$value": {
+        "value": 80,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-space-80"
+        }
+      }
+    }
+  },
+  "radius": {
+    "0": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-0"
+        }
+      }
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-4"
+        }
+      }
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-6"
+        }
+      }
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-8"
+        }
+      }
+    },
+    "10": {
+      "$type": "dimension",
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-10"
+        }
+      }
+    },
+    "12": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-12"
+        }
+      }
+    },
+    "16": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-16"
+        }
+      }
+    },
+    "20": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-20"
+        }
+      }
+    },
+    "full": {
+      "$type": "dimension",
+      "$value": {
+        "value": 999,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-radius-full"
+        }
+      }
+    }
+  },
+  "border": {
+    "width": {
+      "hairline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0.5,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-border-width-hairline"
+          }
+        }
+      },
+      "default": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-border-width-default"
+          }
+        }
+      },
+      "focus": {
+        "$type": "dimension",
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-border-width-focus"
+          }
+        }
+      }
+    }
+  },
+  "icon": {
+    "size": {
+      "xs": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-xs"
+          }
+        }
+      },
+      "sm": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-sm"
+          }
+        }
+      },
+      "md": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-md"
+          }
+        }
+      },
+      "lg": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-lg"
+          }
+        }
+      },
+      "xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-xl"
+          }
+        }
+      },
+      "2xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-2xl"
+          }
+        }
+      },
+      "3xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-icon-size-3xl"
+          }
+        }
+      }
+    }
+  },
+  "control": {
+    "size": {
+      "compact": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-compact"
+          }
+        }
+      },
+      "sm": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-sm"
+          }
+        }
+      },
+      "md": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-md"
+          }
+        }
+      },
+      "avatar": {
+        "$type": "dimension",
+        "$value": {
+          "value": 34,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-avatar"
+          }
+        }
+      },
+      "button": {
+        "$type": "dimension",
+        "$value": {
+          "value": 38,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-button"
+          }
+        }
+      },
+      "lg": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-lg"
+          }
+        }
+      },
+      "topbar": {
+        "$type": "dimension",
+        "$value": {
+          "value": 52,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Dimension",
+            "cssVariable": "--evamate-control-size-topbar"
+          }
+        }
+      }
+    }
+  },
+  "layout": {
+    "window-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 1200,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-window-width"
+        }
+      }
+    },
+    "window-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 800,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-window-height"
+        }
+      }
+    },
+    "sidebar-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 260,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-sidebar-width"
+        }
+      }
+    },
+    "workspace-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 940,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-workspace-width"
+        }
+      }
+    },
+    "content-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 776,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-content-width"
+        }
+      }
+    },
+    "composer-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 768,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-composer-width"
+        }
+      }
+    },
+    "composer-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 118,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-composer-height"
+        }
+      }
+    },
+    "topbar-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 52,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-topbar-height"
+        }
+      }
+    },
+    "dialog-pane-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 390,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-dialog-pane-width"
+        }
+      }
+    },
+    "editor-pane-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 810,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-editor-pane-width"
+        }
+      }
+    },
+    "thumbnail-rail-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 230,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-thumbnail-rail-width"
+        }
+      }
+    },
+    "safe-edge": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Dimension",
+          "cssVariable": "--evamate-layout-safe-edge"
+        }
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "ui": {
+        "$type": "fontFamily",
+        "$value": "PingFang SC",
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-family-ui"
+          }
+        }
+      },
+      "brand": {
+        "$type": "fontFamily",
+        "$value": "Praise",
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-family-brand"
+          }
+        }
+      }
+    },
+    "weight": {
+      "regular": {
+        "$type": "fontWeight",
+        "$value": 400,
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-weight-regular"
+          }
+        }
+      },
+      "medium": {
+        "$type": "fontWeight",
+        "$value": 500,
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-weight-medium"
+          }
+        }
+      },
+      "semibold": {
+        "$type": "fontWeight",
+        "$value": 600,
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-weight-semibold"
+          }
+        }
+      }
+    },
+    "size": {
+      "12": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-12"
+          }
+        }
+      },
+      "13": {
+        "$type": "dimension",
+        "$value": {
+          "value": 13,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-13"
+          }
+        }
+      },
+      "14": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-14"
+          }
+        }
+      },
+      "15": {
+        "$type": "dimension",
+        "$value": {
+          "value": 15,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-15"
+          }
+        }
+      },
+      "16": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-16"
+          }
+        }
+      },
+      "23": {
+        "$type": "dimension",
+        "$value": {
+          "value": 23,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-23"
+          }
+        }
+      },
+      "32": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-size-32"
+          }
+        }
+      }
+    },
+    "line-height": {
+      "12": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-12"
+          }
+        }
+      },
+      "16": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-16"
+          }
+        }
+      },
+      "20": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-20"
+          }
+        }
+      },
+      "22": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-22"
+          }
+        }
+      },
+      "24": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-24"
+          }
+        }
+      },
+      "28": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-28"
+          }
+        }
+      },
+      "40": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-line-height-40"
+          }
+        }
+      }
+    },
+    "letter-spacing": {
+      "default": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-letter-spacing-default"
+          }
+        }
+      },
+      "compact": {
+        "$type": "dimension",
+        "$value": {
+          "value": -0.3125,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Typography",
+            "cssVariable": "--evamate-font-letter-spacing-compact"
+          }
+        }
+      }
+    }
+  },
+  "opacity": {
+    "disabled": {
+      "$type": "number",
+      "$value": 0.38,
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Behavior",
+          "cssVariable": "--evamate-opacity-disabled"
+        }
+      }
+    },
+    "muted": {
+      "$type": "number",
+      "$value": 0.56,
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Behavior",
+          "cssVariable": "--evamate-opacity-muted"
+        }
+      }
+    },
+    "hover": {
+      "$type": "number",
+      "$value": 0.06,
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Behavior",
+          "cssVariable": "--evamate-opacity-hover"
+        }
+      }
+    },
+    "pressed": {
+      "$type": "number",
+      "$value": 0.09,
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Behavior",
+          "cssVariable": "--evamate-opacity-pressed"
+        }
+      }
+    },
+    "scrim": {
+      "$type": "number",
+      "$value": 0.4,
+      "$extensions": {
+        "com.evamate.figma": {
+          "collection": "EvaMate / Behavior",
+          "cssVariable": "--evamate-opacity-scrim"
+        }
+      }
+    }
+  },
+  "motion": {
+    "duration": {
+      "instant": {
+        "$type": "duration",
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Behavior",
+            "cssVariable": "--evamate-motion-duration-instant"
+          }
+        }
+      },
+      "fast": {
+        "$type": "duration",
+        "$value": {
+          "value": 120,
+          "unit": "ms"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Behavior",
+            "cssVariable": "--evamate-motion-duration-fast"
+          }
+        }
+      },
+      "standard": {
+        "$type": "duration",
+        "$value": {
+          "value": 180,
+          "unit": "ms"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Behavior",
+            "cssVariable": "--evamate-motion-duration-standard"
+          }
+        }
+      },
+      "slow": {
+        "$type": "duration",
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Behavior",
+            "cssVariable": "--evamate-motion-duration-slow"
+          }
+        }
+      }
+    },
+    "easing": {
+      "standard": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.2,
+          0,
+          0,
+          1
+        ],
+        "$extensions": {
+          "com.evamate.figma": {
+            "collection": "EvaMate / Behavior",
+            "cssVariable": "--evamate-motion-easing-standard"
+          }
+        }
+      }
+    }
+  }
+}

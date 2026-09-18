@@ -1094,3 +1094,83 @@
   .eva-drive__scroll { padding: 22px 22px 40px; }
   .eva-drive__actions { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   一级导航 · 响应式收纳（Priority+ 溢出 → 「更多」二级浮层）
+   矮视口下不再纵向滚动：放不下的入口收进底部「更多」，点击向右
+   飞出二级浮层。触发器与浮层项复用既有导航项／账户菜单的尺寸、
+   圆角与状态层 token，不新造视觉语言。实现见 009-7-patch-sider.js。
+   ============================================================ */
+.eva-sidebar-nav {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  /* 仅作测量滞后一帧时的兜底裁剪，稳定态不产生滚动条。 */
+  overflow: hidden;
+}
+
+/* 「更多」与上方分组保持与分组间一致的 14px 节奏，并始终贴在导航区末尾。 */
+.eva-nav-section--more {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.eva-nav-more {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--eva-radius-control);
+  background: transparent;
+  color: var(--semi-color-text-0, #1c1f23);
+  font: 400 15px/22px var(--gds-font-family-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+
+.eva-nav-more__icon { flex: none; color: var(--semi-color-text-1, #4e5969); }
+.eva-nav-more__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.eva-nav-more:hover { background: var(--eva-nav-hover); }
+.eva-nav-more:active,
+.eva-nav-more.is-open { background: var(--eva-nav-pressed); }
+.eva-nav-more:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+
+/* 折叠态：与折叠导航项同构（图标上、文字下、56px 方块）。 */
+.eva-nav-section--more.is-collapsed { padding-top: 8px; }
+.eva-nav-section--more.is-collapsed .eva-nav-entry--more { width: calc(100% - 4px); margin: 0 2px; }
+.eva-nav-section--more.is-collapsed .eva-nav-more {
+  height: 56px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 2px;
+  border-radius: 10px;
+}
+.eva-nav-section--more.is-collapsed .eva-nav-more__icon { width: 20px; height: 20px; }
+.eva-nav-section--more.is-collapsed .eva-nav-more__label {
+  max-width: 100%;
+  color: var(--semi-color-text-1, #4e5969);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* 二级浮层：复用账户菜单的卡片（圆角／底色／投影由 .eva-account-menu 提供），
+   内部直接承载导航项本体，保留分组标题以维持上下文。 */
+.eva-nav-more-pop .semi-dropdown-content { padding: 0; }
+.eva-nav-more-menu {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-height: min(70vh, 520px);
+  padding: 6px;
+  overflow-y: auto;
+}
+.eva-nav-more-menu .eva-nav-section + .eva-nav-section { margin-top: 8px; }
+.eva-nav-more-menu .eva-nav-section__title { height: 24px; padding: 0 8px; }

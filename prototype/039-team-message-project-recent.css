@@ -40,7 +40,7 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    border-bottom: var(--gds-border-standard) solid var(--eva-border-faint);
+    border-bottom: var(--gds-border-standard) solid var(--eva-rail-divider);
   }
 
   /* 滑动下划线：宽度为单个 Tab（两项等宽，各 50%），压在弱基线之上。 */
@@ -207,3 +207,42 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 .eva-list-scroll-track { opacity:0;visibility:hidden;transition:opacity 150ms ease,visibility 150ms; }
 .eva-list-scroll-track.is-visible { opacity:1;visibility:visible; }
 @media(prefers-reduced-motion:reduce) { .eva-list-scroll-track { transition:none; } }
+
+/* 置顶区：通栏底色作为「背景上的一块特殊区域」，行级 hover/选中仍是各自独立的圆角
+ * 矩形容器，两者分走不同视觉通道，可叠加共存而不互相抹除。
+ * · 通栏由 ::before 承担，不改行盒本身 → list-insets 的左右对称几何不受影响。
+ * · -10px 精确抵消 .ch-list__scroll 的 10px 水平内边距，齐到中栏两边且不产生横向溢出。
+ * · bottom:-1px 跨过行间 1px 间隙，相邻置顶行连成整片，中间不出现细白线（即分割线）。
+ * · isolation 把负层级锁在列表内容层，保证通栏底稳定压在行背景之下、容器背景之上。
+ * 色阶以「未置顶行 hover 的明度增量」为基准 1.0，全部由 --eva-conversation-row-hover
+ * 派生，不引入独立色值：通栏取 0.7×，置顶区内 hover 取约 1.2×。注意同色叠加无法超过
+ * 100%（hover 压在 hover 上仍是 hover），故 1.2× 由混入色阶下一档 neutral-200 实现。 */
+body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-content:has(.eva-recent-conversation-pinned) {
+  isolation: isolate;
+}
+.ch-layout .wk-conversationlist-item.eva-recent-conversation-pinned::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: -1px;
+  left: -10px;
+  right: -10px;
+  /* 0.7× 基准：未置顶 hover 七成 + 白底三成。 */
+  background: color-mix(in srgb, var(--eva-conversation-row-hover) 70%, var(--eva-surface-primary));
+  pointer-events: none;
+}
+/* 末行收口，通栏不越过置顶区边界。 */
+.ch-layout .eva-recent-conversation-pinned:not(:has(+ .eva-recent-conversation-pinned))::before {
+  bottom: 0;
+}
+/* 区内 hover：圆角矩形容器形态不变，底色约 1.2× 基准，压在通栏之上仍清晰可辨。 */
+.ch-layout .wk-conversationlist-item.eva-recent-conversation-pinned:not(.wk-conversationlist-item-selected):hover {
+  background-color: color-mix(in srgb, var(--eva-conversation-row-hover) 75%, var(--eva-c-neutral-200));
+}
+
+/* 列表紧贴关注/最近 Tab：去掉 vendor .ch-list__scroll 的 10px 顶部内边距，
+ * 消除 Tab 基线与首行之间的空隙。仅限带该 Tab 的消息中栏，其它入口不受影响。 */
+body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__scroll {
+  padding-top: 0;
+}
