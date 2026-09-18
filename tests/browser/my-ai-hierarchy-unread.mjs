@@ -98,13 +98,20 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
     assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
+    assert.equal(await page.locator('.eva-ai-team__identity-heading .eva-ai-team__chevron').count(), 0, 'AI 身份行右侧不再显示展开箭头');
     const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: '通用助理' }).first();
     const assistantToggle = assistantIdentity.locator('.eva-ai-team__identity-button');
-    await assistantToggle.click();
+    const assistantDisclosure = assistantIdentity.locator('.eva-ai-team__identity-sessions-more');
+    assert.equal(await assistantDisclosure.innerText(), '展开查看');
+    assert.equal(await assistantDisclosure.getAttribute('aria-expanded'), 'false');
+    await assistantDisclosure.click();
+    assert.equal(await assistantDisclosure.innerText(), '收起');
+    assert.equal(await assistantToggle.getAttribute('aria-expanded'), 'true', '会话底部入口与身份行共用折叠状态');
     const assistantNameBox = await assistantIdentity.locator('.eva-ai-team__identity-name').boundingBox();
     const assistantSessionBox = await assistantIdentity.locator('.eva-ai-team__session-title').first().boundingBox();
     assert.ok(assistantNameBox && assistantSessionBox && Math.abs(assistantNameBox.x - assistantSessionBox.x) < 1, '个人助理会话名称与助理名称起点对齐');
-    await assistantToggle.click();
+    await assistantDisclosure.click();
+    assert.equal(await assistantDisclosure.innerText(), '展开查看');
 
     const fixture = await page.evaluate(() => {
       const groupStore = window.EvaMyAITeamGroup;
@@ -285,6 +292,7 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
     await onlySession.waitFor({ state: 'detached' });
 
     assert.equal(await persona.locator('.eva-ai-team__session').count(), 0, '删空后不显示“新对话”或“新建会话”占位');
+    assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '删空后不显示无意义的展开查看入口');
     assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 0);
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
@@ -308,7 +316,9 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
     const restoredPersona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
     await restoredPersona.waitFor({state:'visible'});
     assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').count(),0,'返回后身份会话遵循默认收起合同');
-    await restoredPersona.locator('.eva-ai-team__identity-button').click();
+    const restoredDisclosure = restoredPersona.locator('.eva-ai-team__identity-sessions-more');
+    assert.equal(await restoredDisclosure.innerText(), '展开查看');
+    await restoredDisclosure.click();
     await restoredPersona.locator('.eva-ai-team__session-title').filter({hasText:'删空后的第一次消息'}).waitFor({state:'visible'});
     assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').filter({ hasText: '删空后的第一次消息' }).count(), 1, '入口往返后新会话仍在所属分身下');
     assert.deepEqual(errors, []);

@@ -150,11 +150,18 @@
 .eva-ai-team__team-thread-row:focus-within .wk-conv-compact-badges { opacity: 0; }
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):hover .wk-conv-compact-item--thread,
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):focus-within .wk-conv-compact-item--thread { padding-right: 36px; }
-.eva-ai-team__team-threads-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
-.eva-ai-team__team-threads-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
-.eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
-.eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
+.eva-ai-team__team-threads-more,
+.eva-ai-team__identity-sessions-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
+.eva-ai-team__team-threads-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); }
+.eva-ai-team__identity-sessions-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-session-indent); }
+.eva-ai-team__team-threads-more:hover,
+.eva-ai-team__identity-sessions-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
+.eva-ai-team__team-threads-more:focus-visible,
+.eva-ai-team__identity-sessions-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__team-threads-more-chevron,
+.eva-ai-team__identity-sessions-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__team-threads-more-chevron.is-expanded,
+.eva-ai-team__identity-sessions-more-chevron.is-expanded { transform: rotate(180deg); }
 .eva-ai-team__direct-groups { margin-top: 0; }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
@@ -241,10 +248,6 @@
 .eva-ai-team__identity-button > .ai-badge,
 .eva-ai-team__identity-button > .eva-identity-avatar { flex-shrink: 0; }
 .eva-ai-team__identity-button > .eva-identity-name-row { flex: 1; }
-/* The assistant disclosure is a prototype-specific 12px right-chevron;
-   it is not the group-chat subzone toggle. */
-.eva-ai-team__chevron { flex: 0 0 12px; color: var(--gds-color-text-secondary); transition: transform 120ms ease; }
-.eva-ai-team__chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__role-label { flex-shrink: 0; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); color: var(--gds-color-text-secondary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__identity-status { margin: 0 0 var(--gds-space-2) var(--gds-space-8); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
 .eva-ai-team__session {
@@ -541,16 +544,16 @@
 .eva-ai-team__source-options input[type="radio"] { flex-shrink: 0; width: 16px; height: 16px; margin: 0; accent-color: var(--semi-color-text-1); cursor: inherit; }
 .eva-ai-team__source-options .eva-ai-team__connection-option:has(input:focus-visible) { outline: 2px solid var(--semi-color-text-2); outline-offset: -2px; }
 
-/* One avatar/text grid and one trailing disclosure column for all identities. */
+/* One avatar/text grid; session disclosure now lives below the session list. */
 .eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor {
-  position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
 }
 .eva-ai-team__identity-heading .eva-identity-name-row > .eva-ai-team__unread-dot { margin-left: auto; }
-.eva-ai-team__identity-heading .eva-ai-team__identity-button { padding-right: 24px; }
+.eva-ai-team__identity-heading .eva-ai-team__identity-button { padding-right: var(--gds-space-2); }
 .eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
-.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 60px; }
+.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 40px; }
 .eva-ai-team__identity-heading:hover .eva-ai-team__unread-dot,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__unread-dot,
 .eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__unread-dot { opacity: 0; }
@@ -574,8 +577,6 @@
 .eva-ai-team__fixed-group-tree .wk-conv-compact-item--thread .wk-conv-compact-name { font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread):hover { background: var(--eva-rail-hover); }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread).wk-conv-compact-item--selected { background: var(--eva-rail-selected); }
-
-.eva-ai-team__identity-heading .eva-ai-team__chevron { position:absolute;right:8px;top:10px; }
 
 /* 列表悬停复用我的消息；选中态与悬停操作仍由原有规则控制。 */
 :is(.eva-ai-team__team-heading, .eva-ai-team__identity-heading, .eva-ai-team__session-row, .eva-ai-team__team-thread-row):hover {

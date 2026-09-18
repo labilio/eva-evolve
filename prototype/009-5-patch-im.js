@@ -797,6 +797,12 @@ function EvaAITeamPage() {
         h(Dropdown.Item,{onClick:()=>{groupStore.updateThread(group.id,record.id,{deleted:true});if(selection.identityId===group.id&&selection.sessionId===record.id)choose(group.id,null);}},'删除'))},
       h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon),title:'会话操作','aria-label':'会话操作 '+record.name})));
   }
+  function identitySessionsDisclosure(item,expanded,hasSessions){
+    if(!hasSessions)return null;
+    return h('button',{type:'button',className:'eva-ai-team__identity-sessions-more','aria-expanded':expanded,'aria-controls':'ai-sessions-'+item.id,'aria-label':(expanded?'收起 ':'展开查看 ')+item.name+' 会话',onClick:()=>setCollapsed(value=>({...value,[item.id]:expanded}))},
+      h('span',null,expanded?'收起':'展开查看'),
+      h(ChevronDown,{size:12,className:'eva-ai-team__identity-sessions-more-chevron'+(expanded?' is-expanded':''),'aria-hidden':true}));
+  }
   function identityItem(i){
     const sessions=snapshot.sessions.filter(s=>s.identityId===i.id).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt));
     const expanded=collapsed[i.id]===false, emptyPersona=i.role==='persona'&&sessions.length===0, hasUnread=sessions.some(item=>item.unreadCount>0), abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced'),assistant=i.role==='assistant';
@@ -805,8 +811,7 @@ function EvaAITeamPage() {
         assistant&&h(TooltipComponent,{content:'编辑配置',position:'right'},h('button',{type:'button',className:'eva-ai-team__assistant-avatar','aria-label':'编辑配置 '+i.name,onClick:event=>{event.stopPropagation();openAssistantConfig(i,event.currentTarget);},onKeyUp:event=>identityMenuKey(event,i)},h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}))),
         h('button',{type:'button',className:'eva-ai-team__identity-button'+(assistant?' has-config-avatar':''),'aria-expanded':expanded,'aria-controls':'ai-sessions-'+i.id,onKeyUp:event=>identityMenuKey(event,i),onClick:()=>{setCollapsed(value=>({...value,[i.id]:emptyPersona?false:expanded}));if(emptyPersona)choose(i.id,null);}},
           !assistant&&h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
-          h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(i.name+'有未读消息')),
-          h(ChevronRight,{size:12,className:'eva-ai-team__chevron'+(expanded?' is-expanded':'')})),
+          h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(i.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(identity?.id===i.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(i.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
       abnormal&&h('p',{className:'eva-ai-team__identity-status'},status(i)),
       expanded&&h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+i.id},
@@ -814,7 +819,8 @@ function EvaAITeamPage() {
         sessions.map(s=>h('div',{key:s.id,className:'eva-ai-team__session-row'+(session?.id===s.id?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':session?.id===s.id?'true':undefined,onClick:()=>choose(i.id,s.id)},h('span',{className:'eva-ai-team__session-title',title:s.title},s.title),unreadBadge(s.unreadCount)),
           h('div',{className:'eva-ai-team__session-actions'},conversationMenu(i.id,s)))),
-        !emptyPersona&&sessions.length===0&&!(identity?.id===i.id&&!session)&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(i.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
+        !emptyPersona&&sessions.length===0&&!(identity?.id===i.id&&!session)&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(i.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))),
+      identitySessionsDisclosure(i,expanded,sessions.length>0));
   }
   function employeeItem(item){
     const sessions=digitalStore.sessions(item.id), expanded=collapsed[item.id]===false, hasUnread=sessions.some(session=>session.unreadCount>0);
@@ -822,14 +828,14 @@ function EvaAITeamPage() {
       h('div',{className:'eva-ai-team__identity-heading',onContextMenu:event=>openIdentityMenu(event,item,true)},
         h('button',{type:'button',className:'eva-ai-team__identity-button','aria-expanded':expanded,'aria-controls':'ai-sessions-'+item.id,onKeyUp:event=>identityMenuKey(event,item,true),onClick:()=>setCollapsed(value=>({...value,[item.id]:expanded}))},
           window.EvaAIIdentity.avatar(digitalStore.appearance(item),22,h),
-          h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(item.name+'有未读消息')),
-          h(ChevronRight,{size:12,className:'eva-ai-team__chevron'+(expanded?' is-expanded':'')})),
+          h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(item.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(employee?.id===item.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(item.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
       expanded&&h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+item.id},
         sessions.map(itemSession=>{const selected=employee?.id===item.id&&employeeSession?.id===itemSession.id;return h('div',{key:itemSession.id,className:'eva-ai-team__session-row'+(selected?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':selected?'true':undefined,onClick:()=>choose(item.id,itemSession.id)},h('span',{className:'eva-ai-team__session-title',title:itemSession.title},itemSession.title),unreadBadge(itemSession.unreadCount)),
           h('div',{className:'eva-ai-team__session-actions'},conversationMenu(item.id,itemSession,true)));}),
-        !sessions.length&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(item.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))));
+        !sessions.length&&h('button',{type:'button',className:'eva-ai-team__session',onClick:()=>newConversation(item.id)},h(Plus$c,{size:16}),h('span',{className:'eva-ai-team__session-title'},'新建会话'))),
+      identitySessionsDisclosure(item,expanded,sessions.length>0));
   }
   function roleGroup(role,label,items) {
     const groupId='eva-ai-team-group-'+role, groupCollapsed=collapsedGroups[role], hasUnread=role==='digital'&&items.some(item=>digitalStore.hasUnread(item.id));
