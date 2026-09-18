@@ -416,6 +416,27 @@ body[theme-mode="dark"] {
 :root[data-theme="dark"] .ch-thread-item:hover { background: var(--eva-overlay-hover); }
 :root[data-theme="dark"] .ch-sink-btn,
 :root[data-theme="dark"] .ch-refcard__ask { background: var(--eva-surface-primary); }
+
+/* —— 消息输入框：给常驻操作面一个真实的「抬升」——
+   实测三页（Eva 同学 / 我的消息 / 我的 Agent）输入框底与画布同为 #242424，
+   ΔL*=0.00，整块「陷」进画布。浅色靠白底上的 #dbdbdb 描边撑住边界，暗色里
+   描边降到 #4a4a4a 后已托不住，且无任何底色差或投影。
+   按 GDS §3.4「层级用中性阶表达，越靠上越亮」——输入框是浮于会话画布之上的
+   常驻操作面，取比画布高一档的 surface-paper(#2a2a2a)，ΔL*≈2.9。
+   同时把描边降一档到 faint：既有面就不需要强描边，避免双重强调。 */
+:root[data-theme="dark"] .wk-messageinput-card,
+:root[data-theme="dark"] .eva-personal-workspace .eva-composer {
+  background: var(--eva-surface-paper);
+}
+/* 描边只作用于非聚焦态：用 :not(:focus-within) 让开，否则本规则 (0,3,0) 的
+   特异度会压过 vendor/051 的 :focus-within 聚焦边框，暗色下聚焦不变蓝。
+   聚焦态的边框与光环由 017 / 051 的 :focus-within 规则负责（暗色下
+   --eva-border-focus 已提亮为 blue-300，低饱和光环随 --eva-action-primary-08
+   重算，无需在此重列）。 */
+:root[data-theme="dark"] .wk-messageinput-card:not(:focus-within),
+:root[data-theme="dark"] .eva-personal-workspace .eva-composer:not(:focus-within) {
+  border-color: var(--eva-border-faint);
+}
 /* 系统提示胶囊（「派生了任务」「创建了子区」等）：vendor 底 #f2f3f4 + 文字
    rgba(28,28,35,.4)。原先只接管了底（→ subtle，保持浅色「比画布略下沉」的
    关系），文字没接管，暗色下变成黑字压黑底（实测合成后 CR 1.01，完全隐形）。
