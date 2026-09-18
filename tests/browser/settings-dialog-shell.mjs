@@ -89,6 +89,33 @@ test('Settings shell: side column spans full height, titlebar sits only above th
   assert.ok(Math.abs(geo.title.l-geo.card.l)<=1,`右栏标题与卡片左缘同轴 (${geo.title.l} vs ${geo.card.l})`);
 });
 
+test('Settings shell: mask covers the whole window and blocks click-through to the titlebar',async()=>{
+  await openSettings('light');
+  await page.locator('.eva-settings-dialog .semi-modal:visible').waitFor();
+  const before=await page.evaluate(()=>{
+    const mask=document.querySelector('.eva-settings-portal .semi-modal-mask');
+    const r=mask.getBoundingClientRect();
+    const btn=document.querySelector('.app-titlebar__button');
+    const br=btn.getBoundingClientRect();
+    return {mask:{t:r.top,l:r.left,b:r.bottom,r:r.right},win:{w:innerWidth,h:innerHeight},
+      btnPoint:{x:br.x+br.width/2,y:br.y+br.height/2},siderW:document.querySelector('.layout-sider').getBoundingClientRect().width};
+  });
+  // 蒙层必须顶到窗口最上缘（把顶栏一起盖住），不能再从 --topbar-height 往下起。
+  assert.equal(before.mask.t,0,'蒙层顶边贴窗口顶边，盖住顶栏');
+  assert.equal(before.mask.l,0);
+  assert.ok(Math.abs(before.mask.b-before.win.h)<=1,'蒙层底边贴窗口底边');
+  assert.ok(Math.abs(before.mask.r-before.win.w)<=1,'蒙层右边贴窗口右边');
+  // 命中测试：顶栏收起按钮原坐标现在应落在蒙层/弹窗上，不再是顶栏按钮本身。
+  const hit=await page.evaluate(({x,y})=>{const el=document.elementFromPoint(x,y);return {tag:el.tagName,inTitlebar:!!el.closest('.app-titlebar')};},before.btnPoint);
+  assert.equal(hit.inTitlebar,false,'顶栏按钮被蒙层挡住，命中测试不再落在顶栏上');
+  // 真点一下同一坐标：侧栏不该被收起（说明点击没有穿透到顶栏），且设置弹窗仍开着（maskClosable:false）。
+  await page.mouse.click(before.btnPoint.x,before.btnPoint.y);
+  await page.waitForTimeout(200);
+  const siderWAfter=await page.evaluate(()=>document.querySelector('.layout-sider').getBoundingClientRect().width);
+  assert.equal(siderWAfter,before.siderW,'点击未穿透蒙层改变顶栏/侧栏状态');
+  assert.equal(await page.locator('.eva-settings-dialog .semi-modal:visible').count(),1,'蒙层不可点关（maskClosable:false），弹窗仍开着');
+});
+
 test('Settings shell: titlebar shows the current page name and closes the dialog',async()=>{
   await openSettings('light');
   for(const [id,label] of TABS){

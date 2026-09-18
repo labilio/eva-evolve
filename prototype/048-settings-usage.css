@@ -1,4 +1,7 @@
-.eva-settings-portal{position:fixed;inset:var(--topbar-height) 0 0;z-index:1000;pointer-events:none}
+/* 全窗口蒙层：设置是独立设置项，不是「内容区子层」，蒙层与堆叠都应盖过顶栏，
+ * 顶栏在设置打开时应完全失活（之前 inset 从 --topbar-height 起，蒙层漏出顶栏一条，
+ * 鼠标可穿透点顶栏按钮、真的改变了应用状态，如收起侧栏）。 */
+.eva-settings-portal{position:fixed;inset:0;z-index:1000;pointer-events:none}
 .eva-settings-portal .semi-modal-mask,.eva-settings-portal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}
 .eva-settings-dialog .semi-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;height:min(720px, calc(100vh - var(--topbar-height) - 48px));max-height:100%;max-width:100%;padding:0}
 .eva-settings-dialog .semi-modal-content{box-sizing:border-box;height:100%;max-height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating)}
