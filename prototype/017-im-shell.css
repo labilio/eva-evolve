@@ -417,7 +417,7 @@
 .wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-inputbox { flex:none; width:100%; margin-right:0; }
 .wk-messageinput-card:has(.eva-im-reply-draft) .wk-messageinput-actionbox { align-self:flex-end; max-width:100%; flex-wrap:wrap; }
 
-.eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:360px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-default,#fff); box-shadow:0 8px 24px var(--eva-overlay-hover); z-index:30; color:var(--eva-text-primary); }
+.eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:360px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
 .eva-im-mention-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:500; }
 .eva-im-mention-heading button { border:0; background:transparent; color:var(--eva-text-secondary); padding:4px; display:flex; cursor:pointer; }
 .eva-im-mention-options { max-height:240px; overflow-y:auto; }
