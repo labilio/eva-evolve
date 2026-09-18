@@ -314,6 +314,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__team-toggle'/);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-toggle/);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-button\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-identity-content-inset\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
