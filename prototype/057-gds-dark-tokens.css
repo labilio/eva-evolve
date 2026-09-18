@@ -234,10 +234,8 @@ body .semi-always-dark {
   background: var(--eva-conversation-rail-surface);
   border-right-color: var(--eva-border-faint);
 }
-/* 列内标题栏：056 的公共契约取 --gds-color-surface-primary（=工作区色），
-   中栏改色后会与主体错开，故在暗色下跟随中栏。该类只挂在两处中栏标题栏
-   （.ch-list__top、.eva-ai-team__sidebar-header），不影响工作区。 */
-:root[data-theme="dark"] .eva-rail-header { background: var(--eva-conversation-rail-surface); }
+/* 列内标题栏：056 的公共契约已直接消费 --eva-conversation-rail-surface（见该文件
+   注释），随主题 token 自动换值，此处无需再单独覆写暗色。 */
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-msg .eva-inline-project-panel { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow { background: var(--eva-surface-subtle); }
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .eva-space-workflow__node { background: var(--eva-surface-primary); }

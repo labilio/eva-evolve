@@ -9,7 +9,13 @@
   height: var(--eva-page-heading-height);
   min-height: var(--eva-page-heading-height);
   padding: var(--gds-space-2) var(--gds-space-4);
-  background: var(--gds-color-surface-primary);
+  /* 三栏由左到右「由深到浅」递进：浅色 #f5f6f8 → #fdfdfd → #ffffff（暗色同向）。
+   * 中栏主体（.ch-list / .eva-personal-sider-panel / .eva-ai-team__sidebar）
+   * 取 --eva-conversation-rail-surface，标题栏必须同源，否则同一列上下两截色
+   * ——之前误用工作区色 --gds-color-surface-primary，浅色下比主体亮 2 阶（#fff vs
+   * #fdfdfd），边界处出现可见接缝。两个 token 值虽接近，但硬边界会放大微小色差
+   * （Mach band）。改用同一 token 后浅暗两态都与主体自动同色，无需分别覆盖。 */
+  background: var(--eva-conversation-rail-surface);
   border-bottom: var(--gds-border-standard) solid var(--gds-color-border-subtle);
 }
 .eva-rail-header :is(h1, .eva-personal-rail-title) {
