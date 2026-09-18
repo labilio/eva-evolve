@@ -277,8 +277,11 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(messageSwitcherCss, /background:\s*var\(--eva-conversation-row-hover\)/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-conversation-row-hover:\s*#f2f3f5/);
   assert.match(aiTeamCss, /--eva-rail-group-radius:\s*7px/);
-  assert.match(aiTeamCss, /--eva-rail-primary-row-radius:\s*var\(--wk-r-xs, 3px\)/);
-  assert.match(aiTeamCss, /--eva-rail-nested-row-radius:\s*var\(--wk-r-xs, 3px\)/);
+  // 2026-09-18：行圆角由 var(--wk-r-xs,3px) 对齐到会话行的 8px。此前静态选中块是 3px、
+  // 悬停块是 8px（同一行两个形状），且与「我的消息」的 8px 选中块不一致。
+  assert.match(aiTeamCss, /--eva-rail-primary-row-radius:\s*var\(--eva-conversation-row-radius, 8px\)/);
+  assert.match(aiTeamCss, /--eva-rail-nested-row-radius:\s*var\(--eva-conversation-row-radius, 8px\)/);
+  assert.match(aiTeamCss, /\.eva-ai-team \.wk-conv-compact-item\s*\{\s*border-radius:\s*var\(--eva-conversation-row-radius\)/s);
   // 2026-09-17：焦点背景由 :focus-within 改为 :has(:focus-visible)。
   // :focus-within 在鼠标点击后仍成立，会把 hover 灰残留在行上，与真正的选中态（蓝）
   // 并列出现，看起来像两个不同样式的选中项。容器不可聚焦故用 :has() 下探。

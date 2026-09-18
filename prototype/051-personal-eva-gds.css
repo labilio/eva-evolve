@@ -444,7 +444,15 @@
 .eva-composer-input-area { height:66px; display:flex; align-items:baseline; gap:6px; padding:14px 16px 0; box-sizing:border-box; }
 .eva-personal-workspace textarea.eva-composer-prompt { flex:1; width:100%; min-width:0; height:52px; min-height:0; padding:0; margin:0; resize:none; border:0; outline:none; background:transparent; color:var(--eva-text-primary); font:400 15px/24px var(--eva-font-sans); }
 .eva-personal-workspace textarea.eva-composer-prompt::placeholder { color:var(--eva-text-muted); }
-.eva-personal-workspace .eva-composer:focus-within { border-color:var(--eva-border-focus); }
+/* 聚焦态与 IM 输入框（.wk-messageinput-card:focus-within）保持同一契约：
+   边框转焦点色 + 2px 低饱和光环。原先只有 border-color 一句，而 .eva-composer
+   当时没有 border（048 未定义），等于无任何激活反馈——键盘用户无法确认焦点。
+   048 已补 1px 常驻描边作为载体，故此处补齐光环。 */
+.eva-personal-workspace .eva-composer:focus-within {
+  border-color: var(--eva-border-focus);
+  box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline),
+              0 0 0 2px var(--eva-action-primary-08);
+}
 .eva-personal-workspace .eva-composer-wrap--newchat { height:148px; }
 .eva-personal-workspace .eva-composer-wrap--newchat .eva-composer { height:104px; }
 .eva-personal-workspace .eva-composer-wrap--newchat .eva-composer-input-area { height:58px; padding:12px 16px 0; }

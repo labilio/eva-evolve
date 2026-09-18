@@ -33,8 +33,11 @@
   --eva-rail-selected: var(--eva-conversation-row-selected);
   --eva-rail-group-hover: var(--eva-conversation-row-hover);
   --eva-rail-group-radius: 7px;
-  --eva-rail-primary-row-radius: var(--wk-r-xs, 3px);
-  --eva-rail-nested-row-radius: var(--wk-r-xs, 3px);
+  /* 2026-09-18：行圆角与「我的消息」同源。此前为 var(--wk-r-xs, 3px)=3px，而消息中栏
+     会话行是 8px（039），GDS §7.2 侧栏行圆角亦为 8，导致同类会话行在两页形状不一致。
+     选中底色早已在上面对齐到 --eva-conversation-row-selected，圆角当时漏掉，此处补齐。 */
+  --eva-rail-primary-row-radius: var(--eva-conversation-row-radius, 8px);
+  --eva-rail-nested-row-radius: var(--eva-conversation-row-radius, 8px);
   --eva-rail-name-size: 13px;
   --eva-rail-label-size: 13px;
   --eva-rail-line-height: 1.4;
@@ -580,6 +583,13 @@
 }
 .eva-ai-team__team-thread-row .wk-conv-compact-item--thread:hover {
   background: var(--eva-rail-hover);
+  border-radius: var(--eva-conversation-row-radius);
+}
+/* 2026-09-18：内层会话行圆角与外壳同源。上面两条只在 :hover 给了 8px，静态与选中态
+   仍落回 vendor 的 .wk-conv-compact-item{border-radius:var(--wk-r-xs)}=3px，于是同一行
+   悬停是 8px、选中是 3px，且与「我的消息」的 8px 选中块对不齐。这里无条件对齐。
+   (0,2,0) 高于 vendor 的 (0,1,0)，足以覆盖且不影响 .eva-msg 作用域。 */
+.eva-ai-team .wk-conv-compact-item {
   border-radius: var(--eva-conversation-row-radius);
 }
 /* 子区行选中态：静态与 hover 同色（选中不因悬停而改变）。
