@@ -92,7 +92,6 @@
 /* 图标按钮的 hover 是覆盖层而非选中表面（evamate §3.1「hover 与 pressed 是
    覆盖层，不是新的永久表面」），故走中性 hover，不用 selected 的浅蓝。 */
 .eva-ai-team__identity-action:hover { color: var(--eva-rail-primary); background: var(--eva-rail-hover); }
-.eva-ai-team__edit-config:hover { background: var(--eva-rail-hover); }
 .eva-ai-team__new-session.is-active { background: transparent; color: var(--eva-rail-secondary); }
 .eva-ai-team__new-session:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-action:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
@@ -177,7 +176,7 @@
   min-height: 32px;
   align-items: center;
   gap: var(--gds-space-1);
-  padding: 0 var(--gds-space-2) 0 0;
+  padding: 0 var(--gds-space-2) 0 var(--eva-rail-identity-content-inset);
   border: 0;
   border-radius: var(--eva-rail-group-radius);
   background: transparent;
@@ -196,7 +195,7 @@
   line-height: 1.5;
   font-weight: var(--gds-font-weight-semibold);
 }
-.eva-ai-team__group-chevron { flex: 0 0 22px; transition: transform 120ms ease; }
+.eva-ai-team__group-chevron { width: 12px; height: 12px; flex: 0 0 12px; margin-left: auto; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__group-content { margin-top: 0; }
 .eva-ai-team__identity + .eva-ai-team__identity { margin-top: 0; }
@@ -228,6 +227,24 @@
   cursor: pointer;
 }
 .eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0 0 0 var(--eva-rail-identity-content-inset); border-radius: var(--eva-rail-primary-row-radius); flex: 1; }
+.eva-ai-team__identity-button.has-config-avatar { padding-left: var(--eva-rail-session-indent); }
+.eva-ai-team__assistant-avatar {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: calc(var(--eva-rail-identity-content-inset) - 5px);
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.eva-ai-team__assistant-avatar:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__assistant-avatar:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
@@ -535,24 +552,17 @@
 
 /* One avatar/text grid and one trailing disclosure column for all identities. */
 .eva-ai-team__identity-button > .eva-identity-avatar { margin-right: var(--eva-rail-identity-avatar-trailing); }
-.eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor,
-.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor {
+.eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor {
   position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
 }
-.eva-ai-team__identity-heading > .eva-ai-team__menu-anchor { right: 60px; opacity: 0; pointer-events: none; }
-.eva-ai-team__identity-heading:hover > .eva-ai-team__menu-anchor,
-.eva-ai-team__identity-heading:focus-within > .eva-ai-team__menu-anchor { opacity: 1; pointer-events: auto; }
 .eva-ai-team__identity-heading .eva-identity-name-row > .eva-ai-team__unread-dot { margin-left: auto; }
 .eva-ai-team__identity-heading .eva-ai-team__identity-button { padding-right: 24px; }
 .eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 60px; }
-.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):hover .eva-ai-team__identity-button,
-.eva-ai-team__identity-heading:has(> .eva-ai-team__menu-anchor):focus-within .eva-ai-team__identity-button { padding-right: 86px; }
 .eva-ai-team__identity-heading:hover .eva-ai-team__unread-dot,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__unread-dot,
 .eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__unread-dot { opacity: 0; }
-.eva-ai-team__identity-heading .eva-ai-team__more { width: 32px; min-height: 32px; height: 32px; padding: 0; }
 .eva-ai-team__fixed-group-tree { margin-bottom: 16px; }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
   box-sizing: border-box; min-height: var(--eva-rail-identity-height); height: auto;

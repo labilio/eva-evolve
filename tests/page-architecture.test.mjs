@@ -76,10 +76,13 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /const LinkIcon=/);
   assert.doesNotMatch(imPatch, /const openDetails =/);
   assert.doesNotMatch(imPatch, /presentation:'ai-team-workspace'/);
-  assert.match(imPatch, /function assistantConfigAction\(i\)\{\s*if\(i\.role!=='assistant'\)return null/);
-  assert.match(imPatch, /content:'编辑配置'.+role:'assistant',id:i\.sourceAssistantId,returnFocus:event\.currentTarget/s);
+  assert.match(imPatch, /const openAssistantConfig=\(item,returnFocus\)=>window\.__evaOpenAssistantEditor/);
+  assert.match(imPatch, /const openIdentityMenu=\(event,item,digital=false\)=>/);
+  assert.match(imPatch, /item\.role==='assistant'.+title:'编辑配置'.+openAssistantConfig\(item,identityMenuOpener\.current\)/s);
   assert.match(imPatch, /const open=options=>setRequest\(options\?\{\.\.\.options,key:Date\.now\(\)\}:null\)/);
-  assert.match(imPatch, /className:'eva-ai-team__identity-action eva-ai-team__edit-config'/);
+  assert.match(imPatch, /className:'eva-ai-team__assistant-avatar','aria-label':'编辑配置 '/);
+  assert.match(imPatch, /h\(IdentityContextMenus,\{ref:identityMenuRef,menus:identityMenus\}\)/);
+  assert.doesNotMatch(imPatch, /eva-ai-team__edit-config/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /emptyPersona=i\.role==='persona'&&sessions\.length===0/);
@@ -310,7 +313,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(aiTeamCss, /--eva-rail-identity-avatar-trailing:\s*0px/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-team-thread-inset:\s*calc\(var\(--eva-rail-identity-content-inset\) \+ var\(--gds-space-2-5\)\)/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-toggle\s*\{[^}]*width:\s*var\(--eva-rail-identity-content-inset\)[^}]*flex:\s*0 0 var\(--eva-rail-identity-content-inset\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-identity-content-inset\)/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
   assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
   assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
@@ -327,7 +330,8 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*24px/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button,[^}]*is-active\) \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*60px/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:has\(> \.eva-ai-team__menu-anchor\):hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*86px/s);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__identity-heading:has\(> \.eva-ai-team__menu-anchor\)/);
+  assert.match(aiTeamCss, /\.eva-ai-team__assistant-avatar\s*\{[^}]*width:\s*32px[^}]*height:\s*32px/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__unread-dot,[^}]*focus-within \.eva-ai-team__unread-dot,[^}]*is-active\) \.eva-ai-team__unread-dot\s*\{\s*opacity:\s*0/s);
   assert.match(tokens, /--eva-unread-indicator:\s*var\(--eva-c-mac-red\)/);
   assert.match(modeCss, /\.eva-my-ai-collaboration-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);

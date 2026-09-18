@@ -73,6 +73,26 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.ok(aligned(messageColumns.childName,messageColumns.name),'消息子区名称与父群名称对齐');
     const disclosureBox=await page.locator('.eva-ai-team__team-toggle').first().boundingBox();
     assert.ok(disclosureBox && disclosureBox.width >= 24 && disclosureBox.height >= 32, '收紧缩进后团队展开按钮仍可操作');
+    for (const label of ['云端分身', '个人助理', '数字员工']) {
+      const roleGroup = page.locator(`.eva-ai-team__role-group[aria-label="${label}"]`);
+      const titleBox = await roleGroup.locator('.eva-ai-team__group-title').boundingBox();
+      const chevronBox = await roleGroup.locator('.eva-ai-team__group-chevron').boundingBox();
+      assert.ok(titleBox && chevronBox && chevronBox.x >= titleBox.x + titleBox.width,
+        `${label}的展开箭头位于标题右侧`);
+    }
+    const firstDigitalIdentity = page.locator('.eva-ai-team__role-group[aria-label="数字员工"] .eva-ai-team__identity').first();
+    if (await firstDigitalIdentity.count()) {
+      const digitalHeading = firstDigitalIdentity.locator('.eva-ai-team__identity-heading');
+      await digitalHeading.hover();
+      assert.equal(await digitalHeading.locator('.eva-ai-team__identity-action:visible').count(), 1, '数字员工 hover 只显示新建会话');
+      assert.equal(await digitalHeading.locator('.eva-ai-team__more').count(), 0, '数字员工更多操作不再显示为行内按钮');
+      await firstDigitalIdentity.locator('.eva-ai-team__identity-button').click({ button: 'right' });
+      const digitalMenu = page.locator('.eva-context-menu');
+      await digitalMenu.getByRole('menuitem', { name: '新建会话', exact: true }).waitFor();
+      await digitalMenu.getByRole('menuitem', { name: '从我的 AI 移除', exact: true }).waitFor();
+      await page.keyboard.press('Escape');
+      await digitalMenu.waitFor({ state: 'detached' });
+    }
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
     assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的AI团队');
