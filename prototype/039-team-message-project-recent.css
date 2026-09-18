@@ -139,12 +139,15 @@ body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact
 .eva-follow-category-title > .wk-category-header { flex: 1; min-width: 0; }
 .eva-follow-category-title .eva-space-task-button { flex: none; }
 
-.eva-msg .wk-conv-breadcrumb { display: flex; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-chat-project-context { display: flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-size: 12px; line-height: 18px; font-weight: 400; }
 
 
-.eva-chat-project-context svg, .eva-msg .wk-conv-breadcrumb svg { flex: none; }
-.eva-chat-project-context > span, .eva-msg .wk-conv-breadcrumb > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-chat-project-context svg { flex: none; }
+.eva-chat-project-context > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 最近行合并为两行：项目图标挂在名称行最右侧（时间之后），不再占用独立项目行。
+ * 名称行本身 gap 6px，图标只需不参与收缩，右端对齐由时间行的 margin-left:auto 决定。 */
+.eva-msg .wk-conversationlist-item-name > .wk-conv-project-icon { flex: none; }
 
 /* Designer v132 conversation states; category titles stay unfilled. */
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item {

@@ -113,8 +113,9 @@
 .ch-layout .wk-conversationlist-item-unread .wk-conversationlist-item-name h3 { font-weight:600; }
 .ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-name h3 { font-weight:600; }
 .ch-layout .wk-conversationlist-item-time { flex:none; white-space:nowrap; }
-/* 卡片留白与圆角对齐主菜单 radius.control(8px)；hover<选中，修正现状 hover 比选中还深的反色缺陷。 */
-.ch-layout .wk-conversationlist-item { padding:11px var(--wk-sp-2); border-radius:8px; }
+/* 卡片留白与圆角对齐主菜单 radius.control(8px)；hover<选中，修正现状 hover 比选中还深的反色缺陷。
+ * 最近行合并为两行后，纵向留白由 11px 收到 8px，行高随内容自然收紧。 */
+.ch-layout .wk-conversationlist-item { padding:8px var(--wk-sp-2); border-radius:8px; }
 .ch-layout .wk-conversationlist-item:hover:not(.wk-conversationlist-item-selected) { background:var(--eva-conversation-row-hover); }
 .ch-layout .wk-conversationlist-item-selected,
 .ch-layout .wk-conversationlist-item-selected:hover { background:var(--eva-conversation-row-selected); }
