@@ -62,31 +62,68 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       };
     });
     const aligned=(actual,expected)=>Number.isFinite(actual)&&Number.isFinite(expected)&&Math.abs(actual-expected)<1;
-    assert.ok(aligned(myAiColumns.teamAvatar,messageColumns.avatar),JSON.stringify({myAiColumns,messageColumns}));
-    assert.ok(aligned(myAiColumns.identityAvatar,messageColumns.avatar));
-    assert.ok(aligned(myAiColumns.roleName,messageColumns.avatar));
-    assert.ok(aligned(myAiColumns.teamName,messageColumns.name));
-    assert.ok(aligned(myAiColumns.identityName,messageColumns.name));
+    assert.ok(aligned(myAiColumns.teamAvatar,myAiColumns.identityAvatar),JSON.stringify({myAiColumns,messageColumns}));
+    assert.ok(aligned(myAiColumns.teamName,myAiColumns.identityName),'团队头像与名称分别对齐 AI 身份的头像与名称列');
+    assert.ok(Math.abs(myAiColumns.teamAvatar-myAiColumns.roleName-8)<1, '二级团队与身份相对角色标题只保留 8px 紧凑缩进');
     assert.ok(aligned(myAiColumns.childIcon,messageColumns.childIcon));
     assert.ok(aligned(myAiColumns.childName,messageColumns.childName));
-    assert.ok(aligned(myAiColumns.childName,myAiColumns.teamName),'团队子区名称与父团队名称对齐');
     assert.ok(aligned(messageColumns.childName,messageColumns.name),'消息子区名称与父群名称对齐');
-    const disclosureBox=await page.locator('.eva-ai-team__team-toggle').first().boundingBox();
-    assert.ok(disclosureBox && disclosureBox.width >= 24 && disclosureBox.height >= 32, '收紧缩进后团队展开按钮仍可操作');
+    assert.equal(await page.locator('.eva-ai-team__team-toggle').count(), 0, '团队父行不再显示左侧展开箭头');
+    const teamButtonBox=await page.locator('.eva-ai-team__team-button').first().boundingBox();
+    assert.ok(teamButtonBox && teamButtonBox.height >= 32, '团队父行仍是完整键盘操作目标');
+    for (const label of ['云端分身', '个人助理', '数字员工']) {
+      const roleGroup = page.locator(`.eva-ai-team__role-group[aria-label="${label}"]`);
+      const titleBox = await roleGroup.locator('.eva-ai-team__group-title').boundingBox();
+      const chevronBox = await roleGroup.locator('.eva-ai-team__group-chevron').boundingBox();
+      assert.ok(titleBox && chevronBox && chevronBox.x >= titleBox.x + titleBox.width,
+        `${label}的展开箭头位于标题右侧`);
+    }
+    const firstDigitalIdentity = page.locator('.eva-ai-team__role-group[aria-label="数字员工"] .eva-ai-team__identity').first();
+    if (await firstDigitalIdentity.count()) {
+      const digitalHeading = firstDigitalIdentity.locator('.eva-ai-team__identity-heading');
+      await digitalHeading.hover();
+      assert.equal(await digitalHeading.locator('.eva-ai-team__identity-action:visible').count(), 1, '数字员工 hover 只显示新建会话');
+      assert.equal(await digitalHeading.locator('.eva-ai-team__more').count(), 0, '数字员工更多操作不再显示为行内按钮');
+      await firstDigitalIdentity.locator('.eva-ai-team__identity-button').click({ button: 'right' });
+      const digitalMenu = page.locator('.eva-context-menu');
+      await digitalMenu.getByRole('menuitem', { name: '新建会话', exact: true }).waitFor();
+      await digitalMenu.getByRole('menuitem', { name: '从我的 AI 移除', exact: true }).waitFor();
+      await page.keyboard.press('Escape');
+      await digitalMenu.waitFor({ state: 'detached' });
+    }
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
     assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的AI团队');
-    assert.equal(await systemTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
-    assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-expanded')))).every(value => value === 'false'), 'AI 身份默认收起');
-    const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: '通用助理' }).first();
-    const assistantToggle = assistantIdentity.locator('.eva-ai-team__identity-button');
-    await assistantToggle.click();
+    assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.hasAttribute('aria-expanded')))).every(value => value === false), 'AI 身份名称只负责新建会话，不再声明折叠状态');
+    assert.equal(await page.locator('.eva-ai-team__identity-heading .eva-ai-team__chevron').count(), 0, 'AI 身份行右侧不再显示展开箭头');
+    const assistantFixture = await page.evaluate(() => {
+      const store = window.EvaAITeam;
+      const assistant = store.getSnapshot().identities.find(identity => identity.role === 'assistant');
+      while (store.getSnapshot().sessions.filter(session => session.identityId === assistant.id).length < 4) store.createThread(assistant.id);
+      return { id: assistant.id, name: assistant.name, count: store.getSnapshot().sessions.filter(session => session.identityId === assistant.id).length };
+    });
+    const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: assistantFixture.name }).first();
+    await page.waitForFunction(id => document.querySelector(`[aria-label="新建会话 ${window.EvaAITeam.getSnapshot().identities.find(item => item.id === id)?.name}"]`)?.closest('.eva-ai-team__identity')?.querySelectorAll('.eva-ai-team__session-row').length === 3, assistantFixture.id);
+    const assistantButton = assistantIdentity.locator('.eva-ai-team__identity-button');
+    const assistantDisclosure = assistantIdentity.locator('.eva-ai-team__identity-sessions-more');
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, 'AI 身份默认展示最新三条会话');
+    assert.equal(await assistantDisclosure.innerText(), '展开查看');
+    assert.equal(await assistantDisclosure.getAttribute('aria-expanded'), 'false');
+    await assistantDisclosure.click();
+    assert.equal(await assistantDisclosure.innerText(), '收起');
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), assistantFixture.count, '超过三条后可展开全部历史会话');
     const assistantNameBox = await assistantIdentity.locator('.eva-ai-team__identity-name').boundingBox();
     const assistantSessionBox = await assistantIdentity.locator('.eva-ai-team__session-title').first().boundingBox();
     assert.ok(assistantNameBox && assistantSessionBox && Math.abs(assistantNameBox.x - assistantSessionBox.x) < 1, '个人助理会话名称与助理名称起点对齐');
-    await assistantToggle.click();
+    await assistantDisclosure.click();
+    assert.equal(await assistantDisclosure.innerText(), '展开查看');
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, '收起后恢复三条预览');
+    await assistantButton.click();
+    await page.waitForFunction(({ id, count }) => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length === count + 1, assistantFixture);
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, '点击 AI 名称新建会话后仍保持三条预览');
 
     const fixture = await page.evaluate(() => {
       const groupStore = window.EvaMyAITeamGroup;
@@ -103,7 +140,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     });
     const customTeam = page.locator(`.eva-ai-team__team:has(.eva-ai-team__team-button[aria-label="进入团队会话 ${fixture.customGroupName}"])`);
     await customTeam.waitFor();
-    assert.equal(await customTeam.locator('.eva-ai-team__team-toggle').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
+    assert.equal(await customTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'false', '自定义团队默认收起');
     await page.waitForFunction(() => document.querySelector('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-threads-more'));
     assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3, '系统团队默认仅展示最新三个子区');
     const more = systemTeam.locator('.eva-ai-team__team-threads-more');
@@ -127,12 +164,11 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.equal(await selectedTeamButton.getAttribute('aria-current'), null, '进入子区后父团队不伪装为当前主会话');
     const selectedThreadState = await selectedTeamThread.getAttribute('aria-current');
     const unreadIdentity = page.locator('.eva-ai-team__identity:has(.eva-ai-team__unread-dot)').first();
-    const unreadIdentityButton = unreadIdentity.locator('.eva-ai-team__identity-button');
-    const unreadIdentityControls = await unreadIdentityButton.getAttribute('aria-controls');
-    const selectedIdentity = page.locator(`.eva-ai-team__identity:has(.eva-ai-team__identity-button[aria-controls="${unreadIdentityControls}"])`);
-    await unreadIdentityButton.click();
-    assert.equal(await unreadIdentityButton.getAttribute('aria-expanded'), 'true', '点击身份行只展开会话');
-    assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '展开身份不切换当前子区');
+    const unreadIdentityName = await unreadIdentity.locator('.eva-ai-team__identity-name').innerText();
+    const selectedIdentity = page.locator('.eva-ai-team__identity').filter({ has: page.getByRole('button', { name: '新建会话 ' + unreadIdentityName, exact: true }) });
+    const unreadDisclosure = unreadIdentity.locator('.eva-ai-team__identity-sessions-more');
+    if (await unreadDisclosure.count()) await unreadDisclosure.click();
+    assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '展开历史会话不切换当前子区');
 
     const unreadSessionRow = selectedIdentity.locator('.eva-ai-team__session-row:has(.eva-ai-team__session-unread)').first();
     const unreadBadge = unreadSessionRow.locator('.eva-ai-team__session-unread');
@@ -172,6 +208,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.deepEqual(viewport, { scrollX: 0, overflow: 0 }, '展开长会话名后页面不得横向滚动或溢出');
 
     await customTeam.locator('.eva-ai-team__team-button').click();
+    assert.equal(await customTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '进入自定义团队时同步展开子区');
     assert.equal(await customTeam.locator('.eva-ai-team__team-menu').count(), 0, '中栏不再保留第二套团队治理菜单');
     await page.getByRole('button', { name: '聊天信息', exact: true }).click();
     let teamInfo = page.locator('.eva-chat-settings');
@@ -232,7 +269,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
   }
 });
 
-test('云端分身删空后不显示占位，点击身份发送才创建会话', async () => {
+test('云端分身删空后不显示占位，点击身份名称直接新建会话', async () => {
   const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -256,9 +293,9 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
     });
     const persona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
     const identityButton = persona.locator('.eva-ai-team__identity-button');
-    await identityButton.click();
     const onlySession = persona.locator('.eva-ai-team__session-row');
     assert.equal(await onlySession.count(), 1);
+    assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '只有一条会话时不显示展开查看');
     await onlySession.locator('.eva-ai-team__session').click();
     await onlySession.hover();
     await onlySession.getByRole('button', { name: '会话操作 ' + fixture.sessionTitle }).click();
@@ -266,12 +303,16 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
     await onlySession.waitFor({ state: 'detached' });
 
     assert.equal(await persona.locator('.eva-ai-team__session').count(), 0, '删空后不显示“新对话”或“新建会话”占位');
+    assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '删空后不显示无意义的展开查看入口');
     assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 0);
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
     await systemTeam.locator('.eva-ai-team__team-button').click();
     await identityButton.click();
-    assert.equal(await identityButton.getAttribute('aria-expanded'), 'true', '空身份入口保持展开以承载首次创建结果');
+    await persona.locator('.eva-ai-team__session-row').waitFor();
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 1, '点击 AI 名称立即创建一条新会话');
+    assert.match(await persona.locator('.eva-ai-team__session-title').innerText(), /^新对话/, '新会话立即显示在身份下');
+    assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '新建后的单条会话不显示展开查看');
     const editor = page.getByRole('textbox', { name: '发送给 ' + fixture.name, exact: true });
     await editor.fill('删空后的第一次消息');
     await page.getByRole('button', { name: '发送', exact: true }).click();
@@ -288,8 +329,7 @@ test('云端分身删空后不显示占位，点击身份发送才创建会话',
     await page.waitForURL('**evaIM=my-ai');
     const restoredPersona = page.locator('.eva-ai-team__identity').filter({ hasText: fixture.name }).first();
     await restoredPersona.waitFor({state:'visible'});
-    assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').count(),0,'返回后身份会话遵循默认收起合同');
-    await restoredPersona.locator('.eva-ai-team__identity-button').click();
+    assert.equal(await restoredPersona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '返回后单条会话仍不显示展开查看');
     await restoredPersona.locator('.eva-ai-team__session-title').filter({hasText:'删空后的第一次消息'}).waitFor({state:'visible'});
     assert.equal(await restoredPersona.locator('.eva-ai-team__session-title').filter({ hasText: '删空后的第一次消息' }).count(), 1, '入口往返后新会话仍在所属分身下');
     assert.deepEqual(errors, []);
