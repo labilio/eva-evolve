@@ -208,8 +208,8 @@
   transition: background-color 120ms ease;
 }
 /* 同 team-heading：改用 :has(:focus-visible)，避免点击后灰色残留。
-   身份容器是展开/收起的 disclosure（onClick 只切 aria-expanded，不改变当前会话），
-   本身不是选中目标，因此不给它 --eva-rail-selected 的浅蓝：那会造出一个假的选中项，
+   身份名称用于新建会话，本身不是现有会话的选中目标，因此不给它
+   --eva-rail-selected 的浅蓝：那会造出一个假的选中项，
    与真正被选中的会话行并列成两处强蓝，违反 evamate §3.1「避免多处并列强蓝」。 */
 .eva-ai-team__identity-heading:hover,
 .eva-ai-team__identity-heading:has(:focus-visible) { background: var(--eva-rail-hover); }

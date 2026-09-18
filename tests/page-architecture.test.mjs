@@ -85,11 +85,12 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /eva-ai-team__edit-config/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
-  assert.match(imPatch, /emptyPersona=i\.role==='persona'&&sessions\.length===0/);
-  assert.match(imPatch, /onClick:\(\)=>\{setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:emptyPersona\?false:expanded\}\)\);if\(emptyPersona\)choose\(i\.id,null\);\}/);
-  assert.match(imPatch, /expanded&&h\('div',\{className:'eva-ai-team__sessions'.+!emptyPersona&&identity\?\.id===i\.id&&!session/s);
-  assert.match(imPatch, /!emptyPersona&&sessions\.length===0/);
-  assert.match(imPatch, /onClick:\(\)=>setCollapsed\(value=>\(\{\.\.\.value,\[item\.id\]:expanded\}\)\)/);
+  assert.match(imPatch, /const \[showAllIdentitySessions,setShowAllIdentitySessions\]=reactExports\.useState/);
+  assert.match(imPatch, /const newConversation = id => choose\(id,digitalEmployees\.some/);
+  assert.match(imPatch, /'aria-label':'新建会话 '\+i\.name.+onClick:\(\)=>newConversation\(i\.id\)/s);
+  assert.match(imPatch, /visibleSessions=showAll\?sessions:sessions\.slice\(0,3\), hasMore=sessions\.length>3/);
+  assert.match(imPatch, /sessions\.length>0&&h\('div',\{className:'eva-ai-team__sessions'/);
+  assert.doesNotMatch(imPatch, /emptyPersona|sessions\.length===0&&.*新建会话/);
   assert.doesNotMatch(imPatch, /identity\?\.id!==i\.id\)choose\(i\.id/);
   assert.match(imPatch, /collapsedGroups/);
   assert.match(imPatch, /roleGroup\('assistant','个人助理'/);
@@ -374,13 +375,15 @@ test('我的 AI 团队父群去掉左侧箭头并由父群行同时切换子区'
   assert.match(aiTeamCss, /\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
 });
 
-test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新三条', () => {
+test('我的 AI 团队和身份会话均默认预览最新三条并按需展开', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
 
-  assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.availableIdentities\.map\(item=>\[item\.id,true\]\)/);
+  assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.\(requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)\?\[\[requestedIdentity\.id,false\]\]:\[\]\)\]\)/);
   assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
-  assert.match(imPatch, /if\(groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
+  assert.match(imPatch, /const \[showAllIdentitySessions,setShowAllIdentitySessions\]=reactExports\.useState\(\(\)=>requestedIdentity&&!groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
+  assert.match(imPatch, /if\(requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
+  assert.match(imPatch, /else if\(requestedSessionId\)setShowAllIdentitySessions\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
   assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2&&!threadPreferenceStore\.chatPreferences\(item\.id,threadPreferenceActor\)\.hidden\)\.sort/);
   assert.match(imPatch, /Number\(!!threadPreferenceStore\.chatPreferences\(b\.id,threadPreferenceActor\)\.top\)-Number\(!!threadPreferenceStore\.chatPreferences\(a\.id,threadPreferenceActor\)\.top\)\|\|teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)/);
   assert.match(imPatch, /visibleThreads=group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
@@ -388,18 +391,19 @@ test('我的 AI 首次进入仅展开默认团队并将其子区限制为最新�
   assert.match(imPatch, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+group\.name\+' 子区'/);
   assert.match(imPatch, /h\('span',null,showAll\?'收起':'展开查看'\),h\(ChevronDown,\{size:12,className:'eva-ai-team__team-threads-more-chevron'\+\(showAll\?' is-expanded':''\)/);
   assert.doesNotMatch(imPatch, /展开查看（|其余 '\+\(threads\.length-3\)/);
-  const identityDisclosure=imPatch.match(/function identitySessionsDisclosure\(item,expanded,hasSessions\)[\s\S]*?function identityItem/)[0];
-  assert.match(identityDisclosure, /if\(!hasSessions\)return null/);
-  assert.match(identityDisclosure, /className:'eva-ai-team__identity-sessions-more','aria-expanded':expanded/);
-  assert.match(identityDisclosure, /'aria-label':\(expanded\?'收起 ':'展开查看 '\)\+item\.name\+' 会话'/);
-  assert.match(identityDisclosure, /h\('span',null,expanded\?'收起':'展开查看'\),\s*h\(ChevronDown,\{size:12,className:'eva-ai-team__identity-sessions-more-chevron'/s);
+  const identityDisclosure=imPatch.match(/function identitySessionsDisclosure\(item,showAll,hasMore\)[\s\S]*?function identityItem/)[0];
+  assert.match(identityDisclosure, /if\(!hasMore\)return null/);
+  assert.match(identityDisclosure, /className:'eva-ai-team__identity-sessions-more','aria-expanded':showAll/);
+  assert.match(identityDisclosure, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+item\.name\+' 会话'/);
+  assert.match(identityDisclosure, /setShowAllIdentitySessions\(value=>\(\{\.\.\.value,\[item\.id\]:!showAll\}\)\)/);
+  assert.match(identityDisclosure, /h\('span',null,showAll\?'收起':'展开查看'\),\s*h\(ChevronDown,\{size:12,className:'eva-ai-team__identity-sessions-more-chevron'/s);
   const identityItem=imPatch.match(/function identityItem\(i\)[\s\S]*?function employeeItem/)[0];
-  assert.match(identityItem, /emptyPersona=i\.role==='persona'&&sessions\.length===0/);
-  assert.match(identityItem, /onClick:\(\)=>\{setCollapsed\(value=>\(\{\.\.\.value,\[i\.id\]:emptyPersona\?false:expanded\}\)\);if\(emptyPersona\)choose\(i\.id,null\);\}/);
-  assert.match(identityItem, /!emptyPersona&&identity\?\.id===i\.id&&!session/);
-  assert.match(identityItem, /!emptyPersona&&sessions\.length===0/);
-  assert.match(identityItem, /identitySessionsDisclosure\(i,expanded,sessions\.length>0\)/);
-  assert.match(imPatch, /identitySessionsDisclosure\(item,expanded,sessions\.length>0\)/);
+  assert.match(identityItem, /visibleSessions=showAll\?sessions:sessions\.slice\(0,3\), hasMore=sessions\.length>3/);
+  assert.match(identityItem, /'aria-label':'新建会话 '\+i\.name.+onClick:\(\)=>newConversation\(i\.id\)/s);
+  assert.match(identityItem, /sessions\.length>0&&h\('div',\{className:'eva-ai-team__sessions'.+visibleSessions\.map/s);
+  assert.match(identityItem, /identitySessionsDisclosure\(i,showAll,hasMore\)/);
+  assert.match(imPatch, /identitySessionsDisclosure\(item,showAll,hasMore\)/);
+  assert.doesNotMatch(identityItem, /aria-expanded|emptyPersona|className:'eva-ai-team__session is-selected'/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more,\s*\.eva-ai-team__identity-sessions-more\s*\{[^}]*background:\s*transparent/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-threads-more\s*\{\s*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-team-thread-label-inset\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-sessions-more\s*\{\s*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-rail-session-indent\)/s);
