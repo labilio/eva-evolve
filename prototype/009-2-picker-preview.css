@@ -6,9 +6,20 @@
 .eva-picker-heading>.semi-input-wrapper{margin-bottom:16px}
 .eva-picker-filter{display:flex;margin-bottom:16px}
 .eva-picker-filter>.semi-select{width:200px}
-.eva-picker-list{max-height:min(400px,calc(100vh - 340px));overflow-y:auto;overscroll-behavior:contain;padding:0 2px 8px}
-.eva-picker-list>section+section{margin-top:16px}
-.eva-picker-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:0 8px 8px;font-size:14px;line-height:20px;color:var(--semi-color-text-0)}
+/* 候选列表的垂直节奏由父容器统一定义，组件内部不得再自补间距。
+   分几组、有没有分组头，都取同一组变量，因此不会出现标题互相挤贴的组合。
+   --picker-list-pad  列表与父容器边缘的留白（决定标题到首个区块的距离）
+   --picker-group-gap 分组之间
+   --picker-legend-gap 分组标题到它自己的候选
+   --picker-row-gap   候选行之间 */
+.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px}
+.eva-picker-list{max-height:min(400px,calc(100vh - 340px));overscroll-behavior:contain}
+/* 契约只在模板容器内生效：048 层给 .eva-picker-list 的通用内边距/溢出不得改写本模板节奏
+   （该通用规则服务于个人 Eva 技能选择器，不是本模板）。 */
+.eva-member-picker__panel .eva-picker-list,.eva-picker-body .eva-picker-list{padding:var(--picker-list-pad);overflow-y:auto;overflow-x:hidden}
+.eva-picker-row+.eva-picker-row{margin-top:var(--picker-row-gap)}
+.eva-picker-list>section+section{margin-top:var(--picker-group-gap)}
+.eva-picker-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:0 var(--gds-space-2) var(--picker-legend-gap);font-size:14px;line-height:20px;color:var(--semi-color-text-0)}
 .eva-picker-group strong{font-weight:600}
 .eva-picker-group>span{font-size:12px;color:var(--semi-color-text-2)}
 .eva-picker-group small{flex-basis:100%;font-size:12px;line-height:18px;font-weight:400;color:var(--semi-color-text-2)}
@@ -52,16 +63,16 @@
 .eva-member-picker__selected{border-left:var(--gds-border-standard) solid var(--gds-color-border-subtle)}
 .eva-member-picker__selected-head{display:flex;min-height:40px;flex-shrink:0;align-items:center;justify-content:space-between;gap:var(--gds-space-2);padding:var(--gds-space-2) var(--gds-space-3) 0}
 .eva-member-picker__selected-head strong{font-weight:var(--gds-font-weight-regular)}
-.eva-member-picker__candidates,.eva-member-picker__selected-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--gds-space-2) var(--gds-space-2)}
+.eva-member-picker__candidates,.eva-member-picker__selected-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:var(--picker-list-pad)}
 .eva-member-picker__candidate-group{min-width:0;margin:0;padding:0;border:0}
 /* 只声明一个候选类别时不渲染分组头，候选直接平铺。 */
 .eva-member-picker__candidate-flat{display:flex;min-width:0;flex-direction:column}
-.eva-picker-section--flat>section+section,.eva-picker-section--flat .eva-picker-row+.eva-picker-row{margin-top:2px}
-.eva-picker-section--flat{padding-top:2px}
-.eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--gds-space-3);padding-top:var(--gds-space-2);border-top:var(--gds-border-standard) solid var(--gds-color-border-faint)}
-.eva-member-picker__candidate-group legend{display:flex;width:auto;max-width:100%;box-sizing:border-box;align-items:center;gap:6px;padding:var(--gds-space-2);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
+
+.eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--picker-group-gap);padding-top:var(--picker-group-gap);border-top:var(--gds-border-standard) solid var(--gds-color-border-faint)}
+.eva-member-picker__candidate-group legend{display:flex;width:auto;max-width:100%;box-sizing:border-box;align-items:center;gap:6px;padding:0 var(--gds-space-2) var(--picker-legend-gap);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
 .eva-member-picker__group-count{color:var(--gds-color-text-muted);font-weight:var(--gds-font-weight-regular)}
 .eva-member-picker__candidate{display:flex;min-height:52px;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-2);border-radius:var(--gds-radius-control);cursor:pointer;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-member-picker__candidate+.eva-member-picker__candidate{margin-top:var(--picker-row-gap)}
 .eva-member-picker__candidate:hover{background:var(--eva-conversation-row-hover,var(--gds-color-surface-subtle))}
 .eva-member-picker__candidate:has(input:focus-visible){outline:var(--gds-border-focus) solid var(--gds-color-action-primary);outline-offset:-2px}
 .eva-member-picker__candidate>.eva-members-human-identity,.eva-member-picker__candidate>.eva-members-ai-identity{min-width:0;flex:1}

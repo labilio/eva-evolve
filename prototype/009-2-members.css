@@ -172,16 +172,14 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-modal--transfer .semi-modal-title{font:600 18px/26px var(--eva-font-sans);color:var(--gds-color-text-primary)}
 .eva-members-modal--transfer .semi-modal-body{margin:0;max-height:calc(100vh - var(--topbar-height) - 220px);overflow:auto;padding:0 24px}
 .eva-members-modal--transfer .semi-modal-footer{margin:0;padding:12px 24px 20px;border-top:1px solid var(--semi-color-border)}
-.eva-members-modal--transfer .eva-picker-body{padding:0}
-.eva-members-modal--transfer .eva-picker-list{max-height:min(320px,calc(100vh - 400px));padding:6px 2px 4px}
-.eva-members-modal--transfer .eva-picker-list>section+section{margin-top:14px}
-.eva-members-modal--transfer .eva-picker-group{display:flex;align-items:baseline;gap:6px;padding:0 8px;margin-bottom:10px;font-size:13px;line-height:20px;color:var(--eva-text-primary)}
+.eva-members-modal--transfer .eva-picker-body{padding:0;--picker-list-pad:var(--gds-space-1);--picker-row-gap:2px}
+.eva-members-modal--transfer .eva-picker-list{max-height:min(320px,calc(100vh - 400px))}
+.eva-members-modal--transfer .eva-picker-group{display:flex;align-items:baseline;gap:6px;font-size:13px;line-height:20px;color:var(--eva-text-primary)}
 .eva-members-modal--transfer .eva-picker-group strong{font-weight:var(--gds-font-weight-semibold)}
 .eva-members-modal--transfer .eva-picker-group>span{font-size:12px;line-height:18px;color:var(--eva-text-secondary-accessible)}
 .eva-members-modal--transfer .eva-picker-group small{display:block;flex-basis:100%;margin-top:2px;font-size:12px;line-height:18px}
 
 .eva-members-modal--transfer .eva-picker-row{min-height:48px;padding:6px 8px;border-radius:8px;gap:12px}
-.eva-members-modal--transfer .eva-picker-row+.eva-picker-row{margin-top:2px}
 .eva-members-modal--transfer .eva-picker-avatar,.eva-members-modal--transfer .eva-picker-avatar>img{width:32px;height:32px}
 .eva-members-modal--transfer .eva-picker-person{gap:0}
 .eva-members-modal--transfer .eva-picker-name{font-size:14px;line-height:20px}
