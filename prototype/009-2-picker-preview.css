@@ -15,7 +15,7 @@
 .eva-picker-row{display:flex;align-items:center;gap:12px;padding:10px 8px;box-sizing:border-box;min-height:64px;border-radius:8px}
 .eva-picker-row:hover{background:var(--semi-color-fill-0)}
 .eva-picker-row.is-selected{background:var(--semi-color-primary-light-default)}
-.eva-picker-row:focus-within{outline:2px solid var(--semi-color-focus-border);outline-offset:-2px}
+.eva-picker-row:has(input:focus-visible){outline:2px solid var(--semi-color-focus-border);outline-offset:-2px}
 .eva-picker-row>.semi-checkbox,.eva-picker-row>.semi-radio{flex:none;margin:0}
 .eva-picker-avatar{position:relative;width:36px;height:36px;flex:none}
 .eva-picker-avatar>img{width:36px;height:36px;border-radius:50%;object-fit:cover}

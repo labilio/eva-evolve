@@ -166,13 +166,12 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-mention-list .semi-button-content{min-width:0;max-width:100%}
 
 /* 转移族（转让群主 / 转让项目负责人）：480 单栏单选，复用 SelectionBody 候选渲染。
-   右栏无对象可放，因此不套双栏；上下文说明由 SinglePersonPicker 的 description 传入。 */
+   候选只有一个人，右栏没有对象可放，因此不套双栏，也不加额外交代文案。 */
 .eva-members-modal--transfer .semi-modal-content{padding:0;border-radius:16px}
 .eva-members-modal--transfer .semi-modal-header{margin:0;padding:20px 24px 0}
 .eva-members-modal--transfer .semi-modal-title{font:600 18px/26px var(--eva-font-sans);color:var(--gds-color-text-primary)}
 .eva-members-modal--transfer .semi-modal-body{margin:0;max-height:calc(100vh - var(--topbar-height) - 220px);overflow:auto;padding:0 24px}
 .eva-members-modal--transfer .semi-modal-footer{margin:0;padding:12px 24px 20px;border-top:1px solid var(--semi-color-border)}
-.eva-transfer-note{margin:6px 0 14px;color:var(--eva-text-secondary-accessible);font-size:12px;line-height:18px}
 .eva-members-modal--transfer .eva-picker-body{padding:0}
 .eva-members-modal--transfer .eva-picker-list{max-height:min(320px,calc(100vh - 400px));padding:0 2px 4px}
 .eva-members-modal--transfer .eva-picker-list>section+section{margin-top:14px}
