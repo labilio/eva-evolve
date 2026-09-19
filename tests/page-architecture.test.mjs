@@ -244,6 +244,20 @@ test('点击群聊内容区会关闭已打开的子区、聊天信息、文件�
     assert.match(patched[1], new RegExp(`Mt==="${mode}"`), `${mode} 模式未纳入点击内容区收起`);
   }
 });
+test('表单类浮层保持可点遮罩关闭，并行整合不得静默回退', () => {
+  const membersUi = read('prototype/009-2-members-ui.js');
+  const settings = read('prototype/048-settings-usage.js');
+  const automation = read('prototype/009-8-patch-automation.js');
+
+  // 用户已确认的取舍：成员选择器、转让（接任者）弹窗、设置对话框、定时任务设置弹窗点遮罩即收起。
+  // 详见 docs/弹窗失焦关闭规范.md。
+  assert.match(membersUi, /getPopupContainer,maskClosable:true}/, '成员选择器弹窗不再支持点遮罩关闭');
+  assert.match(membersUi, /width:480,title,visible,onCancel,footer,maskClosable:true}/, '转让（接任者）弹窗不再支持点遮罩关闭');
+  assert.match(settings, /className:'eva-settings-dialog'.{0,120}maskClosable:true/, '设置对话框不再支持点遮罩关闭');
+  assert.match(automation, /maskClosable:true/, '定时任务设置弹窗不再支持点遮罩关闭');
+  assert.doesNotMatch(membersUi, /maskClosable:false/, '成员选择器族出现不可点关的蒙层，与已确认取舍冲突');
+});
+
 
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {
   const hierarchyCss = read('prototype/016-message-hierarchy.css');
