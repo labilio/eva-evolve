@@ -165,24 +165,14 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-mention-list > .semi-button{height:auto;min-height:44px;padding:6px 12px;justify-content:flex-start}
 .eva-members-mention-list .semi-button-content{min-width:0;max-width:100%}
 
-/* 转移族（转让群主 / 转让项目负责人）：480 单栏单选，复用 SelectionBody 候选渲染。
-   候选只有一个人，右栏没有对象可放，因此不套双栏；分组说明的行为 null，不留空行。 */
+/* 转移族（转让群主 / 转让项目负责人）：拉人模板的单栏单选配置。
+   行高、头像、字体、搜索栏与拉人同源（家族契约 token），只去掉右栏并改为单选。 */
 .eva-members-modal--transfer .semi-modal-content{padding:0;border-radius:16px}
 .eva-members-modal--transfer .semi-modal-header{margin:0;padding:20px 24px 12px;border-bottom:0}
 .eva-members-modal--transfer .semi-modal-title{font:600 18px/26px var(--eva-font-sans);color:var(--gds-color-text-primary)}
 .eva-members-modal--transfer .semi-modal-body{margin:0;max-height:calc(100vh - var(--topbar-height) - 220px);overflow:auto;padding:0 24px}
 .eva-members-modal--transfer .semi-modal-footer{margin:0;padding:12px 24px 20px;border-top:1px solid var(--semi-color-border)}
-.eva-members-modal--transfer .eva-picker-body{padding:0;--picker-list-pad:var(--gds-space-1);--picker-row-gap:2px}
+.eva-members-modal--transfer .eva-picker-body{padding:0;--picker-list-pad:var(--gds-space-1);--picker-row-gap:2px;--picker-toolbar-pad:0 0 var(--gds-space-3)}
 .eva-members-modal--transfer .eva-picker-list{max-height:min(320px,calc(100vh - 400px))}
-.eva-members-modal--transfer .eva-picker-group{display:flex;align-items:baseline;gap:6px;font-size:13px;line-height:20px;color:var(--eva-text-primary)}
-.eva-members-modal--transfer .eva-picker-group strong{font-weight:var(--gds-font-weight-semibold)}
-.eva-members-modal--transfer .eva-picker-group>span{font-size:12px;line-height:18px;color:var(--eva-text-secondary-accessible)}
-.eva-members-modal--transfer .eva-picker-group small{display:block;flex-basis:100%;margin-top:2px;font-size:12px;line-height:18px}
-
-.eva-members-modal--transfer .eva-picker-row{min-height:48px;padding:6px 8px;border-radius:8px;gap:12px}
-.eva-members-modal--transfer .eva-picker-avatar,.eva-members-modal--transfer .eva-picker-avatar>img{width:32px;height:32px}
-.eva-members-modal--transfer .eva-picker-person{gap:0}
-.eva-members-modal--transfer .eva-picker-name{font-size:14px;line-height:20px}
-.eva-members-modal--transfer .eva-picker-detail{font-size:12px;line-height:18px}
 .eva-members-modal--transfer .eva-picker-empty{padding:24px 0}
 .eva-members-modal--transfer .eva-transfer-footer{margin:0;padding:0;border-top:0}

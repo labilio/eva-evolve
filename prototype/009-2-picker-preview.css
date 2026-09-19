@@ -12,24 +12,28 @@
    --picker-group-gap 分组之间
    --picker-legend-gap 分组标题到它自己的候选
    --picker-row-gap   候选行之间 */
-.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px}
+/* 行与工具栏同样由父容器给值，单栏（选人）与双栏（拉人）因此长得一样。 */
+.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px;--picker-row-height:52px;--picker-row-pad-x:var(--gds-space-2);--picker-row-inner-gap:var(--gds-space-2);--picker-avatar-size:28px;--picker-toolbar-pad:var(--gds-space-3) var(--gds-space-3) 0}
 .eva-picker-list{max-height:min(400px,calc(100vh - 340px));overscroll-behavior:contain}
 /* 契约只在模板容器内生效：048 层给 .eva-picker-list 的通用内边距/溢出不得改写本模板节奏
    （该通用规则服务于个人 Eva 技能选择器，不是本模板）。 */
 .eva-member-picker__panel .eva-picker-list,.eva-picker-body .eva-picker-list{padding:var(--picker-list-pad);overflow-y:auto;overflow-x:hidden}
-.eva-picker-row+.eva-picker-row{margin-top:var(--picker-row-gap)}
+.eva-picker-row+.eva-picker-row,.eva-member-picker__candidate+.eva-member-picker__candidate{margin-top:var(--picker-row-gap)}
 .eva-picker-list>section+section{margin-top:var(--picker-group-gap)}
 .eva-picker-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:0 var(--gds-space-2) var(--picker-legend-gap);font-size:14px;line-height:20px;color:var(--semi-color-text-0)}
 .eva-picker-group strong{font-weight:600}
 .eva-picker-group>span{font-size:12px;color:var(--semi-color-text-2)}
 .eva-picker-group small{flex-basis:100%;font-size:12px;line-height:18px;font-weight:400;color:var(--semi-color-text-2)}
-.eva-picker-row{display:flex;align-items:center;gap:12px;padding:10px 8px;box-sizing:border-box;min-height:64px;border-radius:8px}
-.eva-picker-row:hover{background:var(--semi-color-fill-0)}
+/* 候选行 anatomy：拉人（.eva-member-picker__candidate）与选人（.eva-picker-row）共用同一条规则。 */
+.eva-picker-row,.eva-member-picker__candidate{display:flex;box-sizing:border-box;align-items:center;gap:var(--picker-row-inner-gap);min-height:var(--picker-row-height);padding:0 var(--picker-row-pad-x);border-radius:var(--gds-radius-control);cursor:pointer;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-picker-row:hover,.eva-member-picker__candidate:hover{background:var(--eva-conversation-row-hover,var(--semi-color-fill-0))}
 .eva-picker-row.is-selected{background:var(--semi-color-primary-light-default)}
-.eva-picker-row:has(input:focus-visible){outline:2px solid var(--semi-color-focus-border);outline-offset:-2px}
+.eva-picker-row:has(input:focus-visible),.eva-member-picker__candidate:has(input:focus-visible){outline:var(--gds-border-focus) solid var(--gds-color-action-primary);outline-offset:-2px}
 .eva-picker-row>.semi-checkbox,.eva-picker-row>.semi-radio{flex:none;margin:0}
-.eva-picker-avatar{position:relative;width:36px;height:36px;flex:none}
-.eva-picker-avatar>img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.eva-picker-row>.eva-members-human-identity,.eva-picker-row>.eva-members-ai-identity,.eva-member-picker__candidate>.eva-members-human-identity,.eva-member-picker__candidate>.eva-members-ai-identity{min-width:0;flex:1}
+.eva-picker-row .eva-members-human-avatar,.eva-picker-row .eva-ai-avatar,.eva-member-picker__candidate .eva-members-human-avatar,.eva-member-picker__candidate .eva-ai-avatar{width:var(--picker-avatar-size);height:var(--picker-avatar-size);flex:0 0 var(--picker-avatar-size)}
+.eva-picker-avatar{position:relative;width:var(--picker-avatar-size);height:var(--picker-avatar-size);flex:none}
+.eva-picker-avatar>img{width:var(--picker-avatar-size);height:var(--picker-avatar-size);border-radius:50%;object-fit:cover}
 .eva-picker-person{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
 .eva-picker-name{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px;line-height:22px;color:var(--semi-color-text-0);min-width:0;white-space:nowrap}
 .eva-picker-name-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -59,7 +63,7 @@
 .eva-member-picker__field>label,.eva-member-picker__label{padding-top:var(--gds-space-2);font-weight:var(--gds-font-weight-medium)}
 .eva-member-picker__panel{display:grid;height:clamp(320px,calc(100dvh - 340px),600px);min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:var(--gds-border-standard) solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary)}
 .eva-member-picker__available,.eva-member-picker__selected{display:flex;min-width:0;min-height:0;flex-direction:column}
-.eva-member-picker__toolbar{padding:var(--gds-space-3) var(--gds-space-3) 0}
+.eva-member-picker__toolbar,.eva-picker-toolbar{padding:var(--picker-toolbar-pad)}
 .eva-member-picker__selected{border-left:var(--gds-border-standard) solid var(--gds-color-border-subtle)}
 .eva-member-picker__selected-head{display:flex;min-height:40px;flex-shrink:0;align-items:center;justify-content:space-between;gap:var(--gds-space-2);padding:var(--gds-space-2) var(--gds-space-3) 0}
 .eva-member-picker__selected-head strong{font-weight:var(--gds-font-weight-regular)}
@@ -71,12 +75,6 @@
 .eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--picker-group-gap);padding-top:var(--picker-group-gap);border-top:var(--gds-border-standard) solid var(--gds-color-border-faint)}
 .eva-member-picker__candidate-group legend{display:flex;width:auto;max-width:100%;box-sizing:border-box;align-items:center;gap:6px;padding:0 var(--gds-space-2) var(--picker-legend-gap);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
 .eva-member-picker__group-count{color:var(--gds-color-text-muted);font-weight:var(--gds-font-weight-regular)}
-.eva-member-picker__candidate{display:flex;min-height:52px;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-2);border-radius:var(--gds-radius-control);cursor:pointer;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-member-picker__candidate+.eva-member-picker__candidate{margin-top:var(--picker-row-gap)}
-.eva-member-picker__candidate:hover{background:var(--eva-conversation-row-hover,var(--gds-color-surface-subtle))}
-.eva-member-picker__candidate:has(input:focus-visible){outline:var(--gds-border-focus) solid var(--gds-color-action-primary);outline-offset:-2px}
-.eva-member-picker__candidate>.eva-members-human-identity,.eva-member-picker__candidate>.eva-members-ai-identity{min-width:0;flex:1}
-.eva-member-picker__candidate .eva-members-human-avatar,.eva-member-picker__candidate .eva-ai-avatar{width:28px;height:28px;flex:0 0 28px}
 .eva-member-picker__selected-item{display:flex;min-height:40px;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-1);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 .eva-member-picker__selected-avatar{display:inline-flex;width:28px;height:28px;flex:0 0 28px;align-items:center;justify-content:flex-start;overflow:hidden}
 .eva-member-picker__selected-avatar .eva-members-human-avatar,.eva-member-picker__selected-avatar .eva-ai-avatar{width:28px;height:28px;flex:0 0 28px}
