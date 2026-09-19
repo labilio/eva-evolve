@@ -1,0 +1,3 @@
+/* Persistent lightweight reminders requested for the two primary work areas. */
+.layout-sider [aria-label="我的消息"],.layout-sider [aria-label="我的项目"]{position:relative}
+.layout-sider [aria-label="我的消息"]::after,.layout-sider [aria-label="我的项目"]::after{content:"";position:absolute;top:7px;right:10px;width:6px;height:6px;border-radius:50%;background:#f04438;box-shadow:0 0 0 2px var(--semi-color-bg-0,#fff);pointer-events:none}

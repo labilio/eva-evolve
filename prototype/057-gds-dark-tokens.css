@@ -546,19 +546,9 @@ body[theme-mode="dark"] {
    「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
 :root[data-theme="dark"] :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-c-blue-300); }
 
-/* —— 「创建了子区」消息卡 ——
-   vendor 写死浅色：底 #1c1c230a（黑 4%）、左竖线 rgba(28,28,35,.8)（近不透明黑）。
-   暗色下只有文字被 token 接管，底与竖线未接管 → 黑底叠暗底更黑、黑竖线在暗底上
-   几乎不可见（实测两者在暗色下与浅色完全相同）。
-   按 GDS §3.4 遮罩翻转：底改白透明叠加；竖线是该消息类型的身份标识，改用
-   子区链接同源的提亮蓝，让装饰条与「子区」语义一致而非单纯的中性条。 */
-:root[data-theme="dark"] .wk-thread-created-card {
-  background: var(--eva-overlay-hover);
-  border-left-color: var(--eva-c-blue-300);
-}
-:root[data-theme="dark"] .wk-thread-created-card:hover {
-  background: var(--eva-overlay-pressed);
-}
+/* —— 「创建了子区」通知 ——
+   2026-09-18：该通知已并入气泡模式（017 用 --eva-bubble-incoming/outgoing 提供表面），
+   不再使用 Octo 的左侧竖线卡片；气泡底色在暗色下由 IM 气泡 token 接管，此处不再重复。 */
 :root[data-theme="dark"] .wk-thread-created-participants { color: var(--eva-text-secondary-accessible); }
 
 /* 会话头底边线已在 049 收编为 --eva-rail-divider（两模式一处声明），

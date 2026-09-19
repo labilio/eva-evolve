@@ -70,6 +70,9 @@ test('聊天信息中的所属项目复用同一项目身份展示',()=>{
   const ChatSettings=window.EvaChatSettings.create({React,Button,Modal,Input:'input',Switch:'switch',PlusIcon:Placeholder,CloseIcon:Placeholder,BackIcon,SearchIcon:Placeholder,HumanIdentity:Placeholder,CloneIdentity:Placeholder,ProjectAgentIdentity:Placeholder,MemberPicker:Placeholder,SinglePersonPicker:Placeholder,humanItems:()=>[],cloneItems:()=>[],useState:()=>state,IdentityCard:Placeholder,ProjectIdentity:cards.ProjectIdentity,useNavigate:()=>()=>{}},store);
   const tree=ChatSettings({channel:{id:'group',name:'采购与招投标'},onClose:()=>{},onClear:()=>{}});
   assert.match(text(tree),/所属项目/);
+  const flat=text(tree);
+  assert.ok(flat.indexOf('查看全部')<flat.indexOf('所属项目'),'所属项目应紧跟成员列表');
+  assert.ok(flat.indexOf('所属项目')<flat.indexOf('群聊名称'),'所属项目应位于群聊设置之前');
   const affiliation=find(tree,node=>node.type===cards.ProjectIdentity);
   assert.ok(affiliation);
   assert.equal(affiliation.props.name,'供应链运营协同');

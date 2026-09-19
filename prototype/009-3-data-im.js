@@ -129,6 +129,9 @@
   };
 })();
 
+// Legacy demo DMs shipped inside the IM runtime; the follow seed needs their stable IDs.
+window.__EVA_LEGACY_DM_IDS = ['dm-gaozhiyuan', 'dm-hejing', 'dm-qinshu'];
+
 // One non-project parent group with a child subzone for the Recent-list demo.
 window.__EVA_NON_PROJECT_RECENT_DEMO = {
   id: 'community-product-co-creation',

@@ -55,7 +55,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await actual.getByRole('button',{name:'取消',exact:true}).click();
 
     await page.goto(origin+'/#/messages');
-    await page.locator('.wk-conv-compact-item').filter({hasText:'全员群'}).first().click();
+    await page.locator('.wk-conv-compact-item').filter({hasText:'供应链运营协同'}).first().click();
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
     let chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
     assert.equal(await chatSettings.getByText('项目中的成员自动加入全员群，无法退出。',{exact:true}).count(),0,'全员群设置首页不重复成员规则说明');

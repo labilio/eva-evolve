@@ -15,7 +15,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
  const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/#/messages');
- await page.getByRole('region',{name:'供应链运营协同',exact:true}).locator('.eva-follow-channel > .wk-conv-compact-item').filter({hasText:'全员群'}).first().click();
+ await page.getByRole('region',{name:'供应链运营协同',exact:true}).locator('.eva-follow-channel > .wk-conv-compact-item').filter({hasText:'供应链运营协同'}).first().click();
  await page.locator('.eva-im-bubble-row').first().waitFor();
  const directions=await page.locator('.eva-im-bubble-row').evaluateAll(rows=>rows.map(e=>{const a=e.querySelector('.wk-msg-row-avatar').getBoundingClientRect(),b=e.querySelector('.wk-msg-row-body').getBoundingClientRect();return{send:e.classList.contains('wk-msg-row--send'),a:a.x,b:b.x,right:b.right};}));
  assert.ok(directions.some(r=>r.send));assert.ok(directions.some(r=>!r.send));
@@ -32,7 +32,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
    await page.keyboard.press('Escape');await page.locator('.wk-contextmenus-open').waitFor({state:'hidden'});
  }
  await page.screenshot({path:'/tmp/eva-bubble-1200.png'});
- const editor=page.getByRole('textbox',{name:'发送给 全员群'});
+ const editor=page.getByRole('textbox',{name:'发送给 供应链运营协同'});
  const markdown='# 气泡验证\n\n**中文粗体**与普通正文。\n\n> 引用保持左对齐\n\n- 第一项\n- 第二项\n\n```js\nconst value = "'+ 'long_value_'.repeat(35)+'";\n```\n\n|项目|描述|\n|---|---|\n|测试|'+ '宽表格内容'.repeat(40)+'|';
  await editor.fill(markdown);await page.getByRole('button',{name:'发送',exact:true}).click();
  const sent=page.locator('.eva-im-bubble-row').last();

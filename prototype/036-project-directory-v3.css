@@ -62,6 +62,7 @@
     line-height: var(--gds-type-caption-line-height);
   }
 
+
   .eva-project-pinned-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -181,7 +182,7 @@
     white-space: nowrap;
   }
 
-  .eva-project-pin-button {
+  .eva-project-follow-button {
     width: 32px;
     height: 32px;
     flex: 0 0 32px;
@@ -191,29 +192,29 @@
     color: var(--semi-color-text-2, #8a8f99);
   }
 
-  .eva-project-pin-button:hover {
+  .eva-project-follow-button:hover {
     background: var(--semi-color-fill-1, #f2f3f5);
     color: var(--semi-color-text-0, #1c1f23);
   }
 
-  .eva-project-pin-button.is-pinned {
+  .eva-project-follow-button.is-followed {
     background: transparent;
     color: var(--semi-color-text-0, #1c1f23);
   }
 
-  .eva-project-pin-button .semi-button-content,
-  .eva-project-pin-button .semi-icon {
+  .eva-project-follow-button .semi-button-content,
+  .eva-project-follow-button .semi-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
   }
 
-  .eva-project-pin-button svg {
+  .eva-project-follow-button svg {
     display: block;
   }
 
-  .eva-project-list-item > .eva-project-pin-button {
+  .eva-project-list-item > .eva-project-follow-button {
     position: absolute;
     top: 50%;
     right: 12px;

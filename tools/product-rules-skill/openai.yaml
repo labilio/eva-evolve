@@ -1,0 +1,4 @@
+interface:
+  display_name: "Eva 产品规范"
+  short_description: "按需查阅 Eva 四份通用规范与菜单专项规则，落实已确定的产品边界"
+  default_prompt: "使用 $eva-product-rules 核对当前 Eva 功能，说明适用的已定规则与实现要求。"

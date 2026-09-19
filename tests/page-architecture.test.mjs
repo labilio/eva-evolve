@@ -198,7 +198,7 @@ test('消息关注中的群聊可双击收缩子区并显示状态指示', () =>
   assert.match(hierarchyCss, /padding-inline-start:\s*calc\(var\(--eva-space-group-indent\) - var\(--gds-space-0-5\)\)/);
 });
 
-test('所有子区入口统一使用 Lucide CornerDownRight 图标', () => {
+test('子区入口图标：层级与创建消息用 CornerDownRight，右键菜单创建入口用 MessageSquarePlus', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const { source } = createPatchedRuntime();
 
@@ -209,9 +209,19 @@ test('所有子区入口统一使用 Lucide CornerDownRight 图标', () => {
     'M4 4v7a4 4 0 0 0 4 4h12',
   ]) assert.ok(source.includes(`d:"${path}"`), `统一子区图标缺少路径 ${path}`);
   assert.doesNotMatch(source, /ThreadIcon=\(\{size:/);
-  assert.match(source, /title:"创建子区",icon:React\.createElement\(ThreadIcon,\{size:18\}\)/);
+  assert.match(source, /title:"创建子区",icon:React\.createElement\(MessageSquarePlus,\{size:18,className:"ctx-icon"\}\)/);
   assert.match(source, /wk-thread-created-link"\},React\.createElement\(ThreadIcon,\{size:14/);
   assert.doesNotMatch(source, /wk-thread-created-link"\},"🧵"/);
+});
+
+test('子区创建通知并入气泡外观并复用消息行多选合同', () => {
+  const { source } = createPatchedRuntime();
+  const imShellCss = read('prototype/017-im-shell.css');
+
+  assert.match(source, /\.\.\.rowProps\(ci,!1,evaActorId\),selectionMode:evaSelection!==null,showCheckbox:evaSelection!==null,isSelected:!!evaSelection\?\.\[ci\.evaSelectionKey\]/);
+  assert.match(imShellCss, /\.eva-im-bubble-row > \.wk-msg-row-content > \.wk-msg-row-body > \.wk-thread-created-card\s*\{[^}]*border-left:\s*0/);
+  assert.match(imShellCss, /\.wk-thread-created-card::before\s*\{[^}]*background:\s*var\(--eva-im-accent\)/);
+  assert.match(imShellCss, /\.eva-im-bubble-row\.wk-msg-row--send > \.wk-msg-row-content > \.wk-msg-row-body > \.wk-thread-created-card\s*\{[^}]*background:\s*var\(--eva-bubble-outgoing\)/);
 });
 
 test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', () => {

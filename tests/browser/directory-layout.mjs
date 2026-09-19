@@ -16,7 +16,7 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   await page.goto(origin+'/#/collab');
   await page.locator('.eva-project-directory-list').waitFor();
   assert.equal(await page.locator('.eva-project-pinned-card').count(),4,'默认全部演示项目置顶');
-  const unpinned=page.getByRole('button',{name:/^置顶 /});
+  const unpinned=page.getByRole('button',{name:/^关注 /});
   while(await unpinned.count())await unpinned.first().click();
   const cards=page.locator('.eva-project-pinned-card');
   assert.equal(await cards.count(),4);
@@ -24,16 +24,16 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
    const box=e.getBoundingClientRect(),name=e.querySelector('.eva-project-card-title .name').getBoundingClientRect(),desc=e.querySelector('.eva-project-card-description').getBoundingClientRect();
    return {y:box.y,nameX:name?.x,descriptionX:desc.x};
   }));
-  assert.ok(boxes.every(b=>Math.abs(b.y-boxes[0].y)<=1),'宽窗口四个置顶项目同排');
+  assert.ok(boxes.every(b=>Math.abs(b.y-boxes[0].y)<=1),'宽窗口四个关注项目同排');
   assert.ok(boxes.every(b=>Math.abs(b.nameX-b.descriptionX)<=1),'描述与项目名称对齐');
   const rows=page.locator('.eva-project-list-item');
   for(const row of await rows.all()){
    const measure=await row.evaluate(e=>{
-    const box=e.getBoundingClientRect(),parent=e.parentElement,p=parent.getBoundingClientRect(),button=e.querySelector('.eva-project-pin-button').getBoundingClientRect();
+    const box=e.getBoundingClientRect(),parent=e.parentElement,p=parent.getBoundingClientRect(),button=e.querySelector('.eva-project-follow-button').getBoundingClientRect();
     return {left:box.left-p.left-parent.clientLeft,right:p.left+parent.clientLeft+parent.clientWidth-box.right,dy:button.y+button.height/2-box.y-box.height/2};
    });
    assert.ok(Math.abs(measure.left-measure.right)<=1,'项目行左右外留白一致');
-   assert.ok(Math.abs(measure.dy)<=1,'置顶操作位于项目行垂直中心');
+   assert.ok(Math.abs(measure.dy)<=1,'关注操作位于项目行垂直中心');
   }
   await page.goto(origin+'/#/collab?evaProject=prod');
   await page.locator('.collab-frame').waitFor();

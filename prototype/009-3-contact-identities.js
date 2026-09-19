@@ -1,6 +1,7 @@
 /* Shared identity projection. No UI state, name inference, or membership grants. */
 (function(root){
 'use strict';
+const nameCollator=new Intl.Collator('zh-Hans-CN',{collation:'pinyin'});
 root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDigitalEmployeesStore,ownerId='u-wangyilin'}={}){
  const portrait=id=>root.EvaAvatar.personUri(id);
  const link=(label,url)=>({label,url});
@@ -39,10 +40,14 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   return null;
  }
  function directory(){
-  const s=store.snapshot();
+  const s=store.snapshot(),actor=store.actorId();
   return store.people().map(p=>{
    const ids=p.id===ownerId?team.getSnapshot().identities.filter(i=>i.role==='persona').map(i=>i.id):[...s.clones.filter(c=>c.ownerId===p.id&&c.active!==false).map(c=>c.id),...(root.__EVA_CONTACT_PERSONAS||[]).filter(c=>c.ownerId===p.id).map(c=>c.id)];
    return {person:resolve(p.id),personas:[...new Set(ids)].map(resolve).filter(Boolean)};
+  }).sort((a,b)=>{
+   if(a.person.id===actor)return -1;
+   if(b.person.id===actor)return 1;
+   return nameCollator.compare(a.person.name,b.person.name);
   });
  }
  return {resolve,directory,portrait};

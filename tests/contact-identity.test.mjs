@@ -62,6 +62,11 @@ test('资料卡不以分身旧简介或管家固定说明补充资料，员工�
  assert.equal(model.resolve('staff').description,'岗位职责');
 });
 
+test('通讯录按拼音字母排序，自己始终排在第一位',()=>{
+ const {model}=setup({actorId:'me',people:[{id:'me',name:'周远'},{id:'an',name:'安琪'},{id:'bai',name:'白宇'},{id:'chen',name:'陈博'}],clones:[],projects:{}});
+ assert.deepEqual([...model.directory()].map(row=>row.person.name),['周远','安琪','白宇','陈博']);
+});
+
 test('回复快照随群聊和私聊消息保留，跨会话引用失败且不清空草稿',()=>{
  const {store}=setup();const direct=store.openDirect('me','a');
  const reply={conversationId:direct,messageId:'original-1',fromName:'同名',digest:'第一行\n第二行'};

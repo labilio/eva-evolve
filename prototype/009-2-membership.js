@@ -180,14 +180,18 @@
         state.conversationCategories||={};state.conversationCategories[uid]=categories.some(c=>c.id===id)?categories.map(c=>c.id===id?{id,name}:c):categories.concat({id,name});
         state.conversationCategoryAssignments||={};const assignments=state.conversationCategoryAssignments[uid]||={};
         availableChannels.filter(c=>allowed.has(c.id)).forEach(c=>{if(api.conversationCategory(uid,c)===id&&!channelIds.includes(c.id))assignments[c.id]='scope:other';});
-        channelIds.forEach(cid=>assignments[cid]=id);notify();return id;
+        channelIds.forEach(cid=>assignments[cid]=id);
+        state.followedConversations||={};state.followedConversations[uid]||={};channelIds.forEach(cid=>state.followedConversations[uid][cid]=true);
+        notify();return id;
       },
       moveConversationCategory(uid,channel,categoryId){
         requireHuman(uid);
         if(!api.conversationCategories(uid).some(c=>c.id===categoryId))fail('分组不存在');
         if(state.threads[channel.id]||channel.category?.startsWith('space:')||projectId(channel.id))fail('只能移动非项目大群或私聊');
         if(!api.canReadForwardSource(channel.id,uid))fail('无会话访问权限');
-        state.conversationCategoryAssignments||={};state.conversationCategoryAssignments[uid]||={};state.conversationCategoryAssignments[uid][channel.id]=categoryId;notify();
+        state.conversationCategoryAssignments||={};state.conversationCategoryAssignments[uid]||={};
+        state.followedConversations||={};state.followedConversations[uid]||={};
+        state.conversationCategoryAssignments[uid][channel.id]=categoryId;state.followedConversations[uid][channel.id]=true;notify();
       },
       followOrder(uid,bucket,items){
         const order=state.followOrders?.[uid]?.[bucket]||[],rank=new Map(order.map((id,index)=>[id,index]));
@@ -197,6 +201,43 @@
         requireHuman(uid);state.followOrders||={};state.followOrders[uid]||={};
         state.followOrders[uid][bucket]=[...new Set(ids)];notify();
       },
+      // 关注是显式状态：项目按整个项目置顶关注，非项目会话由本人加入关注。
+      conversationFollowed(id,uid){
+        if(!uid||!id)return false;
+        const context=api.conversationContext(id,uid);
+        if(context)return api.pinnedProjects(uid).includes(context.projectId);
+        return !!state.followedConversations?.[uid]?.[id];
+      },
+      followConversation(id,uid,categoryId){
+        requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
+        const context=api.conversationContext(id,uid);
+        if(context){
+          const ids=api.pinnedProjects(uid);
+          if(!ids.includes(context.projectId)){if(ids.length>=6)fail('最多关注 6 个项目');api.setPinnedProjects(uid,[...ids,context.projectId]);}
+          return;
+        }
+        state.followedConversations||={};state.followedConversations[uid]||={};
+        const parent=state.threads[id];
+        if(parent)api.followConversation(parent,uid,categoryId);
+        state.followedConversations[uid][id]=true;
+        if(!parent)(root.__EVA_IM_DEMO?.channels?.find(channel=>channel.id===id)?.threads||[]).forEach(thread=>state.followedConversations[uid][thread.id]=true);
+        if(categoryId&&!parent)api.moveConversationCategory(uid,{id},categoryId);
+        notify();
+      },
+      unfollowConversation(id,uid){
+        requireHuman(uid);
+        const context=api.conversationContext(id,uid);
+        if(context){api.setPinnedProjects(uid,api.pinnedProjects(uid).filter(pid=>pid!==context.projectId));return;}
+        if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
+        state.followedConversations||={};state.followedConversations[uid]||={};
+        const dropFollow=key=>{delete state.followedConversations[uid][key];if(state.conversationCategoryAssignments?.[uid]?.[key])delete state.conversationCategoryAssignments[uid][key];};
+        if(state.threads[id])dropFollow(id);
+        else{
+          dropFollow(id);Object.keys(state.threads||{}).filter(tid=>state.threads[tid]===id).forEach(dropFollow);
+          (root.__EVA_IM_DEMO?.channels?.find(channel=>channel.id===id)?.threads||[]).forEach(thread=>dropFollow(thread.id));
+        }
+        notify();
+      },
 
       addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
       removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[eid];const keys=[state.projects[id]?'all:'+id:id];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);keys.push(g.id);});keys.forEach(key=>{const record=state.groupGovernance?.[key];if(record)record.botAdminIds=(record.botAdminIds||[]).filter(x=>x!==eid);});notify();},
@@ -205,7 +246,8 @@
         state.directConversations||={};
         const existing=Object.values(state.directConversations).find(c=>c.memberIds.includes(uid)&&c.memberIds.includes(target));if(existing)return existing.id;
         const id=uid==='u-wangyilin'?'dm-'+target.replace(/^u-/, ''):'dm-pair:'+JSON.stringify([uid,target].sort());
-        state.directConversations[id]||={id,memberIds:[uid,target],lastAt:new Date().toISOString(),messages:[]};notify();return id;
+        state.directConversations[id]||={id,memberIds:[uid,target],lastAt:new Date().toISOString(),messages:[]};
+        state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;notify();return id;
       },
       directChannels(uid){return Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>{const p=person(c.memberIds.find(id=>id!==uid));return p?{id:c.id,personId:p.id,name:p.name,chatType:'direct',members:2,unread:0,threads:[],lastAt:c.lastAt,identityAvatarUrl:root.EvaAvatar?.personUri(p.id)}:null;}).filter(Boolean);},
       canReadDirect(id,uid){
@@ -221,6 +263,8 @@
       setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify();},
       canReadForwardSource(id,uid){
         if(api.canRead(id,uid)||api.canReadDirect(id,uid))return true;
+        // Shipped IM demo conversations are global fixtures and remain operable.
+        if(root.__EVA_IM_DEMO?.channels?.some(channel=>channel.id===id))return true;
         // The prototype's AI stores belong to the review account, not every switched actor.
         if(uid!=='u-wangyilin')return false;
         const privateConversations=root.EvaAIPrivateConversations;
@@ -363,8 +407,8 @@
         state.actorId='u-wangyilin';state.supplyDemoVersion=d.version;api.seedSupplyChatContent();state.projectAgentDemoVersion=0;api.seedProjectAgents();notify();
       },
       createProject(id,name,uid,ids,goal){requireHuman(uid);if(state.projects[id]||state.groups[id])fail('项目已存在');const clones=selected(uid,ids);state.projects[id]={id,name,ownerId:uid,humans:[{id:uid,role:'owner'}],cloneIds:clones};agentWelcome(id,goal);notify();return id;},
-      createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};notify();return id;},
-      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};notify();},
+      createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};if(!pid){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();return id;},
+      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};if(uid&&api.conversationFollowed(gid,uid)){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();},
       updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');state.threadDetails[id]={...state.threadDetails[id],...patch,id};notify();},
       restoreHiddenOnMention(id,message){
         let changed=false;
@@ -396,14 +440,14 @@
       channels(pid,uid,base=[]){pid=pid||null;
         if(pid&&!api.canRead(pid,uid))return [];
         const p=state.projects[pid];
-        const view=(g,id,isAll)=>{const original=base.find(c=>c.id===id)||{};return {...original,id,name:isAll?'全员群':g.name,lastAt:original.lastAt||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00',color:root.EvaProjectAppearance&&p?root.EvaProjectAppearance.get(projectInfo(pid)).accent:original.color||'var(--semi-color-primary)',unread:original.unread||0,threads:[...(original.threads||[]).map(t=>({...t,...state.threadDetails[t.id]})),...Object.entries(state.threads).filter(([tid,gid])=>gid===id&&state.threadDetails[tid]&&!(original.threads||[]).some(t=>t.id===tid)).map(([tid])=>state.threadDetails[tid])].filter(t=>!t.deleted).map(t=>({...t,updated_at:t.updated_at||t.created_at||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00'})),members:g.humans.length+g.cloneIds.length+(g.employeeIds||[]).length+(p?1:0),systemAICount:p?1:0,humanCount:g.humans.length,cloneCount:g.cloneIds.length,employeeCount:(g.employeeIds||[]).length,allMembers:isAll,projectId:pid};};
+        const view=(g,id,isAll)=>{const original=base.find(c=>c.id===id)||{};return {...original,id,name:isAll?(projectInfo(pid).name||'全员群'):g.name,lastAt:original.lastAt||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00',color:root.EvaProjectAppearance&&p?root.EvaProjectAppearance.get(projectInfo(pid)).accent:original.color||'var(--semi-color-primary)',unread:original.unread||0,threads:[...(original.threads||[]).map(t=>({...t,...state.threadDetails[t.id]})),...Object.entries(state.threads).filter(([tid,gid])=>gid===id&&state.threadDetails[tid]&&!(original.threads||[]).some(t=>t.id===tid)).map(([tid])=>state.threadDetails[tid])].filter(t=>!t.deleted).map(t=>({...t,updated_at:t.updated_at||t.created_at||root.__EVA_DEMO_TIME?.T1||'2026-09-02T10:00:00+08:00'})),members:g.humans.length+g.cloneIds.length+(g.employeeIds||[]).length+(p?1:0),systemAICount:p?1:0,humanCount:g.humans.length,cloneCount:g.cloneIds.length,employeeCount:(g.employeeIds||[]).length,allMembers:isAll,projectId:pid};};
         return [...(p?[view(p,'all:'+pid,true)]:[]),...Object.values(state.groups).filter(g=>g.projectId===pid&&api.canRead(g.id,uid)).map(g=>view(g,g.id,false))];
       },
       conversationContext(id,uid){
         const gid=state.threads[id]||id,sid=gid?.startsWith('all:')?gid.slice(4):gid;
         const pid=state.projects[sid]?sid:state.groups[sid]?.projectId;
         if(!pid||!api.canRead(id,uid)||!api.canRead(pid,uid))return null;
-        const name=projectInfo(pid).name||'',groupName=gid.startsWith('all:')?'全员群':state.chatSettings[gid]?.name||state.groups[gid]?.name||'';
+        const name=projectInfo(pid).name||'',groupName=state.chatSettings[gid]?.name||(gid.startsWith('all:')?(name||'全员群'):state.groups[gid]?.name||'');
         return {projectId:pid,colorKey:root.EvaProjectAppearance?.keyFor(projectInfo(pid)),projectName:name,groupId:gid,groupName,path:state.threads[id]?[name,groupName].filter(Boolean).join(' / '):name};
       },
       candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return people().filter(p=>!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
@@ -582,6 +626,7 @@
       }
       supplyProject.ownerId='u-wangyilin';
       supplyProject.cloneIds=[...new Set([...supplyProject.cloneIds,...supplyMemberDemo.cloneIds.filter(id=>saved.clones.some(clone=>clone.id===id&&clone.active!==false&&supplyProject.humans.some(member=>member.id===clone.ownerId)))])];
+      supplyProject.employeeIds=[...new Set([...(supplyProject.employeeIds||[]),...(supplyMemberDemo.employeeIds||[]).filter(id=>root.EvaDigitalEmployeesStore?.get(id))])];
       for(const [id,humanIds] of Object.entries(supplyMemberDemo.groupMembers||{})){
         const group=saved.groups[id];if(!group||group.projectId!==supplyMemberDemo.projectId)continue;
         const manuallyAdded=new Set((saved.memberAdditions||[]).filter(record=>record.scopeId===id&&group.humans.some(member=>member.id===record.memberId)).map(record=>record.memberId));
@@ -687,6 +732,23 @@
         preferences[id]={...preferences[id],top:true};
       }
       saved.seededRecentPinsV1=true;
+      try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
+    // 关注为显式状态。一次性把随包演示的非项目会话标记为已关注，保留既有关注内容；
+    // 之后用户可以逐个取消关注或重新加入关注。
+    if(!saved.seededFollowedConversationsV1){
+      saved.followedConversations||={};
+      const followed={};
+      const add=id=>{if(id)followed[id]=true;};
+      for(const group of Object.values(saved.groups||{}))if(!group.projectId){
+        add(group.id);
+        for(const [threadId,parent] of Object.entries(saved.threads||{}))if(parent===group.id)add(threadId);
+      }
+      Object.keys(saved.directConversations||{}).forEach(add);
+      for(const channel of root.__EVA_IM_DEMO?.channels||[]){add(channel.id);(channel.threads||[]).forEach(thread=>add(thread.id));}
+      for(const id of root.__EVA_LEGACY_DM_IDS||[])add(id);
+      for(const human of saved.people.filter(p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot))saved.followedConversations[human.id]={...followed};
+      saved.seededFollowedConversationsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);

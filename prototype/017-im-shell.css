@@ -176,6 +176,27 @@
 .eva-im-bubble-row--text.wk-msg-row--send > .wk-msg-row-content > .wk-msg-row-body {
   background: var(--eva-bubble-outgoing);
 }
+/* 「创建了子区」通知并入气泡模式：沿用气泡表面，保留一条内嵌的强调竖条（子区语义色）替代 Octo 贴边黑条。 */
+.eva-im-bubble-row > .wk-msg-row-content > .wk-msg-row-body > .wk-thread-created-card {
+  position: relative;
+  background: var(--eva-bubble-incoming);
+  border-left: 0;
+  border-radius: var(--eva-im-bubble-radius);
+  padding: var(--eva-space-2-5) var(--eva-space-3-5) var(--eva-space-2-5) calc(var(--eva-space-3-5) + 7px);
+}
+.eva-im-bubble-row > .wk-msg-row-content > .wk-msg-row-body > .wk-thread-created-card::before {
+  content: "";
+  position: absolute;
+  top: var(--eva-space-2-5);
+  bottom: var(--eva-space-2-5);
+  left: 7px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--eva-im-accent);
+}
+.eva-im-bubble-row.wk-msg-row--send > .wk-msg-row-content > .wk-msg-row-body > .wk-thread-created-card {
+  background: var(--eva-bubble-outgoing);
+}
 .eva-im-bubble-row .wk-msg-row-header { max-width: 100%; }
 .eva-im-bubble-row .wk-msg-row-timestamp { flex: none; }
 .eva-im-bubble-row .wk-msg-row-body > div { min-width: 0; max-width: 100%; }
@@ -422,7 +443,7 @@
 
 .eva-im-mention-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:420px; max-width:calc(100% - 32px); box-sizing:border-box; padding:12px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-popover),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
 .eva-im-mention-options { max-height:304px; overflow-y:auto; }
-.eva-im-mention-options > button { display:flex; align-items:center; gap:10px; width:100%; height:48px; box-sizing:border-box; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-primary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
+.eva-im-mention-options > button:not([data-eva-mention-more]) { display:flex; align-items:center; gap:10px; width:100%; height:48px; box-sizing:border-box; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-primary); font:inherit; font-size:14px; text-align:left; cursor:pointer; }
 .eva-im-mention-options > button.is-active { background:var(--eva-list-option-selected); outline:none; }
 .eva-im-mention-broadcast-copy { display:flex; align-items:center; gap:8px; min-width:0; white-space:nowrap; }
 .eva-im-mention-options small { color:var(--eva-text-secondary); font-size:12px; overflow:hidden; text-overflow:ellipsis; }
@@ -430,6 +451,18 @@
 .eva-im-mention-empty { padding:12px 8px; color:var(--eva-text-secondary); font-size:13px; }
 
 .eva-im-mention-group { padding:10px 8px 4px; color:var(--eva-text-secondary); font-size:12px; line-height:18px; }
+
+.eva-im-mention-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:500; }
+.eva-im-mention-heading button { border:0; background:transparent; color:var(--eva-text-secondary); padding:4px; display:flex; cursor:pointer; }
+
+/* 大项目不按名字也能缩小范围：顶部一排身份类型筛选，点击只留该类型。 */
+.eva-im-mention-chips { display:flex; flex-wrap:wrap; gap:6px; padding:0 0 8px; }
+.eva-im-mention-chip { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-full); background:var(--eva-surface-primary); color:var(--eva-text-secondary); font:inherit; font-size:12px; line-height:1; cursor:pointer; }
+.eva-im-mention-chip:hover { background:var(--eva-mention-hover); }
+.eva-im-mention-chip.is-active { background:var(--eva-mention-background); border-color:var(--eva-action-primary); color:var(--eva-action-primary); }
+.eva-im-mention-chip-count { font-variant-numeric:tabular-nums; opacity:.72; }
+.eva-im-mention-more { display:block; width:100%; height:auto; box-sizing:border-box; margin:2px 0 4px; padding:8px; border:0; border-radius:var(--eva-radius-control); background:transparent; color:var(--eva-text-secondary); font:inherit; font-size:12px; line-height:18px; text-align:left; cursor:pointer; }
+.eva-im-mention-more:hover { background:var(--eva-mention-hover); color:var(--eva-text-primary); }
 
 /* 表情选择面板：复用输入区浮层视觉语言（与 mention-picker 同规格），网格布局，明暗随 token 自动适配 */
 .eva-im-emoji-picker { position:absolute; bottom:calc(100% + 8px); left:16px; width:320px; max-width:calc(100% - 32px); max-height:280px; box-sizing:border-box; padding:12px; overflow-y:auto; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-panel); background:var(--eva-surface-primary); box-shadow:var(--eva-shadow-popover),var(--eva-shadow-hairline); z-index:30; color:var(--eva-text-primary); }
@@ -467,5 +500,6 @@
 .eva-context-menu li { position:relative; }
 .eva-context-menu li > span { flex:1; white-space:nowrap; }
 .eva-context-menu .ctx-icon { stroke-width:1.7; }
-.eva-context-menu li:focus-visible { background:var(--eva-overlay-hover); outline:2px solid var(--eva-border-focus); outline-offset:-2px; }
+.eva-context-menu li:focus-visible { background:var(--eva-overlay-hover); outline:none; }
+.eva-context-menu:focus,.eva-context-menu:focus-visible { outline:none; }
 .eva-context-submenu { position:absolute; min-width:160px; max-height:60vh; overflow-y:auto; background:var(--eva-surface-primary); border:1px solid var(--eva-border-faint); border-radius:var(--eva-radius-control); box-shadow:var(--eva-shadow-floating); }

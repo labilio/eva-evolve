@@ -237,9 +237,10 @@ window.__EVA_MEMBERSHIP_CLONES = [
 // Review scenario belongs to the existing collaboration workspace (prod).
 // p-supply is its task-board project, not its membership scope.
 window.__EVA_SUPPLY_MEMBER_DEMO = {
-  projectId:'prod', version:3,
+  projectId:'prod', version:4,
   humans:[{id:'u-wangyilin',role:'owner'},{id:'u-zhouyuan',role:'admin'},{id:'u-linxiao',role:'member'},{id:'u-hejing',role:'member'},{id:'u-suhang',role:'member'},{id:'u-tangwei',role:'member'},{id:'u-yanbo',role:'member'},{id:'u-huiling',role:'member'}],
   cloneIds:['b-wangyilin','clone-linxiao','clone-hejing','clone-zhouyuan','clone-suhang','clone-yanbo'],
+  employeeIds:['a_hr_onboarding'],
   groupMembers:{
     'c-eva':['u-wangyilin','u-zhouyuan','u-linxiao','u-yanbo'],
     'c-review':['u-wangyilin','u-linxiao','u-zhouyuan','u-suhang'],

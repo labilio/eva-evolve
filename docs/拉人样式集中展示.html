@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Eva 拉人样式集中展示</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue:#1563eb;--blue-soft:#eaf1ff;--text:#1f2329;--text-2:#646a73;--text-3:#8f959e;
+      --border:#dfe3e8;--border-faint:#eef0f3;--surface:#fff;--surface-subtle:#f5f6f7;--canvas:#eef1f5;
+      --radius:8px;--shadow:0 18px 48px rgba(31,35,41,.18);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-width:1120px;background:var(--canvas);color:var(--text);font:14px/20px -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    button,input{font:inherit}
+    button{color:inherit}
+    .page{display:grid;min-height:100vh;grid-template-columns:248px 1fr}
+    .rail{position:sticky;top:0;height:100vh;padding:28px 20px;background:#f8f9fa;border-right:1px solid var(--border)}
+    .rail h1{margin:0 8px 6px;font-size:20px;line-height:28px}
+    .rail>p{margin:0 8px 24px;color:var(--text-2);font-size:12px;line-height:18px}
+    .scenario-list{display:flex;flex-direction:column;gap:4px}
+    .scenario{width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:pointer}
+    .scenario:hover{background:#eef0f3}.scenario.is-active{background:var(--blue-soft);color:var(--blue);font-weight:600}
+    .scenario small{display:block;margin-top:2px;color:var(--text-3);font-size:11px;font-weight:400}
+    .stage{display:flex;min-height:100vh;align-items:flex-start;justify-content:center;padding:36px 48px 64px}
+    .review{width:680px}
+    .caption{display:flex;align-items:flex-start;justify-content:space-between;margin:0 0 12px;padding:0 4px;color:var(--text-2)}
+    .caption strong{color:var(--text);font-size:13px}.caption span{font-size:12px}
+    .modal{width:680px;overflow:hidden;border:1px solid rgba(31,35,41,.12);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:24px 24px 20px}
+    .modal-head h2{margin:0;font-size:18px;line-height:26px;font-weight:600}
+    .icon-button{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;padding:0;border:0;border-radius:8px;background:transparent;color:#4e5359;cursor:pointer}
+    .icon-button:hover{background:var(--surface-subtle)}.icon-button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .modal-body{display:flex;flex-direction:column;gap:20px;padding:0 24px}
+    .form-row{display:grid;grid-template-columns:80px minmax(0,1fr);gap:20px 16px;align-items:start}
+    .form-label{padding-top:8px;font-weight:500}
+    .text-input,.search{height:32px;border:1px solid var(--border);border-radius:8px;background:#fff}
+    .text-input{width:100%;padding:0 12px;outline:none}.text-input:focus,.search:focus-within{border-color:var(--blue)}
+    .text-input::placeholder,.search input::placeholder{color:#aeb4bf}
+    .picker-wrap.with-label{display:grid;grid-template-columns:80px minmax(0,1fr);gap:16px}.picker-label{padding-top:8px;font-weight:500}
+    .picker{display:grid;height:510px;min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:1px solid var(--border);border-radius:8px;background:#fff}
+    .available,.selected{display:flex;min-width:0;min-height:0;flex-direction:column}.selected{border-left:1px solid var(--border)}
+    .toolbar{padding:12px 12px 0}.search{display:flex;align-items:center;gap:8px;padding:0 12px;color:#697386}
+    .search svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .search input{min-width:0;flex:1;border:0;outline:0;background:transparent}
+    .candidate-list,.selected-list{min-height:0;flex:1;overflow-y:auto;padding:0 8px 8px}
+    fieldset{min-width:0;margin:0;padding:0;border:0}fieldset+fieldset{margin-top:12px;padding-top:8px;border-top:1px solid var(--border-faint)}
+    legend{display:flex;align-items:center;gap:6px;padding:8px;color:var(--text-2);font-size:12px;font-weight:500;line-height:18px}.count{color:var(--text-3);font-weight:400}
+    .candidate{display:flex;min-height:52px;align-items:center;gap:8px;padding:0 8px;border-radius:8px;cursor:pointer}.candidate:hover{background:var(--surface-subtle)}
+    .check{width:16px;height:16px;flex:none;margin:0;accent-color:var(--blue)}
+    .identity{display:flex;min-width:0;flex:1;align-items:center;gap:8px}.avatar{width:28px;height:28px;flex:0 0 28px;border-radius:50%;object-fit:cover;background:#edf0f4}
+    .copy{display:flex;min-width:0;flex:1;flex-direction:column}.name-row{display:flex;min-width:0;align-items:center;gap:4px}.name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+    .detail{height:18px;color:var(--text-2);font-size:12px;line-height:18px}.hint{max-width:40%;flex:none;color:var(--text-2);font-size:12px;text-align:right}
+    .ai-badge{display:inline-flex;height:16px;flex:none;align-items:center;padding:0 4px;border-radius:4px;background:#8b75f6;color:#fff;font-size:10px;font-weight:600;line-height:16px}
+    .selected-head{display:flex;min-height:40px;flex:none;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px 0}.selected-head strong{font-weight:400}
+    .clear{padding:5px 10px;border:0;border-radius:8px;background:#f0f1f2;color:var(--text-2);cursor:pointer}.clear:disabled{color:#aeb4bf;cursor:default}
+    .selected-list>p{margin:24px 12px;color:var(--text-2);text-align:center;font-size:12px}.selected-item{display:flex;min-height:40px;align-items:center;gap:8px;padding:0 4px}
+    .selected-item .name-row{flex:1}.remove{width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--text-2);cursor:pointer}.remove:hover{background:var(--surface-subtle)}
+    .empty{margin:24px 12px;text-align:center}.empty p{margin:0;color:var(--text-2);font-size:13px;line-height:20px}.empty small{display:block;margin-top:8px;color:var(--text-3);font-size:12px;line-height:18px}
+    .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:20px 24px 24px}.button{min-width:80px;height:32px;padding:0 16px;border:1px solid transparent;border-radius:8px;background:#fff;cursor:pointer}.button:hover{background:var(--surface-subtle)}
+    .button.primary{background:var(--blue);color:#fff}.button.primary:disabled{background:#e8e9eb;color:#aeb4bf;cursor:default}
+    @media(max-width:1180px){body{min-width:760px}.page{grid-template-columns:200px 1fr}.stage{padding:28px 24px}.review,.modal{width:680px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <aside class="rail">
+      <h1>拉人样式</h1>
+      <p>模板 A 的现行入口集中展示。切换场景可直接比较创建形态、纯拉人形态与空状态。</p>
+      <nav class="scenario-list" aria-label="拉人场景"></nav>
+    </aside>
+    <section class="stage">
+      <div class="review">
+        <div class="caption"><strong id="caption-title"></strong><span id="caption-note"></span></div>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <header class="modal-head"><h2 id="modal-title"></h2><button class="icon-button" aria-label="关闭" data-icon="x"></button></header>
+          <div class="modal-body" id="modal-body"></div>
+          <footer class="modal-footer"><button class="button">取消</button><button class="button primary" id="submit"></button></footer>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script>
+    const people={
+      wang:{id:'wang',name:'王宜林',role:'产品、验收协调',hint:'项目负责人',color:'#555b63'},
+      zhou:{id:'zhou',name:'周远',role:'后端',hint:'项目管理员',color:'#6e45c7'},
+      lin:{id:'lin',name:'林晓',role:'前端',color:'#70a63a'},
+      su:{id:'su',name:'苏航',role:'',color:'#499659'},
+      he:{id:'he',name:'何静',role:'HR',color:'#c55273'},
+      tang:{id:'tang',name:'唐微',role:'',color:'#3686aa'},
+      yan:{id:'yan',name:'严博',role:'供应商协同',color:'#7d4cb2'},
+      hui:{id:'hui',name:'惠玲',role:'合同审核',color:'#95a09c'}
+    };
+    const ais={
+      wangai:{id:'wangai',name:'王宜林的 AI 分身',kind:'clone',color:'#789cff'},
+      zhouai:{id:'zhouai',name:'周远的 AI 分身',kind:'clone',color:'#8a72ee'},
+      linai:{id:'linai',name:'林晓的 AI 分身',kind:'clone',color:'#68b56d'},
+      general:{id:'general',name:'通用助理',kind:'assistant',color:'#789cff'},
+      dev:{id:'dev',name:'Eva研发助理',kind:'assistant',color:'#789cff'},
+      hr:{id:'hr',name:'HR 入职服务专家',kind:'digital',color:'#111'},
+      supply:{id:'supply',name:'供应链保供专家',kind:'digital',color:'#111'},
+      quality:{id:'quality',name:'质量缺陷专家',kind:'digital',color:'#111'}
+    };
+    const scenarios=[
+      {id:'create-group',label:'新建群聊',note:'创建形态 · 人类与 AI 分身',title:'新建群聊',field:{label:'群聊名称',placeholder:'输入群聊名称'},memberLabel:'群成员',submit:'创建群聊',groups:[['人类成员',[people.zhou,people.lin,people.su,people.he]],['我的 AI 分身',[ais.wangai]]]},
+      {id:'add-project',label:'添加项目成员',note:'纯拉人形态 · 仅人类',title:'添加项目成员',submit:'确认添加',groups:[['人类成员',[people.yan,people.hui]]]},
+      {id:'add-group',label:'添加项目群成员',note:'纯拉人形态 · 人类与 AI 分身',title:'添加群聊成员',submit:'确认添加',groups:[['人类成员',[people.he,people.tang,people.yan]],['我的 AI 分身',[ais.wangai]]]},
+      {id:'empty-group',label:'群聊无人可拉',note:'业务空状态',title:'添加群聊成员',submit:'确认添加',empty:['项目内可选成员均已加入当前群聊','如需添加其他人，请先将其加入项目']},
+      {id:'create-ai-team',label:'新建 AI 团队',note:'创建形态 · AI 分类',title:'新建 AI 团队',field:{label:'团队名称',placeholder:'输入团队名称'},memberLabel:'团队成员',search:'搜索我的 AI 成员',submit:'创建',groups:[['云端分身',[ais.wangai]],['个人助理',[ais.general,ais.dev]],['数字员工',[ais.hr,ais.supply,ais.quality]]]},
+      {id:'edit-ai-team',label:'编辑 AI 团队成员',note:'纯拉人形态 · 带初始选择',title:'编辑团队成员',search:'搜索我的 AI 成员',submit:'保存',selected:['wangai','general'],groups:[['云端分身',[ais.wangai]],['个人助理',[ais.general,ais.dev]],['数字员工',[ais.hr,ais.supply,ais.quality]]]}
+    ];
+    let active=0,selected=new Set(),query='';
+    const icon=name=>name==='search'?'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>';
+    document.querySelector('[data-icon=x]').innerHTML=icon('x');
+    function avatar(item){
+      const label=item.kind==='digital'?'AI':item.name.slice(0,1),bg=item.color||'#68707a';
+      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56"><rect width="56" height="56" rx="28" fill="#f1f2f4"/><circle cx="28" cy="28" r="20" fill="${bg}"/><text x="28" y="34" text-anchor="middle" font-family="Arial,sans-serif" font-size="${label==='AI'?15:20}" font-weight="700" fill="white">${label}</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    }
+    function identity(item){return `<span class="identity"><img class="avatar" alt="" src="${avatar(item)}"><span class="copy"><span class="name-row"><span class="name">${item.name}</span>${item.kind?'<span class="ai-badge">AI</span>':''}</span><span class="detail">${item.role||''}</span></span></span>`}
+    function allItems(s){return (s.groups||[]).flatMap(group=>group[1])}
+    function renderNav(){document.querySelector('.scenario-list').innerHTML=scenarios.map((s,i)=>`<button class="scenario${i===active?' is-active':''}" data-index="${i}">${s.label}<small>${s.note}</small></button>`).join('')}
+    function render(){
+      const s=scenarios[active],items=allItems(s); document.querySelector('#caption-title').textContent=s.label;document.querySelector('#caption-note').textContent=s.note;document.querySelector('#modal-title').textContent=s.title;
+      const field=s.field?`<div class="form-row"><label class="form-label">${s.field.label}</label><input class="text-input" placeholder="${s.field.placeholder}"></div>`:'';
+      const visibleGroups=(s.groups||[]).map(([label,list])=>[label,list.filter(item=>item.name.toLowerCase().includes(query.toLowerCase()))]).filter(group=>group[1].length);
+      const candidates=s.empty&&!query?`<div class="empty"><p>${s.empty[0]}</p><small>${s.empty[1]}</small></div>`:visibleGroups.length?visibleGroups.map(([label,list])=>`<fieldset><legend><span>${label}</span><span class="count">${list.length}</span></legend>${list.map(item=>`<label class="candidate"><input class="check" type="checkbox" data-id="${item.id}" ${selected.has(item.id)?'checked':''}>${identity(item)}${item.hint?`<span class="hint">${item.hint}</span>`:''}</label>`).join('')}</fieldset>`).join(''):`<div class="empty"><p>没有匹配的成员</p></div>`;
+      const chosen=items.filter(item=>selected.has(item.id));
+      const picker=`<div class="picker-wrap${s.field?' with-label':''}">${s.field?`<span class="picker-label">${s.memberLabel}</span>`:''}<div class="picker"><div class="available"><div class="toolbar"><label class="search">${icon('search')}<input value="${query.replaceAll('"','&quot;')}" placeholder="${s.search||'搜索可选成员'}" aria-label="${s.search||'搜索可选成员'}"></label></div><div class="candidate-list">${candidates}</div></div><aside class="selected"><div class="selected-head"><strong>已选 ${chosen.length}</strong><button class="clear" ${chosen.length?'':'disabled'}>清空</button></div><div class="selected-list">${chosen.length?chosen.map(item=>`<div class="selected-item"><img class="avatar" alt="" src="${avatar(item)}"><span class="name-row"><span class="name">${item.name}</span>${item.kind?'<span class="ai-badge">AI</span>':''}</span><button class="remove" data-remove="${item.id}" aria-label="移除 ${item.name}">×</button></div>`).join(''):'<p>从左侧选择成员</p>'}</div></aside></div></div>`;
+      document.querySelector('#modal-body').innerHTML=field+picker;const submit=document.querySelector('#submit');submit.textContent=s.submit;submit.disabled=!chosen.length||!!s.field;
+      bind();renderNav();
+    }
+    function bind(){
+      document.querySelector('.search input').addEventListener('input',e=>{query=e.target.value;render()});
+      document.querySelectorAll('.check').forEach(box=>box.addEventListener('change',()=>{box.checked?selected.add(box.dataset.id):selected.delete(box.dataset.id);render()}));
+      document.querySelectorAll('[data-remove]').forEach(button=>button.addEventListener('click',()=>{selected.delete(button.dataset.remove);render()}));
+      document.querySelector('.clear').addEventListener('click',()=>{selected.clear();render()});
+      const name=document.querySelector('.text-input');if(name)name.addEventListener('input',()=>{document.querySelector('#submit').disabled=!name.value.trim()||!selected.size});
+    }
+    document.querySelector('.scenario-list').addEventListener('click',event=>{const button=event.target.closest('[data-index]');if(!button)return;active=Number(button.dataset.index);selected=new Set(scenarios[active].selected||[]);query='';render()});
+    selected=new Set(scenarios[0].selected||[]);render();
+  </script>
+</body>
+</html>

@@ -645,3 +645,7 @@
   .eva-task-view-switcher::before,
   .eva-task-view-switcher .loop-seg__btn { transition: none; }
 }
+
+/* 项目任务评论 @ 复用统一 IM 提及选择器：宿主只负责定位，外观由共享组件决定。 */
+.eva-loop-mention-host { position: fixed; z-index: 2000; }
+.eva-loop-mention-host > .eva-im-mention-picker { position: absolute; left: 0; top: auto; bottom: calc(100% + 8px); max-width: none; }

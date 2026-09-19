@@ -35,6 +35,8 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-person-card { width:100%; border:0; padding:20px; background:none; font:inherit; color:inherit; text-align:left; cursor:pointer; }
 .eva-chat-person-card>img { width:48px; height:48px; border-radius:50%; vertical-align:middle; margin-right:12px; }
 .eva-chat-group-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+.eva-thread-parent-group { display:inline-flex; align-items:center; justify-content:flex-end; gap:8px; min-width:0; vertical-align:middle; }
+.eva-thread-parent-group-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .eva-chat-settings button:focus-visible { outline:2px solid var(--semi-color-primary); outline-offset:-2px; }
 
 .eva-chat-member-tile>.eva-ai-avatar { margin:0 auto; }
