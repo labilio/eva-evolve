@@ -54,6 +54,10 @@
 .eva-member-picker__selected-head strong{font-weight:var(--gds-font-weight-regular)}
 .eva-member-picker__candidates,.eva-member-picker__selected-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--gds-space-2) var(--gds-space-2)}
 .eva-member-picker__candidate-group{min-width:0;margin:0;padding:0;border:0}
+/* 只声明一个候选类别时不渲染分组头，候选直接平铺。 */
+.eva-member-picker__candidate-flat{display:flex;min-width:0;flex-direction:column}
+.eva-picker-section--flat>section+section,.eva-picker-section--flat .eva-picker-row+.eva-picker-row{margin-top:2px}
+.eva-picker-section--flat{padding-top:2px}
 .eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--gds-space-3);padding-top:var(--gds-space-2);border-top:var(--gds-border-standard) solid var(--gds-color-border-faint)}
 .eva-member-picker__candidate-group legend{display:flex;width:auto;max-width:100%;box-sizing:border-box;align-items:center;gap:6px;padding:var(--gds-space-2);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
 .eva-member-picker__group-count{color:var(--gds-color-text-muted);font-weight:var(--gds-font-weight-regular)}
