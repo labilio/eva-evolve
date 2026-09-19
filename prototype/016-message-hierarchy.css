@@ -236,11 +236,6 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-i
   min-width: 0;
   overflow: hidden;
 }
-body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-info:has(.eva-chat-project-context) {
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
 
 
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-info-name {
@@ -305,6 +300,63 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-t
   flex-shrink: 0;
   background: none;
   border-radius: 0;
+}
+
+/* 项目归属从标题第二行收进顶部操作区，作为跳转项目的按钮，与搜索以分割线相隔。 */
+/* vendor 的 .ch-head .ops 未设 align-items，矮于 32px 的按钮/分割线会贴顶偏上。
+   同时把整排间距从 vendor 的 12px 收到 8px（图标按钮自带内边距，8px 盒子间距的视觉间距更合适）。 */
+body.eva-message-hierarchy-ready .ch-head .ops {
+  align-items: center;
+  gap: 8px;
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-project-jump {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  height: 32px;
+  padding: 0 8px;
+  color: var(--eva-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-project-jump:hover {
+  color: var(--eva-text-primary);
+  background: var(--eva-overlay-hover);
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-project-jump:focus-visible {
+  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+  outline-offset: 2px;
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-project-jump__icon {
+  flex: none;
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-project-jump__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.eva-message-hierarchy-ready .ch-head .ops .eva-chat-head-divider {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--eva-rail-divider);
 }
 
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-avatar.is-settings-trigger {

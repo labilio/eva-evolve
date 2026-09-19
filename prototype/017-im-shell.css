@@ -121,8 +121,7 @@
 .ch-layout .wk-conversationlist-item-selected:hover { background:var(--eva-conversation-row-selected); }
 /* 蓝底选中态次要文字升一档，提对比度。 */
 .ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-time,
-.ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-lastmsg,
-.ch-layout .wk-conversationlist-item-selected .eva-chat-project-context { color:var(--eva-conversation-row-selected-meta); }
+.ch-layout .wk-conversationlist-item-selected .wk-conversationlist-item-lastmsg { color:var(--eva-conversation-row-selected-meta); }
 
 /* Eva bubble trial: one presentation around the existing Octo content and events. */
 .ch-layout .ch-stream {

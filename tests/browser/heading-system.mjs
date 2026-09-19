@@ -158,3 +158,26 @@ test('个人首页保留已确认的居中头像标题、输入器及下方快�
    }
   }
  });
+
+ test('会话顶部操作区所有元素垂直居中，含项目跳转按钮与分割线', async()=>{
+  await page.setViewportSize({width:1200,height:800});
+  await page.goto(`${origin}/#/messages`);
+  await page.locator('.ch-list').getByText('合规与合同',{exact:true}).click();
+  const ops=page.locator('.ch-head .ops');
+  await ops.waitFor();
+  await page.locator('.ch-head .eva-chat-project-jump').waitFor();
+  await page.locator('.ch-head .eva-chat-head-divider').waitFor();
+  const geometry=await ops.evaluate(el=>{
+   const center=node=>{const r=node.getBoundingClientRect();return r.top+r.height/2;};
+   const head=el.closest('.ch-head').getBoundingClientRect(), row=el.getBoundingClientRect();
+   return {rowCenter:row.top+row.height/2,headCenter:head.top+head.height/2,
+     children:[...el.children].map(node=>({cls:String(node.className),center:center(node)}))};
+  });
+  assert.ok(geometry.children.length>=3,'顶部操作区应至少包含搜索、任务与更多');
+  assert.ok(geometry.children.some(child=>child.cls.includes('eva-chat-project-jump')),'项目会话应渲染项目跳转按钮');
+  assert.ok(geometry.children.some(child=>child.cls.includes('eva-chat-head-divider')),'项目会话应渲染分割线');
+  for(const child of geometry.children){
+   assert.ok(Math.abs(child.center-geometry.rowCenter)<=1,`顶部操作区元素必须整排垂直居中: ${child.cls} @ ${child.center}`);
+  }
+  assert.ok(Math.abs(geometry.rowCenter-geometry.headCenter)<=1,'顶部操作区必须在标题栏内垂直居中');
+ });
