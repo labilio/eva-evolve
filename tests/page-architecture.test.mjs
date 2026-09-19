@@ -235,10 +235,14 @@ test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', ()
   assert.match(imPatch, /Za=\(ci,Zi\)=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(Zi\)/);
 });
 
-test('点击群聊内容区会关闭已打开的子区、聊天信息或文件预览面板', () => {
+test('点击群聊内容区会关闭已打开的子区、聊天信息、文件预览、查找与任务面板', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
+  const patched = imPatch.match(/ch-main__stream",onClick:ci=>\{\(([^)]*)\)&&!ci\.target\.closest\?\.\("\.wk-messageinput-box, \.wk-contextmenus, \.wk-message-file"\)/);
 
-  assert.match(imPatch, /ch-main__stream",onClick:ci=>\{\(Mt===\"threads\"\|\|Mt===\"info\"\|\|Mt===\"file\"\)&&!ci\.target\.closest\?\.\(\"\.wk-messageinput-box, \.wk-contextmenus, \.wk-message-file\"\)/);
+  assert.ok(patched, '群聊内容区点击收起右侧面板的补丁缺失');
+  for (const mode of ['threads', 'info', 'file', 'search', 'tasks']) {
+    assert.match(patched[1], new RegExp(`Mt==="${mode}"`), `${mode} 模式未纳入点击内容区收起`);
+  }
 });
 
 test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', () => {

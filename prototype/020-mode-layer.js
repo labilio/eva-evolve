@@ -1483,8 +1483,30 @@
     });
   }
 
+  /* 云盘行操作菜单与标签下拉：点浮层外部收起，统一交给全站失焦控制器，
+     入口只提供自己的状态与关闭方式。 */
+  function registerPopupDismiss() {
+    window.EvaPopupDismiss.watch({
+      id: 'eva-drive-row-menu',
+      isOpen: function () { return Boolean(state.menuId); },
+      keep: function () {
+        return [document.querySelector('#eva-drive-root .eva-drive__row-menu'), document.querySelector('#eva-drive-root .eva-drive__row-more[aria-expanded="true"]')];
+      },
+      token: function () { return state.menuId; },
+      close: function () { closeRowMenu(false); var driveRoot = document.getElementById('eva-drive-root'); if (driveRoot && !driveRoot.hidden) renderDrive(); }
+    });
+    window.EvaPopupDismiss.watch({
+      id: 'eva-drive-tag-dropdown',
+      isOpen: function () { return Boolean(state.dialog && state.dialog.type === 'tags' && state.dialog.tagDropdownOpen !== false); },
+      keep: function () { return document.querySelector('#eva-drive-root .eva-tag-editor'); },
+      token: function () { return state.dialog; },
+      close: function () { state.dialog.tagDropdownOpen = false; renderDrive(); }
+    });
+  }
+
   function initialize() {
     installEvents();
+    registerPopupDismiss();
     window.__evaOpenDrive = openDrive;
     window.__evaOpenDriveFile = openDriveFile;
     window.__evaNativePages.register('drive', function (host) {

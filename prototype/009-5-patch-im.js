@@ -450,7 +450,7 @@ function evaIMPlaceholder(name) {
 }
 function EvaDeleteMessagesDialog({count,onCancel,onDelete}){
  const h=React.createElement,[host,setHost]=reactExports.useState(null),[error,setError]=reactExports.useState('');
- return ReactDOM.createPortal(h('div',{ref:setHost,className:'eva-im-delete-portal'},host&&h(Modal,{visible:true,title:'确定删除消息？',className:'eva-im-delete-dialog',width:400,getPopupContainer:()=>host,maskClosable:false,onCancel,footer:h(React.Fragment,null,h(Button,{onClick:onCancel},'取消'),h(Button,{type:'danger',theme:'solid',onClick:()=>{try{onDelete();}catch(e){setError(e.message);}}},'删除'))},h('p',null,'删除的消息将从你的会话记录中消失，但仍对会话内其他人可见'),error&&h('p',{role:'alert'},error))),document.body);
+ return ReactDOM.createPortal(h('div',{ref:setHost,className:'eva-im-delete-portal'},host&&h(Modal,{visible:true,title:'确定删除消息？',className:'eva-im-delete-dialog',width:400,getPopupContainer:()=>host,maskClosable:true,onCancel,footer:h(React.Fragment,null,h(Button,{onClick:onCancel},'取消'),h(Button,{type:'danger',theme:'solid',onClick:()=>{try{onDelete();}catch(e){setError(e.message);}}},'删除'))},h('p',null,'删除的消息将从你的会话记录中消失，但仍对会话内其他人可见'),error&&h('p',{role:'alert'},error))),document.body);
 }
 function EvaIMSelectionToolbar({count,onForward,onDelete,onExit}) {
   const h=React.createElement;
@@ -1099,7 +1099,7 @@ function EvaAITeamPage() {
     cut("!fa&&Zi.push({separator:!0},{title:\"创建子区\"",
       "!fa&&ct?.sidebarVariant!==\"ai-sessions\"&&Zi.push({separator:!0},{title:\"创建子区\"", "team-only subzone menu");
     cut('React.createElement("div",{className:"ch-main__stream"},React.createElement("div",{className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta)))',
-      'React.createElement("div",{className:"ch-main__stream",onClick:ci=>{(Mt==="threads"||Mt==="info"||Mt==="file")&&!ci.target.closest?.(".wk-messageinput-box, .wk-contextmenus, .wk-message-file")&&(Mt==="file"&&Qt(null),Dt("none"))}},React.createElement("div",{className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta)))', "点击群聊内容时关闭右侧面板");
+      'React.createElement("div",{className:"ch-main__stream",onClick:ci=>{(Mt==="threads"||Mt==="info"||Mt==="file"||Mt==="search"||Mt==="tasks")&&!ci.target.closest?.(".wk-messageinput-box, .wk-contextmenus, .wk-message-file")&&(Mt==="file"&&Qt(null),Dt("none"))}},React.createElement("div",{className:"ch-stream",ref:da},Ta.map((ci,Zi)=>hi(ci,Zi,Ta)))', "点击群聊内容时关闭右侧面板");
     cut('$a=async ci=>{const Zi=await demoFileUrl(ci.name);Qt({url:Zi,name:ci.name,extension:ci.extension,size:ci.size}),Ht(null),Dt("file")}',
       '$a=async ci=>{const Zi=ci.previewUrl??await demoFileUrl(ci.name);Qt({...ci,url:Zi}),Ht(null),Dt("file")}', '文档预览保留文件格式元数据');
     cut('this.register({type:"text",extensions:["html","htm"],renderer:HtmlRenderer,needsFetch:!0})',

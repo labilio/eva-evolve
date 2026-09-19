@@ -108,12 +108,12 @@ test('Settings shell: mask covers the whole window and blocks click-through to t
   // 命中测试：顶栏收起按钮原坐标现在应落在蒙层/弹窗上，不再是顶栏按钮本身。
   const hit=await page.evaluate(({x,y})=>{const el=document.elementFromPoint(x,y);return {tag:el.tagName,inTitlebar:!!el.closest('.app-titlebar')};},before.btnPoint);
   assert.equal(hit.inTitlebar,false,'顶栏按钮被蒙层挡住，命中测试不再落在顶栏上');
-  // 真点一下同一坐标：侧栏不该被收起（说明点击没有穿透到顶栏），且设置弹窗仍开着（maskClosable:false）。
+  // 真点一下同一坐标：侧栏不该被收起（说明点击没有穿透到顶栏），按浮层失焦规则设置弹窗应被收起。
   await page.mouse.click(before.btnPoint.x,before.btnPoint.y);
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(300);
   const siderWAfter=await page.evaluate(()=>document.querySelector('.layout-sider').getBoundingClientRect().width);
   assert.equal(siderWAfter,before.siderW,'点击未穿透蒙层改变顶栏/侧栏状态');
-  assert.equal(await page.locator('.eva-settings-dialog .semi-modal:visible').count(),1,'蒙层不可点关（maskClosable:false），弹窗仍开着');
+  assert.equal(await page.locator('.eva-settings-dialog .semi-modal:visible').count(),0,'点击蒙层空白处收起设置弹窗，且点击未穿透顶栏');
 });
 
 test('Settings shell: titlebar shows the current page name and closes the dialog',async()=>{

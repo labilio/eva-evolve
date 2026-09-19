@@ -26,7 +26,7 @@
       const pickerGroups=groupless?[{kind:declaredGroups[0]?.kind||'human',label:declaredGroups[0]?.label||'成员',items:declaredGroups[0]?.items}]:declaredGroups;
       const identity=(item,selected=false)=>{if(item.kind==='project'){const tone=root.EvaProjectAppearance.css(item.project||{id:item.id,name:item.name});return h('span',{className:'eva-member-picker__project-identity'},h('span',{className:'eva-member-picker__project-icon','aria-hidden':true,style:{backgroundColor:tone.surface,color:tone.accent}},ProjectIcon?h(ProjectIcon,{size:16}):null),h('span',{className:'eva-member-picker__project-text'},h('span',{className:'eva-member-picker__project-name',title:item.name},item.name),selected?null:h('span',{className:'eva-member-picker__project-detail'},item.detail)));}return item.kind==='human'?h(HumanIdentity,{id:item.id,detail:selected?'':item.detail,compact:true}):h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(item.appearance||root.EvaAIIdentity.cloneAppearance(store.person(item.ownerId)),28,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text',title:item.name},item.name),root.EvaAIIdentity.badge(h))));};
       const footer=h('div',{className:'eva-picker-footer eva-member-picker__footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',disabled:!valid,onClick:()=>{try{onSubmit(chosen,name.trim());}catch(e){setError(e.message);}}},typeof submit==='function'?submit(chosen):submit));
-      return h(Modal,{className:('eva-members-modal eva-picker-modal eva-member-picker-modal '+className).trim(),width:680,title,visible,onCancel,footer,getPopupContainer,maskClosable:false},
+      return h(Modal,{className:('eva-members-modal eva-picker-modal eva-member-picker-modal '+className).trim(),width:680,title,visible,onCancel,footer,getPopupContainer,maskClosable:true},
         h('div',{className:'eva-member-picker'+(field?'':' eva-member-picker--selection-only')},
           field&&h('div',{className:'eva-member-picker__field'},h('label',{htmlFor:field.id||'eva-member-picker-name'},field.label),h(Input,{id:field.id||'eva-member-picker-name','aria-label':field.label,value:name,onChange:value=>{setName(value);setError('');},placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus!==false})),
           h('div',{className:'eva-member-picker__members'+(field?'':' eva-member-picker__members--selection-only')},
@@ -45,7 +45,7 @@
       R.useEffect(()=>{if(visible){setIds([]);setError('');}},[visible,title]);
       const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
       const footer=h('div',{className:'eva-picker-footer eva-transfer-footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',disabled:chosen.length!==1,onClick:()=>{try{onSubmit(chosen);}catch(e){setError(e.message);}}},submit));
-      return h(Modal,{className:'eva-members-modal eva-members-modal--transfer',width:480,title,visible,onCancel,footer,maskClosable:false},
+      return h(Modal,{className:'eva-members-modal eva-members-modal--transfer',width:480,title,visible,onCancel,footer,maskClosable:true},
         h(SelectionBody,{items,selected:ids,onChange:setIds,single:true,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他人类成员可以接任。'}),
         error&&h('p',{role:'alert',className:'eva-members-error'},error));
     }

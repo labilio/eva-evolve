@@ -12,9 +12,10 @@ function setup(hash = '#/guid') {
   window.__evaNativePages = {register:(_,fn) => {mount = fn;}};
   window.HTMLElement.prototype.setSelectionRange = function() {};
   const location = {hash};
-  vm.runInNewContext(fs.readFileSync('prototype/052-personal-eva-gds.js','utf8'), {
-    window, document, location, setTimeout:fn => {finish=fn;return 1;}, clearTimeout:()=>{finish=null;}
-  });
+  const sandbox = {window, document, location, setTimeout:fn => {finish=fn;return 1;}, clearTimeout:()=>{finish=null;}};
+  // 与 index.html 一致：失焦控制器先于页面模块装配
+  vm.runInNewContext(fs.readFileSync('prototype/004-popup-dismiss.js','utf8'), sandbox);
+  vm.runInNewContext(fs.readFileSync('prototype/052-personal-eva-gds.js','utf8'), sandbox);
   mount(document.querySelector('main'));
   const query = selector => document.querySelector(selector);
   const key = value => {const event = new window.Event('keydown',{bubbles:true,cancelable:true});event.key=value;query('.eva-composer-prompt').dispatchEvent(event);};

@@ -939,6 +939,26 @@
     if (event.key === 'Escape' && root && root.contains(event.target) && railForm) { railForm = null; renderRail(); }
   });
 
+  /* 技能选择器与文件夹菜单：点浮层外部收起，交给全站唯一失焦控制器。
+     这里只登记状态读取与关闭方式，重绘仍由本页自己的 render 负责。 */
+  window.EvaPopupDismiss.watch({
+    id: 'eva-personal-skill-picker',
+    isOpen: function () { return Boolean(root && root.isConnected && skillPickerOpen()); },
+    keep: function () { return root && root.querySelector('.eva-composer'); },
+    token: function () { return state + '|' + conversationPickerOpen; },
+    close: function () { closeSkillPicker(); }
+  });
+  window.EvaPopupDismiss.watch({
+    id: 'eva-personal-folder-menu',
+    isOpen: function () { return Boolean(root && root.isConnected && folderMenu !== null); },
+    keep: function () {
+      if (!root) return [];
+      return [root.querySelector('.eva-personal-folder-menu'), root.querySelector('[data-eva-folder-menu="' + folderMenu + '"]')];
+    },
+    token: function () { return folderMenu; },
+    close: function () { folderMenu = null; renderRail(); }
+  });
+
   /* 评审用：直接跳任一态，或不带参数读当前态。 */
   window.__evaPersonalState = function (next) {
     if (next == null) return state;

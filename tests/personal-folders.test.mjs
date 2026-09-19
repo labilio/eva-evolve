@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import {randomUUID} from 'node:crypto';
 import {parseHTML} from 'linkedom';
 
+const dismissSource=fs.readFileSync('prototype/004-popup-dismiss.js','utf8');
 const storeSource=fs.readFileSync('prototype/046-personal-assistants.js','utf8');
 const pageSource=fs.readFileSync('prototype/052-personal-eva-gds.js','utf8');
 function setup(saved=new Map(),hash='#/guid') {
@@ -14,7 +15,7 @@ function setup(saved=new Map(),hash='#/guid') {
   window.__evaNativePages={register:(_,fn)=>{mount=fn;}};
   window.HTMLElement.prototype.setSelectionRange=function(){};
   const context=vm.createContext({window,document,location,crypto:{randomUUID},localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)},setTimeout:fn=>{complete=fn;return 1;},clearTimeout:()=>{}});
-  vm.runInContext(storeSource,context);vm.runInContext(pageSource,context);mount(document.querySelector('main'));
+  vm.runInContext(dismissSource,context);vm.runInContext(storeSource,context);vm.runInContext(pageSource,context);mount(document.querySelector('main'));
   const q=s=>document.querySelector(s);
   const input=value=>{q('.eva-composer-prompt').value=value;q('.eva-composer-prompt').dispatchEvent(new window.Event('input',{bubbles:true}));};
   const route=id=>{location.hash='#/conversation/'+id;window.dispatchEvent(new window.Event('hashchange'));};
