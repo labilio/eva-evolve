@@ -484,8 +484,14 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
   assert.doesNotMatch(imPatch, /evaReturn=%2Fmessages%3FevaIM%3Dmy-ai/);
-  assert.match(sider, /returnTo=evaCreatorParams\.get\("evaReturn"\)/);
-  assert.match(creator, /returnTo\?navigate\(returnTo\):navigatePersonal/);
+  // 数字员工创建已整体移除：页面不再承载创建向导，侧栏也不再保留创建入口。
+  assert.doesNotMatch(sider, /evaCreatorParams|evaCreate|Agent创建中心/);
+  assert.doesNotMatch(creator, /function creator\(|configPane\(|resourcePicker\(|eva-creator-workspace/);
+  // 信息卡中的「创建数字员工」是追溯记录事件文案，属于保留内容。
+  assert.doesNotMatch(creator, /h\('h1',null,'创建数字员工'\)/);
+  assert.doesNotMatch(creator, /initialType|returnTo/);
+  // 「我的 Agent」的个人助理创建入口不受影响，仍走共享编辑弹窗。
+  assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant'/);
 });
 
 test('其他菜单只保留数字员工市场，市场身份统一展示公共 AI 标且没有接入配置', () => {
@@ -505,7 +511,9 @@ test('其他菜单只保留数字员工市场，市场身份统一展示公共 A
   assert.doesNotMatch(market, /const addIcon=|icon:addIcon\(\)/);
   assert.match(market, /eva-digital-center__domain-filters/);
   assert.doesNotMatch(market, /加入 AI 团队|已加入 AI 团队/);
-  assert.doesNotMatch(market.match(/const columns=\[[\s\S]*?function creator/)[0], /disabled:store\.hasInTeam/);
+  const columns = market.match(/const columns=\[[\s\S]*?\];/);
+  assert.ok(columns, '数字员工市场列定义缺失');
+  assert.doesNotMatch(columns[0], /disabled:store\.hasInTeam/);
 });
 
 test('一级页面只挂入路由宿主，不再追加到 document.body', () => {

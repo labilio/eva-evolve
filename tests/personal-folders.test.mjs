@@ -77,9 +77,12 @@ test('个人 Eva 不暴露助理创建，但我的 AI 使用共享编辑弹窗�
  const imPatch=fs.readFileSync('prototype/009-5-patch-im.js','utf8');
  assert.doesNotMatch(pageSource,/evaCreate=mine|data-eva-edit-assistant/);
  assert.match(data.slice(data.indexOf('"runtimes"')), /"key": "mine"/);
- assert.match(center,/initialType==='mine'.+saveLocalAssistant/s);
- assert.match(center,/returnTo\?navigate\(returnTo\):navigatePersonal/);
- assert.match(center,/submitPersonaRequest/);
+ // 数字员工创建已整体移除：不再有创建向导、草稿与发布申请提交。
+ assert.doesNotMatch(center,/function creator\(|configPane\(|resourcePicker\(|eva-creator-workspace/);
+ assert.doesNotMatch(center,/h\('h1',null,'创建数字员工'\)/);
+ assert.doesNotMatch(center,/initialType|returnTo|submitPersonaRequest/);
+ // 我的 AI 的个人助理创建仍走共享编辑弹窗，不受影响。
+ assert.match(imPatch,/const openPersonalAssistant=/);
  assert.match(imPatch,/const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
  assert.doesNotMatch(imPatch,/evaCreate=mine&evaReturn=/);
  assert.match(imPatch,/'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
