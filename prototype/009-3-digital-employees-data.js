@@ -99,7 +99,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "a_hr_onboarding",
       "one": "陪新员工走完入职第一周：办手续、开权限、找对人",
-      "name": "HR 助手",
+      "name": "HR 入职服务专家",
       "kind": "staff",
       "emoji": "🧭",
       "color": "#3FB27F",
@@ -308,7 +308,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_meeting",
       "by": "u_liming",
-      "name": "会议纪要清洗",
+      "name": "会议纪要专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "📝",
@@ -337,7 +337,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_bid",
       "by": "u_xiewei",
-      "name": "招标文件比对",
+      "name": "招标文件比对专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "📑",
@@ -366,7 +366,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_sql",
       "by": "u_hcj",
-      "name": "取数小工",
+      "name": "数据提取专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "🔍",
@@ -395,7 +395,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_review",
       "by": "u_wangchen",
-      "name": "交互稿自查",
+      "name": "交互稿审查专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "🎨",
@@ -424,7 +424,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_safety",
       "by": "u_beta",
-      "name": "安全测试用例生成",
+      "name": "安全测试专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "🛡️",
@@ -453,7 +453,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_pub_onboard",
       "by": "u_ycy",
-      "name": "新人上手问答",
+      "name": "新人入职问答专家",
       "kind": "staff",
       "market": "staffpub",
       "emoji": "🎓",
@@ -482,7 +482,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_mine_report",
       "by": "u-wangyilin",
-      "name": "汇报材料助理",
+      "name": "汇报材料专家",
       "kind": "staff",
       "market": "mine",
       "emoji": "📊",
@@ -510,7 +510,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "n_mine_fb",
       "by": "u-wangyilin",
-      "name": "原型批注跟进",
+      "name": "原型批注跟进专家",
       "kind": "staff",
       "market": "mine",
       "emoji": "📌",
@@ -538,7 +538,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00518",
       "no": "AS00518",
-      "name": "星驱EVA同学专家",
+      "name": "星驱 EVA 同学专家",
       "rawName": "星驱EVA同学助理",
       "kind": "staff",
       "market": "domain",
@@ -596,7 +596,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00468",
       "no": "AS00468",
-      "name": "NVH AI智能分析专家",
+      "name": "NVH AI 智能分析专家",
       "rawName": "NVH AI智能分析助理",
       "kind": "staff",
       "market": "domain",
@@ -625,7 +625,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00441",
       "no": "AS00441",
-      "name": "PPT制作专家",
+      "name": "PPT 制作专家",
       "rawName": "PPT制作助理",
       "kind": "staff",
       "market": "domain",
@@ -654,7 +654,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00490",
       "no": "AS00490",
-      "name": "星驱-AI代码质检专家",
+      "name": "星驱 AI 代码质检专家",
       "rawName": "星驱-AI代码质检助理",
       "kind": "staff",
       "market": "domain",
@@ -683,7 +683,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00478",
       "no": "AS00478",
-      "name": "电驱AI智能测试专家",
+      "name": "电驱 AI 智能测试专家",
       "rawName": "电驱AI智能测试助理",
       "kind": "staff",
       "market": "domain",
@@ -1003,7 +1003,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00507",
       "no": "AS00507",
-      "name": "智驾VLM数据标注专家",
+      "name": "智驾 VLM 数据标注专家",
       "rawName": "智驾VLM数据标注助理",
       "kind": "staff",
       "market": "domain",
@@ -1148,7 +1148,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00404",
       "no": "AS00404",
-      "name": "NVH智能文档专家",
+      "name": "NVH 智能文档专家",
       "rawName": "NVH智能文档助理",
       "kind": "staff",
       "market": "domain",
@@ -1235,7 +1235,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00493",
       "no": "AS00493",
-      "name": "涂一版电驱标准学习专家",
+      "name": "电驱标准学习专家",
       "rawName": "涂一版电驱标准学习助理",
       "kind": "staff",
       "market": "domain",
@@ -1264,7 +1264,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00494",
       "no": "AS00494",
-      "name": "客诉质量分析专家-王维豪版",
+      "name": "客诉质量分析专家",
       "rawName": "客诉质量分析助理-王维豪版",
       "kind": "staff",
       "market": "domain",
@@ -1293,7 +1293,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00495",
       "no": "AS00495",
-      "name": "ESOW偏差表专家-周宁版",
+      "name": "ESOW 偏差分析专家",
       "rawName": "ESOW偏差表助理-周宁版",
       "kind": "staff",
       "market": "domain",
@@ -1322,7 +1322,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00386",
       "no": "AS00386",
-      "name": "PDF翻译专家",
+      "name": "PDF 翻译专家",
       "rawName": "PDF翻译助理",
       "kind": "staff",
       "market": "domain",
@@ -1380,7 +1380,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00395",
       "no": "AS00395",
-      "name": "IDP智能专家",
+      "name": "IDP 智能专家",
       "rawName": "IDP智能助理",
       "kind": "staff",
       "market": "domain",
@@ -1438,7 +1438,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00401",
       "no": "AS00401",
-      "name": "星驱-DevOps专家",
+      "name": "星驱 DevOps 专家",
       "rawName": "星驱-DevOps助理",
       "kind": "staff",
       "market": "domain",
@@ -1496,7 +1496,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00412",
       "no": "AS00412",
-      "name": "EAM设备盘点机器人专家",
+      "name": "EAM 设备盘点专家",
       "rawName": "EAM设备盘点机器人助理",
       "kind": "staff",
       "market": "domain",
@@ -1525,7 +1525,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00413",
       "no": "AS00413",
-      "name": "EAE智能问数专家",
+      "name": "EAE 智能问数专家",
       "rawName": "EAE智能问数助理",
       "kind": "staff",
       "market": "domain",
@@ -1757,7 +1757,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00014",
       "no": "AS00014",
-      "name": "ESG合规评估专家",
+      "name": "ESG 合规评估专家",
       "rawName": "ESG合规评估助理",
       "kind": "staff",
       "market": "domain",
@@ -1961,7 +1961,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00084",
       "no": "AS00084",
-      "name": "客服专员专家-吉利",
+      "name": "吉利客服服务专家",
       "rawName": "客服专员助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -1990,7 +1990,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00090",
       "no": "AS00090",
-      "name": "门店运营专家-吉利",
+      "name": "吉利门店运营专家",
       "rawName": "门店运营助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -2048,7 +2048,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00095",
       "no": "AS00095",
-      "name": "客服专员专家-极氪",
+      "name": "极氪客服服务专家",
       "rawName": "客服专员助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -2077,7 +2077,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00115",
       "no": "AS00115",
-      "name": "销售培训专家-极氪",
+      "name": "极氪销售培训专家",
       "rawName": "销售培训助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -2106,7 +2106,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00117",
       "no": "AS00117",
-      "name": "销售顾问专家-领克",
+      "name": "领克销售顾问专家",
       "rawName": "销售顾问助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -2135,7 +2135,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00118",
       "no": "AS00118",
-      "name": "客服专员专家-领克",
+      "name": "领克客服服务专家",
       "rawName": "客服专员助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -2164,7 +2164,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00121",
       "no": "AS00121",
-      "name": "门店运营专家-领克",
+      "name": "领克门店运营专家",
       "rawName": "门店运营助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -2222,7 +2222,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00137",
       "no": "AS00137",
-      "name": "门店运营专家-极氪",
+      "name": "极氪门店运营专家",
       "rawName": "门店运营助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -2488,7 +2488,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00183",
       "no": "AS00183",
-      "name": "GSTE学习专家",
+      "name": "GSTE 学习专家",
       "rawName": "GSTE学习助理",
       "kind": "staff",
       "market": "domain",
@@ -2546,7 +2546,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00204",
       "no": "AS00204",
-      "name": "销售顾问专家-吉利",
+      "name": "吉利销售顾问专家",
       "rawName": "销售顾问助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -3070,7 +3070,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00093",
       "no": "AS00093",
-      "name": "销售顾问专家-极氪",
+      "name": "极氪销售顾问专家",
       "rawName": "销售顾问助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -3422,7 +3422,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00176",
       "no": "AS00176",
-      "name": "Eva平台专家",
+      "name": "Eva 平台专家",
       "rawName": "Eva平台助理",
       "kind": "staff",
       "market": "domain",
@@ -3481,7 +3481,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00180",
       "no": "AS00180",
-      "name": "GBOM管理专家",
+      "name": "GBOM 管理专家",
       "rawName": "GBOM管理助理",
       "kind": "staff",
       "market": "domain",
@@ -3655,7 +3655,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00202",
       "no": "AS00202",
-      "name": "销售培训专家-领克",
+      "name": "领克销售培训专家",
       "rawName": "销售培训助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -3684,7 +3684,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00205",
       "no": "AS00205",
-      "name": "线索运营专家-领克",
+      "name": "领克线索运营专家",
       "rawName": "线索运营助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -3713,7 +3713,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00206",
       "no": "AS00206",
-      "name": "线索运营专家-极氪",
+      "name": "极氪线索运营专家",
       "rawName": "线索运营助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -3742,7 +3742,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00207",
       "no": "AS00207",
-      "name": "销售培训专家-吉利",
+      "name": "吉利销售培训专家",
       "rawName": "销售培训助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -4177,7 +4177,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00348",
       "no": "AS00348",
-      "name": "SQE运营专家",
+      "name": "SQE 运营专家",
       "rawName": "SQE运营助理",
       "kind": "staff",
       "market": "domain",
@@ -4352,7 +4352,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00454",
       "no": "AS00454",
-      "name": "VEC属性开发专家",
+      "name": "VEC 属性开发专家",
       "rawName": "VEC属性开发助理",
       "kind": "staff",
       "market": "domain",
@@ -4469,7 +4469,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00504",
       "no": "AS00504",
-      "name": "软件UI自动化测试专家",
+      "name": "软件 UI 自动化测试专家",
       "rawName": "软件UI自动化测试助理",
       "kind": "staff",
       "market": "domain",
@@ -4585,7 +4585,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00491",
       "no": "AS00491",
-      "name": "AI拧紧曲线分析专家",
+      "name": "AI 拧紧曲线分析专家",
       "rawName": "AI拧紧曲线分析助理",
       "kind": "staff",
       "market": "domain",
@@ -4672,7 +4672,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00472",
       "no": "AS00472",
-      "name": "CAD制图专家",
+      "name": "CAD 制图专家",
       "rawName": "CAD制图助理",
       "kind": "staff",
       "market": "domain",
@@ -4730,7 +4730,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00511",
       "no": "AS00511",
-      "name": "AI压装曲线分析专家",
+      "name": "AI 压装曲线分析专家",
       "rawName": "AI压装曲线分析助理",
       "kind": "staff",
       "market": "domain",
@@ -4788,7 +4788,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00062",
       "no": "AS00062",
-      "name": "国际2C销售专家",
+      "name": "国际 2C 销售专家",
       "rawName": "国际2C销售助理",
       "kind": "staff",
       "market": "domain",
@@ -4875,7 +4875,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00091",
       "no": "AS00091",
-      "name": "线索运营专家-吉利",
+      "name": "吉利线索运营专家",
       "rawName": "线索运营助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -4933,7 +4933,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00123",
       "no": "AS00123",
-      "name": "销售总监专家-领克",
+      "name": "领克销售管理专家",
       "rawName": "销售总监助理-领克",
       "kind": "staff",
       "market": "domain",
@@ -4992,7 +4992,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00170",
       "no": "AS00170",
-      "name": "IT运维服务专家",
+      "name": "IT 运维服务专家",
       "rawName": "IT运维服务助理",
       "kind": "staff",
       "market": "domain",
@@ -5225,7 +5225,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00201",
       "no": "AS00201",
-      "name": "销售总监专家-极氪",
+      "name": "极氪销售管理专家",
       "rawName": "销售总监助理-极氪",
       "kind": "staff",
       "market": "domain",
@@ -5254,7 +5254,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00203",
       "no": "AS00203",
-      "name": "销售总监专家-吉利",
+      "name": "吉利销售管理专家",
       "rawName": "销售总监助理-吉利",
       "kind": "staff",
       "market": "domain",
@@ -5370,7 +5370,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00216",
       "no": "AS00216",
-      "name": "智能仿真AI专家",
+      "name": "智能仿真 AI 专家",
       "rawName": "智能仿真AI助理",
       "kind": "staff",
       "market": "domain",
@@ -5399,7 +5399,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00226",
       "no": "AS00226",
-      "name": "软件OTA运营专家",
+      "name": "软件 OTA 运营专家",
       "rawName": "软件OTA运营助理",
       "kind": "staff",
       "market": "domain",
@@ -5428,7 +5428,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00227",
       "no": "AS00227",
-      "name": "OTA合规管理专家",
+      "name": "OTA 合规管理专家",
       "rawName": "OTA合规管理助理",
       "kind": "staff",
       "market": "domain",
@@ -5544,7 +5544,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00247",
       "no": "AS00247",
-      "name": "对外合作业务BD专家",
+      "name": "对外合作业务 BD 专家",
       "rawName": "对外合作业务BD助理",
       "kind": "staff",
       "market": "domain",
@@ -5718,7 +5718,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00353",
       "no": "AS00353",
-      "name": "EPLM智能问答",
+      "name": "EPLM 智能问答专家",
       "rawName": "EPLM智能问答",
       "kind": "staff",
       "market": "domain",
@@ -5747,7 +5747,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00354",
       "no": "AS00354",
-      "name": "制造工厂总经理",
+      "name": "制造工厂经营管理专家",
       "rawName": "制造工厂总经理",
       "kind": "staff",
       "market": "domain",
@@ -5922,7 +5922,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00498",
       "no": "AS00498",
-      "name": "供应链KD组托排箱专家",
+      "name": "供应链 KD 组托排箱专家",
       "rawName": "供应链KD组托排箱助理",
       "kind": "staff",
       "market": "domain",
@@ -5951,7 +5951,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00499",
       "no": "AS00499",
-      "name": "供应链KD排产专家",
+      "name": "供应链 KD 排产专家",
       "rawName": "供应链KD排产助理",
       "kind": "staff",
       "market": "domain",
@@ -6067,7 +6067,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00514",
       "no": "AS00514",
-      "name": "ARR视觉检测专家",
+      "name": "ARR 视觉检测专家",
       "rawName": "ARR视觉检测助理",
       "kind": "staff",
       "market": "domain",
@@ -6125,7 +6125,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00486",
       "no": "AS00486",
-      "name": "OMS经营管理专家",
+      "name": "OMS 经营管理专家",
       "rawName": "OMS经营管理助理",
       "kind": "staff",
       "market": "domain",
@@ -6241,7 +6241,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00228",
       "no": "AS00228",
-      "name": "OTA运营管理专家",
+      "name": "OTA 运营管理专家",
       "rawName": "OTA运营管理助理",
       "kind": "staff",
       "market": "domain",
@@ -6647,7 +6647,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00303",
       "no": "AS00303",
-      "name": "ESER-AI专家",
+      "name": "ESER-AI 专家",
       "rawName": "ESER-AI助理",
       "kind": "staff",
       "market": "domain",
@@ -6676,7 +6676,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00304",
       "no": "AS00304",
-      "name": "CE工程师专家",
+      "name": "CE 工程专家",
       "rawName": "CE工程师助理",
       "kind": "staff",
       "market": "domain",
@@ -6705,7 +6705,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00309",
       "no": "AS00309",
-      "name": "生产制造总监专家",
+      "name": "生产制造管理专家",
       "rawName": "生产制造总监助理",
       "kind": "staff",
       "market": "domain",
@@ -6734,7 +6734,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00310",
       "no": "AS00310",
-      "name": "运营总监专家",
+      "name": "运营管理专家",
       "rawName": "运营总监助理",
       "kind": "staff",
       "market": "domain",
@@ -6879,7 +6879,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00315",
       "no": "AS00315",
-      "name": "基地物流总监专家",
+      "name": "基地物流管理专家",
       "rawName": "基地物流总监助理",
       "kind": "staff",
       "market": "domain",
@@ -6995,7 +6995,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00319",
       "no": "AS00319",
-      "name": "总经理办公室专家",
+      "name": "总经理办公室事务专家",
       "rawName": "总经理办公室助理",
       "kind": "staff",
       "market": "domain",
@@ -7082,7 +7082,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00331",
       "no": "AS00331",
-      "name": "质量管理中心总经理",
+      "name": "质量管理中心经营专家",
       "rawName": "质量管理中心总经理",
       "kind": "staff",
       "market": "domain",
@@ -7111,7 +7111,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00332",
       "no": "AS00332",
-      "name": "新品质量总监专家",
+      "name": "新品质量管理专家",
       "rawName": "新品质量总监助理",
       "kind": "staff",
       "market": "domain",
@@ -7576,7 +7576,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00283",
       "no": "AS00283",
-      "name": "BI建设专家",
+      "name": "BI 建设专家",
       "rawName": "BI建设助理",
       "kind": "staff",
       "market": "domain",
@@ -7663,7 +7663,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00291",
       "no": "AS00291",
-      "name": "数智交付专家小敏",
+      "name": "数智支付专家",
       "rawName": "数智交付助理小敏",
       "kind": "staff",
       "market": "domain",
@@ -7751,7 +7751,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00306",
       "no": "AS00306",
-      "name": "ECU试验工况生成专家",
+      "name": "ECU 试验工况生成专家",
       "rawName": "ECU试验工况生成助理",
       "kind": "staff",
       "market": "domain",
@@ -7780,7 +7780,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00307",
       "no": "AS00307",
-      "name": "海外预留产品开发工程师专家",
+      "name": "海外预留产品开发工程专家",
       "rawName": "海外预留产品开发工程师助理",
       "kind": "staff",
       "market": "domain",
@@ -7809,7 +7809,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00321",
       "no": "AS00321",
-      "name": "智御AI哨兵专家",
+      "name": "智御 AI 哨兵专家",
       "rawName": "智御AI哨兵助理",
       "kind": "staff",
       "market": "domain",
@@ -8070,7 +8070,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00333",
       "no": "AS00333",
-      "name": "用户质量总监专家",
+      "name": "用户质量管理专家",
       "rawName": "用户质量总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8099,7 +8099,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00334",
       "no": "AS00334",
-      "name": "海外质量总监专家",
+      "name": "海外质量管理专家",
       "rawName": "海外质量总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8128,7 +8128,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00335",
       "no": "AS00335",
-      "name": "制造质量总监专家",
+      "name": "制造质量管理专家",
       "rawName": "制造质量总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8157,7 +8157,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00336",
       "no": "AS00336",
-      "name": "软件质量总监专家",
+      "name": "软件质量管理专家",
       "rawName": "软件质量总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8186,7 +8186,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00337",
       "no": "AS00337",
-      "name": "质量数智总监专家",
+      "name": "质量数智管理专家",
       "rawName": "质量数智总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8215,7 +8215,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00338",
       "no": "AS00338",
-      "name": "质量经营总监专家",
+      "name": "质量经营管理专家",
       "rawName": "质量经营总监助理",
       "kind": "staff",
       "market": "domain",
@@ -8360,7 +8360,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00346",
       "no": "AS00346",
-      "name": "VNAS管理专家",
+      "name": "VNAS 管理专家",
       "rawName": "VNAS管理助理",
       "kind": "staff",
       "market": "domain",
@@ -8390,7 +8390,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00356",
       "no": "AS00356",
-      "name": "CAD AI自动建模专家",
+      "name": "CAD AI 自动建模专家",
       "rawName": "CAD AI自动建模助理",
       "kind": "staff",
       "market": "domain",
@@ -9086,7 +9086,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00383",
       "no": "AS00383",
-      "name": "整车集成技术工程师专家",
+      "name": "整车集成技术工程专家",
       "rawName": "整车集成技术工程师助理",
       "kind": "staff",
       "market": "domain",
@@ -9679,7 +9679,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00434",
       "no": "AS00434",
-      "name": "问题分析智慧星_cc-api",
+      "name": "问题分析专家",
       "rawName": "问题分析智慧星_cc-api",
       "kind": "staff",
       "market": "domain",
@@ -9708,7 +9708,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00427",
       "no": "AS00427",
-      "name": "降本方案智慧星_cc-api",
+      "name": "降本方案专家",
       "rawName": "降本方案智慧星_cc-api",
       "kind": "staff",
       "market": "domain",
@@ -9737,7 +9737,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00430",
       "no": "AS00430",
-      "name": "开发需求和选型智慧星_cc-api",
+      "name": "开发需求与选型专家",
       "rawName": "开发需求和选型智慧星_cc-api",
       "kind": "staff",
       "market": "domain",
@@ -9766,7 +9766,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00432",
       "no": "AS00432",
-      "name": "流程体系智慧星_cc-api",
+      "name": "流程体系专家",
       "rawName": "流程体系智慧星_cc-api",
       "kind": "staff",
       "market": "domain",
@@ -9795,7 +9795,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00436",
       "no": "AS00436",
-      "name": "项目管理智慧星_cc-api",
+      "name": "项目管理专家",
       "rawName": "项目管理智慧星_cc-api",
       "kind": "staff",
       "market": "domain",
@@ -9824,7 +9824,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00442",
       "no": "AS00442",
-      "name": "星驱PPT专家-专家版",
+      "name": "星驱 PPT 设计专家",
       "rawName": "星驱PPT助理-专家版",
       "kind": "staff",
       "market": "domain",
@@ -9853,7 +9853,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00473",
       "no": "AS00473",
-      "name": "PPT制作专家-星驱",
+      "name": "星驱 PPT 制作专家",
       "rawName": "PPT制作助理-星驱",
       "kind": "staff",
       "market": "domain",
@@ -9882,7 +9882,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
     {
       "id": "s_AS00492",
       "no": "AS00492",
-      "name": "石琦版专业PPT制作专家",
+      "name": "专业 PPT 制作专家",
       "rawName": "石琦版专业PPT制作助理",
       "kind": "staff",
       "market": "domain",
