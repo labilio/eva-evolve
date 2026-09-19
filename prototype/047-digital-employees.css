@@ -38,31 +38,18 @@
 .eva-digital-dialog .semi-modal-header,.eva-digital-dialog .semi-modal-footer{flex-shrink:0}
 .eva-digital-dialog .semi-modal-body{min-height:0;overflow:auto;font-size:13px;line-height:20px}
 .eva-digital-dialog .semi-table-row-cell,.eva-digital-dialog .semi-table-row-head{padding:8px 12px;font-size:12px;overflow-wrap:anywhere}
-.eva-digital-project-options{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow:auto;margin-top:12px}
-.eva-digital-project-options>.semi-checkbox{display:flex;padding:10px 8px;border-radius:8px;align-items:center}
-.eva-digital-project-options>.semi-checkbox:hover{background:var(--semi-color-fill-0)}
-.eva-digital-project-identity{display:flex;align-items:center;gap:10px;min-width:0}
-.eva-digital-project-identity strong{font-size:13px;font-weight:500}
-.eva-digital-project-identity small{display:block;font-size:11px;color:var(--semi-color-text-2)}
+/* Join-project: MemberPicker is now reused. Project rows styled by its own contract.
+   Items arrive from 047 with kind:'project' and carry the business project object. */
+.eva-member-picker__project-identity{display:flex;align-items:center;gap:12px;min-width:0;flex:1;min-width:0}
+.eva-member-picker__project-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex:none;border-radius:8px}
+.eva-member-picker__project-text{display:flex;flex-direction:column;min-width:0}
+.eva-member-picker__project-name{color:var(--eva-text-primary);font-size:14px;line-height:20px;font-weight:var(--gds-font-weight-medium);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-member-picker__project-detail{color:var(--eva-text-secondary-accessible);font-size:12px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .eva-digital-dialog .semi-modal-footer{margin:16px 0 0;padding:16px 0 0;border-top:1px solid var(--semi-color-border)}
 .eva-digital-dialog .semi-modal-footer .eva-picker-footer{margin:0;padding:0;border:0;justify-content:flex-end}
 
 /* POC creator catalog: personal assistant and unavailable cloud persona. */
-.eva-creator-catalog { padding: var(--eva-space-8); }
-.eva-creator-catalog > .eva-digital-center__head { margin-bottom: 24px; }
-.eva-creator-grid--self { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.eva-creator-grid--public { grid-template-columns: repeat(3,minmax(0,1fr)); }
-.eva-creator-card { gap: var(--eva-space-3); padding: var(--eva-space-5); border-radius: var(--eva-radius-panel); border-color: var(--eva-border-subtle); }
-.eva-creator-card__heading { display: flex; align-items: center; gap: 10px; }
-.eva-creator-card__heading h3 { margin: 0; font: var(--eva-fw-medium) 16px/24px var(--eva-font-sans); }
-.eva-creator-card p { margin: 0; }
-.eva-creator-card .eva-creator-card__tag { color: var(--semi-color-text-1); }
-.eva-creator-card .eva-creator-card__boundary { font-size: 12px; padding-top: 8px; border-top: 1px solid var(--semi-color-border); }
-.eva-creator-card > .semi-button { margin-top: auto; }
-.eva-creator-catalog > .eva-digital-center__section > p { margin-bottom: 12px; }
-@media(max-width:1000px){.eva-creator-grid--public{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:760px){.eva-creator-catalog{padding:20px 16px;}.eva-creator-grid{grid-template-columns:1fr;}}
 
 .eva-persona-request { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid var(--semi-color-border); }
 .eva-persona-request [role="status"] { margin-left:auto; color:var(--semi-color-text-2); }
@@ -72,26 +59,6 @@
 
 /* Creator workspace: shared GDS scale with a readable 776px configuration column.
    The POC catalog exposes only the two personal identity cards. */
-.eva-creator-workspace { font: 400 14px/22px var(--eva-font-sans); }
-.eva-creator-workspace h1 { font: 600 16px/24px var(--eva-font-sans); }
-.eva-creator-workspace p { color: var(--eva-text-secondary-accessible); line-height: 22px; }
-.eva-creator-card ul { margin: 0; padding-left: var(--eva-space-5); line-height: 22px; }
-.eva-creator-card li + li { margin-top: var(--eva-space-1); }
-.eva-creator-card__heading > svg { flex: none; width: var(--eva-icon-toolbar); height: var(--eva-icon-toolbar); color: var(--eva-text-secondary); }
-.eva-creator-card > .semi-button { min-height: 36px; padding-inline: var(--eva-space-4); }
-.eva-creator-card .eva-creator-card__boundary { font: 400 12px/16px var(--eva-font-sans); padding-top: var(--eva-space-3); }
-.eva-creator-workspace .eva-digital-center__main:not(.eva-creator-catalog) { padding: var(--eva-space-8) var(--eva-space-6); }
-.eva-creator-workspace .eva-digital-center__form { max-width: var(--eva-main-col-w); margin-inline: auto; }
-.eva-creator-workspace .eva-digital-center__field { max-width: none; margin-bottom: var(--eva-space-6); gap: var(--eva-space-2); }
-.eva-creator-workspace .eva-digital-center__field > label { font: 500 14px/22px var(--eva-font-sans); }
-.eva-creator-workspace .eva-digital-center__field small { font: 400 12px/16px var(--eva-font-sans); }
-.eva-creator-workspace :is(.semi-input,.semi-input-textarea,.semi-select-selection) { font: 400 15px/24px var(--eva-font-sans); }
-.eva-creator-workspace .eva-digital-center__rail { border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); }
-.eva-creator-workspace .eva-digital-center__rail .semi-button { min-height: 38px; font: 500 14px/22px var(--eva-font-sans); }
-.eva-creator-workspace .eva-digital-center__main:not(.eva-creator-catalog) > .eva-digital-center__head { align-items: flex-start; gap: var(--eva-space-6); margin-bottom: var(--eva-space-8); }
-.eva-creator-workspace .eva-digital-center__head > div:first-child { min-width: 0; }
-.eva-creator-workspace .eva-digital-center__head h1 { overflow-wrap: anywhere; }
-.eva-creator-workspace .eva-digital-center__actions { gap: var(--eva-space-2); }
 
 /* Employee market: preserve the catalog table and its business filters. */
 .eva-market-workspace { font: 400 14px/22px var(--eva-font-sans); }
@@ -148,3 +115,55 @@
 @media (max-width: 760px) {
   .eva-market-workspace .eva-digital-center__market-search { width: 100%; flex-basis: 100%; }
 }
+
+/* Governance extension for the existing digital employee identity card. */
+.eva-digital-governance-presence { display:inline-flex; align-items:center; gap:6px; color:var(--eva-text-secondary-accessible); font-size:12px; line-height:18px; }
+.eva-digital-governance-presence__dot { width:6px; height:6px; border-radius:50%; background:var(--semi-color-text-3); }
+.eva-digital-governance-presence.is-busy .eva-digital-governance-presence__dot { background:var(--semi-color-warning); }
+.eva-digital-governance-presence.is-offline .eva-digital-governance-presence__dot { background:var(--semi-color-text-3); }
+.eva-digital-governance-intro { color:var(--eva-text-secondary-accessible); }
+.eva-digital-governance-timeline { display:flex; flex-direction:column; gap:0; margin:16px 0; }
+.eva-digital-governance-event { position:relative; padding:0 0 18px 18px; border-left:2px solid var(--eva-border-faint); }
+.eva-digital-governance-event:last-child { padding-bottom:0; }
+.eva-digital-governance-event::before { content:""; position:absolute; width:8px; height:8px; top:5px; left:-5px; border-radius:50%; background:var(--eva-action-primary); }
+.eva-digital-governance-event__head { display:flex; justify-content:space-between; gap:12px; }
+.eva-digital-governance-event__head span,.eva-digital-governance-event small { color:var(--eva-text-secondary-accessible); font-size:12px; }
+.eva-digital-governance-event p { margin:4px 0; }
+/* Detail card: restrained industrial layout. Same card whatever view opens it. */
+.eva-market-workspace .eva-digital-dialog .semi-modal-header { padding: 20px 24px 12px; border-bottom: 0; }
+.eva-market-workspace .eva-digital-dialog .semi-modal-title { font: 600 20px/28px var(--eva-font-sans); color: var(--eva-text-primary); }
+.eva-digital-center .eva-digital-dialog .semi-modal-close { width: 32px; height: 32px; border: 0; border-radius: 8px; color: var(--eva-text-secondary-accessible); background: transparent; }
+.eva-digital-center .eva-digital-dialog .semi-modal-close:hover { color: var(--eva-text-primary); background: var(--eva-surface-subtle); }
+.eva-market-workspace .eva-digital-dialog > .semi-modal-content { border-radius: 16px; overflow: hidden; }
+.eva-detail-modal .semi-modal-header { padding: 16px 20px 0; }
+.eva-detail-modal .semi-modal-body { padding: 0; }
+.eva-detail-main { display: flex; flex-direction: column; gap: 24px; }
+.eva-detail-main > .eva-detail-block:last-child { margin-top: auto; }
+.eva-digital-center .eva-detail-modal .eva-detail-block h3 { margin: 0 0 8px; color: var(--eva-text-primary); font-size: 13px; line-height: 20px; font-weight: var(--gds-font-weight-semibold); }
+.eva-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 2px 24px 16px; }
+.eva-detail-head .eva-digital-center__identity { gap: 12px; }
+.eva-detail-head .eva-identity-name-text { font-size: 17px; line-height: 24px; }
+.eva-detail-body { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 40px; align-items: stretch; padding: 24px 24px 8px; border-top: 1px solid var(--eva-border-faint); }
+.eva-detail-block p { margin: 0; color: var(--eva-text-primary); font-size: 14px; line-height: 22px; }
+.eva-detail-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.eva-detail-side { border-radius: 12px; background: var(--eva-surface-subtle); padding: 18px 20px; }
+.eva-detail-side .eva-detail-block h3 { margin: 0 0 4px; }
+.eva-detail-attrs { display: flex; flex-direction: column; margin: 0; }
+.eva-detail-attrs > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 9px 0; border-top: 1px solid var(--eva-border-faint); }
+.eva-detail-attrs > div:first-child { padding-top: 6px; border-top: 0; }
+.eva-detail-attrs dt { flex: none; color: var(--eva-text-secondary-accessible); font-size: 13px; line-height: 20px; }
+.eva-detail-attrs dd { min-width: 0; margin: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--eva-text-primary); font-size: 13px; line-height: 20px; font-weight: var(--gds-font-weight-medium); }
+.eva-detail-records { display: flex; gap: 20px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--eva-border-faint); }
+.eva-detail-records .semi-button { min-height: auto; height: auto; padding: 0; border: 0; border-radius: 0; color: var(--eva-action-primary); background: transparent; font-size: 13px; line-height: 20px; }
+.eva-detail-records .semi-button:hover { background: transparent; text-decoration: underline; }
+.eva-detail-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.eva-detail-stats > div { padding: 12px 14px; border: 1px solid var(--eva-border-faint); border-radius: 10px; background: var(--eva-surface-subtle); }
+.eva-detail-stats strong { display: block; color: var(--eva-text-primary); font-size: 20px; line-height: 28px; font-weight: var(--gds-font-weight-semibold); font-variant-numeric: tabular-nums; }
+.eva-detail-stats span { display: block; margin-top: 2px; color: var(--eva-text-secondary-accessible); font-size: 12px; line-height: 18px; }
+.eva-detail-offline { margin: 12px 24px 0; color: var(--eva-text-secondary-accessible); font-size: 12px; line-height: 18px; }
+.eva-digital-center .eva-detail-modal .eva-digital-governance-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin: 16px 0 0; padding: 14px 20px 18px; border-top: 1px solid var(--eva-border-faint); }
+.eva-digital-center .eva-detail-modal .eva-digital-governance-footer .semi-button { min-height: 34px; padding: 0 14px; border-radius: 8px; }
+.eva-detail-modal .eva-detail-joined { margin-right: auto; color: var(--eva-text-secondary-accessible); font-size: 13px; }
+.eva-detail-modal .eva-detail-join-project, .eva-detail-modal .eva-detail-join-project.semi-button { border: 1px solid var(--eva-border-subtle); background: var(--eva-surface-primary); color: var(--eva-text-primary); }
+.eva-detail-modal .eva-detail-join-project:hover { color: var(--eva-text-primary); border-color: var(--eva-border-focus); background: var(--eva-surface-subtle); }
+@media (max-width: 620px) { .eva-detail-body { grid-template-columns: 1fr; gap: 22px; } .eva-detail-stats { grid-template-columns: 1fr; } }

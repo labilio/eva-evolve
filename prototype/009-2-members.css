@@ -164,3 +164,18 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 /* Candidate ownership uses a second line; reserve height and keep avatars aligned. */
 .eva-members-mention-list > .semi-button{height:auto;min-height:44px;padding:6px 12px;justify-content:flex-start}
 .eva-members-mention-list .semi-button-content{min-width:0;max-width:100%}
+
+/* Transfer mode (single-column, single-select). Owned by SinglePersonPicker. */
+.eva-members-modal--transfer .semi-modal-content{padding:0}
+.eva-members-modal--transfer .semi-modal-header{margin:0;padding:20px 24px 16px}
+.eva-members-modal--transfer .semi-modal-body{margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px}
+.eva-members-modal--transfer .semi-modal-footer{margin:0;padding:16px 24px 24px}
+.eva-members-modal--transfer .eva-picker-body{padding:0}
+.eva-members-modal--transfer .eva-picker-list{padding:0 2px 8px}
+.eva-members-modal--transfer .eva-picker-list>section+section{margin-top:16px}
+.eva-members-modal--transfer .eva-picker-group{padding-bottom:8px}
+.eva-members-modal--transfer .eva-picker-row{min-height:56px}
+.eva-members-modal--transfer .eva-picker-avatar,.eva-members-modal--transfer .eva-members-ai-identity{width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none}
+.eva-members-modal--transfer .eva-members-ai-identity img,.eva-members-modal--transfer .eva-identity-avatar{width:36px;height:36px}
+.eva-members-modal--transfer .eva-picker-body .eva-picker-group strong{font-weight:600;color:var(--semi-color-text-0)}
+.eva-members-modal--transfer .eva-picker-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
