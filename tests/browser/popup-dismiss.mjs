@@ -116,6 +116,53 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
       visible: '.eva-account-menu'
     });
 
+    // ---- 消息：转发面板「发送至」下拉（弹窗内浮层，收起下拉但保留面板） ----
+    await page.getByRole('button', { name: '01 日常聊天与连续消息', exact: true }).click();
+    await page.locator('.eva-im-bubble-row').first().click({ button: 'right' });
+    await page.locator('.wk-contextmenus-open').getByText('转发', { exact: true }).click();
+    await page.locator('.eva-fp-modal').waitFor({ timeout: 10000 });
+    // 蒙版范围：覆盖标题栏下方的整个内容区，含会话列表栏（设计确认稿 .veil{position:fixed;inset:44px 0 0}）
+    const veilRange = await page.evaluate(() => {
+      const veil = document.querySelector('.eva-fp-veil');
+      const rail = document.querySelector('.ch-list');
+      if (!veil || !rail) return null;
+      const rect = veil.getBoundingClientRect(), railRect = rail.getBoundingClientRect();
+      const hit = document.elementFromPoint(Math.round(railRect.left + 8), Math.round(railRect.top + railRect.height / 2));
+      return { left: Math.round(rect.left), coversRail: rect.left <= railRect.left, railHit: !!(hit && (hit === veil || veil.contains(hit))) };
+    });
+    assert.ok(veilRange, '消息·转发面板：找不到蒙版或会话列表栏');
+    assert.equal(veilRange.left, 0, '消息·转发面板：蒙版未覆盖到内容区左边界');
+    assert.ok(veilRange.coversRail, '消息·转发面板：蒙版未覆盖会话列表栏');
+    assert.ok(veilRange.railHit, '消息·转发面板：会话列表栏未被蒙版遮住');
+    await page.getByRole('tab', { name: '我的 Agent', exact: true }).click();
+    await page.locator('.eva-fp-candidates .eva-fp-row input[type="checkbox"]').nth(1).check();
+    await page.locator('.eva-fp-picker-control').first().click();
+    await page.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
+    await page.waitForTimeout(900);
+    assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：未点击时被自动关闭');
+    await page.locator('.eva-fp-picker-option').nth(1).click();
+    await page.waitForTimeout(200);
+    assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：勾选菜单项后下拉被误关');
+    await page.mouse.click(await page.evaluate(() => {
+      const rect = document.querySelector('.eva-fp-selected-list').getBoundingClientRect();
+      return Math.round(rect.x + rect.width / 2);
+    }), await page.evaluate(() => {
+      const rect = document.querySelector('.eva-fp-selected-list').getBoundingClientRect();
+      return Math.round(rect.bottom - 20);
+    }));
+    await page.waitForTimeout(560);
+    assert.equal(await page.locator('.eva-fp-picker-menu').count(), 0, '消息·转发「发送至」下拉：点击面板内空白后仍未收起');
+    assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「发送至」下拉：收起下拉时误关了整个转发面板');
+    await page.locator('.eva-fp-picker-control').first().click();
+    await page.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator('.eva-fp-picker-menu').count(), 0, '消息·转发「发送至」下拉：Escape 未收起下拉');
+    assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「发送至」下拉：Escape 收起下拉时误关了整个转发面板');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator('.eva-fp-modal').count(), 0, '消息·转发面板：Escape 未关闭面板');
+
     // ---- 遮罩弹窗：设置对话框 ----
     await page.locator('.eva-sider-account').first().click();
     await page.locator('.eva-account-menu__item').filter({hasText: '设置'}).first().click();

@@ -299,7 +299,7 @@
         const digital=root.EvaDigitalEmployeesStore;
         return !!digital?.teamIds().some(identityId=>digital.sessions(identityId).some(session=>privateConversations?.threadRecord(identityId,session).channel_id===id));
       },
-      forwardMessages(sourceId,targetId,uid,messages,mode="individual"){
+      forwardMessages(sourceId,targetId,uid,messages,mode="individual",note=""){
         requireHuman(uid);
         if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
         const direct=state.directConversations?.[targetId];
@@ -318,9 +318,15 @@
         });
         if(mode==='merge')copies=[{kind:'text',sender:{...person(uid),uid},time,text:'聊天记录',forwarded:true,mergedMessages:messages.map(message=>({name:message.sender?.name||'未知成员',time:message.time||'',text:message.text||'',file:message.file?JSON.parse(JSON.stringify(message.file)):undefined}))}];
         copies.forEach(message=>{message.id='forward:'+uid+':'+(++state.sequence);});
-        if(direct){direct.messages.push(...copies);direct.lastAt=new Date().toISOString();}
-        else if(api.canRead(targetId,uid))(state.messages[targetId]||(state.messages[targetId]=[])).push(...copies);
-        else if(![root.EvaAITeam,root.EvaMyAITeamGroup,root.EvaDigitalEmployeesStore].some(store=>store?.receiveForwarded(targetId,copies)))fail('目标会话已不可用');
+        const deliver=batch=>{
+          if(direct){direct.messages.push(...batch);direct.lastAt=new Date().toISOString();}
+          else if(api.canRead(targetId,uid))(state.messages[targetId]||(state.messages[targetId]=[])).push(...batch);
+          else if(![root.EvaAITeam,root.EvaMyAITeamGroup,root.EvaDigitalEmployeesStore].some(store=>store?.receiveForwarded(targetId,batch)))fail('目标会话已不可用');
+        };
+        deliver(copies);
+        // 附带留言作为一条独立文本消息发送给同一目标；同一份留言发送给所有已选目标。
+        const message=String(note||'').trim();
+        if(message)deliver([{id:'forward-note:'+uid+':'+(++state.sequence),kind:'text',sender:{...person(uid),uid},time,text:message}]);
         notify();return copies.map(message=>message.id);
       },
       deleteSelectedMessages(sourceId,uid,messages){

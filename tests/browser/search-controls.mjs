@@ -96,6 +96,46 @@ for (const [name, route, selector] of [
     assert.notEqual((await appearance(field)).color, focused.color);
   });
 }
+test('转发面板搜索：沿用公共搜索外观，悬停和聚焦不改变几何', async () => {
+  await page.goto(`${origin}/#/messages`);
+  await page.locator('.eva-follow-channel > .wk-conv-compact-item').first().waitFor();
+  await page.getByRole('button', { name: '01 日常聊天与连续消息', exact: true }).click();
+  await page.locator('.eva-im-bubble-row').first().click({ button: 'right' });
+  await page.locator('.wk-contextmenus-open').getByText('转发', { exact: true }).click();
+  const field = page.locator('.eva-forward-search');
+  await field.waitFor({ state: 'visible' });
+  const input = field.locator('input');
+  await input.blur();
+  const idle = await appearance(field);
+  assert.equal(idle.height, 32);
+  assert.equal(idle.radius, '8px');
+  assert.equal(idle.padding, '12px');
+  assert.equal(idle.border, '1px');
+  assert.equal(idle.inputBorder, '0px', '不能出现第二层输入框边框');
+  assert.equal(idle.color, 'rgb(219, 219, 219)');
+  assert.equal(idle.background, 'rgb(255, 255, 255)');
+  assert.equal(idle.iconWidth, 16);
+  assert.equal(idle.iconInset, 13, '1px边框 + 12px留白，不能图标贴边');
+  assert.equal(idle.gap, 8);
+  assert.equal(idle.fill, 'none', '图标不能回归为实心圆点');
+  assert.equal(await input.getAttribute('placeholder'), '搜索联系人、Agent、群聊及其子区');
+  await field.hover();
+  const hover = await appearance(field);
+  assert.equal(hover.height, idle.height);
+  assert.equal(hover.width, idle.width);
+  await input.focus();
+  const focused = await appearance(field);
+  assert.equal(focused.color, 'rgb(21, 99, 235)');
+  assert.equal(focused.height, idle.height);
+  assert.equal(focused.width, idle.width);
+  assert.equal(focused.border, idle.border);
+  assert.equal(focused.shadow, 'none');
+  assert.equal(focused.outline, 'none', '只显示一层蓝色边框');
+  await input.blur();
+  assert.notEqual((await appearance(field)).color, focused.color);
+  await page.keyboard.press('Escape');
+  await page.locator('.eva-fp-modal').waitFor({ state: 'detached' });
+});
 test('文件库工具栏与项目文件按钮一致，项目回收站位于搜索框左侧', async () => {
   const search = await open('/drive', '.eva-drive__toolbar .eva-drive__side-search');
   const driveToolbar = page.locator('.eva-drive__toolbar');

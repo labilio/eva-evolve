@@ -807,6 +807,14 @@
       "file": "prototype/060-task-drawer.js",
       "bytes": 3437,
       "role": "prototype"
+    },
+    {
+      "order": 101,
+      "tag": "style",
+      "name": "forward-picker",
+      "file": "prototype/061-forward-picker.css",
+      "bytes": 14757,
+      "role": "prototype"
     }
   ]
 }

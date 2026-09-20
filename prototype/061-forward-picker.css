@@ -1,0 +1,481 @@
+/* 转发面板（设计确认稿 V2）。只承载转发弹窗自身的外观；头像几何与 AI 标
+   仍由全局身份合同渲染，搜索框外观复用 055-search-controls.css。 */
+.eva-fp-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(32, 41, 56, 0.3);
+  z-index: 60;
+}
+.eva-fp-modal {
+  display: flex;
+  flex-direction: column;
+  width: 920px;
+  height: 640px;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 14px;
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: 0 20px 80px rgba(24, 34, 53, 0.16);
+  overflow: hidden;
+}
+.eva-fp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--gds-color-border-subtle, #e8ebef);
+}
+.eva-fp-head h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+  color: var(--gds-color-text-primary, #20242c);
+}
+.eva-fp-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible, #747c88);
+  cursor: pointer;
+}
+.eva-fp-close:hover { background: var(--gds-color-overlay-hover, #f1f3f5); }
+.eva-fp-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  min-height: 0;
+}
+/* 左侧：搜索、四个入口、候选列表 */
+.eva-fp-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--gds-color-border-subtle, #e8ebef);
+}
+.eva-forward-search {
+  margin: 14px 16px 4px;
+  flex-shrink: 0;
+}
+.eva-forward-search > button.eva-fp-search-clear,
+.eva-forward-search .eva-fp-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gds-color-text-muted, #818894);
+  cursor: pointer;
+}
+.eva-forward-search .eva-fp-search-clear:hover { background: var(--gds-color-overlay-hover, #f1f3f5); }
+.eva-fp-tabs {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-shrink: 0;
+  padding: 10px 20px 8px;
+  border-bottom: 1px solid var(--gds-color-border-subtle, #e8ebef);
+}
+.eva-fp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible, #6f7886);
+  font: var(--gds-font-weight-regular, 400) 14px/20px var(--gds-font-family-sans, inherit);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.eva-fp-tab:hover { color: var(--gds-color-text-primary, #20242c); }
+.eva-fp-tab[aria-selected="true"] {
+  color: var(--gds-color-primary, #1563eb);
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+.eva-fp-tab-divider {
+  width: 1px;
+  height: 14px;
+  flex-shrink: 0;
+  background: var(--gds-color-border-subtle, #dfe3e8);
+}
+.eva-fp-candidates {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 8px 12px;
+}
+.eva-fp-group-title {
+  padding: 12px 9px 4px;
+  color: var(--gds-color-text-muted, #7d8693);
+  font-size: 12px;
+  font-weight: var(--gds-font-weight-medium, 500);
+}
+.eva-fp-search-group + .eva-fp-search-group { margin-top: 2px; border-top: 1px solid var(--gds-color-border-subtle, #f0f1f3); }
+/* 候选行 */
+.eva-fp-row-wrap { position: relative; }
+.eva-fp-row-wrap + .eva-fp-row-wrap { margin-top: 4px; }
+.eva-fp-row-head + .eva-fp-row-wrap { margin-top: 4px; }
+.eva-fp-row-head { display: flex; align-items: center; gap: 2px; border-radius: var(--gds-radius-card, 10px); }
+.eva-fp-row-head:hover { background: var(--gds-color-overlay-hover, #f7f8fa); }
+.eva-fp-row-head.is-checked { background: var(--gds-color-fill-primary, #edf3ff); }
+.eva-fp-row-head > .eva-fp-row { flex: 1; min-width: 0; }
+.eva-fp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 4px 9px;
+  border-radius: var(--gds-radius-card, 10px);
+  cursor: pointer;
+}
+/* 设计确认稿按全局 border-box 定义行高：min-height 是含内边距的整体高度。
+   面板继承的是 content-box，这里只对「高度 + 内边距」同时生效的行补齐。 */
+.eva-fp-row,
+.eva-fp-selected-row,
+.eva-fp-picker-option,
+.eva-fp-note { box-sizing: border-box; }
+.eva-fp-row-wrap.eva-fp-row--tree .eva-fp-row { min-height: 40px; }
+.eva-fp-row-wrap.eva-fp-row--child { margin-left: 34px; }
+.eva-fp-row-wrap.eva-fp-row--child .eva-fp-row { min-height: 34px; }
+.eva-fp-row-wrap.eva-fp-row--child .eva-fp-name { font-size: 13px; font-weight: var(--gds-font-weight-regular, 400); }
+.eva-fp-row input[type="checkbox"] {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--gds-color-primary, #1563eb);
+}
+.eva-fp-avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.eva-fp-avatar--group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.eva-fp-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.eva-fp-context {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--gds-color-text-muted, #7b8492);
+  font-size: 12px;
+  font-weight: var(--gds-font-weight-regular, 400);
+  line-height: 18px;
+}
+.eva-fp-context-project { display: inline-flex; flex: none; }
+.eva-fp-context-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-fp-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--gds-color-text-primary, #20242c);
+  font-size: 14px;
+  font-weight: var(--gds-font-weight-regular, 400);
+  line-height: 20px;
+}
+.eva-fp-name--strong { font-weight: var(--gds-font-weight-semibold, 600); }
+.eva-fp-name-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-fp-name .ai-badge { flex-shrink: 0; }
+.eva-fp-kind {
+  flex: none;
+  color: var(--gds-color-text-muted, #9299a3);
+  font-size: 11px;
+}
+.eva-fp-row--tree .eva-fp-kind { display: none; }
+.eva-fp-connector {
+  display: inline-flex;
+  flex: none;
+  color: var(--gds-color-text-muted, #86909e);
+}
+.eva-fp-expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gds-color-text-muted, #8b929e);
+  cursor: pointer;
+}
+.eva-fp-expand:hover { background: var(--gds-color-overlay-hover, #f1f3f5); color: var(--gds-color-text-secondary-accessible, #606d7f); }
+.eva-fp-expand .lucide { transition: transform 0.16s ease; }
+.eva-fp-expand[aria-expanded="false"] .lucide { transform: rotate(-90deg); }
+/* 项目标题行 */
+.eva-fp-project-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible, #606d7f);
+  font: var(--gds-font-weight-semibold, 600) 14px/20px var(--gds-font-family-sans, inherit);
+  text-align: left;
+  cursor: pointer;
+}
+.eva-fp-project-head:hover { background: var(--gds-color-overlay-hover, #f7f8fa); }
+.eva-fp-project-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gds-color-text-primary, #20242c);
+}
+.eva-fp-project-icon { display: inline-flex; flex: none; margin-left: 2px; }
+.eva-fp-chevron { display: inline-flex; flex: none; color: var(--gds-color-text-muted, #808995); }
+.eva-fp-chevron .lucide { transition: transform 0.16s ease; }
+.eva-fp-chevron.is-collapsed .lucide { transform: rotate(-90deg); }
+.eva-fp-divider { height: 1px; margin: 12px 9px; background: var(--gds-color-border-subtle, #e5e8ee); }
+.eva-fp-empty {
+  padding: 40px 16px;
+  color: var(--gds-color-text-muted, #8b929e);
+  font-size: 13px;
+  text-align: center;
+}
+.eva-fp-empty small { display: block; margin-top: 6px; color: var(--gds-color-text-muted, #a5abb5); font-size: 12px; }
+/* 右侧：已选区、预览、留言 */
+.eva-fp-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 18px 20px 20px;
+}
+.eva-fp-selected-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+}
+.eva-fp-selected-head strong {
+  font-size: 15px;
+  font-weight: var(--gds-font-weight-semibold, 600);
+  color: var(--gds-color-text-primary, #20242c);
+}
+.eva-fp-selected-meta {
+  flex: 1;
+  min-width: 0;
+  color: var(--gds-color-text-muted, #7d8591);
+  font-size: 12px;
+  text-align: right;
+}
+.eva-fp-clear {
+  flex: none;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--gds-radius-control, 8px);
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible, #6f7886);
+  font-size: 12px;
+  cursor: pointer;
+}
+.eva-fp-clear:hover:not(:disabled) { background: var(--gds-color-overlay-hover, #f1f3f5); }
+.eva-fp-clear:disabled { color: var(--gds-color-text-muted, #b3b9c2); cursor: default; }
+.eva-fp-selected-list {
+  flex: 1;
+  min-height: 60px;
+  overflow-y: auto;
+}
+.eva-fp-selected {
+  padding: 0;
+  border-radius: var(--gds-radius-control, 8px);
+}
+/* 已选对象是一张整体卡片（身份行 + 「发送至」下拉），hover 必须整卡高亮，不能只亮上半行 */
+.eva-fp-selected:hover { background: var(--gds-color-overlay-hover, #f7f8fa); }
+.eva-fp-selected-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 8px 2px;
+  border-radius: var(--gds-radius-control, 8px);
+}
+.eva-fp-selected-info { flex: 1; }
+/* 已选区身份名称沿用设计稿的 14px / 500，与左侧候选行的 600 区分 */
+.eva-fp-selected .eva-fp-name--strong { font-weight: var(--gds-font-weight-medium, 500); }
+.eva-fp-selected--agent .eva-fp-selected-row {
+  min-height: 48px;
+  padding-bottom: 4px;
+}
+.eva-fp-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gds-color-text-muted, #969da6);
+  cursor: pointer;
+}
+.eva-fp-remove:hover { background: var(--gds-color-overlay-hover, #f1f3f5); color: var(--gds-color-text-secondary-accessible, #626b77); }
+/* Agent 卡片的“发送至”多选下拉框 */
+.eva-fp-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px 12px 48px;
+  color: var(--gds-color-text-muted, #858d99);
+  font-size: 12px;
+}
+.eva-fp-picker-label { flex: none; color: var(--gds-color-text-muted, #858d99); font-size: 12px; }
+.eva-fp-picker-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 0;
+  max-width: calc(100% - 60px);
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--gds-color-border-subtle, #dfe3e8);
+  border-radius: 6px;
+  background: var(--gds-color-surface-primary, #fff);
+  color: var(--gds-color-text-primary, #303640);
+  font: var(--gds-font-weight-regular, 400) 12px/18px var(--gds-font-family-sans, inherit);
+  cursor: pointer;
+}
+.eva-fp-picker-control:hover { border-color: var(--gds-color-border-default, #c9cfd8); }
+.eva-fp-picker-control .lucide { flex: none; transition: transform 0.16s ease; }
+.eva-fp-picker.is-open .eva-fp-picker-control .lucide { transform: rotate(180deg); }
+.eva-fp-picker-summary { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-fp-picker-menu {
+  position: absolute;
+  z-index: 3;
+  top: 34px;
+  left: 96px;
+  width: 220px;
+  max-width: calc(100% - 105px);
+  padding: 4px;
+  border: 1px solid var(--gds-color-border-subtle, #dfe3e8);
+  border-radius: 8px;
+  background: var(--gds-color-surface-primary, #fff);
+  box-shadow: 0 8px 24px rgba(27, 39, 55, 0.12);
+}
+/* 下方放不下时原地向上弹出（与 Semi autoAdjustOverflow 同义的翻转规则） */
+.eva-fp-picker.is-up .eva-fp-picker-menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+.eva-fp-picker-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  color: var(--gds-color-text-primary, #303640);
+  font-size: 13px;
+  cursor: pointer;
+}
+.eva-fp-picker-option:hover { background: var(--gds-color-overlay-hover, #f5f7fa); }
+.eva-fp-picker-option input { flex: none; width: 14px; height: 14px; margin: 0; accent-color: var(--gds-color-primary, #1563eb); }
+/* 预览与留言 */
+.eva-fp-preview {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding: 10px 12px 10px 15px;
+  border-radius: 6px;
+  background: var(--gds-color-surface-secondary, #f7f8fa);
+  cursor: default;
+  pointer-events: none;
+}
+.eva-fp-preview::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gds-color-border-default, #cfd5dd);
+}
+.eva-fp-preview-text {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--gds-color-text-secondary-accessible, #69717d);
+  font-size: 13px;
+  line-height: 20px;
+  word-break: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.eva-fp-note {
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--gds-color-border-subtle, #dfe3e8);
+  border-radius: var(--gds-radius-control, 8px);
+  background: var(--gds-color-surface-primary, #fff);
+  color: var(--gds-color-text-primary, #20242c);
+  font: var(--gds-font-weight-regular, 400) 13px/22px var(--gds-font-family-sans, inherit);
+  resize: none;
+  overflow-y: hidden;
+  max-height: 66px;
+}
+.eva-fp-note:focus { outline: none; border-color: var(--gds-color-border-focus, #1563eb); }
+.eva-fp-note::placeholder { color: var(--gds-color-text-muted, #a5abb5); }
+/* 底部操作 */
+.eva-fp-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px 24px;
+  border-top: 1px solid var(--gds-color-border-subtle, #e8ebef);
+}
+.eva-fp-foot .semi-button { min-width: 82px; }
+/* 暗色适配：聊天外壳外的窗口级弹层，跟随 Eva 语义 token。 */
+html[data-theme="dark"] .eva-fp-modal,
+html[data-theme="dark"] .eva-fp-picker-menu,
+html[data-theme="dark"] .eva-fp-note { background: var(--semi-color-bg-2, #1c1f23); }
+html[data-theme="dark"] .eva-fp-preview { background: var(--semi-color-fill-0, #2a2e33); }
+html[data-theme="dark"] .eva-fp-row-head.is-checked { background: var(--semi-color-primary-light-default, rgba(21, 99, 235, 0.25)); }
