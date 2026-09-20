@@ -183,6 +183,39 @@ html.eva-file-preview-resizing * {
   border-radius: 0;
   box-shadow: none;
 }
+/* 标题栏：.wk-file-preview-header 的高度/内边距只在 .ch-layout 作用域下定义，
+   本覆盖层 portal 到 .collab-body 不在其内，header 会塌成内容高度而显局促。
+   在此补齐，对齐全站预览头的 56px 标准（居中、上下留白、下边框、表面色），
+   保持与项目文件库预览头一致的调性，且高度适度不占多余空间。 */
+.eva-task-file-fs .wk-file-preview-header {
+  box-sizing: border-box;
+  height: 56px;
+  min-height: 56px;
+  margin: 0;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--eva-surface-primary);
+  border-bottom: 1px solid var(--wk-border-subtle, #e6e7e9);
+}
+.eva-task-file-fs .wk-file-preview-header__left {
+  flex: 1;
+  min-width: 0;
+}
+.eva-task-file-fs .wk-file-preview-header__dropdown-text {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.eva-task-file-fs .wk-file-preview-header__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
 /* 已铺满工作区，隐藏组件自带的“再全屏”按钮，避免重复层级。
    须压过下方 .wk-file-preview-header .eva-file-preview-fullscreen-button(0,2,0)，
    故加一层 header 作用域拉高特异度到 (0,3,0)。 */
