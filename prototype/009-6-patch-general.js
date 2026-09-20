@@ -576,7 +576,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       '任务详情持有新建子任务与附件预览上下文');
     source=root.__evaCut(source,
       '},[rt,pt]),reactExports.useEffect(()=>{Ct||listProjects().then(Cn).catch(()=>{})},[Ct]);',
-      '},[rt,pt]),reactExports.useEffect(()=>{evaSetChildParent(null),setEvaTaskFilePreview(null)},[rt]),reactExports.useEffect(()=>{if(!evaTaskFilePreview)return;const evaCloseTaskPreview=evaEvent=>{evaEvent.target.closest?.(".eva-task-file-preview-pane, .eva-task-attachments")||setEvaTaskFilePreview(null)};document.addEventListener("pointerdown",evaCloseTaskPreview);return()=>document.removeEventListener("pointerdown",evaCloseTaskPreview)},[evaTaskFilePreview]),reactExports.useEffect(()=>{Ct||listProjects().then(Cn).catch(()=>{})},[Ct]);',
+      '},[rt,pt]),reactExports.useEffect(()=>{evaSetChildParent(null),setEvaTaskFilePreview(null)},[rt]),reactExports.useEffect(()=>{if(!evaTaskFilePreview)return;const evaCloseTaskPreview=evaEvent=>{evaEvent.target.closest?.(".eva-task-file-fs__stage, .eva-task-attachments")||setEvaTaskFilePreview(null)};document.addEventListener("pointerdown",evaCloseTaskPreview);return()=>document.removeEventListener("pointerdown",evaCloseTaskPreview)},[evaTaskFilePreview]),reactExports.useEffect(()=>{Ct||listProjects().then(Cn).catch(()=>{})},[Ct]);',
       '任务切换时重置子任务创建与附件预览上下文');
     source=root.__evaCut(source,
       'hi=ki=>React.createElement(LoopAttachments,{attachments:ki,workspaceSlug:pt?.workspace.slug}),Si=',
@@ -613,16 +613,12 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       'React.createElement(CreateIssueModal,{visible:tn,parentIssueId:rt,onClose:()=>Kt(!1),onCreated:()=>{Toast.success(St("loop.toast.created")),listChildren(rt).then(jt).catch(()=>{}),ct?.()}})',
       'React.createElement(CreateIssueModal,{visible:tn,parentIssueId:evaChildParent?.id||rt,parentIssue:evaChildParent||xt,onClose:()=>{Kt(!1),evaSetChildParent(null)},onCreated:ki=>{Toast.success("子任务 "+(ki?.identifier||"")+" 已创建"),Kt(!1),evaSetChildParent(null),ca(),ct?.()}})',
       '任务详情创建任意节点的子任务');
-    source=root.__evaCut(source,
-      'return React.createElement("div",{className:`loop-idp${Ct?" loop-idp--readonly":""}${mt==="panel"?" loop-idp--panel":""}`}',
-      'return React.createElement("div",{className:`loop-idp${Ct?" loop-idp--readonly":""}${mt==="panel"?" loop-idp--panel":""}${evaTaskFilePreview?" eva-task-file-preview-open":""}`}',
-      '任务详情文件预览状态驱动挤压布局');
     const evaTaskDetailStart=source.indexOf('function IssueDetailPage('),evaTaskDetailEnd=source.indexOf('function readView(',evaTaskDetailStart);
     if(evaTaskDetailStart<0||evaTaskDetailEnd<evaTaskDetailStart)throw new Error('任务详情预览挂载边界不匹配');
     const evaTaskDetailSource=source.slice(evaTaskDetailStart,evaTaskDetailEnd);
     if(!evaTaskDetailSource.endsWith(')}'))throw new Error('任务详情预览根节点边界不匹配');
-    const evaTaskDetailWithPreview=evaTaskDetailSource.slice(0,-2)+',evaTaskFilePreview&&React.createElement("aside",{className:"eva-task-file-preview-pane","aria-label":"任务附件预览"},React.createElement("div",{className:"eva-file-preview-resizer",role:"separator",tabIndex:0,"aria-label":"调整文件预览宽度","aria-orientation":"vertical","aria-valuemin":280,"aria-valuemax":664,"aria-valuenow":480,"data-eva-file-preview-resizer":true}),React.createElement(FilePreviewHost,{file:evaTaskFilePreview,onClose:()=>setEvaTaskFilePreview(null)})))}';
-    source=root.__evaCut(source,evaTaskDetailSource,evaTaskDetailWithPreview,'任务附件预览挂载到详情右栏');
+    const evaTaskDetailWithPreview=evaTaskDetailSource.slice(0,-2)+',evaTaskFilePreview&&reactDomExports.createPortal(React.createElement("div",{className:"eva-task-file-fs",role:"dialog","aria-modal":"true","aria-label":"任务附件预览"},React.createElement("div",{className:"eva-task-file-fs__stage"},React.createElement(FilePreviewHost,{file:evaTaskFilePreview,onClose:()=>setEvaTaskFilePreview(null)}))),document.querySelector(".collab-body")||document.body))}';
+    source=root.__evaCut(source,evaTaskDetailSource,evaTaskDetailWithPreview,'任务附件预览铺满工作区(portal 到 collab-body)');
     source=root.__evaCut(source,'const sa=skillSource();return React.createElement("div",{className:"loop-sd"}', 'const sa=["github","local","workspace"].includes(mt.source_type)?mt.source_type:"workspace";return React.createElement("div",{className:"loop-sd"}', '技能来源读取元数据而非异步内容请求');
     const contributionStart=source.indexOf('getAgentContributions=rt=>{'),contributionEnd=source.indexOf(',getAgentEnv=',contributionStart);
     if(contributionStart<0||contributionEnd<contributionStart)throw new Error('专家活跃记录边界不匹配');

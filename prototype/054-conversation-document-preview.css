@@ -151,6 +151,53 @@ html.eva-file-preview-resizing * {
   box-shadow: none;
 }
 
+/* ============================================================
+   任务附件全屏预览（铺满工作区内容区，替代原抽屉内挤压式 pane）
+   ------------------------------------------------------------
+   由 009-6 portal 到 .collab-body：absolute inset:0，层级高于任务抽屉(z60)，
+   盖住看板+抽屉，但保留 Γ 顶栏/侧栏与项目页签，用户不失去坐标。
+   复用 FilePreviewHost 的工具条与内容渲染，调性与项目文件库一致。
+   ============================================================ */
+.eva-task-file-fs {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  background: var(--eva-surface-primary, #fff);
+  animation: eva-task-file-fs-in 160ms ease-out;
+}
+.eva-task-file-fs__stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  animation: eva-task-file-fs-stage-in 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.eva-task-file-fs__stage > .wk-file-preview-panel {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* 已铺满工作区，隐藏组件自带的“再全屏”按钮，避免重复层级。
+   须压过下方 .wk-file-preview-header .eva-file-preview-fullscreen-button(0,2,0)，
+   故加一层 header 作用域拉高特异度到 (0,3,0)。 */
+.eva-task-file-fs .wk-file-preview-header .eva-file-preview-fullscreen-button {
+  display: none;
+}
+@keyframes eva-task-file-fs-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes eva-task-file-fs-stage-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+
 .wk-file-preview-header .eva-file-preview-fullscreen-button {
   display: inline-flex;
   flex: 0 0 auto;
