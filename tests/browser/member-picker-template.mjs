@@ -155,7 +155,18 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await createGroup.locator('.eva-member-picker').count(),1,'新建群聊入口必须使用模板 A');
     assert.equal(await createGroup.locator('.eva-member-picker--selection-only').count(),0,'带名称的创建流程保留表单形态');
     assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).count(),1);
-    assert.equal(await createGroup.getByRole('button',{name:'创建群聊',exact:true}).isDisabled(),true,'群名与成员为空时不能创建');
+    // 提交时校验：空名/未选成员点击必须有行内反馈并聚焦名称框，而不是按钮静默禁用
+    await createGroup.getByRole('button',{name:'创建群聊',exact:true}).click();
+    const createGroupError=createGroup.locator('.eva-members-error');
+    await createGroupError.waitFor({timeout:5000});
+    assert.equal((await createGroupError.innerText()).trim(),'请输入群聊名称','空名点击应提示「请输入群聊名称」');
+    assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).evaluate(node=>node===document.activeElement),true,'报错后焦点应回到群聊名称输入框');
+    assert.equal(await createGroup.count(),1,'校验失败不应创建群聊或关闭弹窗');
+    await createGroup.getByLabel('群聊名称',{exact:true}).fill('模板验收群');
+    assert.equal(await createGroupError.count(),0,'输入群名后错误应消失');
+    await createGroup.getByRole('button',{name:'创建群聊',exact:true}).click();
+    assert.equal((await createGroupError.innerText()).trim(),'请至少选择 1 位群成员','未选成员时点击应提示成员不足');
+    assert.equal(await createGroup.count(),1,'校验失败不应创建群聊或关闭弹窗');
     await createGroup.getByRole('button',{name:'取消',exact:true}).click();
     await createGroup.waitFor({state:'detached'});
 

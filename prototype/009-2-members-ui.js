@@ -21,13 +21,20 @@
       const normalized=query.trim().normalize('NFKC').toLocaleLowerCase();
       const visibleItems=items.filter(item=>!normalized||item.name.normalize('NFKC').toLocaleLowerCase().includes(normalized));
       const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
-      const required=minimumSelection??(allowEmpty?0:1),valid=chosen.length>=required&&(!field?.required||!!name.trim())&&(!field?.maxLength||name.trim().length<=field.maxLength);
+      const required=minimumSelection??(allowEmpty?0:1);
+      // 提交时校验：按钮保持可点，点击后给出行内错误并聚焦缺失字段，避免「点了没反应」被当成 bug。
+      const invalidReason=()=>{
+        if(field?.required&&!name.trim())return '请输入'+field.label;
+        if(field?.maxLength&&name.trim().length>field.maxLength)return field.label+'最多 '+field.maxLength+' 个字符';
+        if(chosen.length<required)return '请至少选择 '+required+' 位'+memberLabel;
+        return '';
+      };
       const selectionNoun=itemNoun||(items[0]?.kind==='project'?'项目':'成员');
       const declaredGroups=groups||[{kind:'human',label:'联系人'},{kind:'clone',label:'我的 AI 分身'}];
       // 只有一个分组类别时不渲染分组头：该入口设定上不可能出现第二类身份，分组层没有区分作用。
       const groupless=declaredGroups.length<2;
       const pickerGroups=groupless?[{kind:declaredGroups[0]?.kind||'human',label:declaredGroups[0]?.label||'成员',items:declaredGroups[0]?.items}]:declaredGroups;
-      const footer=h('div',{className:'eva-picker-footer eva-member-picker__footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',disabled:!valid,onClick:()=>{try{onSubmit(chosen,name.trim());}catch(e){setError(e.message);}}},typeof submit==='function'?submit(chosen):submit));
+      const footer=h('div',{className:'eva-picker-footer eva-member-picker__footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',onClick:()=>{const reason=invalidReason();if(reason){setError(reason);if(field?.required&&!name.trim()){const nameInput=document.getElementById(field.id||'eva-member-picker-name');nameInput&&nameInput.focus();}return;}try{onSubmit(chosen,name.trim());}catch(e){setError(e.message);}}},typeof submit==='function'?submit(chosen):submit));
       return h(Modal,{className:('eva-members-modal eva-picker-modal eva-member-picker-modal '+className).trim(),width:680,title,visible,zIndex,onCancel,footer,getPopupContainer,maskClosable:true},
         h('div',{className:'eva-member-picker'+(field?'':' eva-member-picker--selection-only')},
           field&&h('div',{className:'eva-member-picker__field'},h('label',{htmlFor:field.id||'eva-member-picker-name'},field.label),h(Input,{id:field.id||'eva-member-picker-name','aria-label':field.label,value:name,onChange:value=>{setName(value);setError('');},placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus!==false})),
