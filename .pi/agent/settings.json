@@ -1,0 +1,11 @@
+{
+  "defaultProvider": "mininglamp",
+  "defaultModel": "mlamp/deepseek-v4.1-flash",
+  "defaultThinkingLevel": "medium",
+  "enabledModels": [
+    "mlamp/*",
+    "tencent/*"
+  ],
+  "lastChangelogVersion": "0.85.1",
+  "theme": "dark"
+}

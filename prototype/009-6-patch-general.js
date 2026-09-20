@@ -126,6 +126,10 @@
             '(rt.id==="prod"?TABS:TABS.filter(Ft=>Ft.key!=="experts"&&Ft.key!=="squads"&&Ft.key!=="skills")).map(Ft=>React.createElement("button"'
           ],
           [
+            'Ft.key==="channels"&&gt>0&&React.createElement("span",{className:"badge"},gt)',
+            'Ft.key==="channels"&&gt>0&&React.createElement("span",{className:"badge"},gt>99?"99+":gt)'
+          ],
+          [
             'React.createElement(Avatar,{name:rt.short,color:rt.color,size:20,square:!0}),React.createElement("span",{className:"nm",title:rt.name},rt.name)',
             'React.createElement("span",{className:"nm",title:rt.name},rt.name)'
           ],
