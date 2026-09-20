@@ -38,13 +38,18 @@
      选中底色早已在上面对齐到 --eva-conversation-row-selected，圆角当时漏掉，此处补齐。 */
   --eva-rail-primary-row-radius: var(--eva-conversation-row-radius, 8px);
   --eva-rail-nested-row-radius: var(--eva-conversation-row-radius, 8px);
-  --eva-rail-name-size: 13px;
-  --eva-rail-label-size: 13px;
-  --eva-rail-line-height: 1.4;
+  /* 2026-09-20 字阶收敛：13px 不是列表档——EvaMate §4.2 中 13/22 是
+     `Badge / Compact`，用途限定「徽标、文件类型」。列表行按 GDS §4.2 label
+     / EvaMate Body·Medium 取 14/22，层级改由字重表达（EvaMate §4.2
+     「不得用字号堆砌层级；优先通过内容顺序、间距和字重组织信息」）。
+     行高由 1.4 倍率改为显式 22px，消除 18.2 这类小数基线。 */
+  --eva-rail-name-size: 14px;
+  --eva-rail-label-size: 14px;
+  --eva-rail-line-height: 22px;
   /* Match the message rail's primary group rows: 22px identity avatar,
      13px label and an 8px icon/text gap. */
   --eva-rail-identity-height: 32px;
-  --eva-rail-session-height: 28px;
+  --eva-rail-session-height: 32px;
   /* 我的 Agent 移除左侧 disclosure 后，二级团队与身份只保留一个紧凑层级。 */
   --eva-ai-team-secondary-inset: var(--gds-space-2);
   /* Primary avatars and labels share the same columns as the message rail.
@@ -132,6 +137,32 @@
 .eva-ai-team__team-button > .eva-ai-team__unread-dot { margin-left: auto; }
 .eva-ai-team__team-thread-row { position: relative; min-height: var(--eva-rail-identity-height); border-radius: var(--eva-rail-nested-row-radius); }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { width: 100%; padding-left: var(--eva-rail-team-thread-inset); padding-right: var(--gds-space-2); min-height: var(--eva-rail-identity-height); }
+/* 团队子区行名称走 vendor 的 .wk-conv-compact-name 基础样式（13/1.4），
+   不消费 --eva-rail-* 变量，2026-09-20 字阶收敛时漏掉。补齐到末级行档
+   14/22/400（GDS §4.2 label）；字重语义不变：基线 400、未读 600（vendor）。 */
+/* 小队子区行名称三态统一 secondary：vendor 的常态 0.6 灰、未读/hover/选中 0.9 深色
+   都不在收敛后的字色梯度内——小队子区与身份区会话行同为末级行，字色必须同源
+   rail-secondary(#4A4A4A，暗 #CCCCCC)，状态由行底与徽标表达。 */
+.eva-ai-team__team-threads .wk-conv-compact-name,
+.eva-ai-team__team-threads .wk-conv-compact-item--thread.wk-conv-compact-item--unread .wk-conv-compact-name,
+.eva-ai-team__team-threads .wk-conv-compact-item--thread:hover .wk-conv-compact-name,
+.eva-ai-team__team-threads .wk-conv-compact-item--thread.wk-conv-compact-item--selected .wk-conv-compact-name { font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); color: var(--eva-rail-secondary); }
+.eva-ai-team__team-threads .wk-conv-compact-item--thread.wk-conv-compact-item--unread .wk-conv-compact-name { font-weight: 400; }
+/* 小队子区行此前无 hover/选中底色（vendor 的 hover 底被 043/016 作用域挡住），
+   与身份区会话行不一致：补齐同源 rail-hover / rail-selected。 */
+.eva-ai-team__team-thread-row:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__team-thread-row:has(.wk-conv-compact-item--selected) { background: var(--eva-rail-selected); }
+/* 未读子区不做任何字重字色特殊处理（2026-09-20 用户决定，同关注列）：
+   未读状态完全由计数徽标承担，vendor 的 unread 500/0.9 特殊值均被基线覆盖。 */
+/* 子区未读不加字重（2026-09-20 用户决定：右侧已有计数徽标承担状态），
+   覆盖 vendor 的 thread+unread 500 半档加重；仅保留 vendor 的未读深字色。 */
+.eva-ai-team__team-threads .wk-conv-compact-item--thread.wk-conv-compact-item--unread .wk-conv-compact-name { font-weight: 400; }
+/* 小队子区行此前无 hover/选中底色（vendor 的 hover 底被 043/016 作用域挡住），
+   与身份区会话行不一致：补齐同源 rail-hover / rail-selected。 */
+.eva-ai-team__team-thread-row:hover { background: var(--eva-rail-hover); }
+.eva-ai-team__team-thread-row:has(.wk-conv-compact-item--selected) { background: var(--eva-rail-selected); }
+/* 未读子区不做任何字重字色特殊处理（2026-09-20 用户决定，同关注列）：
+   未读状态完全由计数徽标承担，vendor 的 unread 500/0.9 特殊值均被基线覆盖。 */
 .eva-ai-team__team-thread-row .wk-conv-compact-badges { margin-left: auto; margin-right: 0; transition: opacity 120ms ease; }
 .eva-ai-team__team-thread-row .wk-conv-compact-badge {
   box-sizing: border-box;
@@ -185,13 +216,18 @@
 }
 .eva-ai-team__group-toggle:hover { background: var(--eva-rail-group-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__group-toggle:focus-visible { outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
+/* 分组标题（云端分身 / 个人助理 / 数字员工）：与关注列分类标题同档。
+   GDS §4.2 caption 12/16/400；原 13/semibold 既非列表档、600 又属
+   「未读/Hero」语义，不用于分组标题。 */
 .eva-ai-team__group-title {
   min-width: 0;
   flex: 1;
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  font-weight: var(--gds-font-weight-semibold);
+  font-size: var(--gds-type-caption-font-size);
+  line-height: var(--gds-type-caption-line-height);
+  font-weight: var(--gds-font-weight-regular);
+  /* 组头字色与关注列分组名统一：secondaryAccessible，见 039 同款注释 */
+  color: var(--eva-text-secondary-accessible);
 }
 .eva-ai-team__group-chevron { width: 12px; height: 12px; flex: 0 0 12px; margin-left: auto; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
@@ -275,7 +311,10 @@
 .eva-ai-team__session-row:not(:has(.eva-ai-team__session-unread)):hover .eva-ai-team__session,
 .eva-ai-team__session-row:not(:has(.eva-ai-team__session-unread)):focus-within .eva-ai-team__session { padding-right: 36px; }
 .eva-ai-team__session-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-ai-team__session-title { grid-column: 1; font-size: var(--eva-rail-label-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-regular); color: var(--eva-rail-secondary); }
+/* 会话字色统一到 text-primary：末级行层级靠字重(400)而非字色变灰，与关注列/个人页一致。 */
+/* 末级行字色梯度：secondary(#4A4A4A) 区别于容器行的 primary——规范实色档（CR 9.7），
+     非此前 0.6 透明合成灰；暗色由 057 自动映射 #CCCCCC。 */
+.eva-ai-team__session-title { grid-column: 1; color: var(--eva-rail-secondary); font-size: var(--eva-rail-label-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session.is-selected .eva-ai-team__session-title,
 .eva-ai-team__session-row.is-selected .eva-ai-team__session-title { color: var(--eva-rail-primary); font-weight: var(--gds-font-weight-regular); }
 .eva-ai-team__session-unread {

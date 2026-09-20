@@ -92,10 +92,10 @@
   }
 
   .eva-personal-rail-new:hover, .eva-personal-folder__row:hover, .eva-personal-thread:hover { background: var(--eva-overlay-hover); }
-  .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-medium) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
+  .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-secondary-accessible); font: var(--eva-fw-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
   .eva-personal-folder { position: relative; margin-bottom: var(--eva-space-3); }
   .eva-personal-folder__row { display: flex; align-items: center; border-radius: var(--eva-radius-control); }
-  .eva-personal-folder__main { flex: 1; min-height: 36px; padding: 0 var(--eva-space-2); font-weight: var(--eva-fw-medium); }
+  .eva-personal-folder__main { flex: 1; min-height: 32px; padding: 0 var(--eva-space-2); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-medium); }
   .eva-personal-folder__main span, .eva-personal-thread__main span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .eva-personal-folder__main svg { flex-shrink: 0; }
   .eva-personal-folder__threads { padding-left: 22px; }
@@ -111,7 +111,11 @@
   .eva-personal-folder-menu button { display: flex; align-items: center; gap: 6px; width: 100%; padding: 5px 7px; border: 0; border-radius: var(--eva-radius-key); background: transparent; color: var(--eva-text-primary); font: 12px/18px var(--eva-font-sans); text-align: left; cursor: pointer; }
   .eva-personal-folder-menu button svg { width: 14px; height: 14px; flex: none; }
   .eva-personal-folder-menu button:hover, .eva-personal-folder-menu button:active { background: var(--eva-overlay-hover); }
-  .eva-personal-thread { position: relative; display: flex; align-items: center; min-height: 36px; border-radius: var(--eva-radius-control); }
+  /* 2026-09-20 密度收敛：个人页 36px 档并入全局容器档 32px；名称显式 14/22/400，
+     与「我的消息」「我的 Agent」的末级行同档（GDS §4.2 label）。 */
+  .eva-personal-thread { position: relative; display: flex; align-items: center; min-height: 32px; border-radius: var(--eva-radius-control); }
+  /* 末级行字色梯度：见 046 session-title 同款注释 */
+  .eva-personal-thread__main { font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); color: var(--eva-text-secondary); }
   /* 选中态与「我的消息」/「我的 Agent」同源：EvaMate 0.3.0 surface/selected。
      原先取 --eva-overlay-hover，与 :hover(行 94) 和 :active(行 123) 三者同值，
      选中与悬停完全无法区分，且是 hover 语义的 token 用在永久选中表面上
@@ -121,7 +125,7 @@
      （017-im-shell.css 对 .wk-conversationlist-item-selected 的时间/摘要同样处理）。
      实测时间文字在蓝底上仅 2.75(浅)/3.71(暗)，升档后达 AA。 */
   .eva-personal-thread.is-selected .eva-personal-thread__time { color: var(--eva-conversation-row-selected-meta); }
-  .eva-personal-thread__main { flex: 1; min-height: 36px; padding: 0 var(--eva-space-2); font-size: 14px; line-height: 20px; }
+  .eva-personal-thread__main { flex: 1; min-height: 32px; padding: 0 var(--eva-space-2); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); }
   .eva-personal-thread__time { margin-right: var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
   .eva-personal-thread__actions { display: none; flex: none; margin-right: 4px; }
   .eva-personal-thread:hover .eva-personal-thread__actions, .eva-personal-thread:focus-within .eva-personal-thread__actions { display: flex; }

@@ -133,9 +133,11 @@ body.eva-message-hierarchy-ready .eva-msg .wk-conv-compact-drag-handle:active,
 /* 组间留白：连续频道块之间 4px 呼吸感（对齐密度稿优化列 --group-gap，首块紧跟项目头不加）。 */
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel + .eva-follow-channel { margin-top: 4px; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title > .wk-category-header { padding: 0; background: transparent; }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .wk-category-header__name { color: var(--semi-color-text-2); font-size: 13px; font-weight: 700; }
+/* 分组标题字色三处统一 secondaryAccessible（GDS §14：12px 结构标签是必要信息，
+   muted 白底 2.85 不达标；关注/Agent/个人页原为 86909C / 4A4A4A / 939393 三个值） */
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-category-title .wk-category-header__name { color: var(--eva-text-secondary-accessible); font-size: 12px; font-weight: 400; line-height: 16px; }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) { min-height: 32px; padding-inline-start: var(--eva-rail-identity-content-inset); }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { min-height: 28px; padding-inline-start: var(--eva-rail-team-thread-inset); gap: 6px; }
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread { min-height: 32px; padding-inline-start: var(--eva-rail-team-thread-inset); gap: 6px; }
 .eva-follow-category-title > .wk-category-header { flex: 1; min-width: 0; }
 .eva-follow-category-title .eva-space-task-button { flex: none; }
 
@@ -155,25 +157,34 @@ body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact
   background: var(--eva-conversation-row-selected);
 }
 
-/* 关注树名称梯度：群名 14/500，子区名 14/400；未读与选中升到 600。
- * 靠字重+字色分层而非字号堆砌（EvaMate §4.2）。限定 .eva-follow-channel，
- * 我的 AI（eva-ai-team__*）不受影响。 */
+/* 关注树名称梯度：群名 14/22/500，子区名 14/22/400；仅「未读」升到 600。
+ * 字阶按 GDS §4.2 label/labelMedium 与 EvaMate §4.2 Body·Medium / Title·Small，
+ * 行高统一 22px（GDS「信息密集的 14px 标签保持 22px」）。
+ * 2026-09-20 用户决定：选中态不再加字重——600 是「未读」的专属语义，
+ * 选中由蓝底表达（EvaMate §71「selected 用于弱选中」，避免两种状态共用同一字重）。
+ * 限定 .eva-follow-channel，我的 AI（eva-ai-team__*）不受影响。 */
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
   font-size: 14px;
   font-weight: 500;
+  line-height: 22px;
+  /* 容器行字色与 Agent 团队行/个人页文件夹行同源 text-primary；
+     原 0.9 透明黑来自 vendor --wk-text-strong，非规范档。 */
+  color: var(--eva-text-primary);
 }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--unread:not(.wk-conv-compact-item--thread) .wk-conv-compact-name,
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--selected:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
+body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--unread:not(.wk-conv-compact-item--thread) .wk-conv-compact-name {
   font-weight: 600;
 }
 body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread .wk-conv-compact-name {
   font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--eva-text-secondary);
 }
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread.wk-conv-compact-item--unread .wk-conv-compact-name,
-body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact-item--thread.wk-conv-compact-item--selected .wk-conv-compact-name {
-  font-weight: 600;
-  color: var(--wk-text-strong);
-}
+/* 2026-09-20 用户决定：子区未读不加字重（右侧已有未读计数徽标承担状态），
+   600 是「未读」语义只用于无计数场景；未读子区仅保留深一档的字色。 */
+/* 2026-09-20 用户决定：子区未读不做任何字重字色特殊处理——
+   未读状态完全由右侧计数徽标承担（vendor 的 unread 500/0.9 特殊值均已被
+   上方基线规则的更高特异度覆盖）。 */
 
 @media (prefers-reduced-motion: reduce) {
   body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] .wk-sidebar-tabbar__btn { transition: none; }
