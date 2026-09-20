@@ -620,9 +620,28 @@ function evaSearchConversationMessages(messages,filters={}) {
 function evaRevealConversationMessage(stream,index) {
   const node=stream?.children?.[index];
   if(!node)return;
-  node.scrollIntoView({block:'center',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-  node.classList.add('eva-conversation-search-hit');
-  setTimeout(()=>node.classList.remove('eva-conversation-search-hit'),2200);
+  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  // 高亮落在气泡本体而非整行：整行是 932px 通栏，短消息气泡仅 285×24，
+  // 行级高亮的着色面积可达内容的十几倍，还会连带刷到头像/昵称/时间戳。
+  // 取不到气泡（系统消息等无 body 结构）时回退整行，保证反馈不丢失。
+  const target=node.querySelector(':scope > .wk-msg-row-content > .wk-msg-row-body')||node;
+  const flash=()=>{
+    target.classList.add('eva-conversation-search-hit');
+    setTimeout(()=>target.classList.remove('eva-conversation-search-hit'),1800);
+  };
+  node.scrollIntoView({block:'center',behavior:reduced?'auto':'smooth'});
+  if(reduced||!stream){flash();return;}
+  // 平滑滚动要几百毫秒，期间起闪会被滚动本身吃掉——用户往往只看到最后一次。
+  // 等滚动停稳（连续 3 帧 scrollTop 不变）再起闪；目标已在视区内时首帧即停稳，
+  // 不引入额外延迟。帧数上限兜底，避免外部持续滚动时永不触发。
+  let last=null,still=0,frames=0;
+  const waitScrollEnd=()=>{
+    const now=stream.scrollTop;
+    if(now===last){if(++still>=3){flash();return;}}else{still=0;last=now;}
+    if(++frames>90){flash();return;}
+    requestAnimationFrame(waitScrollEnd);
+  };
+  requestAnimationFrame(waitScrollEnd);
 }
 
 function EvaConversationSearch({conversationId,conversationName,messages,onClose,onLocate,onPreview,onDownload}) {
