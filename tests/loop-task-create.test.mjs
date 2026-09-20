@@ -32,7 +32,7 @@ test('兼容旧创建状态待规划，保存为待办',async()=>{
 test('项目或权限无效、空标题均拒绝且不写入',async()=>{
  const s=setup();await assert.rejects(s.ctx.createIssue({workspace_id:'missing',title:'新任务'}),/项目/);s.store.canRead=()=>false;await assert.rejects(s.ctx.createIssue({title:'新任务'}),/项目/);s.store.canRead=()=>true;await assert.rejects(s.ctx.createIssue({title:'  '}),/任务名称/);assert.equal(s.lists.prod.length,1);
 });
-test('负责人限制为本项目人类分身员工或项目专员，验收人必须是项目人类',async()=>{
+test('负责人限制为本项目联系人／分身／员工／项目专员，验收人必须是项目联系人',async()=>{
  const s=setup();for(const id of ['member','clone','employee','project-agent:prod'])assert.equal((await s.ctx.createIssue({title:'任务',assignee_id:id,reviewer_id:'owner'})).assignee_id,id);
  await assert.rejects(s.ctx.createIssue({title:'任务',assignee_id:'outsider'}),/负责人/);await assert.rejects(s.ctx.createIssue({title:'任务',reviewer_id:'clone'}),/验收人/);
 });

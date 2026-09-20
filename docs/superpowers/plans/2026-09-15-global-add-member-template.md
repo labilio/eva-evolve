@@ -15,7 +15,7 @@
 - “AI 分身”和“个人分身”统一称为“AI 分身”。
 - 单选选人、选择自己的分身和数字员工加入项目不纳入模板 A。
 - 群头像与 AI 团队头像保持默认，不恢复头像编辑。
-- 人类身份使用 `EvaAvatar.personUri`；AI 身份使用 `EvaAIIdentity.avatar` 与 `EvaAIIdentity.badge`。
+- 联系人身份使用 `EvaAvatar.personUri`；AI 身份使用 `EvaAIIdentity.avatar` 与 `EvaAIIdentity.badge`。
 - 拉人模板允许搜索；单选选人继续不显示搜索。
 - 项目与群聊候选范围、权限校验和原子事务保持不变。
 - 不提交、不推送、不发布。

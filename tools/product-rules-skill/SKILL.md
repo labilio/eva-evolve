@@ -20,7 +20,7 @@ description: 在开发、评审或解释 Eva 产品功能时，按需应用已�
 | 当前任务 | 读取 |
 | --- | --- |
 | 图标选型、同义图标复用 | [图标规范](references/common/icons.md) |
-| 人类／AI 头像、姓名、AI 标、所属人、候选与已选身份 | [人类与 AI 身份展示](references/common/identity.md) |
+| 联系人／AI 头像、姓名、AI 标、所属人、候选与已选身份 | [联系人与 AI 身份展示](references/common/identity.md) |
 | 任务／子区／聊天信息面板、文件预览、拉人弹窗 | [布局规范](references/common/layout.md) |
 | 项目颜色、头像配色、状态与品牌色边界 | [配色规范](references/common/colors.md) |
 
