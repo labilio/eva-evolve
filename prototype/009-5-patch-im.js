@@ -276,7 +276,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
     const sessions=entry.sessions.includes(destinationId)?entry.sessions.filter(item=>item!==destinationId):[...entry.sessions,destinationId];
     const next={...previous};if(sessions.length)next[agent.id]={...entry,sessions};else delete next[agent.id];
     return next;});
-  // 群卡片默认只发大群本身，展开后才在「发送至」里多选已有子区或就地新建子区。
+  // 群卡片默认只发本群，展开后才在「发送至」里多选已有子区或就地新建子区。
   const groupRowOf=row=>{
     if(row.type==='group'||row.type==='ai-team')return groupById(row.id)||row;
     if(row.type==='thread'||row.type==='ai-team-thread')return groupById(row.parentId||catalog.threadParent[row.id]);
@@ -445,7 +445,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
     }
     if(entry.type==='group'){
       const group=groupById(entry.groupId)||entry.group;
-      const options=[{id:'self',name:'大群本身'},...(group.threads||[]).map(thread=>({id:thread.id,name:thread.name}))];
+      const options=[{id:'self',name:'本群'},...(group.threads||[]).map(thread=>({id:thread.id,name:thread.name}))];
       const showPicker=!!expandedGroups[entry.groupId]||entry.sessions.some(destination=>destination!=='self');
       const summary=entry.sessions.length===1?((options.find(option=>option.id===entry.sessions[0])||{}).name||'请选择发送目标'):'已选 '+entry.sessions.length+' 个会话';
       const creatable=group.type==='group'||group.type==='ai-team';

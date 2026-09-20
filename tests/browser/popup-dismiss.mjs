@@ -138,11 +138,15 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     assert.equal(await page.locator('.eva-fp-tabs').count(), 0, '消息·转发面板：仍保留四 Tab');
     const forwardGroupRow = page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ has: page.locator('.eva-fp-kind', { hasText: '群聊' }) }).first();
     await forwardGroupRow.locator('input[type="checkbox"]').check();
-    // 群卡片默认只发大群本身，展开后才有「发送至」下拉
+    // 群卡片默认只发本群，展开后才有「发送至」下拉
     assert.equal(await page.locator('.eva-fp-picker-control').count(), 0, '消息·转发群卡片：默认不应展开「发送至」');
     await page.locator('.eva-fp-selected--group .eva-fp-row-toggle').first().click();
+    // 文案：本群本体用「本群」，不使用「大群本身」这类内部说法
+    assert.equal((await page.locator('.eva-fp-picker-summary').first().innerText()).trim(), '本群', '消息·转发「发送至」：默认摘要应为「本群」');
     await page.locator('.eva-fp-picker-control').first().click();
     await page.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
+    assert.equal((await page.locator('.eva-fp-picker-menu .eva-fp-picker-option span').first().innerText()).trim(), '本群', '消息·转发「发送至」：第一个选项应为「本群」');
+    assert.doesNotMatch(await page.locator('.eva-fp-picker-menu').innerText(), /大群本身/, '消息·转发「发送至」：不得出现「大群本身」');
     await page.waitForTimeout(900);
     assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：未点击时被自动关闭');
     // 菜单内的「新建子区」就地展开命名行，点击后下拉必须保留
