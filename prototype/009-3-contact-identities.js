@@ -17,7 +17,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   if(persona||clone){
    const p=persona||clone,owner=store.person(persona?ownerId:p.ownerId);
    const appearance=root.EvaAIIdentity.cloneAppearance(owner);
-   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:persona&&actor===ownerId?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':!persona?'可在已加入的项目群中 @ 协作。':''};
+   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':'可在已加入的项目群中 @ 协作。'};
   }
   const assistant=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='assistant');
   if(assistant){

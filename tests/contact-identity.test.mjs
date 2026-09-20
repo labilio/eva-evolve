@@ -19,7 +19,7 @@ test('身份按 ID 解析，同名不会串人，自己与停用账号不提供�
 test('分身所属人为真实主人，查看不授予他人分身私聊权限',()=>{
  const {model}=setup();assert.ok(model);
  const p=model.resolve('clone-a');assert.equal(p.owner.id,'a');assert.equal(p.action,null);
- assert.equal(model.resolve('mine').action.url,'/messages?evaIM=my-ai&evaIdentity=mine');
+ assert.equal(model.resolve('mine').action,null);
 });
 test('公共数字员工没有个人主人，沿用数字员工对话入口',()=>{
  const {model}=setup();assert.ok(model);const p=model.resolve('staff');

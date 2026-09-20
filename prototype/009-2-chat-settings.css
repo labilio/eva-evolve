@@ -59,9 +59,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-terminal-actions { display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 0 16px; }
 .eva-chat-terminal-actions .semi-button { min-width:96px;height:36px;border-radius:8px;font-weight:400; }
 .eva-chat-terminal-actions .eva-chat-exit-button { border:1px solid var(--semi-color-danger);background:transparent;color:var(--semi-color-danger); }
-.eva-group-owner-leave-footer { width:100%;display:flex;align-items:center;justify-content:space-between; }
 .eva-group-owner-leave-footer-actions { display:flex;align-items:center;gap:12px; }
-.eva-members-modal .semi-modal-footer .eva-group-owner-leave-footer .semi-button { margin-left:0; }
 
 /* GDS settings composition; retain the existing shared membership model. */
 .eva-chat-settings { line-height:22px; }

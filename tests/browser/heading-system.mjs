@@ -181,3 +181,12 @@ test('个人首页保留已确认的居中头像标题、输入器及下方快�
   }
   assert.ok(Math.abs(geometry.rowCenter-geometry.headCenter)<=1,'顶部操作区必须在标题栏内垂直居中');
  });
+ test('会话顶部项目按钮内联打开项目页，不离开消息页', async()=>{
+  await page.goto(`${origin}/#/messages`);
+  await page.locator('.ch-list').getByText('合规与合同',{exact:true}).click();
+  const jump=page.locator('.ch-head .eva-chat-project-jump');
+  await jump.waitFor();
+  await jump.click();
+  await page.locator('.eva-inline-project-panel').waitFor();
+  assert.ok(new URL(page.url()).hash.startsWith('#/messages'),'点击项目按钮必须保留左侧消息列表，不跳转 /collab');
+ });
