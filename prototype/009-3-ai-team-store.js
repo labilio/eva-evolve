@@ -32,7 +32,7 @@
     return {sidebarVariant: 'ai-sessions', conversationOnly: true, presentation: 'ai-direct',
       selectedThreadId: selected.id, channels: [{...group, name, threads, unread: 0,
         sessionTitle: selected.name, identityName: name, identityAppearance: appearance,
-        identityAvatarUrl: appearance.avatar || appearance.logo, conversationKind: 'ai-private-group'}],
+        identityAvatarUrl: appearance.ownerAvatar || appearance.avatar || appearance.logo, conversationKind: 'ai-private-group'}],
       cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
       scopeNameOf: {}};
   };
@@ -54,6 +54,13 @@
     }
     return value;
   }
+  const isAssistantAvatar = value => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text) return false;
+    const identity = typeof window !== 'undefined' && window.EvaAIIdentity;
+    if (identity?.isAvatarImage && identity?.isAssistantIcon) return identity.isAvatarImage(text) || identity.isAssistantIcon(text);
+    return /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/.test(text) || (text.length <= 16 && !/[\u0000-\u001f]/.test(text));
+  };
   const configuration = value => ({
     creationCenter: value?.creationCenter || null,
     description: typeof value?.description === 'string' ? value.description : '',
@@ -64,7 +71,7 @@
     identity: typeof value?.identity === 'string' ? value.identity : '通用助理',
     personality: typeof value?.personality === 'string' ? value.personality : '清晰、友善',
     skills: Array.isArray(value?.skills) ? value.skills.filter(x => typeof x === 'string') : [],
-    avatar: typeof value?.avatar === 'string' && /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/.test(value.avatar.trim()) ? value.avatar.trim() : ''
+    avatar: isAssistantAvatar(value?.avatar) ? value.avatar.trim() : ''
   });
   const makeIdentity = (id, role, name, local, time) => ({
     id, role, name, sourceAssistantId: local.id,

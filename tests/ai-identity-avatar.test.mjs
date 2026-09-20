@@ -6,38 +6,106 @@ import { createPatchedRuntime } from '../tools/build-runtime.mjs';
 
 const runtime = createPatchedRuntime().source;
 const helper = runtime.slice(runtime.indexOf('function evaIdentityAppearance('), runtime.indexOf('function EvaAITeamPage('));
-function render(name, size, avatar) {
-  const context = {
-    window: { __EVA_MY_ASSISTANT_IDENTITY: { logo: 'eva-logo' } },
-    React: { createElement: (type, props, ...children) => ({type, props, children}) },
-    input: {name, sourceAssistantId:'assistant-rd',configuration:{avatar}}, size
+function identityContext() {
+  return {
+    window: { __EVA_MY_ASSISTANT_IDENTITY: { logo: 'eva-logo', ownerName: '王宜林' }, __EVA_CURRENT_USER_PORTRAIT: 'owner-photo', __EVA_COLLEAGUE_PORTRAIT: 'eva-logo', EvaAvatar: { personUri: id => 'portrait:' + id } },
+    React: { createElement: (type, props, ...children) => ({type, props, children}) }
   };
+}
+function render(name, size, avatar, role) {
+  const context = identityContext();
+  context.input = {name, role, sourceAssistantId:'assistant-rd', configuration:{avatar}};
+  context.size = size;
   vm.runInNewContext(readFileSync(new URL('../prototype/003-my-assistant-identity.js',import.meta.url),'utf8').split('/* One identity contract')[1].replace(/^/, '/* One identity contract'),context);
   return vm.runInNewContext(helper + '\nEvaAIIdentityAvatar({appearance:evaIdentityAppearance(input),size})', context);
 }
+function loadIdentity() {
+  const ctx = identityContext();
+  vm.runInNewContext(readFileSync(new URL('../prototype/003-my-assistant-identity.js',import.meta.url),'utf8'), ctx);
+  return ctx.window.EvaAIIdentity;
+}
 
-test('AI identity renders one circular image and uses the configured avatar at all sizes', () => {
+test('云端分身以主人为主图、Eva logo 为右下角小图', () => {
   for (const size of [28,32,36]) {
-    const avatar = render('研发助理的分身', size, 'https://example.test/rd.png');
+    const avatar = render('王宜林的 AI 分身', size, 'https://example.test/legacy.png', 'persona');
     assert.equal(avatar.props.role, 'img');
-    assert.equal(avatar.props['aria-label'], '研发助理的分身，来自Eva');
-    assert.equal(avatar.children.length, 1);
-    assert.equal(avatar.children[0].props.src, 'https://example.test/rd.png');
+    assert.equal(avatar.props['aria-label'], '王宜林的 AI 分身，来自Eva');
+    assert.equal(avatar.children.length, 2);
+    assert.equal(avatar.children[0].props.className, 'eva-identity-avatar__logo');
+    assert.equal(avatar.children[0].props.src, 'portrait:王宜林');
+    assert.equal(avatar.children[1].props.className, 'eva-identity-avatar__owner');
+    assert.equal(avatar.children[1].props.src, 'eva-logo');
     assert.equal(avatar.props.style['--eva-identity-avatar-size'], size+'px');
   }
 });
 
-test('AI identity falls back to its standard avatar when no custom image is set', () => {
-  const avatar=render('新的分身',32,'');
-  assert.equal(avatar.props.title, '新的分身，来自Eva');
-  assert.equal(avatar.children[0].props.src, 'eva-logo');
+test('分身主图不因配置头像而改变', () => {
+  const avatar=render('新的分身',32,'🍌','persona');
+  assert.equal(avatar.children[0].props.src, 'portrait:王宜林');
+  assert.equal(avatar.children[1].props.src, 'eva-logo');
 });
 
+test('个人助理以自选图标为主图，星标为 Eva 角图', () => {
+  for (const size of [24,32,48]) {
+    const avatar = render('采购助理', size, '🍌', 'assistant');
+    assert.equal(avatar.children.length, 2);
+    assert.equal(avatar.children[0].props.className, 'eva-identity-avatar__icon');
+    assert.equal(avatar.children[0].children[0], '🍌');
+    assert.equal(avatar.children[1].props.className, 'eva-identity-avatar__owner');
+    assert.equal(avatar.children[1].props.src, 'eva-logo');
+  }
+});
 
-test('project identity keeps one shared circular avatar without a secondary owner portrait', () => {
+test('个人助理未选择图标时默认使用主人头像，并保留 Eva 角图', () => {
+  const avatar = render('新助理', 32, '', 'assistant');
+  assert.equal(avatar.children[0].props.className, 'eva-identity-avatar__logo');
+  assert.equal(avatar.children[0].props.src, 'portrait:王宜林');
+  assert.equal(avatar.children[1].props.src, 'eva-logo');
+});
+
+test('个人助理历史图片头像仍按图片渲染并保留 Eva 角图', () => {
+  const avatar = render('旧助理', 32, 'data:image/png;base64,AAAA', 'assistant');
+  assert.equal(avatar.children[0].props.className, 'eva-identity-avatar__logo');
+  assert.equal(avatar.children[0].props.src, 'data:image/png;base64,AAAA');
+  assert.equal(avatar.children[1].props.src, 'eva-logo');
+});
+
+test('无主人的 AI 身份保持单张圆形主图、不叠加 Eva 角图', () => {
+  const identity = loadIdentity();
+  const renderNode = (type, props, ...children) => ({type, props, children});
+  const avatar = identity.avatar({name:'采购分身',sourceName:'Eva',logo:'eva-logo',avatar:'https://example.test/none.png'},32,renderNode);
+  assert.equal(avatar.children.length, 1);
+  assert.equal(avatar.children[0].props.className, 'eva-identity-avatar__logo');
+  assert.equal(avatar.children[0].props.src, 'https://example.test/none.png');
+});
+
+test('分身头像来自主人身份，不另建头像来源', () => {
+  const identity = loadIdentity();
+  const a = identity.cloneAppearance({id:'u-wangyilin',name:'王宜林'});
+  assert.equal(a.ownerAvatar, 'portrait:u-wangyilin');
+  assert.equal(a.evaCorner, true);
+  const markup = identity.avatar(a,32);
+  assert.match(markup, /portrait:u-wangyilin/);
+  assert.match(markup, /eva-identity-avatar__owner/);
+  assert.match(markup, /eva-logo/);
+});
+
+test('助理头像只接受 emoji/图标，图片仍按图片处理', () => {
+  const identity = loadIdentity();
+  assert.equal(identity.isAssistantIcon('🍌'), true);
+  assert.equal(identity.isAssistantIcon('data:image/png;base64,AAAA'), false);
+  assert.equal(identity.isAssistantIcon(''), false);
+  assert.equal(identity.isAvatarImage('data:image/png;base64,AAAA'), true);
+  assert.equal(identity.isAvatarImage('🍌'), false);
+  assert.ok(identity.assistantIcons().includes('🍌'));
+});
+
+test('共享样式定义主人角图与图标主图的几何', () => {
   const css=readFileSync(new URL('../prototype/003-ai-identity.css',import.meta.url),'utf8');
   assert.match(css,/border-radius: 50%/);
-  assert.doesNotMatch(css,/eva-identity-avatar__owner/);
+  assert.match(css,/\.eva-identity-avatar__owner\s*\{/);
+  assert.match(css,/\.eva-identity-avatar__icon\s*\{/);
+  assert.match(css,/--eva-identity-avatar-size, 32px\) \* 0\.4375/);
   for(const file of ['032-contacts-redesign-v2.css','046-ai-team.css']) {
     const feature=readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8');
     assert.doesNotMatch(feature,/--eva-identity-owner-(size|offset|border)/);
@@ -45,7 +113,7 @@ test('project identity keeps one shared circular avatar without a secondary owne
   }
 });
 
-test('React and HTML badges share the same fixed Octo badge contract', () => {
+test('React 与 HTML 的 AI 标共用同一固定合同', () => {
   const ctx={window:{}};
   const src=readFileSync(new URL('../prototype/003-my-assistant-identity.js',import.meta.url),'utf8');
   vm.runInNewContext(src.slice(src.indexOf('/* One identity contract')),ctx);
@@ -56,7 +124,7 @@ test('React and HTML badges share the same fixed Octo badge contract', () => {
   assert.equal(badge.children[0],'AI');
 });
 
-test('project agent uses its stable bot avatar',()=>{
+test('项目管家使用稳定机器人头像且不叠加 Eva 角图',()=>{
  const ctx={window:{__EVA_COLLEAGUE_PORTRAIT:'eva-logo',__EVA_CURRENT_USER_PORTRAIT:'human'}};
  vm.runInNewContext(readFileSync(new URL('../prototype/003-my-assistant-identity.js',import.meta.url),'utf8'),ctx);
  const appearance=ctx.window.EvaAIIdentity.projectAgentAppearance();const markup=ctx.window.EvaAIIdentity.avatar(appearance,32);

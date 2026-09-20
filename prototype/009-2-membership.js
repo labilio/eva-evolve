@@ -30,7 +30,7 @@
       }
     }
     const cloneName=c=>{const owner=state.people.find(p=>p.id===c.ownerId);return root.EvaAIIdentity?.cloneName?root.EvaAIIdentity.cloneName(owner):(owner?.name||'未知成员')+'的 AI 分身';};
-    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT});
+    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT,identityAppearance:root.EvaAIIdentity.cloneAppearance(state.people.find(p=>p.id===c.ownerId))});
     let revision=0;const listeners=new Set();
     const fail=message=>{throw new Error(message);};
     const eligible=p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot;
@@ -80,7 +80,7 @@
         result.name=(value.name.startsWith('@')?'@':'')+c.name;
         if(value.uid)result.uid=c.id;if(value.id)result.id=c.id;
         result.avatar=root.__EVA_COLLEAGUE_PORTRAIT;
-        result.identityAppearance={name:c.name,sourceName:'Eva',avatar:root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
+        result.identityAppearance=c.identityAppearance||root.EvaAIIdentity.cloneAppearance(state.people.find(p=>p.id===c.ownerId));
       }
       if(typeof result.text==='string')for(const previous of [...state.clones,...(state.legacyCloneRecords||[]),...Object.entries({"b-wangyilin":"王宜林的分身","clone-linxiao":"林晓的分身","clone-hejing":"何静的分身"}).map(([id,name])=>({id,name}))]){
         const identity=clone(previous.id);if(identity&&previous.name&&previous.name!==identity.name&&result.text.includes('@'+previous.name)){result.text=result.text.split('@'+previous.name).join('@'+identity.name);result.mentions=[...(result.mentions||[]).filter(m=>(m.uid||m.id)!==identity.id),{name:'@'+identity.name,uid:identity.id}];}

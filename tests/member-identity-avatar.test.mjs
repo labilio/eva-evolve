@@ -21,6 +21,6 @@ test('HTML and React use the same AI badge',()=>{
 });
 test('member surfaces keep one circular image in the shared stylesheet',()=>{
   const css=readFileSync(new URL('../prototype/003-ai-identity.css',import.meta.url),'utf8');
-  assert.match(css,/border-radius: 50%/);assert.doesNotMatch(css,/eva-identity-avatar__owner/);
-  for(const f of ['009-2-picker-preview.css','009-2-members.css','032-contacts-redesign-v2.css'])assert.doesNotMatch(readFileSync(new URL('../prototype/'+f,import.meta.url),'utf8'),/eva-identity-avatar__owner|eva-picker-owner/);
+  assert.match(css,/border-radius: 50%/);assert.match(css,/\.eva-identity-avatar__owner\s*\{/);
+  for(const f of ['009-2-picker-preview.css','009-2-members.css','032-contacts-redesign-v2.css'])assert.doesNotMatch(readFileSync(new URL('../prototype/'+f,import.meta.url),'utf8'),/\.eva-identity-avatar__owner\s*\{|eva-picker-owner/);
 });
