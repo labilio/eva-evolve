@@ -118,7 +118,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIc
   },h('article',{className:'eva-person-card'},
    ownerId&&!avatarEditing&&h(Button,{className:'eva-person-card__back',theme:'borderless',type:'tertiary',size:'small',icon:h(BackIcon,{size:16}),onClick:()=>{setOwnerId(null);setError('');}},'返回'),
    avatarEditing&&profile&&canEditAvatar?h('div',{className:'eva-avatar-editor__host'},
-     h(AvatarEditor,{current:profile.appearance?profile.appearance.avatar:profile.avatar,label:profile.name,onCancel:onClose,onSave:saveAvatar}),
+     h(AvatarEditor,{current:profile.appearance?(profile.kind==='clone'?profile.appearance.ownerAvatar:profile.appearance.avatar):profile.avatar,label:profile.name,onCancel:onClose,onSave:saveAvatar}),
      avatarError&&h('p',{className:'eva-person-card__error',role:'alert'},avatarError))
    :profile?h(R.Fragment,null,
     h('div',{className:'eva-person-card__scroll'},

@@ -1,0 +1,126 @@
+/* ============================================================
+   060 · 任务详情右滑抽屉（仅容器 + 交互，不改内容）
+   ------------------------------------------------------------
+   作用域限定 .collab-route-right.eva-route-drawer —— 仅任务详情
+   （IssueDetailPage）走抽屉化；Agent/Skill/Squad/Project/Autopilot
+   等其它右侧路由保持原整屏覆盖，不受影响（标记类由 RouteRightHost
+   依顶层元素类型注入）。
+   尺寸模型（与定稿 mock 一致）：
+     抽屉宽 = clamp(640px, 卡片×0.70, 900px)
+     卡片 = .collab-route-right（= .eva-native-page-host 浮卡满幅）
+     卡片 < 1000px 时漏出 < 300px → 熔断为整屏（.eva-drawer-full）
+   面板 position:absolute，其 width:70% 相对包含块（.collab-route-right =
+   卡片）解析，即卡片×0.70，无需容器查询。熔断由 060 控制器按卡片宽切换
+   .eva-drawer-full 类。
+   ⚠ 不使用 container-type：那会使 .collab-route-right 成为 position:fixed
+   的包含块，令任务内「附件全屏预览」（fixed 锚定视口）错位。
+   ============================================================ */
+
+/* 蒙层：不再压暗底层——层次改由面板左缘投影表达（见 .panel box-shadow）。
+   这里保留一层透明的点击捕获面（vendor 已接 popAll），使点击抽屉外区域仍可关闭。 */
+.collab-route-right.eva-route-drawer .mask {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+/* 面板：右锚定 + 宽度模型 + 滑入。
+   左缘投影强化，作为与底层的唯一分层信号（替代原压暗蒙层）。
+   用 transition + @starting-style 而非 animation：animation 的 forwards
+   会把静止态 transform 冻结为单位矩阵（仍是 position:fixed 的包含块，会困住
+   任务内附件全屏预览）；transition 结束后计算值就是声明的 transform:none，
+   不产生矩阵、不形成包含块。 */
+.collab-route-right.eva-route-drawer .panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: clamp(640px, 70%, 900px);
+  background: var(--eva-surface-primary, #fff);
+  box-shadow:
+    -18px 0 48px -12px rgba(15, 18, 24, 0.30),
+    -2px 0 12px -2px rgba(15, 18, 24, 0.16),
+    -1px 0 0 var(--eva-border-subtle, #e8e8e8);
+  overflow-y: auto;
+  transform: none;
+  transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* 首次挂载的起始态：从右侧滑入 */
+@starting-style {
+  .collab-route-right.eva-route-drawer .panel {
+    transform: translateX(100%);
+  }
+}
+
+/* 熔断（卡片过窄）或用户点全屏：抽屉铺满，取消漏出与投影 */
+.collab-route-right.eva-route-drawer.eva-drawer-full .panel,
+.collab-route-right.eva-route-drawer.eva-drawer-expanded .panel {
+  width: 100%;
+  box-shadow: none;
+}
+
+/* 退场（由 RouteRightHost 在出栈时加 .eva-drawer-closing，过渡结束再卸载） */
+.collab-route-right.eva-route-drawer.eva-drawer-closing .panel {
+  transform: translateX(100%);
+}
+
+/* ---- 顶栏动作按钮（更多 / 全屏 / 关闭）---- */
+.loop-idp__fsbtn .eva-fs-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 全屏图标随抽屉展开态切换：默认显示「放大」，展开后显示「收起」。
+   两枚图标同为 .eva-fs-ico 的 svg 子节点，默认显隐必须按类精确指定——
+   不能用 `.eva-fs-ico > svg{display:block}`：它会同时命中 __exit，且特异度
+   （0,2,1）盖过 `.eva-fs-ico__exit{display:none}`（0,2,0），导致两枚图标叠现。 */
+.loop-idp__fsbtn .eva-fs-ico__enter {
+  display: block;
+}
+.loop-idp__fsbtn .eva-fs-ico__exit {
+  display: none;
+}
+.collab-route-right.eva-route-drawer.eva-drawer-expanded .loop-idp__fsbtn .eva-fs-ico__enter,
+.collab-route-right.eva-route-drawer.eva-drawer-full .loop-idp__fsbtn .eva-fs-ico__enter {
+  display: none;
+}
+.collab-route-right.eva-route-drawer.eva-drawer-expanded .loop-idp__fsbtn .eva-fs-ico__exit,
+.collab-route-right.eva-route-drawer.eva-drawer-full .loop-idp__fsbtn .eva-fs-ico__exit {
+  display: inline-flex;
+}
+/* 熔断为整屏时全屏切换无意义，隐藏该按钮 */
+.collab-route-right.eva-route-drawer.eva-drawer-full .loop-idp__fsbtn {
+  display: none;
+}
+
+/* ---- 关联父任务选择器（弹窗内）---- */
+.eva-parent-picker {
+  padding: 4px 0 2px;
+}
+.eva-parent-picker__opt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.eva-parent-picker__id {
+  color: var(--eva-text-secondary, #6b7075);
+  font: var(--eva-fw-semibold, 600) 11px/14px var(--eva-font-sans, inherit);
+  letter-spacing: 0.02em;
+}
+.eva-parent-picker__title {
+  overflow: hidden;
+  color: var(--eva-text-primary, #1c1f23);
+  font-size: 13px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eva-parent-picker__dropdown .semi-select-option {
+  height: auto;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}

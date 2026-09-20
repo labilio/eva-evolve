@@ -791,6 +791,22 @@
       "file": "prototype/060-avatar-editor.css",
       "bytes": 2106,
       "role": "prototype"
+    },
+    {
+      "order": 99,
+      "tag": "style",
+      "name": "task-drawer",
+      "file": "prototype/060-task-drawer.css",
+      "bytes": 3797,
+      "role": "prototype"
+    },
+    {
+      "order": 100,
+      "tag": "script",
+      "name": "task-drawer-controller",
+      "file": "prototype/060-task-drawer.js",
+      "bytes": 3437,
+      "role": "prototype"
     }
   ]
 }

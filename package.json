@@ -18,7 +18,10 @@
     "test:my-ai": "node --test tests/browser/my-ai-hierarchy-unread.mjs",
     "test:layout": "node --test tests/browser/list-insets.mjs tests/browser/directory-layout.mjs tests/browser/workspace-shell.mjs tests/browser/sidebar-footer.mjs",
     "test:assistant": "node --test tests/browser/personal-assistant-modal.mjs",
-    "test:dismiss": "node --test tests/browser/popup-dismiss.mjs"
+    "test:dismiss": "node --test tests/browser/popup-dismiss.mjs",
+    "test:composer": "node --test tests/browser/im-composer-visual.mjs",
+    "test:mentions": "node --test tests/browser/task-comment-mentions.mjs",
+    "test:picker": "node --test tests/browser/member-picker-template.mjs"
   },
   "devDependencies": {
     "linkedom": "^0.18.13",

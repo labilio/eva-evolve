@@ -30,7 +30,7 @@
       }
     }
     const cloneName=c=>{const owner=state.people.find(p=>p.id===c.ownerId);return root.EvaAIIdentity?.cloneName?root.EvaAIIdentity.cloneName(owner):(owner?.name||'未知成员')+'的 AI 分身';};
-    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:c.avatar||root.__EVA_COLLEAGUE_PORTRAIT});
+    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT,identityAppearance:root.EvaAIIdentity.cloneAppearance(state.people.find(p=>p.id===c.ownerId))});
     // One validator for every editable identity portrait (human, clone, assistant).
     const avatarValue=value=>{
       const text=typeof value==='string'?value.trim():'';
@@ -47,7 +47,7 @@
     const scope=id=>state.projects[id]||state.groups[id]||fail('范围不存在');
     const projectId=id=>state.projects[id]?id:state.groups[id]?.projectId;
     const humanRows=id=>scope(id).humans;
-    const requireHuman=id=>person(id)||fail('仅已激活的内部人类用户可操作');
+    const requireHuman=id=>person(id)||fail('仅已激活的内部用户可操作');
     const member=(id,uid)=>humanRows(id).some(m=>m.id===uid);
     const groupKey=id=>{const target=state.threads[id]||id;if(target?.startsWith('all:')&&state.projects[target.slice(4)])return target;if(state.groups[target])return target;return null;};
     const groupScope=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.groups[key]);};
@@ -86,8 +86,8 @@
       if(c&&typeof value.name==='string'){
         result.name=(value.name.startsWith('@')?'@':'')+c.name;
         if(value.uid)result.uid=c.id;if(value.id)result.id=c.id;
-        result.avatar=c.avatar||root.__EVA_COLLEAGUE_PORTRAIT;
-        result.identityAppearance={name:c.name,sourceName:'Eva',avatar:c.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
+        result.avatar=root.__EVA_COLLEAGUE_PORTRAIT;
+        result.identityAppearance=c.identityAppearance||root.EvaAIIdentity.cloneAppearance(state.people.find(p=>p.id===c.ownerId));
       }
       if(typeof result.text==='string')for(const previous of [...state.clones,...(state.legacyCloneRecords||[]),...Object.entries({"b-wangyilin":"王宜林的分身","clone-linxiao":"林晓的分身","clone-hejing":"何静的分身"}).map(([id,name])=>({id,name}))]){
         const identity=clone(previous.id);if(identity&&previous.name&&previous.name!==identity.name&&result.text.includes('@'+previous.name)){result.text=result.text.split('@'+previous.name).join('@'+identity.name);result.mentions=[...(result.mentions||[]).filter(m=>(m.uid||m.id)!==identity.id),{name:'@'+identity.name,uid:identity.id}];}
@@ -346,7 +346,7 @@
       },
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
-        if(s.ownerId!==uid)fail('仅群主可设置群管理员');if(target===s.ownerId||!s.humans.some(item=>item.id===target))fail('只能设置群内其他人类成员');
+        if(s.ownerId!==uid)fail('仅群主可设置群管理员');if(target===s.ownerId||!s.humans.some(item=>item.id===target))fail('只能设置群内其他联系人');
         const record=ensureGovernance(key),ids=new Set(record.managerIds||[]);enabled?ids.add(target):ids.delete(target);record.managerIds=[...ids];notify();
       },
       setGroupBotAdmin(id,uid,target,enabled){
@@ -487,10 +487,10 @@
       },
       addClone(id,uid,cid){cid=canonicalId(cid);const s=writable(id);requireHuman(uid);if(!member(id,uid))fail('主人必须先加入');selected(uid,[cid],s.projectId);if(!s.cloneIds.includes(cid))s.cloneIds.push(cid);notify();},
       removeClone(id,uid,cid){cid=canonicalId(cid);if(cid?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);const c=clone(cid)||fail('分身不存在');if(!member(id,uid)||(c.ownerId!==uid&&!manager(id,uid)))fail('无移除权限');s.cloneIds=s.cloneIds.filter(x=>x!==cid);if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[cid];const keys=[state.projects[id]?'all:'+id:id];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.cloneIds=g.cloneIds.filter(x=>x!==cid);keys.push(g.id);});keys.forEach(key=>{const record=state.groupGovernance?.[key];if(record)record.botAdminIds=(record.botAdminIds||[]).filter(x=>x!==cid);});notify();},
-      transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位人类成员');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
+      transfer(id,uid,target){const s=writable(id);if(s.ownerId!==uid||!member(id,target)||target===uid)fail('只能转让给范围内的另一位联系人');s.ownerId=target;s.humans.forEach(m=>{if(state.projects[id]){if(m.id===uid)m.role='member';if(m.id===target)m.role='owner';}});notify();},
       setAdmin(id,uid,target,enabled){const s=state.projects[id]||fail('仅项目可设置管理员');if(s.ownerId!==uid||target===uid||!member(id,target))fail('无设置权限');s.humans.find(m=>m.id===target).role=enabled?'admin':'member';notify();},
       leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通群可退出');if(!member(id,uid))fail('成员已离开');if(g.ownerId===uid){const successor=g.humans.find(item=>item.id!==uid&&person(item.id));if(!successor){dissolve(id);notify();return {type:'dissolved'};}g.ownerId=successor.id;drop(id,uid);notify();return {type:'left',successorId:successor.id};}drop(id,uid);notify();return {type:'left'};},
-      remove(id,uid,target,successors={}){if(target?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);if(!member(id,uid)||(uid!==target&&!manager(id,uid)))fail('无移除权限');if(!member(id,target))fail('成员已离开');if(s.ownerId===target)fail('请先转让负责人或群主');const groups=state.projects[id]?Object.values(state.groups).filter(g=>g.projectId===id&&member(g.id,target)):[];const owned=groups.filter(g=>g.ownerId===target);for(const g of owned){if(g.humans.length>1&&(!successors[g.id]||successors[g.id]===target||!member(g.id,successors[g.id])))fail('请为 '+g.name+' 指定群内的人类接任者');}for(const g of owned){if(g.humans.length===1)dissolve(g.id);else g.ownerId=successors[g.id];}drop(id,target);groups.filter(g=>state.groups[g.id]).forEach(g=>drop(g.id,target));notify();},
+      remove(id,uid,target,successors={}){if(target?.startsWith('project-agent:'))fail('项目分身不可移除');const s=writable(id);if(!member(id,uid)||(uid!==target&&!manager(id,uid)))fail('无移除权限');if(!member(id,target))fail('成员已离开');if(s.ownerId===target)fail('请先转让负责人或群主');const groups=state.projects[id]?Object.values(state.groups).filter(g=>g.projectId===id&&member(g.id,target)):[];const owned=groups.filter(g=>g.ownerId===target);for(const g of owned){if(g.humans.length>1&&(!successors[g.id]||successors[g.id]===target||!member(g.id,successors[g.id])))fail('请为 '+g.name+' 指定群内的联系人接任者');}for(const g of owned){if(g.humans.length===1)dissolve(g.id);else g.ownerId=successors[g.id];}drop(id,target);groups.filter(g=>state.groups[g.id]).forEach(g=>drop(g.id,target));notify();},
       dissolveGroup(id,uid){const g=state.groups[id]||fail('仅普通群可解散');if(g.ownerId!==uid)fail('仅群主可解散');dissolve(id);notify();},
       seedProjectAgents(){
         for(const pid of Object.keys(state.projects))agentWelcome(pid);

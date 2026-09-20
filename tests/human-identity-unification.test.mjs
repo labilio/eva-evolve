@@ -13,7 +13,7 @@ function setup(saved){
   const model=window.EvaContactIdentities.create(store,{team:{getSnapshot:()=>({identities:[]})}});
   return {window,store,model,storage};
 }
-test('完整人类目录覆盖所有演示消息作者及提及，ID 唯一且不靠五人白名单',()=>{
+test('完整联系人目录覆盖所有演示消息作者及提及，ID 唯一且不靠五人白名单',()=>{
   const {window,model}=setup(),ids=new Set(window.__EVA_PEOPLE.map(p=>p.id));
   assert.equal(ids.size,window.__EVA_PEOPLE.length);
   window.__EVA_MEMBER_DEMO_IDS=['u-wangyilin']; // An old browser flag cannot hide registered people.

@@ -39,7 +39,7 @@ test('Edge：合并状态后看板、详情、创建、旧筛选与跨项目往�
   await page.getByText('进行中',{exact:true}).last().click();
   await page.getByRole('button',{name:'进行中',exact:true}).waitFor();
   assert.equal(await page.locator('[role="dialog"]:visible').count(),0,'状态修改不弹出执行确认');
-  await page.locator('.collab-route-right').getByRole('button',{name:'看板',exact:true}).click();
+  await page.locator('.collab-route-right .loop-idp__closebtn').click();
   await project(supply);
   await page.getByRole('button',{name:'新建任务',exact:true}).click();
   const modal=page.locator('.eva-loop-task-create');

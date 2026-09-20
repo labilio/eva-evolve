@@ -8,7 +8,7 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
   const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch({ channel: 'msedge' });
+  const browser = await chromium.launch(process.platform === 'darwin' ? { channel: 'msedge' } : {});
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -36,7 +36,7 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
 
     const groupTitles = await menu.locator('.eva-im-mention-group').allInnerTexts();
     assert.ok(groupTitles.includes('本地助理'), '缺少本地助理分组');
-    assert.ok(groupTitles.includes('人类'), '缺少人类分组');
+    assert.ok(groupTitles.includes('联系人'), '缺少联系人分组');
     assert.ok(groupTitles.includes('AI 分身'), '缺少 AI 分身分组');
     assert.ok(groupTitles.includes('数字员工'), '缺少数字员工分组');
     assert.ok(groupTitles.includes('专家'), '缺少专家分组');
@@ -46,12 +46,12 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
     assert.ok((await menu.locator('.ai-badge').count()) > 0, 'AI 候选缺少公共 AI 标');
 
     const humanMore = menu.locator('[data-eva-mention-more="human"]');
-    assert.equal(await humanMore.count(), 1, '人类超过上限应显示展开入口');
-    assert.match(await humanMore.innerText(), /展开其余 3 位/, '人类展开入口使用「位」量词');
-    assert.equal(await menu.locator('.eva-members-human-name').count(), 5, '人类默认只显示 5 条');
+    assert.equal(await humanMore.count(), 1, '联系人超过上限应显示展开入口');
+    assert.match(await humanMore.innerText(), /展开其余 3 位/, '联系人展开入口使用「位」量词');
+    assert.equal(await menu.locator('.eva-members-human-name').count(), 5, '联系人默认只显示 5 条');
     await humanMore.click();
     assert.equal(await menu.locator('[data-eva-mention-more="human"]').count(), 0, '展开后不再显示「显示更多」');
-    assert.equal(await menu.locator('.eva-members-human-name').count(), 8, '展开后显示全部人类');
+    assert.equal(await menu.locator('.eva-members-human-name').count(), 8, '展开后显示全部联系人');
 
     const chipLabels = await menu.locator('.eva-im-mention-chip').allInnerTexts();
     assert.ok(chipLabels[0].startsWith('全部'), '缺少「全部」类型筛选');
@@ -59,7 +59,7 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
     await menu.locator('[data-eva-mention-kind="agent"]').click();
     assert.equal(await menu.locator('.eva-im-mention-group').count(), 0, '筛选后只保留所选分类');
     assert.ok(await menu.getByText('间接采购专家', { exact: true }).count() > 0, '筛选专家后候选缺失');
-    assert.equal(await menu.locator('.eva-members-human-name').count(), 0, '筛选专家后不应出现人类');
+    assert.equal(await menu.locator('.eva-members-human-name').count(), 0, '筛选专家后不应出现联系人');
 
     await page.keyboard.type('王宜林');
     assert.equal(await menu.locator('[data-eva-mention-kind="agent"].is-active').count(), 0, '选中分类无结果时不应停留在空筛选');
@@ -68,7 +68,7 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
     await page.keyboard.press('Backspace');
     await page.keyboard.press('Backspace');
     await menu.locator('[data-eva-mention-kind="all"]').click();
-    assert.ok(await menu.locator('.eva-members-human-name').count() > 0, '恢复全部后重新显示人类');
+    assert.ok(await menu.locator('.eva-members-human-name').count() > 0, '恢复全部后重新显示联系人');
 
     const humanName = await menu.locator('.eva-members-human-name').first().innerText();
     await page.keyboard.type('采购');

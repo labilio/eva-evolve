@@ -43,7 +43,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await modal.getByRole('button',{name:'转让群主',exact:true}).click();
     let transfer=page.locator('.semi-modal:visible');
     await transfer.getByText('转让群主',{exact:true}).waitFor();
-    assert.ok(await transfer.locator('.eva-picker-row').count()>0,'手动转让只提供可接任的人类成员');
+    assert.ok(await transfer.locator('.eva-picker-row').count()>0,'手动转让只提供可接任的联系人');
     await transfer.getByRole('button',{name:'取消',exact:true}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});

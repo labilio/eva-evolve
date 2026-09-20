@@ -102,11 +102,11 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /evaCreate=mine&evaReturn=/);
   assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
   assert.match(imPatch, /className:'eva-ai-team__teams'.+className:'eva-ai-team__list-divider',role:'separator'.+className:'eva-ai-team__direct-groups'/s);
-  assert.match(imPatch, /type:'file',hidden:true,accept:'image\/png,image\/jpeg,image\/webp'/);
-  assert.match(imPatch, /const reader=new FileReader\(\)/);
+  assert.doesNotMatch(imPatch, /type:'file',[^)]*accept:'image\//);
+  assert.doesNotMatch(imPatch, /new FileReader\(\)/);
   assert.doesNotMatch(imPatch, /更换团队头像|上传团队头像/);
-  assert.match(imPatch, /'aria-label':draft\.avatar\?'更换助理头像':'上传助理头像'/);
-  assert.match(imPatch, /className:'eva-editor-avatar-button'.+avatarInput\.current\?\.click\(\)/s);
+  assert.match(imPatch, /'aria-label':draft\.avatar\?'更换助理头像':'选择助理头像图标'/);
+  assert.match(imPatch, /className:'eva-editor-avatar-button'.+setIconOpen/s);
   assert.doesNotMatch(imPatch, /头像图片地址|粘贴头像图片地址/);
   assert.match(imPatch, /if\(persona\)tabs\.push\(\['collaboration','协作'/);
   assert.doesNotMatch(imPatch, /\['skills','技能'.+\],\['collaboration','协作'/);

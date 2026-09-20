@@ -100,5 +100,5 @@ test('查找右栏使用 Eva 组件色并以 380px 右侧浮层覆盖消息区',
   assert.match(entry, /prototype\/055-conversation-search\.css/);
   const styles = JSON.parse(manifest).blocks.filter(block => block.tag === 'style').map(block => block.file);
   assert.equal(styles.filter(file => file === 'prototype/055-conversation-search.css').length, 1);
-  assert.deepEqual(styles.slice(-4), ['prototype/055-conversation-search.css', 'prototype/056-heading-system.css', 'prototype/057-gds-dark-tokens.css', 'prototype/060-avatar-editor.css']);
+  assert.deepEqual(styles.slice(-5), ['prototype/055-conversation-search.css', 'prototype/056-heading-system.css', 'prototype/057-gds-dark-tokens.css', 'prototype/060-avatar-editor.css', 'prototype/060-task-drawer.css']);
 });

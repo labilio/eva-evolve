@@ -49,6 +49,15 @@ jobs:
       - name: Verify heading system in browser
         run: npm run test:headings
 
+      - name: Verify IM composer and mentions in browser
+        run: npm run test:composer
+
+      - name: Verify mention picker in task comments
+        run: npm run test:mentions
+
+      - name: Verify member picker template in browser
+        run: npm run test:picker
+
       - name: Check list content insets
         run: npm run test:layout
 

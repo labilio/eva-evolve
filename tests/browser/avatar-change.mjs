@@ -76,16 +76,21 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     await selfAvatar.waitFor();
     assert.equal(await selfAvatar.getAttribute('src'), humanUploaded, '刷新后本人头像持久化');
 
-    // 本人分身：主人可改，通讯录与资料卡同源。
+    // 本人分身：默认主人主图 + Eva 角标，主人可更换主图，通讯录与资料卡同源。
     const cloneTrigger = humanTrigger('王宜林的 AI 分身');
-    const cloneDefault = await cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src');
+    const cloneMain = () => cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src');
+    const cloneCorner = cloneTrigger.locator('img.eva-identity-avatar__owner');
+    const evaLogo = await page.evaluate(() => window.__EVA_COLLEAGUE_PORTRAIT);
+    const cloneOwnerPortrait = await cloneMain();
+    assert.equal(cloneOwnerPortrait, humanUploaded, '分身默认主图沿用主人头像');
+    assert.equal(await cloneCorner.getAttribute('src'), evaLogo, '分身右下角恒为 Eva Logo');
     await cloneTrigger.click();
     await card.waitFor();
-    assert.equal(await card.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneDefault);
+    assert.equal(await card.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneOwnerPortrait);
     await upload();
-    const cloneUploaded = await cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src');
-    assert.notEqual(cloneUploaded, cloneDefault);
-    assert.equal(await cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneUploaded, '通讯录同步分身新头像');
+    const cloneUploaded = await cloneMain();
+    assert.match(cloneUploaded, /^data:image\/png;base64,/, '分身主图可更换');
+    assert.equal(await cloneCorner.getAttribute('src'), evaLogo, '更换主图后角标仍为 Eva Logo');
 
     // 别人的资料卡不提供更换头像入口。
     await humanTrigger('林晓').click();
@@ -93,20 +98,20 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     assert.equal(await card.locator('.eva-person-card__avatar-edit').count(), 0, '不能更换别人的头像');
     await closeCard();
 
-    // 恢复默认：人类回到系统头像，分身回到 Eva Logo。
+    // 恢复默认：分身回到主人主图，人类回到系统头像。
+    await cloneTrigger.click();
+    await card.waitFor();
+    await restoreDefault();
+    assert.equal(await cloneMain(), cloneOwnerPortrait, '分身恢复默认回到主人主图');
     await humanTrigger('王宜林').click();
     await card.waitFor();
     await restoreDefault();
     assert.notEqual(await selfAvatar.getAttribute('src'), humanUploaded);
-    await cloneTrigger.click();
-    await card.waitFor();
-    await restoreDefault();
-    assert.equal(await cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneDefault);
 
     await page.reload();
     await selfAvatar.waitFor();
     assert.notEqual(await selfAvatar.getAttribute('src'), humanUploaded, '恢复默认后不再使用自定义头像');
-    assert.equal(await cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneDefault, '分身恢复默认持久化');
+    assert.notEqual(await cloneMain(), cloneUploaded, '分身恢复默认持久化');
 
     assert.deepEqual(pageErrors, [], '页面不应出现未捕获 JavaScript 错误');
   } finally {
@@ -139,7 +144,7 @@ test('我的 AI 的个人助理经身份资料卡更换头像，身份行与会�
     await page.locator('.eva-ai-team__team-thread-row').first().click();
     const inbound = page.locator('.ch-main__stream .wk-msg-row:not(.wk-msg-row--send)').first();
     await inbound.waitFor();
-    const messageAvatar = inbound.locator('.wk-msg-row-avatar img');
+    const messageAvatar = inbound.locator('.wk-msg-row-avatar img.eva-identity-avatar__logo');
     const messageDefault = await messageAvatar.getAttribute('src');
 
     // 个人助理身份行不提供卡片入口，经会话身份点击进入同一资料卡。
@@ -259,7 +264,8 @@ test('左下角账号菜单的「更换头像」直接打开共用编辑器并�
     const accountAvatar = account.locator('img.eva-sider-account__avatar');
     const editor = page.locator('.eva-avatar-editor');
     const openAvatarEditorFromMenu = async () => {
-      await account.click();
+      // 账号菜单为悬浮触发：入口按钮与菜单都应可见可用。
+      await account.hover();
       await page.locator('.eva-account-menu__item').filter({hasText: '更换头像'}).click();
       await editor.waitFor();
       assert.equal(await editor.locator('.eva-avatar-editor__back').count(), 0, '账号菜单入口不提供返回按钮');
