@@ -134,15 +134,26 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     assert.equal(veilRange.left, 0, '消息·转发面板：蒙版未覆盖到内容区左边界');
     assert.ok(veilRange.coversRail, '消息·转发面板：蒙版未覆盖会话列表栏');
     assert.ok(veilRange.railHit, '消息·转发面板：会话列表栏未被蒙版遮住');
-    await page.getByRole('tab', { name: '我的 Agent', exact: true }).click();
-    await page.locator('.eva-fp-candidates .eva-fp-row input[type="checkbox"]').nth(1).check();
+    // 左侧默认只有一个「最近」列表，不再有四个入口 Tab
+    assert.equal(await page.locator('.eva-fp-tabs').count(), 0, '消息·转发面板：仍保留四 Tab');
+    const forwardGroupRow = page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ has: page.locator('.eva-fp-kind', { hasText: '群聊' }) }).first();
+    await forwardGroupRow.locator('input[type="checkbox"]').check();
+    // 群卡片默认只发大群本身，展开后才有「发送至」下拉
+    assert.equal(await page.locator('.eva-fp-picker-control').count(), 0, '消息·转发群卡片：默认不应展开「发送至」');
+    await page.locator('.eva-fp-selected--group .eva-fp-row-toggle').first().click();
     await page.locator('.eva-fp-picker-control').first().click();
     await page.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
     await page.waitForTimeout(900);
     assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：未点击时被自动关闭');
-    await page.locator('.eva-fp-picker-option').nth(1).click();
+    // 菜单内的「新建子区」就地展开命名行，点击后下拉必须保留
+    await page.locator('.eva-fp-picker-new-btn').click();
+    await page.locator('.eva-fp-picker-new-input').waitFor({ timeout: 5000 });
     await page.waitForTimeout(200);
-    assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：勾选菜单项后下拉被误关');
+    assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：新建子区时下拉被误关');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('.eva-fp-picker-new-input').count(), 0, '消息·转发「新建子区」：Escape 未收起草稿行');
+    assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「新建子区」：收起命名行时误关了下拉');
     await page.mouse.click(await page.evaluate(() => {
       const rect = document.querySelector('.eva-fp-selected-list').getBoundingClientRect();
       return Math.round(rect.x + rect.width / 2);
