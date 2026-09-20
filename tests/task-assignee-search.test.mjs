@@ -15,6 +15,10 @@ test('任务负责人公共选择器支持输入即筛选并保留非任务调�
   assert.match(picker, /"aria-label":"执行负责人"/);
   assert.match(picker, /emptyContent:"没有匹配的指派人"/);
   assert.match(picker, /normalize\("NFKC"\)\.toLocaleLowerCase\(\)/);
+  assert.match(picker, /evaTaskGroups=\[\{key:"member",label:gt\("loop\.assignee\.member"\)/);
+  assert.match(picker, /\{key:"expert",label:gt\("loop\.assignee\.agent"\)/);
+  assert.match(picker, /React\.createElement\(Select\.OptGroup/,
+    '成员与专家应复用 Semi Select 的原生分组组件');
   assert.doesNotMatch(picker, /eva-task-assignee-search/,
     '任务内指派不应再保留独立的下拉搜索框');
 

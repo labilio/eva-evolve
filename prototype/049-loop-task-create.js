@@ -24,6 +24,7 @@
       const projectAgent=scope?members.projectAgent(pid):null;
       const candidates=[...humans.map(p=>({...p,type:'member'})),...clones.map(p=>({...p,type:'agent'})),...employees.map(p=>({...p,type:'agent'})),...(projectAgent?[{...projectAgent,type:'agent'}]:[])];
       const sourceCandidates=[...clones.map(p=>({...p,type:'agent'})),...employees.map(p=>({...p,type:'agent'})),...(projectAgent?[{...projectAgent,type:'agent'}]:[])];
+      const candidateGroups=[{key:'member',label:'成员',items:candidates.filter(person=>person.type==='member')},{key:'expert',label:'专家',items:candidates.filter(person=>person.type!=='member')}].filter(group=>group.items.length);
       const selected=candidates.find(p=>p.id===form.assignee),selectedSource=sourceCandidates.find(p=>p.id===form.source),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
       const popup=()=>host.current;
       function identity(person){
@@ -96,7 +97,7 @@
               h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
               h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
               h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||'')}),
-              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),filter:filterPerson,emptyContent:'没有匹配的指派人',placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')}),
+              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,filter:filterPerson,emptyContent:'没有匹配的指派人',placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')},candidateGroups.map(group=>h(Select.OptGroup,{key:group.key,label:group.label},group.items.map(person=>h(Select.Option,{key:person.id,value:person.id},identity(person)))))),
               h(Select,{className:'eva-loop-task-create__assignee eva-loop-task-create__source',value:form.source||undefined,optionList:sourceCandidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'来源者（必选）','aria-label':'来源者',showClear:false,disabled,getPopupContainer:popup,onChange:value=>patch('source',value||'')})),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),

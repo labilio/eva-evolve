@@ -6,8 +6,9 @@ const code=fs.readFileSync(new URL('../prototype/049-loop-task-create.js',import
 function harness(overrides={}){
   const hooks=[],effects=[];let cursor=0,tree;
   const R={Fragment:'Fragment',createElement:(type,props,...children)=>({type,props:props||{},children:children.flat(Infinity)}),useSyncExternalStore:()=>{},useState(init){const i=cursor++;hooks[i]??={value:typeof init==='function'?init():init};return[hooks[i].value,value=>{hooks[i].value=typeof value==='function'?value(hooks[i].value):value;}];},useRef(value){const i=cursor++;return hooks[i]??={current:value};},useEffect(fn,deps){const i=cursor++,old=hooks[i];if(!old||deps.some((v,n)=>v!==old.deps[n])){effects.push(()=>{old?.cleanup?.();hooks[i]={deps,cleanup:fn()};});}}};
+  const Select=Object.assign(function Select(){},{Option:'Select.Option',OptGroup:'Select.OptGroup'});
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
-  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',DatePicker:'DatePicker',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
+  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select,DatePicker:'DatePicker',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
   const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
@@ -17,8 +18,9 @@ function harness(overrides={}){
   const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1'],['来源者','c1']]){find(label).props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
   render();render();return {render,find,button,fill,calls,props,deps,state,all};
 }
+const pickerOptions=picker=>picker.children.flatMap(group=>group.children).map(option=>({value:option.props.value,label:option.children[0]}));
 test('creates project-bound task with original fields and only current project candidates',async()=>{
-  const h=harness();h.fill();const options=h.find('执行负责人').props.optionList;assert.deepEqual(Array.from(options,x=>x.value),['u1','c1']);await h.button('创建').props.onClick();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
+  const h=harness();h.fill();const options=pickerOptions(h.find('执行负责人'));assert.deepEqual(Array.from(options,x=>x.value),['u1','c1']);await h.button('创建').props.onClick();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
   assert.equal(payload.due_date,null);
 });
 test('创建任务可设置和清空截止日期，并提交同一 due_date 字段',async()=>{
@@ -52,17 +54,23 @@ test('新建任务支持一次选择多个附件并按选择顺序上传',async(
   await h.button('创建').props.onClick();assert.deepEqual(uploaded,['成本明细.xlsx','分析报告.pdf']);assert.deepEqual(Array.from(h.calls[0].attachment_ids),['att-成本明细.xlsx','att-分析报告.pdf']);
 });
 test('AI assignment stays todo and human avatars use stable identity ids',async()=>{
-  const h=harness();h.fill();const label=h.find('执行负责人').props.optionList[0].label;assert.equal(label.children[0].props.src,'avatar:u1');
+  const h=harness();h.fill();const label=pickerOptions(h.find('执行负责人'))[0].label;assert.equal(label.children[0].props.src,'avatar:u1');
   h.find('执行负责人').props.onChange('c1');h.render();await h.button('创建').props.onClick();assert.equal(h.calls[0].assignee_type,'agent');assert.equal(h.calls[0].status,'todo');
 });
 test('新建任务负责人支持输入即按姓名筛选',()=>{
-  const h=harness();const picker=h.find('执行负责人'),options=picker.props.optionList;
+  const h=harness();const picker=h.find('执行负责人'),options=pickerOptions(picker);
   assert.equal(typeof picker.props.filter,'function');
   assert.equal(picker.props.emptyContent,'没有匹配的指派人');
   assert.equal(picker.props.filter('甲',options[0]),true);
   assert.equal(picker.props.filter('分身',options[1]),true);
   assert.equal(picker.props.filter('不存在',options[0]),false);
   assert.equal(picker.props.filter('  甲  ',options[0]),true);
+});
+test('新建任务负责人使用现有 Select 分为成员和专家',()=>{
+  const h=harness();const picker=h.find('执行负责人');
+  assert.deepEqual(Array.from(picker.children,group=>group.props.label),['成员','专家']);
+  assert.deepEqual(Array.from(picker.children[0].children,option=>option.props.value),['u1']);
+  assert.deepEqual(Array.from(picker.children[1].children,option=>option.props.value),['c1']);
 });
 test('原版创建布局保留外层项目路径且没有旧 Loop 项目选择器',()=>{
   const h=harness();assert.ok(h.all().some(n=>n.props.className==='loop-ci__crumb-ws'&&n.children.includes('供应链')));
@@ -84,7 +92,7 @@ test('任务标签可在下拉框内直接新建，初始状态不再显示',asy
 test('任务浮层共用弹窗容器，标签选择不丢失输入且重新打开时关闭',async()=>{
  const h=harness();await new Promise(resolve=>setImmediate(resolve));h.render();
  const modal=h.all().find(n=>n.type==='Modal');
- for(const n of h.all().filter(n=>['LoopPropertyPill','Select','DatePicker','Popover'].includes(n.type)))assert.equal(n.props.getPopupContainer,modal.props.getPopupContainer);
+ for(const n of h.all().filter(n=>['LoopPropertyPill','DatePicker','Popover'].includes(n.type)||n.type===h.deps.Select))assert.equal(n.props.getPopupContainer,modal.props.getPopupContainer);
  h.find('添加或编辑任务标签').props.onFocus();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,true);
  const option=h.all().find(n=>n.props.role==='option');option.props.onClick();h.render();assert.ok(h.find('移除标签 标签'));
  h.all().find(n=>n.type==='Popover').props.onClickOutSide();h.render();assert.equal(h.all().find(n=>n.type==='Popover').props.visible,false);

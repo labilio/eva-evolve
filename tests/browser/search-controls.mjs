@@ -353,6 +353,8 @@ test('任务指派：新建、列表、批量与详情均可输入即筛选负�
     await input.waitFor();
     await options.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
+    assert.equal(await options.getByText('成员', { exact: true }).count(), 1);
+    assert.equal(await options.getByText('专家', { exact: true }).count(), 1);
     await input.fill('何静');
     assert.ok(await options.getByText('何静', { exact: true }).count() > 0);
     await options.getByText('周远', { exact: true }).waitFor({ state: 'detached' });
