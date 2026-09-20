@@ -79,7 +79,7 @@ test('分身头像与主人头像相互独立：默认主人基础头像 + Eva �
 });
 
 test('个人助理头像写入助理配置并即时反映到身份外观，纯 AI 表单不套用', () => {
-  const {window} = setup();
+  const {window, store} = setup();
   const team = window.EvaAITeam;
   const assistant = team.getSnapshot().identities.find(identity => identity.id === 'ai-general');
   assert.equal(assistant.role, 'assistant');
@@ -90,9 +90,14 @@ test('个人助理头像写入助理配置并即时反映到身份外观，纯 A
   assert.throws(() => team.setAssistantAvatar('ai-general', 'javascript:alert(1)'), /头像数据无效|头像/);
   team.setAssistantAvatar('ai-general', '');
   const cleared = window.EvaAIIdentity.assistantAppearance(team.getSnapshot().identities.find(identity => identity.id === 'ai-general'));
-  assert.equal(cleared.avatar, undefined);
-  assert.equal(cleared.ownerAvatar, window.EvaAvatar.personUri('u-wangyilin'));
+  assert.equal(cleared.avatar, window.EvaAvatar.personBaseUri('u-wangyilin'));
+  assert.equal(cleared.ownerAvatar, undefined);
   assert.equal(cleared.evaCorner, true);
+  // 主人更换头像不带动个人助理，助理保持主人基础头像。
+  store.setPersonAvatar('u-wangyilin', CUSTOM);
+  assert.equal(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
+  assert.equal(window.EvaAIIdentity.assistantAppearance(team.getSnapshot().identities.find(identity => identity.id === 'ai-general')).avatar, window.EvaAvatar.personBaseUri('u-wangyilin'), '主人换头像后个人助理保持自己的主图');
+  store.setPersonAvatar('u-wangyilin', '');
 });
 
 test('资料卡只为本人、分身主人和个人助理提供更换头像入口', () => {
