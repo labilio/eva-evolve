@@ -248,6 +248,17 @@
   --eva-code-function: #6639a6;
   --eva-code-comment: #57606a;
 }
+/* 以上是 GitHub Light 调色板，为浅色白容器设计。原先无主题作用域、暗色
+ * 原样生效：暗红/深蓝/暗绿画在 #0d1117 蓝黑 pre 上对比低至约 1.8:1，
+ * 是暗色下代码「看不清」的根因。暗色换用 vendor 同款 GitHub Dark 调色板，
+ * 与代码容器底（#0d1117 体系）天然同套。 */
+:root[data-theme="dark"] .eva-im-bubble-row {
+  --eva-code-keyword: #ff7b72;
+  --eva-code-value: #79c0ff;
+  --eva-code-string: #a5d6ff;
+  --eva-code-function: #d2a8ff;
+  --eva-code-comment: #8b949e;
+}
 .eva-im-bubble-row .eva-markdown-table-scroll {
   max-width: 100%;
   overflow-x: auto;
@@ -281,6 +292,12 @@
   background: var(--eva-surface-primary);
   border-color: var(--eva-border-subtle);
   color: var(--eva-text-primary);
+}
+/* vendor 给 pre.hljs 写死了自己的底（#0d1117）与前景，会在 wrapper 内再叠
+ * 一层异色底形成灰环。容器面统一由 wrapper 持有，pre 透出同一底色。 */
+.eva-im-bubble-row .wk-markdown-pre-wrapper pre.hljs {
+  background: transparent;
+  color: inherit;
 }
 .eva-im-bubble-row .wk-markdown pre { color: var(--eva-text-primary); line-height: 1.65; tab-size: 4; }
 .eva-im-bubble-row .wk-markdown :not(pre) > code {
