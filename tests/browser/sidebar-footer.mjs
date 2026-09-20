@@ -134,7 +134,9 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
   })));
   assert.equal(iconSnapshot.length,11);
   assert.ok(iconSnapshot.every(icon=>icon.lucide||icon.agentAsset||icon.personalAvatar),'Every navigation entry retains its current icon implementation');
-  assert.equal(iconSnapshot.find(icon=>icon.id==='my-ai').agentAsset,'prototype/assets/my-ai-collaboration.svg');
+  const myAiIcon=iconSnapshot.find(icon=>icon.id==='my-ai');
+  assert.match(myAiIcon.lucide,/lucide-boxes/, '我的 Agent 使用 Lucide Boxes 图标');
+  assert.equal(myAiIcon.agentAsset,'');
   for(const section of sections){
     // 分组标题字号取 12/16（GDS caption / EvaMate Caption），2026-09-15 用户裁决从 13/20 下调。
     assert.equal(section.titleFont,'12px');

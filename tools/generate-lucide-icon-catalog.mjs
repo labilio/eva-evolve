@@ -6,7 +6,7 @@ const icon = (name, area, usage) => ({ name, area, usage });
 const custom = (area, usage, image) => ({ name: '无 Lucide 名称', area, usage, image });
 const sections = [
   ['导航栏自身', [
-    ['个人', [custom('Eva 同学', '使用 Eva Logo', '../prototype/assets/eva-favicon.png'), custom('我的 Agent', '使用项目专属图片', '../prototype/assets/my-ai-collaboration.svg'), icon('presentation', '任务看板', '一级菜单'), icon('alarm-clock', '自动化任务', '一级菜单'), icon('cable', '连接中心', '一级菜单')]],
+    ['个人', [custom('Eva 同学', '使用 Eva Logo', '../prototype/assets/eva-favicon.png'), icon('boxes', '我的 Agent', '一级菜单'), icon('presentation', '任务看板', '一级菜单'), icon('alarm-clock', '自动化任务', '一级菜单'), icon('cable', '连接中心', '一级菜单')]],
     ['团队协作', [icon('message-square', '我的消息', '一级菜单'), icon('layout-grid', '我的项目', '一级菜单'), icon('book-user', '通讯录', '一级菜单'), icon('hard-drive', '文件库', '一级菜单'), icon('globe', '站点', '一级菜单')]],
     ['其他', [icon('bot', '数字员工市场', '一级菜单')]],
   ]],
