@@ -64,6 +64,7 @@
   var expandedLists = new Set();
   var activeConversationId = '';
   var personalDrafts = Object.create(null);
+  var pageServices = null;
 
   function icon(name, size, className) {
     return window.__evaLucide(name, { size: size || 16, className: className || '' });
@@ -129,13 +130,12 @@
   function railFormHTML() {
     if (!railForm) return '';
     var moving = railForm.type === 'conversation';
-    var creating = railForm.type === 'create-folder';
     var detail = moving ? conversationForId(railForm.id) : personalSnapshot().folders.find(function (f) { return f.id === railForm.id; });
     return '<form class="eva-personal-rail-form" data-eva-rail-form>'
-      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : creating ? '新建分组' : '重命名文件夹') + '</label>'
-      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="' + (moving ? '对话名称' : creating ? '分组名称' : '文件夹名称') + '" value="' + escapeHTML(detail ? (moving ? detail.title : detail.name) : '') + '" required>'
+      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : '重命名文件夹') + '</label>'
+      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="' + (moving ? '对话名称' : '文件夹名称') + '" value="' + escapeHTML(detail ? (moving ? detail.title : detail.name) : '') + '" required>'
       + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">默认</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
-      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">' + (creating ? '新建' : '保存') + '</button></div></form>';
+      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">保存</button></div></form>';
   }
 
   function conversationRowsHTML(items, folderId) {
@@ -691,9 +691,20 @@
     }
 
     if (event.target.closest('[data-eva-cancel-rail]')) { railForm = null; renderRail(); return; }
-    if (event.target.closest('[data-eva-create-folder]')) {
-      railForm = {type:'create-folder'}; folderMenu = null; renderRail();
-      root.querySelector('#eva-rail-name').focus(); return;
+    var createFolder = event.target.closest('[data-eva-create-folder]');
+    if (createFolder) {
+      railForm = null; folderMenu = null; renderRail();
+      if (pageServices && typeof pageServices.openCreateFolder === 'function') {
+        pageServices.openCreateFolder({
+          returnFocus:function () { return root && root.querySelector('[data-eva-create-folder]'); },
+          onCreated:function () {
+            renderRail();
+            var folderPicker = root.querySelector('.eva-personal-folder-picker');
+            if (folderPicker) folderPicker.outerHTML = folderPickerHTML();
+          }
+        });
+      }
+      return;
     }
     var folderSettings = event.target.closest('[data-eva-folder-menu]');
     if (folderSettings) { folderMenu = folderMenu === folderSettings.dataset.evaFolderMenu ? null : folderSettings.dataset.evaFolderMenu; renderRail(); return; }
@@ -929,8 +940,7 @@
     event.preventDefault();
     var name = event.target.querySelector('[name="name"]').value;
     try {
-      if (railForm.type === 'create-folder') window.EvaPersonal.createFolder(name);
-      else if (railForm.type === 'rename-folder') window.EvaPersonal.renameFolder(railForm.id, name);
+      if (railForm.type === 'rename-folder') window.EvaPersonal.renameFolder(railForm.id, name);
       else {
         window.EvaPersonal.renameConversation(railForm.id, name);
         window.EvaPersonal.moveConversation(railForm.id, event.target.querySelector('[name="folder"]').value);
@@ -973,13 +983,15 @@
     return setState(next);
   };
 
-  window.__evaNativePages.register('personal', function (host) {
+  window.__evaNativePages.register('personal', function (host, services) {
+    pageServices = services || null;
     ensureRoot(host);
     root.hidden = false;
     syncRouteState();
     render();
     return function () {
       personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      pageServices = null;
       railForm = null;
       conversationPickerOpen = false;
       if (generatingTimer) { clearTimeout(generatingTimer); generatingTimer = 0; }

@@ -27,16 +27,38 @@ test('个人 Eva 中栏从右上角新建分组，新分组置于最上并保留
     const composer = page.locator('.eva-composer-prompt');
     await composer.fill('浏览器验收草稿');
     await trigger.click();
-    const form = page.locator('[data-eva-rail-form]');
-    await form.waitFor();
-    assert.equal(await form.locator('label').innerText(), '新建分组');
+    const modalRoot = page.locator('.eva-personal-folder-modal');
+    const modal = modalRoot.locator('.semi-modal');
+    await modal.waitFor();
+    assert.equal(await modal.locator('.semi-modal-title').innerText(), '新建分组');
+    assert.equal(await page.locator('[data-eva-rail-form]').count(), 0);
+    assert.equal(await modal.getByLabel('分组名称').getAttribute('placeholder'), '请输入分组名称');
+    assert.equal(await modal.getByLabel('分组名称').evaluate(element => document.activeElement === element), true);
     assert.equal(await composer.inputValue(), '浏览器验收草稿');
+    const titlebar = page.locator('.app-titlebar');
+    const mask = page.locator('.semi-modal-mask');
+    const titlebarBox = await titlebar.boundingBox();
+    const maskTop = (await mask.boundingBox()).y;
+    assert.ok(maskTop >= titlebarBox.y + titlebarBox.height);
+    assert.ok(maskTop <= titlebarBox.y + titlebarBox.height + 1);
+    assert.ok(await titlebar.isVisible());
 
-    await form.getByPlaceholder('分组名称').fill('浏览器验收分组');
-    await form.getByRole('button', { name: '新建', exact: true }).click();
+    await modal.getByRole('button', { name: '取消', exact: true }).click();
+    await modalRoot.waitFor({ state: 'detached' });
+    assert.equal(await trigger.evaluate(element => document.activeElement === element), true);
+    await trigger.click();
+    await modal.getByLabel('分组名称').fill('默认');
+    await modal.getByRole('button', { name: '新建', exact: true }).click();
+    assert.equal(await modal.getByRole('alert').innerText(), '已有同名文件夹');
+    assert.ok(await modal.isVisible());
+
+    await modal.getByLabel('分组名称').fill('浏览器验收分组');
+    await modal.getByRole('button', { name: '新建', exact: true }).click();
+    await modalRoot.waitFor({ state: 'detached' });
     const firstGroup = page.locator('.eva-personal-folder__main span').first();
     assert.equal(await firstGroup.innerText(), '浏览器验收分组');
     assert.equal(await composer.inputValue(), '浏览器验收草稿');
+    assert.equal(await trigger.evaluate(element => document.activeElement === element), true);
 
     await page.reload();
     await firstGroup.waitFor();
@@ -46,7 +68,7 @@ test('个人 Eva 中栏从右上角新建分组，新分组置于最上并保留
     await page.locator('[data-eva-nav-id="new-chat"]').click();
     await page.locator('.eva-personal-sider-panel').waitFor();
     assert.equal(await firstGroup.innerText(), '浏览器验收分组');
-    assert.ok(await page.locator('.app-titlebar').isVisible());
+    assert.ok(await titlebar.isVisible());
     await page.screenshot({ path: '/tmp/eva-personal-new-group.png', fullPage: true });
     assert.deepEqual(errors, []);
   } finally {

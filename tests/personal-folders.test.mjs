@@ -11,16 +11,17 @@ const pageSource=fs.readFileSync('prototype/052-personal-eva-gds.js','utf8');
 function setup(saved=new Map(),hash='#/guid') {
   const {window,document}=parseHTML('<html><body><main></main></body></html>');
   const location={hash}; let mount,complete;
+  const dialogs={request:null,openCreateFolder(options){this.request=options;}};
   window.__evaLucide=()=>'';
   window.__evaNativePages={register:(_,fn)=>{mount=fn;}};
   window.HTMLElement.prototype.setSelectionRange=function(){};
   const context=vm.createContext({window,document,location,crypto:{randomUUID},localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)},setTimeout:fn=>{complete=fn;return 1;},clearTimeout:()=>{}});
-  vm.runInContext(dismissSource,context);vm.runInContext(storeSource,context);vm.runInContext(pageSource,context);mount(document.querySelector('main'));
+  vm.runInContext(dismissSource,context);vm.runInContext(storeSource,context);vm.runInContext(pageSource,context);mount(document.querySelector('main'),dialogs);
   const q=s=>document.querySelector(s);
   const input=value=>{q('.eva-composer-prompt').value=value;q('.eva-composer-prompt').dispatchEvent(new window.Event('input',{bubbles:true}));};
   const route=id=>{location.hash='#/conversation/'+id;window.dispatchEvent(new window.Event('hashchange'));};
   const submit=()=>q('[data-eva-rail-form]').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));
-  return {window,document,q,input,route,submit,saved,complete:()=>complete(),store:window.EvaPersonal};
+  return {window,document,q,input,route,submit,saved,complete:()=>complete(),store:window.EvaPersonal,dialogs};
 }
 
 test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人页不再出现助理选择',()=>{
@@ -48,11 +49,12 @@ test('中栏右上角新建分组并把新分组显示在最上面，同时保�
  const trigger=a.q('[data-eva-create-folder]');
  assert.equal(trigger.getAttribute('aria-label'),'新建分组');assert.equal(trigger.getAttribute('title'),'新建分组');
  assert.equal(a.q('.eva-personal-rail-top [data-eva-new-folder-chat]'),null);
- trigger.click();assert.equal(a.q('[data-eva-rail-form] label').textContent,'新建分组');
- a.q('#eva-rail-name').value='最新会话组';a.submit();
+ trigger.click();assert.ok(a.dialogs.request);assert.equal(a.q('[data-eva-rail-form]'),null);
+ const id=a.store.createFolder('最新会话组');a.dialogs.request.onCreated(id);
  assert.equal(a.store.getSnapshot().folders[0].name,'最新会话组');
  assert.equal(a.document.querySelector('.eva-personal-folder__main span').textContent,'最新会话组');
  assert.equal(a.q('.eva-composer-prompt'),textarea);assert.equal(textarea.value,'尚未发送的草稿');
+ assert.equal(a.dialogs.request.returnFocus(),a.q('[data-eva-create-folder]'));
 });
 
 test('浏览本地目录和折叠不重建输入框，目录名保存为文件夹',async()=>{
