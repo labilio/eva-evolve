@@ -198,8 +198,8 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     await forwardCreateDialog.waitFor({ timeout: 5000 });
     // 空名点击「创建并发送」必须有行内反馈，而不是静默失败
     await forwardCreateDialog.getByRole('button',{ name: '创建并发送', exact: true }).click();
-    await forwardCreateDialog.locator('.eva-members-error').waitFor({ timeout: 5000 });
-    assert.equal((await forwardCreateDialog.locator('.eva-members-error').innerText()).trim(),'请输入群聊名称','消息·转发「创建并发送」：空名点击应有行内报错');
+    await forwardCreateDialog.locator('.eva-member-picker__field-error').waitFor({ timeout: 5000 });
+    assert.equal((await forwardCreateDialog.locator('.eva-member-picker__field-error').innerText()).trim(),'请输入群聊名称','消息·转发「创建并发送」：空名点击应有行内报错');
     assert.ok(await forwardCreateDialog.count(),'消息·转发「创建并发送」：校验失败不应关闭弹窗');
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);

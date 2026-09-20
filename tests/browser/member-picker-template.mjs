@@ -157,15 +157,24 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).count(),1);
     // 提交时校验：空名/未选成员点击必须有行内反馈并聚焦名称框，而不是按钮静默禁用
     await createGroup.getByRole('button',{name:'创建群聊',exact:true}).click();
-    const createGroupError=createGroup.locator('.eva-members-error');
+    const createGroupError=createGroup.locator('.eva-member-picker__field-error');
     await createGroupError.waitFor({timeout:5000});
     assert.equal((await createGroupError.innerText()).trim(),'请输入群聊名称','空名点击应提示「请输入群聊名称」');
+    // 错误长在出错字段旁边：名称错误紧贴输入框下方，不得堆到弹窗底部
+    const errorPlacement=await page.evaluate(()=>{
+      const input=document.getElementById('eva-member-picker-name'),errorNode=document.querySelector('.eva-member-picker__field-error');
+      const inputRect=input.getBoundingClientRect(),errorRect=errorNode.getBoundingClientRect();
+      return {inField:!!errorNode.closest('.eva-member-picker__field'),gap:Math.round(errorRect.top-inputRect.bottom)};
+    });
+    assert.equal(errorPlacement.inField,true,'名称错误应渲染在群聊名称字段内');
+    assert.ok(errorPlacement.gap>=0&&errorPlacement.gap<=40,'名称错误应紧贴输入框下方');
     assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).evaluate(node=>node===document.activeElement),true,'报错后焦点应回到群聊名称输入框');
     assert.equal(await createGroup.count(),1,'校验失败不应创建群聊或关闭弹窗');
     await createGroup.getByLabel('群聊名称',{exact:true}).fill('模板验收群');
     assert.equal(await createGroupError.count(),0,'输入群名后错误应消失');
     await createGroup.getByRole('button',{name:'创建群聊',exact:true}).click();
     assert.equal((await createGroupError.innerText()).trim(),'请至少选择 1 位群成员','未选成员时点击应提示成员不足');
+    assert.equal(await createGroup.locator('.eva-member-picker__members .eva-member-picker__field-error').count(),1,'成员错误应渲染在成员面板区域内');
     assert.equal(await createGroup.count(),1,'校验失败不应创建群聊或关闭弹窗');
     await createGroup.getByRole('button',{name:'取消',exact:true}).click();
     await createGroup.waitFor({state:'detached'});

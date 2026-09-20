@@ -61,6 +61,8 @@
 .eva-member-picker__field,.eva-member-picker__members{display:grid;grid-template-columns:80px minmax(0,1fr);gap:var(--gds-space-5) var(--gds-space-4);align-items:start}
 .eva-member-picker__members--selection-only{grid-template-columns:minmax(0,1fr);gap:0}
 .eva-member-picker__field>label,.eva-member-picker__label{padding-top:var(--gds-space-2);font-weight:var(--gds-font-weight-medium)}
+/* 提交时校验的行内错误：长在出错字段旁边（名称在输入框下方、成员不足在成员面板下方），不再堆到弹窗底部。 */
+.eva-member-picker__field-error{grid-column:2;margin:-12px 0 0;color:var(--semi-color-danger);font-size:13px;line-height:20px}
 .eva-member-picker__panel{display:grid;height:clamp(320px,calc(100dvh - 340px),600px);min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:var(--gds-border-standard) solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary)}
 .eva-member-picker__available,.eva-member-picker__selected{display:flex;min-width:0;min-height:0;flex-direction:column}
 .eva-member-picker__toolbar,.eva-picker-toolbar{padding:var(--picker-toolbar-pad)}
@@ -87,4 +89,4 @@
 .eva-member-picker__empty p{margin:0;color:var(--gds-color-text-secondary-accessible);font-size:13px;font-weight:var(--gds-font-weight-regular);line-height:20px}
 .eva-member-picker__empty small{display:block;margin-top:var(--gds-space-2);color:var(--gds-color-text-muted);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-regular);line-height:var(--gds-type-caption-line-height)}
 .eva-member-picker__footer{padding-top:0;border-top:0}
-@media(max-width:720px){.eva-member-picker__field,.eva-member-picker__members{grid-template-columns:minmax(0,1fr);gap:var(--gds-space-2)}.eva-member-picker__field>label,.eva-member-picker__label{padding-top:0}}
+@media(max-width:720px){.eva-member-picker__field,.eva-member-picker__members{grid-template-columns:minmax(0,1fr);gap:var(--gds-space-2)}.eva-member-picker__field>label,.eva-member-picker__label{padding-top:0}.eva-member-picker__field-error{grid-column:1;margin-top:0}}
