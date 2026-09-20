@@ -18,11 +18,14 @@
             'storageKey:"eva-unified-sider-width-px-v2"'
           ],
           [
-            /* 全局导航只有展开/折叠两态（规范：默认 180px、折叠 80px），不参与自由拖拽。
-             * 直接不渲染 Semi Sider 自带的 resize 手柄，连同其默认粗高亮线与双击行为一起去掉；
-             * 折叠/展开仍由顶栏按钮和 ⌘B 驱动，不受影响。 */
+            /* 全局导航只有展开/折叠两态（180px / 80px），不支持自由宽度。这里不复用 Semi
+             * 自带的 resize 手柄（它与锁死宽度的阈值逻辑相互打架，展开态一拖就误折叠），
+             * 改挂一条极简边线：hover 时线条加粗提亮、光标 col-resize；按住向左拖 ≥24px
+             * 从展开切到折叠、向右拖 ≥24px 从折叠切到展开（每次拖拽只切一次，纯方向判定，
+             * 不产生任何中间宽度），双击切换。ut=当前折叠态、pt=setSiderCollapsed。样式见
+             * 012-mode-layer.css 的 .eva-sider-edge。 */
             '!mt&&$r({className:"z-20",style:{right:"-4px",width:"8px"},linePlacement:"start"})',
-            'null'
+            '!mt&&React.createElement("div",{className:"eva-sider-edge",role:"separator","aria-orientation":"vertical",title:ut?"拖动或双击展开":"拖动或双击折叠",onPointerDown:function(ev){if(ev.button!==0)return;ev.preventDefault();var sx=ev.clientX,wasCollapsed=ut,done=false;document.body.classList.add("eva-sider-edge-dragging");var move=function(e){if(done)return;var dx=e.clientX-sx;if(!wasCollapsed&&dx<=-24){done=true;pt(!0)}else if(wasCollapsed&&dx>=24){done=true;pt(!1)}};var up=function(){document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.body.classList.remove("eva-sider-edge-dragging")};document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)},onDoubleClick:function(){pt(!ut)}},React.createElement("span",{className:"eva-sider-edge__line","aria-hidden":true}))'
           ],
           [
             /* 宽度锁死在 180：min=max=defaultWidth。useResizableSplit 初始化时只采用

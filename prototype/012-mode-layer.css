@@ -470,6 +470,49 @@
   gap: 3px;
 }
 
+/* 主菜单右侧边线：极简两态拖拽/双击手柄。宽度锁死 180/80，边线只切换折叠/展开，
+ * 不改变宽度（拖拽逻辑见 009-7-patch-sider.js 的 .eva-sider-edge）。热区 12px 便于
+ * 抓取，可见线默认 2px 发丝；hover / 拖拽中加粗到 4px 并提亮为品牌色。 */
+.eva-sider-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -4px;
+  width: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.eva-sider-edge__line {
+  pointer-events: none;
+  position: absolute;
+  /* 上下缩进对齐工作区浮卡的直边（浮卡圆角 16px、底部留白 6px），避免线条在圆角处凸出 */
+  top: 16px;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  border-radius: 9999px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.eva-sider-edge:hover .eva-sider-edge__line,
+.eva-sider-edge-dragging .eva-sider-edge__line {
+  background: var(--eva-nav-accent, #3355cc);
+}
+
+.eva-sider-edge-dragging,
+.eva-sider-edge-dragging * {
+  cursor: col-resize !important;
+}
+
 .eva-nav-section.is-collapsed .eva-nav-entry {
   box-sizing: border-box;
   width: calc(100% - 4px);
