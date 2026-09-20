@@ -32,6 +32,12 @@
         const appearance=person.identityAppearance||(person.kind==='project-agent'?root.EvaAIIdentity.projectAgentAppearance():{name:person.name,avatar:person.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT});
         return h('span',{className:'eva-loop-task-create__identity'},ai?root.EvaAIIdentity.avatar(appearance,24,h):h('img',{src:root.EvaAvatar.personUri(person.id),alt:'',width:24,height:24}),h('span',null,person.name),ai&&root.EvaAIIdentity.badge(h));
       }
+      function filterPerson(inputValue,option){
+        const query=String(inputValue||'').trim().normalize('NFKC').toLocaleLowerCase();
+        if(!query)return true;
+        const person=candidates.find(item=>item.id===option.value);
+        return String(person?.name||'').normalize('NFKC').toLocaleLowerCase().includes(query);
+      }
       const close=()=>{if(!lock.current)onClose();};
       async function submit(){
         if(lock.current)return;
@@ -90,7 +96,7 @@
               h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
               h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
               h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||'')}),
-              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')}),
+              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),filter:filterPerson,emptyContent:'没有匹配的指派人',placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')}),
               h(Select,{className:'eva-loop-task-create__assignee eva-loop-task-create__source',value:form.source||undefined,optionList:sourceCandidates.map(person=>({value:person.id,label:identity(person)})),placeholder:'来源者（必选）','aria-label':'来源者',showClear:false,disabled,getPopupContainer:popup,onChange:value=>patch('source',value||'')})),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),

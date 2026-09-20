@@ -55,6 +55,15 @@ test('AI assignment stays todo and human avatars use stable identity ids',async(
   const h=harness();h.fill();const label=h.find('执行负责人').props.optionList[0].label;assert.equal(label.children[0].props.src,'avatar:u1');
   h.find('执行负责人').props.onChange('c1');h.render();await h.button('创建').props.onClick();assert.equal(h.calls[0].assignee_type,'agent');assert.equal(h.calls[0].status,'todo');
 });
+test('新建任务负责人支持输入即按姓名筛选',()=>{
+  const h=harness();const picker=h.find('执行负责人'),options=picker.props.optionList;
+  assert.equal(typeof picker.props.filter,'function');
+  assert.equal(picker.props.emptyContent,'没有匹配的指派人');
+  assert.equal(picker.props.filter('甲',options[0]),true);
+  assert.equal(picker.props.filter('分身',options[1]),true);
+  assert.equal(picker.props.filter('不存在',options[0]),false);
+  assert.equal(picker.props.filter('  甲  ',options[0]),true);
+});
 test('原版创建布局保留外层项目路径且没有旧 Loop 项目选择器',()=>{
   const h=harness();assert.ok(h.all().some(n=>n.props.className==='loop-ci__crumb-ws'&&n.children.includes('供应链')));
   assert.ok(h.all().some(n=>n.props.className==='loop-ci__footer'));
