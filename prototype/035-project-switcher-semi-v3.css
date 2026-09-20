@@ -4,13 +4,15 @@
     padding-inline: 28px;
   }
 
-  /* 「全部项目」收敛为主页图标按钮，置于项目切换器左侧：与切换器构成
-     「全局入口 + 当前项目」相邻控件组，页签顺延其后（容器 gap 14px，
-     用负 margin 收紧组内间距到 8px）。默认态复用切换器非 hover 的胶囊
-     观感（填充成形 + 细边框描形）；图标按钮视觉质量比文字轻，描边让它
-     在组内立得住。hover 加深填充并提亮图标——它是全局导航动作而非
-     项目身份，故不引入项目主题色，与切换器的项目色 hover 形成分工。 */
-  .eva-project-directory-button.semi-button {
+  /* 「全部项目」收敛为主页图标按钮，置于项目切换器左侧成组。默认态采用
+     切换器 hover 的项目色 tint 观感（accent 12% 填充 + 26% 描边），与切换器
+     同族呼应，等高等尺寸（32px 见方、7px 圆角）；hover/active 沿同一 tint
+     ramp 加深。它是全局导航动作：容器借项目色描形，图标保持中性、hover
+     仅提亮。特异度须压过 vendor
+     .semi-button.semi-button-with-icon-only.semi-button-size-small（0,3,0，
+     会把图标按钮压成 24×24），故带 .collab-tabs 作用域拉到 (0,3,0) 且后加载。
+     容器 gap 14px 用负 margin 收紧组内间距到 8px。 */
+  .collab-tabs .eva-project-directory-button.semi-button {
     flex: none;
     margin-right: -6px;
     margin-bottom: 2px;
@@ -20,33 +22,34 @@
     width: 32px;
     min-width: 32px;
     height: 32px;
+    min-height: 32px;
     padding: 0;
-    border: 1px solid var(--semi-color-border);
+    border: 1px solid color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 26%, transparent);
     border-radius: 7px;
-    background: var(--semi-color-fill-1);
+    background: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 12%, var(--semi-color-bg-0, #fff));
     color: var(--semi-color-text-2);
     transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
 
-  .eva-project-directory-button.semi-button .semi-icon,
-  .eva-project-directory-button.semi-button svg {
+  .collab-tabs .eva-project-directory-button.semi-button .semi-icon,
+  .collab-tabs .eva-project-directory-button.semi-button svg {
     display: block;
     flex: none;
     margin: 0;
   }
 
-  /* hover：填充加深一档、图标提亮，边框保持——反馈集中在面上，不加噪 */
-  .eva-project-directory-button.semi-button:hover {
+  /* hover/active：同一 tint ramp 加深一档，图标提亮，不加边框噪 */
+  .collab-tabs .eva-project-directory-button.semi-button:hover {
     color: var(--semi-color-text-0);
-    background: var(--semi-color-fill-2);
-    border-color: var(--semi-color-border);
+    background: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 18%, var(--semi-color-bg-0, #fff));
+    border-color: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 38%, transparent);
   }
-  .eva-project-directory-button.semi-button:active {
+  .collab-tabs .eva-project-directory-button.semi-button:active {
     color: var(--semi-color-text-0);
-    background: var(--semi-color-fill-2);
-    border-color: var(--semi-color-border);
+    background: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 24%, var(--semi-color-bg-0, #fff));
+    border-color: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 46%, transparent);
   }
-  .eva-project-directory-button.semi-button:focus-visible {
+  .collab-tabs .eva-project-directory-button.semi-button:focus-visible {
     outline: var(--eva-border-focus-w, 2px) solid var(--eva-border-focus);
     outline-offset: 2px;
   }
