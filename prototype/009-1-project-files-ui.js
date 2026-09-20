@@ -12,7 +12,6 @@
       const aliases={link:'link-2',file:'file-text',sheet:'file-spreadsheet',drive:'hard-drive',workspace:'layout-grid',task:'list-checks',automation:'cpu',arrow:'chevron-down',chevron:'chevron-right',external:'external-link',more:'ellipsis'};
       return h('span',{className:'eva-lucide-host',dangerouslySetInnerHTML:{__html:window.__evaLucide(aliases[name]||name,{className:'eva-drive-icon'})}});
     };
-    const roleLabel=role=>role==='owner'?'Owner':role==='manager'?'Manager':'Editor';
     const isExternalFolder=item=>item.type==='external_link'&&item.external?.kind==='folder';
     const fileIcon=item=>item.type==='folder'||isExternalFolder(item)?'folder':item.type==='external_link'?'link':['xlsx','xls','csv'].includes(item.extension)?'sheet':'file';
     const markClass=item=>item.type==='folder'?'is-folder':isExternalFolder(item)?'is-external-folder':item.type==='external_link'?'is-external-link':item.type==='shortcut'?'is-shortcut':item.extension==='pdf'?'is-pdf':['doc','docx'].includes(item.extension)?'is-word':['xlsx','xls','csv'].includes(item.extension)?'is-sheet':['ppt','pptx'].includes(item.extension)?'is-presentation':['zip','rar','7z','tar','gz'].includes(item.extension)?'is-archive':['md','markdown'].includes(item.extension)?'is-markdown':'';
@@ -49,7 +48,6 @@
       useSyncExternalStore(context.store.subscribe,context.store.getSnapshot);
       const actor=context.store.snapshot().actorId;
       const revision=useSyncExternalStore(context.files.subscribe,context.files.getSnapshot);
-      const role=context.files.role(projectId,actor)||'editor';
       const canTrash=context.files.can('trash',projectId,actor);
       const canViewTrash=context.files.can('view-trash',projectId,actor);
       const fileType=item=>context.files.fileTypeFor(item,actor);
@@ -418,11 +416,6 @@
       };
 
       return h('section',{className:'eva-project-files'},
-        h('header',{className:'eva-project-files__header'},
-          h('div',null,h('h1',null,trashMode?'回收站':'团队文件'),h('p',null,trashMode?'仅 Owner、Manager 可以恢复或永久删除当前项目文件':'任务产出、群文件与外部协作入口在这里统一沉淀')),
-          h('span',{className:'eva-file-role-badge',title:'当前项目文件角色'},roleLabel(role)),
-          trashMode?h('button',{className:'eva-drive__text-button',type:'button',onClick:()=>{setTrashMode(false);setSelectedId(null);}},'返回团队文件'):canViewTrash?h('button',{className:'eva-drive__text-button',type:'button',onClick:()=>{setTrashMode(true);setParentId(0);setCrumbs([]);setSelectedId(null);}},'回收站'):null
-        ),
         h('div',{className:'eva-project-files__toolbar'},
           !trashMode?h(R.Fragment,null,
             h('button',{className:'eva-drive__action',type:'button',onClick:()=>setDialog({type:'new-folder',value:''})},'新建文件夹'),
@@ -436,6 +429,7 @@
             h('button',{className:'eva-drive__action eva-drive__action--primary',type:'button',onClick:()=>uploadInput.current?.click()},'上传本地文件'),
             h('input',{ref:uploadInput,id:'eva-project-files-upload',name:'projectFiles',type:'file',multiple:true,hidden:true,onChange:event=>{Array.from(event.target.files||[]).forEach(file=>context.files.upload(actor,projectId,file,parentId));event.target.value='';}})
           ):null,
+          trashMode?h('button',{className:'eva-drive__text-button eva-project-files__trash-toggle',type:'button',onClick:()=>{setTrashMode(false);setSelectedId(null);}},'返回团队文件'):canViewTrash?h('button',{className:'eva-drive__text-button eva-project-files__trash-toggle',type:'button',onClick:()=>{setTrashMode(true);setParentId(0);setCrumbs([]);setSelectedId(null);}},'回收站'):null,
           h('label',{className:'eva-drive__side-search'},icon('search'),h('input',{id:'eva-project-files-search',name:'projectFileSearch',type:'search',value:query,onChange:event=>setQuery(event.target.value),placeholder:'搜索当前项目'}))
         ),
         !trashMode&&crumbs.length?h('div',{className:'eva-drive__pathbar'},

@@ -2133,7 +2133,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   color: var(--gds-color-text-primary, #1e1e1e);
   background: var(--gds-color-surface-primary, #fff);
 }
@@ -2142,63 +2142,24 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   grid-template-columns: minmax(0, 1fr) minmax(0, var(--eva-file-preview-current, clamp(336px, 38%, 480px)));
 }
 
-.eva-project-files__header {
+.eva-project-files__toolbar {
   grid-column: 1;
   grid-row: 1;
 }
 
-.eva-project-files__toolbar {
+.eva-project-files > .eva-drive__pathbar {
   grid-column: 1;
   grid-row: 2;
 }
 
-.eva-project-files > .eva-drive__pathbar {
-  grid-column: 1;
-  grid-row: 3;
-}
-
 .eva-project-files__content {
   grid-column: 1;
-  grid-row: 4;
+  grid-row: 3;
 }
 
 .eva-project-file-preview-sidebar {
   grid-column: 2;
   grid-row: 1 / -1;
-}
-
-.eva-project-files__header {
-  min-height: 72px;
-  padding: 16px 24px 10px;
-  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.eva-project-files__header > div:first-child {
-  min-width: 0;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.eva-project-files__header h1 {
-  margin: 0;
-  color: var(--gds-color-text-strong, #1e1e1e);
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: var(--gds-font-weight-semibold, 600);
-}
-
-.eva-project-files__header p {
-  margin: 1px 0 0;
-  overflow: hidden;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: var(--gds-type-caption-font-size, 12px);
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .eva-project-files__toolbar {
@@ -2210,6 +2171,15 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.eva-project-files__trash-toggle {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.eva-project-files__trash-toggle + .eva-drive__side-search {
+  margin-left: 0;
 }
 
 .eva-project-files__content {
