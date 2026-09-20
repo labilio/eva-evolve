@@ -27,7 +27,10 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
       await page.locator('.loop-idp__prop--labels').waitFor();
     };
     const closeTask=async()=>{
-      await page.locator('.collab-route-right').getByRole('button',{name:'看板',exact:true}).click();
+      await page.locator('.collab-route-right .loop-idp__closebtn').click();
+      // 任务详情已改为右滑抽屉，关闭带滑出动画（RouteRightHost 保留末屏约 240ms）。
+      // 等抽屉真正卸载后再继续，避免残留的面包屑标题与列表卡片文本冲突。
+      await page.locator('.collab-route-right').waitFor({state:'detached'});
       await page.locator('.loop-board').waitFor();
     };
 
