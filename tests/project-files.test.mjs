@@ -57,7 +57,10 @@ test('文件库使用与项目文件一致的单行工具栏并在两个入口�
   const projectToolbar=project.slice(projectToolbarStart,projectToolbarEnd);
   assert.ok(projectToolbar.includes("'回收站'"));
   assert.ok(projectToolbar.indexOf("'回收站'")<projectToolbar.indexOf("eva-drive__side-search"));
+  assert.match(projectToolbar,/className:'eva-iconbtn eva-project-files__trash-toggle'[^}]*'aria-label':'回收站'[^}]*title:'回收站'/);
+  assert.match(projectToolbar,/icon\('trash-2'\)/);
   assert.match(styles,/\.eva-project-files__trash-toggle\s*\{[^}]*margin-left:\s*auto;/);
+  assert.match(styles,/\.eva-project-files__trash-toggle\.eva-iconbtn \.eva-drive-icon\s*\{[^}]*width:\s*var\(--gds-icon-size-content, 16px\);[^}]*height:\s*var\(--gds-icon-size-content, 16px\);/);
   assert.doesNotMatch(styles,/\.eva-project-files__header/);
 
   const driveTimeStart=drive.indexOf('  function formatDriveTime('),driveTimeEnd=drive.indexOf('  function scopeSpaceId()',driveTimeStart);

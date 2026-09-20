@@ -130,6 +130,32 @@ test('文件库工具栏与项目文件按钮一致，项目回收站位于搜�
   assert.equal(await page.locator('.eva-file-role-badge').count(), 0, '删除 head 后不应残留孤立的角色徽标');
   const trashButton = projectToolbar.getByRole('button', { name: '回收站', exact: true });
   await trashButton.waitFor();
+  const trashAppearance = await trashButton.evaluate(button => {
+    const buttonRect = button.getBoundingClientRect();
+    const iconRect = button.querySelector('.eva-drive-icon').getBoundingClientRect();
+    const style = getComputedStyle(button);
+    return {
+      width: buttonRect.width,
+      height: buttonRect.height,
+      iconWidth: iconRect.width,
+      iconHeight: iconRect.height,
+      radius: style.borderRadius,
+      text: button.textContent.trim(),
+    };
+  });
+  assert.deepEqual(trashAppearance, { width: 32, height: 32, iconWidth: 16, iconHeight: 16, radius: '8px', text: '' }, '回收站使用 GDS 32px 图标按钮与 16px Lucide 图标');
+  await trashButton.hover();
+  assert.notEqual(await trashButton.evaluate(button => getComputedStyle(button).backgroundColor), 'rgba(0, 0, 0, 0)', '回收站悬停应显示公共低强调背景');
+  await projectToolbar.getByRole('button', { name: '上传本地文件', exact: true }).focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await trashButton.evaluate(button => button === document.activeElement), true, 'Tab 应从上传操作进入回收站图标按钮');
+  const trashFocus = await trashButton.evaluate(button => {
+    const style = getComputedStyle(button);
+    return { outlineWidth: style.outlineWidth, outlineColor: style.outlineColor, outlineOffset: style.outlineOffset };
+  });
+  assert.equal(trashFocus.outlineWidth, '2px');
+  assert.equal(trashFocus.outlineColor, 'rgb(21, 99, 235)');
+  assert.equal(trashFocus.outlineOffset, '2px');
   const projectGeometry = await projectToolbar.evaluate(toolbar => {
     const trash = toolbar.querySelector('.eva-project-files__trash-toggle').getBoundingClientRect();
     const searchField = toolbar.querySelector('.eva-drive__side-search').getBoundingClientRect();

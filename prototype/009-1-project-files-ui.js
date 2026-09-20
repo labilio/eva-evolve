@@ -429,7 +429,7 @@
             h('button',{className:'eva-drive__action eva-drive__action--primary',type:'button',onClick:()=>uploadInput.current?.click()},'上传本地文件'),
             h('input',{ref:uploadInput,id:'eva-project-files-upload',name:'projectFiles',type:'file',multiple:true,hidden:true,onChange:event=>{Array.from(event.target.files||[]).forEach(file=>context.files.upload(actor,projectId,file,parentId));event.target.value='';}})
           ):null,
-          trashMode?h('button',{className:'eva-drive__text-button eva-project-files__trash-toggle',type:'button',onClick:()=>{setTrashMode(false);setSelectedId(null);}},'返回团队文件'):canViewTrash?h('button',{className:'eva-drive__text-button eva-project-files__trash-toggle',type:'button',onClick:()=>{setTrashMode(true);setParentId(0);setCrumbs([]);setSelectedId(null);}},'回收站'):null,
+          trashMode?h('button',{className:'eva-drive__text-button eva-project-files__trash-toggle',type:'button',onClick:()=>{setTrashMode(false);setSelectedId(null);}},'返回团队文件'):canViewTrash?h('button',{className:'eva-iconbtn eva-project-files__trash-toggle',type:'button','aria-label':'回收站',title:'回收站',onClick:()=>{setTrashMode(true);setParentId(0);setCrumbs([]);setSelectedId(null);}},icon('trash-2')):null,
           h('label',{className:'eva-drive__side-search'},icon('search'),h('input',{id:'eva-project-files-search',name:'projectFileSearch',type:'search',value:query,onChange:event=>setQuery(event.target.value),placeholder:'搜索当前项目'}))
         ),
         !trashMode&&crumbs.length?h('div',{className:'eva-drive__pathbar'},

@@ -2178,6 +2178,11 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   white-space: nowrap;
 }
 
+.eva-project-files__trash-toggle.eva-iconbtn .eva-drive-icon {
+  width: var(--gds-icon-size-content, 16px);
+  height: var(--gds-icon-size-content, 16px);
+}
+
 .eva-project-files__trash-toggle + .eva-drive__side-search {
   margin-left: 0;
 }
