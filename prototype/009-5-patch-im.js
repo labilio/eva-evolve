@@ -1099,7 +1099,7 @@ function EvaThreadList({group,active,archived,hidden,store,actorId,onOpen,onCrea
        h(Dropdown.Item,{onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:!prefs.hidden})},prefs.hidden?'恢复显示':'隐藏子区'),
        h(Dropdown.Item,{onClick:()=>onArchive(thread)},thread.status===2?'取消归档':'归档子区'))},h(Button,{theme:'borderless',size:'small',icon:h(Ellipsis,{size:16}),'aria-label':'子区操作 '+thread.name}))),
      h('button',{type:'button',className:'eva-thread-list-summary',onClick:()=>onOpen(thread.id)},thread.last_message_content?(thread.last_message_sender_name?thread.last_message_sender_name+'：':'')+thread.last_message_content:'暂无消息'),
-     h('div',{className:'eva-thread-list-meta'},h('span',null,(thread.message_count||0)+' 条回复 · '+(thread.member_count||0)+' 人参与'),tab==='hidden'&&thread.status===2&&h('span',null,'已归档'),h('time',null,formatRelativeTime(thread.updated_at))),
+     h('div',{className:'eva-thread-list-meta'},h('span',null,(thread.message_count||0)+' 条回复'),tab==='hidden'&&thread.status===2&&h('span',null,'已归档'),h('time',null,formatRelativeTime(thread.updated_at))),
      tab==='hidden'&&h(Button,{theme:'borderless',size:'small',className:'eva-thread-list-restore',onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:false})},'恢复显示'));
    }):h('p',{className:'eva-thread-list-empty'},tab==='active'?'暂无活跃子区':tab==='archived'?'暂无已归档子区':'暂无已隐藏子区'))));
 }
@@ -1518,6 +1518,7 @@ function EvaAITeamPage() {
     const evaThreadEnd=evaOldInfo.indexOf(':React.createElement("div",{className:"ch-right-panel__body"},React.createElement("div",{className:"ch-info-members"}');
     if(evaThreadStart<0||evaThreadEnd<0)throw new Error('Thread settings boundary changed');
     let evaThreadBody=root.__evaCut(evaOldInfo.slice(evaThreadStart+3,evaThreadEnd),',React.createElement(InfoRow,{label:"GROUP.md",value:"未配置"})','','Remove unsupported thread GROUP.md placeholder');
+    evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(InfoRow,{label:"参与人数",value:`${fa.member_count} 人`}),','','子区信息移除参与人数');
     // Use the same Octo settings rows and card shell as group/direct settings.
     evaThreadBody=evaThreadBody.replaceAll('className:"ch-right-panel__body"','className:"eva-chat-settings-body"')
       .replaceAll('className:"ch-info-group"','className:"eva-chat-setting-section"')
@@ -1525,8 +1526,7 @@ function EvaAITeamPage() {
       .replaceAll('className:"ch-info-row"','className:"eva-chat-setting-row"')
       .replaceAll('className:"lb"','className:"eva-thread-setting-label"')
       .replaceAll('className:"vl"','className:"eva-chat-setting-value"')
-      .replace('value:fa.creator_name','value:fa.creator_name||"未记录"')
-      .replace('value:`${fa.member_count} 人`','value:Number.isFinite(fa.member_count)?`${fa.member_count} 人`:"未记录"');
+      .replace('value:fa.creator_name','value:fa.creator_name||"未记录"');
     const evaParentGroupRow='React.createElement(evaMembers().ui.ChatSettings.Row,{title:"所属群聊",value:React.createElement("span",{className:"eva-thread-parent-group"},React.createElement("img",{className:"eva-chat-group-avatar",src:window.EvaAvatar.groupUri(Sa.id,Sa.color),alt:"",draggable:!1}),React.createElement("span",{className:"eva-thread-parent-group-name",title:Sa.name},Sa.name)),onClick:()=>La(Sa.id)})';
     evaThreadBody=root.__evaCut(evaThreadBody,
       'React.createElement(evaMembers().ui.ChatSettings.Row,{title:"所属群聊",value:Sa.name}),',
@@ -1534,8 +1534,8 @@ function EvaAITeamPage() {
       '子区信息所属群聊移出原分区');
     evaThreadBody=root.__evaCut(evaThreadBody,
       'React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:"子区名称"',
-      'React.createElement("div",{className:"eva-chat-setting-section"},'+evaParentGroupRow+'),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:"子区名称"',
-      '子区信息所属群聊独立置顶');
+      'React.createElement(evaMembers().ui.ChatSettings.ThreadMembers,{groupId:Sa.id,actorId:evaActorId}),React.createElement("div",{className:"eva-chat-setting-section"},'+evaParentGroupRow+'),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:"子区名称"',
+      '子区信息成员区置顶、所属群聊紧随其后');
     evaThreadBody=root.__evaCut(evaThreadBody,',React.createElement(evaMembers().ui.ChatSettings.Row,{title:"离开子区",danger:!0,onClick:()=>Nt(null)}),React.createElement(evaMembers().ui.ChatSettings.Row,{title:"删除子区",danger:!0,onClick:()=>Ia(fa)})','','子区信息底部只保留归档');
     const threadToggle=field=>`React.createElement(evaMembers().ui.ChatSettings.Row,{title:"${field==='top'?'置顶子区':'隐藏子区'}",value:React.createElement(Switch,{size:"small","aria-label":"${field==='top'?'置顶子区':'隐藏子区'}",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).${field},onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{${field}:checked})})})`;
     evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(Switch,{size:"small"})))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','React.createElement(Switch,{size:"small"}))),'+threadToggle('top')+','+threadToggle('hidden')+',!!evaMemberStore.chatPreferences(fa.id,evaActorId).hidden&&React.createElement(\"div\",{className:\"eva-thread-mention-option\"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:\"被 @ 时自动取消隐藏\",value:React.createElement(Switch,{size:\"small\",\"aria-label\":\"被 @ 时自动取消隐藏\",checked:!!evaMemberStore.chatPreferences(fa.id,evaActorId).restoreOnMention,onChange:checked=>evaMemberStore.setChatPreferences(fa.id,evaActorId,{restoreOnMention:checked})})}))),React.createElement("div",{className:"eva-chat-setting-section"},React.createElement(evaMembers().ui.ChatSettings.Row,{title:fa.status===1?','子区个人开关同组，归档单独分区');
@@ -1664,7 +1664,7 @@ function EvaAITeamPage() {
     cut('fa?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}',
       'fa&&ct?.presentation!=="ai-direct"?React.createElement("div",{className:"wk-chat-conversation-header-channel-thread-icon"}', 'AI topic keeps identity avatar');
     cut('React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"},fa&&ct?.presentation!=="ai-direct"?',
-      'React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"+(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")?" is-settings-trigger":""),...(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")?{role:"button",tabIndex:0,title:"聊天信息","aria-label":"打开聊天信息",onClick:()=>Dt(value=>value==="info"?"none":"info"),onKeyDown:event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();Dt(value=>value==="info"?"none":"info")}}}:{})},fa&&ct?.presentation!=="ai-direct"?', 'group avatar reuses chat information panel');
+      'React.createElement("div",{className:"wk-chat-conversation-header-channel-avatar"+(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")||fa&&ct?.presentation!=="ai-direct"?" is-settings-trigger":""),...(!fa&&Sa.chatType!=="direct"&&!Sa.id.startsWith("dm-")||fa&&ct?.presentation!=="ai-direct"?{role:"button",tabIndex:0,title:fa?"子区信息":"聊天信息","aria-label":fa?"打开子区信息":"打开聊天信息",onClick:()=>Dt(value=>value==="info"?"none":"info"),onKeyDown:event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();Dt(value=>value==="info"?"none":"info")}}}:{})},fa&&ct?.presentation!=="ai-direct"?', 'avatar opens settings of the current level');
     cut('fa?React.createElement("span",{className:"wk-chat-conversation-header-channel-info-name wk-chat-conversation-header-channel-info-name--thread"}',
       'fa&&ct?.presentation!=="ai-direct"?React.createElement("span",{className:"wk-chat-conversation-header-channel-info-name wk-chat-conversation-header-channel-info-name--thread"}', 'AI topic keeps direct title');
     cut('title:fa?"子区信息":"聊天信息"', 'title:fa&&ct?.presentation!=="ai-direct"?"子区信息":"聊天信息"', 'AI direct info label');

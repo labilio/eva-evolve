@@ -81,3 +81,22 @@ test('群聊文件卡和历史消息缺少可选字段时不会导致消息页�
   assert.ok(runtime.includes('ci=evaRenderableMessage(ci);if(ci.kind==="divider")'), '归一化没有接入消息渲染入口');
   assert.ok(runtime.includes('SENDERS[zs]?.color??"#8a8f99"'), '未知子区参与者仍会导致头像渲染异常');
 });
+
+test('子区信息成员区置顶且在父群之上，只读且头像按当前层级打开设置', () => {
+  const settings = fs.readFileSync('prototype/009-2-chat-settings.js', 'utf8');
+  const runtime = createPatchedRuntime().source;
+
+  assert.match(settings, /function ThreadMembers\(\{groupId,actorId\}\)/, '子区成员区组件缺失');
+  assert.match(settings, /ChatSettings\.ThreadMembers=ThreadMembers;/, '子区成员区未挂到公共设置组件');
+  assert.match(settings, /'子区继承所属群聊的成员与角色，不能单独增删。'/, '子区成员区缺少只读说明');
+  assert.doesNotMatch(settings.slice(settings.indexOf('function ThreadMembers'), settings.indexOf('ChatSettings.ThreadMembers=ThreadMembers;')), /setPicker\('add'\)|MemberPicker|先将其加入项目/, '子区成员区不应提供增删入口');
+  assert.match(settings, /className:'eva-chat-settings eva-thread-members-page'/, '子区成员页未复用聊天信息页面外壳');
+  assert.match(settings, /'群聊成员（'\+members\.length\+'）'/, '子区成员页标题未沿用原样式');
+  assert.match(settings, /eva-chat-member-search-block/, '子区成员页缺少搜索区');
+  assert.doesNotMatch(settings.slice(settings.indexOf('function ThreadMembers'), settings.indexOf('ChatSettings.ThreadMembers=ThreadMembers;')), /'移除'|removeButton|eva-chat-member-add|eva-members-modal/, '子区成员页不应提供增删改或弹窗');
+
+  assert.match(runtime, /ChatSettings\.ThreadMembers,\{groupId:Sa\.id,actorId:evaActorId\}\),React\.createElement\("div",\{className:"eva-chat-setting-section"\},React\.createElement\(evaMembers\(\)\.ui\.ChatSettings\.Row,\{title:"所属群聊"/, '子区成员区未置于所属群聊之上');
+  assert.match(runtime, /wk-chat-conversation-header-channel-avatar"\+\(!fa&&Sa\.chatType!=="direct"&&!Sa\.id\.startsWith\("dm-"\)\|\|fa&&ct\?\.presentation!=="ai-direct"/, '子区头像未打开子区信息');
+  assert.doesNotMatch(runtime, /title:"参与人数"/, '子区信息不应再显示参与人数');
+  assert.doesNotMatch(runtime, /' 条回复 · '/, '子区列表不应再显示参与人数');
+});

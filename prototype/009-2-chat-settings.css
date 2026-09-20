@@ -121,3 +121,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-thread-list-pin{flex-shrink:0;font-size:12px;line-height:18px;font-weight:400;color:var(--semi-color-text-2)}
 .eva-thread-mention-option .eva-chat-setting-row{padding-left:32px;font-size:12px;color:var(--semi-color-text-2)}
 .eva-thread-settings .eva-chat-settings-body{padding-bottom:64px}
+/* Thread full member list reuses the group member page shell, read-only. */
+.eva-thread-settings{position:relative}
+.eva-thread-members-page{position:absolute;inset:0;z-index:1}
+.eva-thread-settings .eva-thread-members-page .eva-chat-settings-body{background:var(--wk-bg-base,#fff);padding-bottom:16px}
