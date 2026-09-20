@@ -370,7 +370,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.match(aiTeamCss, /\.eva-ai-team__assistant-avatar\s*\{[^}]*width:\s*32px[^}]*height:\s*32px/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__unread-dot,[^}]*focus-within \.eva-ai-team__unread-dot,[^}]*is-active\) \.eva-ai-team__unread-dot\s*\{\s*opacity:\s*0/s);
   assert.match(tokens, /--eva-unread-indicator:\s*var\(--eva-c-mac-red\)/);
-  assert.match(modeCss, /\.eva-my-ai-collaboration-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);
+  assert.match(modeCss, /\.eva-nav-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-title\s*\{[^}]*flex:\s*1/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
@@ -475,7 +475,8 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
   assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:rt\.collapsed\?"Agent":"我的 Agent"/);
-  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+eva-my-ai-collaboration-icon__unread/s);
+  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+EvaNavIcon\(React\.createElement\(EvaBoxesIcon/s);
+  assert.match(sider, /EvaNavIcon=\(rt,ct,ut\)=>React\.createElement\("span",\{className:"eva-nav-icon"\},rt,ct&&React\.createElement\("span",\{className:"eva-nav-icon__unread"/);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
   assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
   assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);

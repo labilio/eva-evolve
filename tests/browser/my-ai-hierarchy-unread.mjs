@@ -149,7 +149,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await more.click();
     assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3);
 
-    assert.ok(await page.locator('.eva-my-ai-collaboration-icon__unread').count() > 0, '左侧导航聚合未读红点');
+    assert.ok(await page.locator('.eva-nav-icon__unread').count() > 0, '左侧导航聚合未读红点');
     assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '团队父级聚合红点');
     await systemTeam.locator('.eva-ai-team__team-button').click();
     assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '主会话已读后仍聚合未读子区');
@@ -193,13 +193,13 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
         groups.source(group.id, []).channels[0].threads.forEach(thread => groups.markRead(group.id, thread.id));
       });
     });
-    await page.locator('.eva-my-ai-collaboration-icon__unread').waitFor({ state: 'detached' });
+    await page.locator('.eva-nav-icon__unread').waitFor({ state: 'detached' });
 
     const editor = page.getByRole('textbox', { name: /^发送给 / });
     await editor.fill('当前会话未读回归');
     await page.getByRole('button', { name: '发送', exact: true }).click();
     await page.locator('.eva-im-bubble-row').getByText('当前会话未读回归', { exact: true }).waitFor();
-    assert.equal(await page.locator('.eva-my-ai-collaboration-icon__unread').count(), 0, '当前会话同步回复不会产生幽灵未读');
+    assert.equal(await page.locator('.eva-nav-icon__unread').count(), 0, '当前会话同步回复不会产生幽灵未读');
     assert.equal(await page.locator('.eva-ai-team__session-unread').count(), 0);
     const viewport = await page.evaluate(() => ({
       scrollX: window.scrollX,

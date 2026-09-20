@@ -506,11 +506,6 @@
   height: 20px !important;
 }
 
-.eva-nav-section.is-collapsed .eva-my-ai-collaboration-icon__ring {
-  width: 14px !important;
-  height: 14px !important;
-}
-
 .eva-nav-section.is-collapsed .eva-nav-entry [class*="text-14px"] {
   display: block;
   max-width: 100%;
@@ -578,22 +573,16 @@
   white-space: nowrap;
 }
 
-.eva-my-ai-collaboration-icon {
-  width: var(--eva-icon-nav);
-  height: var(--eva-icon-nav);
-  flex: 0 0 var(--eva-icon-nav);
-  display: block;
-}
-
-.eva-my-ai-collaboration-icon-wrap {
+/* 一级导航图标槽：图标尺寸统一由 .eva-nav-entry svg.lucide（--eva-icon-nav）控制，
+   容器只负责未读红点的定位；禁止在单个入口写死图标尺寸。 */
+.eva-nav-icon {
   position: relative;
   display: inline-flex;
-  width: var(--eva-icon-nav);
-  height: var(--eva-icon-nav);
-  flex: 0 0 var(--eva-icon-nav);
+  align-items: center;
+  justify-content: center;
 }
 
-.eva-my-ai-collaboration-icon__unread {
+.eva-nav-icon__unread {
   position: absolute;
   top: 0;
   right: -1px;
@@ -602,6 +591,7 @@
   border-radius: 50%;
   background: var(--eva-unread-indicator);
   box-shadow: 0 0 0 2px var(--eva-surface-primary);
+  pointer-events: none;
 }
 
 .eva-personal-entry.is-collapsed {
@@ -1175,25 +1165,5 @@
 .eva-nav-more-menu .eva-nav-section + .eva-nav-section { margin-top: 8px; }
 .eva-nav-more-menu .eva-nav-section__title { height: 24px; padding: 0 8px; }
 
-/* 「我的消息」未读红点：展开态贴按钮容器右侧，折叠态落在图标右上角；
-   数据源为团队 IM 会话（009-7 evaMessagesHasUnread 聚合），沿用公共未读语义色。 */
-/* 未读红点：始终贴在图标右上角（展开／折叠一致）。图标由 .eva-nav-msg-iconwrap 包裹定位。 */
-.eva-nav-msg-unread {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--eva-unread-indicator);
-  pointer-events: none;
-}
-.eva-nav-msg-iconwrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.eva-nav-msg-unread--icon {
-  position: absolute;
-  top: -2px;
-  right: -3px;
-  box-shadow: 0 0 0 2px var(--eva-nav-surface);
-}
+/* 未读红点统一由 .eva-nav-icon__unread 承担（见上方图标槽），所有入口共用同一容器；
+   数据源仍为团队 IM 会话聚合（009-7 evaMessagesHasUnread）。 */

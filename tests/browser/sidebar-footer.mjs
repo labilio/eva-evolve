@@ -129,7 +129,7 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
   const iconSnapshot=await page.evaluate(()=>[...document.querySelectorAll('.eva-nav-entry')].map(entry=>({
     id:entry.dataset.evaNavId,
     lucide:entry.querySelector('svg.lucide')?.getAttribute('class')||'',
-    agentAsset:entry.querySelector('.eva-my-ai-collaboration-icon')?.getAttribute('src')||'',
+    agentAsset:entry.querySelector('.eva-nav-icon img')?.getAttribute('src')||'',
     personalAvatar:entry.querySelector('.eva-personal-entry__logo img')?.getAttribute('src')||'',
   })));
   assert.equal(iconSnapshot.length,11);
