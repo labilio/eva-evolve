@@ -64,7 +64,7 @@
     identity: typeof value?.identity === 'string' ? value.identity : '通用助理',
     personality: typeof value?.personality === 'string' ? value.personality : '清晰、友善',
     skills: Array.isArray(value?.skills) ? value.skills.filter(x => typeof x === 'string') : [],
-    avatar: typeof value?.avatar === 'string' && /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/.test(value.avatar.trim()) ? value.avatar.trim() : ''
+    avatar: typeof value?.avatar === 'string' && /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+|data:image\/svg\+xml;utf8,[^\s<>"]+)$/.test(value.avatar.trim()) ? value.avatar.trim() : ''
   });
   const makeIdentity = (id, role, name, local, time) => ({
     id, role, name, sourceAssistantId: local.id,
@@ -434,6 +434,22 @@
       state.identities.filter(i => i.role === 'persona' && i.sourceAssistantId === local.id).forEach(i => { syncPersona(i.id).catch(() => {}); });
       return freeze(copy(local));
     }
+    // Only the local assistant's own portrait changes here; name and prompt fields keep their own flow.
+    function setAssistantAvatar(identityId, value) {
+      const identity = identityById(identityId);
+      if (identity.role !== 'assistant') throw new Error('只能编辑个人助理头像');
+      const raw = typeof value === 'string' ? value.trim() : '';
+      if (raw && !configuration({ avatar: raw }).avatar) throw new Error('头像数据无效，请重新选择');
+      const avatar = raw;
+      identity.configuration = { ...identity.configuration, avatar };
+      const local = state.localAssistants.find(l => l.id === identity.sourceAssistantId);
+      if (local) {
+        local.configuration = configuration({ ...local.configuration, avatar });
+        local.version++;
+        identity.configVersion = local.version;
+      }
+      publish();
+    }
     function setLocalOnline(sourceId, online) {
       if (typeof online !== 'boolean') throw new Error('无效在线状态');
       const local = localById(sourceId); local.online = online;
@@ -528,7 +544,7 @@
       if(!session)return false;
       const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self',name:'我',color:message.sender?.color||'#1563EB',ai:false}})));session.updatedAt=time;publish();return true;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的AI团队”动态包含所有 AI；自定义团队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {

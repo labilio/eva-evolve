@@ -30,7 +30,14 @@
       }
     }
     const cloneName=c=>{const owner=state.people.find(p=>p.id===c.ownerId);return root.EvaAIIdentity?.cloneName?root.EvaAIIdentity.cloneName(owner):(owner?.name||'未知成员')+'的 AI 分身';};
-    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:root.__EVA_COLLEAGUE_PORTRAIT});
+    const cloneView=c=>c&&({...c,name:cloneName(c),avatar:c.avatar||root.__EVA_COLLEAGUE_PORTRAIT});
+    // One validator for every editable identity portrait (human, clone, assistant).
+    const avatarValue=value=>{
+      const text=typeof value==='string'?value.trim():'';
+      if(!text)return '';
+      if(!/^(?:https:\/\/\S+|data:image\/[a-z0-9.+-]+;[a-z0-9-]+,?[^\s<>"]*)$/i.test(text))fail('头像数据无效，请重新选择');
+      return text;
+    };
     let revision=0;const listeners=new Set();
     const fail=message=>{throw new Error(message);};
     const eligible=p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot;
@@ -79,8 +86,8 @@
       if(c&&typeof value.name==='string'){
         result.name=(value.name.startsWith('@')?'@':'')+c.name;
         if(value.uid)result.uid=c.id;if(value.id)result.id=c.id;
-        result.avatar=root.__EVA_COLLEAGUE_PORTRAIT;
-        result.identityAppearance={name:c.name,sourceName:'Eva',avatar:root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
+        result.avatar=c.avatar||root.__EVA_COLLEAGUE_PORTRAIT;
+        result.identityAppearance={name:c.name,sourceName:'Eva',avatar:c.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT};
       }
       if(typeof result.text==='string')for(const previous of [...state.clones,...(state.legacyCloneRecords||[]),...Object.entries({"b-wangyilin":"王宜林的分身","clone-linxiao":"林晓的分身","clone-hejing":"何静的分身"}).map(([id,name])=>({id,name}))]){
         const identity=clone(previous.id);if(identity&&previous.name&&previous.name!==identity.name&&result.text.includes('@'+previous.name)){result.text=result.text.split('@'+previous.name).join('@'+identity.name);result.mentions=[...(result.mentions||[]).filter(m=>(m.uid||m.id)!==identity.id),{name:'@'+identity.name,uid:identity.id}];}
@@ -127,6 +134,24 @@
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
+      // Identity portraits are writable only by their owner. Humans edit themselves;
+      // a clone is edited by its owner; employees, project agents and squads stay fixed.
+      cloneAvatar(ownerId){const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);return(c&&c.avatar)||'';},
+      setPersonAvatar(uid,value){
+        const record=requireHuman(uid);if(uid!==state.actorId)fail('只能更换自己的头像');
+        const avatar=avatarValue(value);
+        if(avatar)record.avatar=avatar;else delete record.avatar;
+        notify();
+      },
+      setCloneAvatar(uid,ownerId,value){
+        requireHuman(uid);if(uid!==state.actorId)fail('只能更换自己的头像');
+        if(uid!==ownerId)fail('只有本人可以更换自己的分身头像');
+        const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);
+        if(!c)fail('当前账号还没有可编辑的分身');
+        const avatar=avatarValue(value);
+        if(avatar)c.avatar=avatar;else delete c.avatar;
+        notify();
+      },
       projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
       memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
       saveProjectRole(pid,uid,{id,name,description=''}){
@@ -753,6 +778,7 @@
     }
     const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
+    root.EvaAIIdentity?.setCloneAvatarResolver?.(ownerId=>store.cloneAvatar(ownerId));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{
       const context=store.conversationContext(id,store.actorId());
       const settings=store.chatSettings(context?.groupId||id);

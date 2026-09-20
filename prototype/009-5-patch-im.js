@@ -266,7 +266,7 @@ function evaComposerPlainText(element) {
 }
 function evaIdentityAppearance(identity) {
   const original = window.__EVA_MY_ASSISTANT_IDENTITY;
-  if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName});
+  if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName,id:original.ownerId});
   return window.EvaAIIdentity.assistantAppearance(identity);
 }
 function EvaAIIdentityAvatar({appearance,size=32}) {
@@ -409,7 +409,7 @@ function EvaAssistantEditor({request,host,onClose}) {
     const reader=new FileReader();reader.onerror=()=>setError('头像读取失败，请重新选择');reader.onload=()=>{if(typeof reader.result==='string')update('avatar',reader.result);};reader.readAsDataURL(file);}
   async function save(){
     if(!draft.name.trim()){setError('请填写'+role+'名称');return;}
-    if(draft.avatar.trim()&&!/^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/.test(draft.avatar.trim())){setError('头像数据无效，请重新上传');return;}
+    if(draft.avatar.trim()&&!/^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+|data:image\/svg\+xml;utf8,[^\s<>"]+)$/.test(draft.avatar.trim())){setError('头像数据无效，请重新上传');return;}
     setBusy(true);setError('');
     const configuration={...draft,skills:draft.skills.split('\n').map(x=>x.trim()).filter(Boolean)};delete configuration.name;
     try{

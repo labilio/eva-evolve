@@ -783,6 +783,14 @@
       "file": "prototype/057-gds-dark-tokens.css",
       "bytes": 4282,
       "role": "prototype"
+    },
+    {
+      "order": 98,
+      "tag": "style",
+      "name": "avatar-editor",
+      "file": "prototype/060-avatar-editor.css",
+      "bytes": 2106,
+      "role": "prototype"
     }
   ]
 }

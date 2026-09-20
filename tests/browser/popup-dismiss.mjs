@@ -118,7 +118,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
 
     // ---- 遮罩弹窗：设置对话框 ----
     await page.locator('.eva-sider-account').first().click();
-    await page.locator('.eva-account-menu__item').first().click();
+    await page.locator('.eva-account-menu__item').filter({hasText: '设置'}).first().click();
     await page.locator('.eva-settings-dialog').waitFor({ timeout: 10000 });
     await page.mouse.click(600, 790);
     await page.waitForTimeout(650);
