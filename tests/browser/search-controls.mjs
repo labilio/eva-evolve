@@ -346,34 +346,34 @@ test('任务指派：新建、列表、批量与详情均可输入即筛选负�
   await page.getByText('列表', { exact: true }).click();
   await page.locator('.loop-list').waitFor();
 
-  const verifyDropdownSearch = async trigger => {
-    await trigger.click();
-    const menu = page.locator('.semi-dropdown-menu:visible:has(.eva-task-assignee-search)');
-    const input = menu.locator('.eva-task-assignee-search input');
+  const verifyAssigneeSelect = async select => {
+    await select.click();
+    const input = select.locator('input');
+    const options = page.locator('.semi-select-option-list:visible');
     await input.waitFor();
+    await options.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
     await input.fill('何静');
-    assert.ok(await menu.getByText('何静', { exact: true }).count() > 0);
-    await menu.getByText('周远', { exact: true }).waitFor({ state: 'detached' });
-    assert.equal(await menu.getByText('周远', { exact: true }).count(), 0, '输入时应立即过滤无关候选');
+    assert.ok(await options.getByText('何静', { exact: true }).count() > 0);
+    await options.getByText('周远', { exact: true }).waitFor({ state: 'detached' });
+    assert.equal(await options.getByText('周远', { exact: true }).count(), 0, '输入时应立即过滤无关候选');
     await input.fill('不存在的指派人');
-    await menu.getByText('没有匹配的指派人', { exact: true }).waitFor();
+    await options.getByText('没有匹配的指派人', { exact: true }).waitFor();
     await page.keyboard.press('Escape');
-    await page.keyboard.press('Escape');
-    await menu.waitFor({ state: 'detached' });
+    await options.waitFor({ state: 'detached' });
   };
 
-  await verifyDropdownSearch(page.locator('.loop-list__assignee .loop-assignee-trigger').first());
+  await verifyAssigneeSelect(page.locator('.loop-list__assignee .eva-loop-task-create__assignee').first());
 
   await page.locator('.loop-list__check').first().click();
   await page.locator('.loop-batchbar').waitFor();
-  await verifyDropdownSearch(page.locator('.loop-batchbar .loop-assignee-trigger'));
+  await verifyAssigneeSelect(page.locator('.loop-batchbar .eva-loop-task-create__assignee'));
   await page.locator('.loop-batchbar').getByRole('button', { name: '取消', exact: true }).click();
 
   await page.locator('.loop-list__title').first().click();
   const detail = page.locator('.loop-idp').last();
   await detail.waitFor();
-  await verifyDropdownSearch(detail.locator('.loop-assignee-trigger'));
+  await verifyAssigneeSelect(detail.locator('.eva-loop-task-create__assignee'));
   await page.locator('.collab-route-right .loop-idp__closebtn').click();
   await page.locator('.collab-route-right').waitFor({ state: 'detached' });
 
@@ -381,17 +381,7 @@ test('任务指派：新建、列表、批量与详情均可输入即筛选负�
   const modal = page.locator('.eva-loop-task-create');
   await modal.waitFor();
   const assignee = modal.locator('.eva-loop-task-create__assignee:not(.eva-loop-task-create__source)');
-  await assignee.click();
-  const createInput = assignee.locator('input');
-  await createInput.fill('何静');
-  const options = page.locator('.semi-select-option-list:visible');
-  await options.waitFor();
-  assert.ok(await options.getByText('何静', { exact: true }).count() > 0);
-  await options.getByText('周远', { exact: true }).waitFor({ state: 'detached' });
-  assert.equal(await options.getByText('周远', { exact: true }).count(), 0, '新建任务负责人应随输入即时过滤');
-  await createInput.fill('不存在的指派人');
-  await page.getByText('没有匹配的指派人', { exact: true }).waitFor();
-  await page.keyboard.press('Escape');
+  await verifyAssigneeSelect(assignee);
   await modal.getByRole('button', { name: '关闭', exact: true }).click();
   await modal.waitFor({ state: 'detached' });
 });

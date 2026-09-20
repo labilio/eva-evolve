@@ -10,10 +10,13 @@ test('任务负责人公共选择器支持输入即筛选并保留非任务调�
   assert.ok(pickerStart >= 0 && pickerEnd > pickerStart);
   const picker = source.slice(pickerStart, pickerEnd);
   assert.match(picker, /searchable:evaSearchable=!1/);
-  assert.match(picker, /className:"eva-task-assignee-search"/);
-  assert.match(picker, /placeholder:"搜索指派人"/);
+  assert.match(picker, /React\.createElement\(Select,\{className:"eva-loop-task-create__assignee"/,
+    '任务内指派应复用新建任务的可输入 Select');
+  assert.match(picker, /"aria-label":"执行负责人"/);
+  assert.match(picker, /emptyContent:"没有匹配的指派人"/);
   assert.match(picker, /normalize\("NFKC"\)\.toLocaleLowerCase\(\)/);
-  assert.match(picker, /onChange:setEvaQuery/);
+  assert.doesNotMatch(picker, /eva-task-assignee-search/,
+    '任务内指派不应再保留独立的下拉搜索框');
 
   const listStart = source.indexOf('function IssueList(');
   const listEnd = source.indexOf('const listSubscribers=', listStart);
