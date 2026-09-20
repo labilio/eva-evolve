@@ -20,7 +20,7 @@
     "test:assistant": "node --test tests/browser/personal-assistant-modal.mjs",
     "test:dismiss": "node --test tests/browser/popup-dismiss.mjs",
     "test:composer": "node --test tests/browser/im-composer-visual.mjs",
-    "test:mentions": "node --test tests/browser/task-comment-mentions.mjs",
+    "test:mentions": "node --test tests/browser/task-comment-mentions.mjs tests/browser/im-mentions.mjs",
     "test:picker": "node --test tests/browser/member-picker-template.mjs"
   },
   "devDependencies": {

@@ -346,7 +346,7 @@
       snapshot = makeSnapshot();
       [...listeners].forEach(listener => listener());
     }
-    const localById = key => { const local = state.localAssistants.find(l => l.id === key); if (!local) throw new Error('找不到本地助理'); return local; };
+    const localById = key => { const local = state.localAssistants.find(l => l.id === key); if (!local) throw new Error('找不到个人助理'); return local; };
     const identityById = key => { const identity = state.identities.find(i => i.id === key); if (!identity) throw new Error('找不到 AI 身份'); return identity; };
     const simulate = (method, data) => Promise.resolve().then(() => options.adapter?.[method] ? options.adapter[method](freeze(copy(data))) : new Promise(resolve => setTimeout(resolve, options.delay ?? 350)));
     function connectAssistant(sourceId) {
@@ -354,10 +354,10 @@
       if (existing) return Promise.resolve(freeze(copy(existing)));
       if (connections.has(sourceId)) return connections.get(sourceId);
       let local;
-      try { local = localById(sourceId); if (!local.online) throw new Error('本地助理离线'); } catch (error) { return Promise.reject(error); }
+      try { local = localById(sourceId); if (!local.online) throw new Error('个人助理离线'); } catch (error) { return Promise.reject(error); }
       const work = simulate('connect', local).then(() => {
         const current = localById(sourceId);
-        if (!current.online) throw new Error('本地助理离线');
+        if (!current.online) throw new Error('个人助理离线');
         const identity = makeIdentity(id('ai'), 'assistant', current.name, current, now());
         state.identities.push(identity); publish(); return freeze(copy(identity));
       }).finally(() => connections.delete(sourceId));
@@ -369,10 +369,10 @@
       if(input.configuration?.avatar)throw new Error('分身头像不可修改');
       const independent = sourceId == null;
       const local = independent ? {id:null,name:'独立',online:true,version:1,configuration:{}} : localById(sourceId);
-      if (!local.online) throw new Error('本地助理离线');
+      if (!local.online) throw new Error('个人助理离线');
       await simulate('createPersona', local);
       const current = independent ? local : localById(sourceId);
-      if (!current.online) throw new Error('本地助理离线');
+      if (!current.online) throw new Error('个人助理离线');
       if(state.identities.some(i=>i.role==='persona'))throw new Error('每人最多创建一个 AI 分身');
       const name = personaName();
       const identity = makeIdentity(id('persona'), 'persona', name, current, now());
@@ -389,7 +389,7 @@
       const nextSource=Object.prototype.hasOwnProperty.call(input,'sourceAssistantId')?input.sourceAssistantId:identity.sourceAssistantId;
       const changed=nextSource!==identity.sourceAssistantId;
       const local=nextSource===null?null:localById(nextSource);
-      if(changed&&local&&!local.online)throw new Error('本地助理离线');
+      if(changed&&local&&!local.online)throw new Error('个人助理离线');
       identity.name=personaName();identity.configuration=configuration(input.configuration||identity.configuration);
       if(changed){identity.sourceAssistantId=nextSource;identity.configVersion=local?.version||1;identity.lastSyncedAt=local?now():'';if(local)identity.configuration=configuration(local.configuration);}
 
@@ -528,7 +528,7 @@
     function sendMessage(identityId, sessionId, text, reply) {
       if (typeof text !== 'string' || !text.trim()) return null;
       const identity = identityById(identityId);
-      if (identity.status === 'offline') throw new Error('本地助理离线，请连接后重试');
+      if (identity.status === 'offline') throw new Error('个人助理离线，请连接后重试');
       let session = sessionId ? state.sessions.find(s => s.id === sessionId && s.identityId === identityId) : null;
       if (sessionId && !session) throw new Error('会话不属于当前 AI 身份');
       const time = now(), body = text.trim();

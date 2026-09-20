@@ -1,10 +1,10 @@
 (function (root) {
   'use strict';
 
-  // 提及候选的唯一数据源：联系人、AI 分身、数字员工、本地助理、专家、专家团。
+  // 提及候选的唯一数据源：联系人、AI 分身、数字员工、个人助理、专家、专家团。
   // IM 与项目任务评论共用同一份身份数据和同一个 MentionPicker 组件渲染。
   const ORDER = [
-    { kind: 'assistant', label: '本地助理' },
+    { kind: 'assistant', label: '个人助理' },
     { kind: 'human', label: '联系人' },
     { kind: 'clone', label: 'AI 分身' },
     { kind: 'employee', label: '数字员工' },
@@ -42,6 +42,8 @@
     });
 
     (scope?.humans || []).map(entry => store.person(entry.id)).filter(Boolean).forEach(person => {
+      // 本人真人不出现在提及候选；本人 AI 分身仍保留并置顶。
+      if (person.id === actorId) return;
       if (matches(person.name, needle)) {
         result.push({ id: person.id, name: person.name, kind: 'human', tokenId: person.id, tokenType: 'member' });
       }
@@ -56,6 +58,8 @@
     });
 
     (scope?.employeeIds || []).map(id => store.employee(id)).filter(Boolean).forEach(employee => {
+      // 项目管家不进入提及体系。
+      if (employee.id.startsWith('project-agent:')) return;
       if (matches(employee.name, needle)) {
         result.push({ id: employee.id, name: employee.name, kind: 'employee', tokenId: employee.id, tokenType: 'agent', appearance: employee.identityAppearance });
       }
