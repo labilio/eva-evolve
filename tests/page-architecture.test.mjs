@@ -147,7 +147,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(source, /eva-personal-sider-panel|eva-personal-sidebar-actions/);
   assert.match(workspace, /assistantRailHTML/);
   assert.match(workspace, /eva-personal-sider-panel/);
-  assert.doesNotMatch(workspace, /data-eva-create-folder/);
+  assert.match(workspace, /data-eva-create-folder aria-label="新建分组" title="新建分组">' \+ icon\('plus',16,'eva-i'\)/);
   assert.match(workspace, /浏览本地目录\.\.\./);
   assert.match(workspace, /window\.showDirectoryPicker/);
   assert.match(workspace, /data-eva-new-folder-chat/);
