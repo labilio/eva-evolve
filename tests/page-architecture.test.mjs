@@ -519,6 +519,17 @@ test('其他菜单只保留数字员工市场，市场身份统一展示公共 A
   assert.match(css, /\.eva-digital-center__joined-status\s*\{\s*color:\s*var\(--eva-text-primary\);\s*font:\s*400 12px\/16px var\(--eva-font-sans\);\s*\}/);
   assert.doesNotMatch(market, /const addIcon=|icon:addIcon\(\)/);
   assert.match(market, /eva-digital-center__domain-filters/);
+  assert.match(market, /className:'eva-digital-center__filter-card'/);
+  assert.match(market, /className:'eva-digital-center__domain-search-toggle','aria-label':'搜索业务域','aria-expanded':domainSearchOpen/);
+  assert.match(market, /domainSearchOpen&&h\(Input,\{className:'eva-digital-center__domain-search',showClear:true/);
+  assert.doesNotMatch(market, /eva-digital-center__domain-search',prefix/);
+  assert.match(market, /setDomainSearchOpen\(next\);if\(!next\)\{setDomainQuery\(''\)/);
+  assert.match(market, /visibleDomains=domains\.filter\(d=>!dq\|\|d\.toLowerCase\(\)\.includes\(dq\)\|\|d===domain\)/);
+  assert.doesNotMatch(market, /eva-digital-center__market-search|搜索数字员工/, '市场右上角员工搜索框已删除，不得保留第二处搜索入口');
+  const listFilter = market.match(/const list=base\.filter\(([^;]*)\);/);
+  assert.ok(listFilter, '数字员工列表筛选表达式缺失');
+  assert.equal(listFilter[1], 'a=>!domain||a.domain===domain', '员工列表只能按业务域筛选');
+  assert.match(css, /\.eva-digital-center__filter-bar \.eva-digital-center__domain-filters\{flex-wrap:nowrap/);
   assert.doesNotMatch(market, /加入 AI 团队|已加入 AI 团队/);
   const columns = market.match(/const columns=\[[\s\S]*?\];/);
   assert.ok(columns, '数字员工市场列定义缺失');

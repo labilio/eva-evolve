@@ -9,6 +9,18 @@
 .eva-digital-center h1{font-size:18px;line-height:26px;font-weight:600;margin:0 0 8px}.eva-digital-center h3{font-size:14px;line-height:22px;font-weight:600;margin:0 0 8px}
 .eva-digital-center p,.eva-digital-center__muted{color:var(--semi-color-text-2);line-height:1.7;margin:6px 0}
 .eva-digital-center__filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}.eva-digital-center__section-head{justify-content:space-between;margin-bottom:12px}
+.eva-digital-center__filter-bar{position:relative;display:flex;align-items:center;min-width:0;margin-bottom:4px}
+.eva-digital-center__filter-track{position:relative;display:flex;align-items:center;flex:1;min-width:0}
+.eva-digital-center__filter-scroll{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.eva-digital-center__filter-scroll::-webkit-scrollbar{display:none}
+.eva-digital-center__filter-bar .eva-digital-center__domain-filters{flex-wrap:nowrap;margin:8px 0;width:max-content}
+.eva-digital-center__filter-bar.has-overflow-left::before,.eva-digital-center__filter-bar.has-overflow-right::after{content:'';position:absolute;top:0;bottom:0;width:40px;pointer-events:none;z-index:1}
+.eva-digital-center__filter-bar.has-overflow-left::before{left:0;background:linear-gradient(90deg,var(--semi-color-bg-0) 20%,transparent)}
+.eva-digital-center__filter-bar.has-overflow-right::after{right:0;background:linear-gradient(270deg,var(--semi-color-bg-0) 20%,transparent)}
+.eva-digital-center__filter-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:1px solid var(--semi-color-border);border-radius:50%;background:var(--semi-color-bg-0);color:var(--semi-color-text-1);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.eva-digital-center__filter-nav:hover{background:var(--semi-color-fill-0)}
+.eva-digital-center__filter-nav--left{left:4px}.eva-digital-center__filter-nav--right{right:4px}
+.eva-digital-center__filter-nav .semi-icon{pointer-events:none}
 .eva-digital-center__section{margin-bottom:20px}.eva-digital-center__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px}
 .eva-digital-center__card{border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-chip);padding:20px;background:var(--semi-color-bg-1);display:flex;flex-direction:column;gap:10px}
 .eva-digital-center__card.is-selected{border-color:var(--semi-color-primary);background:var(--semi-color-primary-light-default)}
@@ -86,8 +98,30 @@
 .eva-market-workspace .eva-digital-center__joined-status { color: var(--eva-text-primary); font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action { background: transparent; color: var(--eva-action-primary); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action:hover { background: var(--eva-action-primary-08); }
-.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }
+.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: nowrap; overflow: visible; padding-bottom: 0; margin: 0; }
 .eva-market-workspace .eva-digital-center__domain-filters .semi-button { flex: none; }
+
+/* Domain filter card: title + scoped search on the first line, single-line chips on the second.
+   Chips never wrap; fade masks + arrow buttons appear only on overflow. */
+.eva-market-workspace .eva-digital-center__filter-card { margin: 0 0 var(--eva-space-4); padding: var(--eva-space-3) var(--eva-space-4); border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); }
+.eva-market-workspace .eva-digital-center__filter-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.eva-market-workspace .eva-digital-center__filter-card-title { display: inline-flex; align-items: center; gap: 2px; color: var(--eva-text-secondary-accessible); font: 500 13px/20px var(--eva-font-sans); }
+/* Compact icon entry: appearance is owned by 055-search-controls.css, only the slot is set here. */
+.eva-market-workspace .eva-digital-center__domain-search-toggle { flex: none; }
+.eva-market-workspace .eva-digital-center__filter-empty { align-self: center; padding: 0 4px; color: var(--eva-text-secondary-accessible); font: 400 13px/20px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__domain-search { width: min(220px, 100%); flex: 0 1 220px; }
+.eva-market-workspace .eva-digital-center__filter-bar { position: relative; max-width: 100%; margin-bottom: 0; }
+.eva-market-workspace .eva-digital-center__filter-track { position: relative; }
+.eva-market-workspace .eva-digital-center__filter-scroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.eva-market-workspace .eva-digital-center__filter-scroll::-webkit-scrollbar { display: none; }
+.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-left .eva-digital-center__filter-track::before,
+.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-right .eva-digital-center__filter-track::after { content: ''; position: absolute; top: 0; bottom: 0; width: 44px; z-index: 1; pointer-events: none; }
+.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-left .eva-digital-center__filter-track::before { left: 0; background: linear-gradient(to right, var(--eva-surface-primary, #fff) 20%, transparent); }
+.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-right .eva-digital-center__filter-track::after { right: 0; background: linear-gradient(to left, var(--eva-surface-primary, #fff) 20%, transparent); }
+.eva-market-workspace .semi-button.eva-digital-center__filter-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--eva-border-faint); background: var(--eva-surface-primary, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.12); color: var(--eva-text-primary); display: inline-flex; align-items: center; justify-content: center; }
+.eva-market-workspace .semi-button.eva-digital-center__filter-nav:hover { background: var(--eva-surface-subtle, #f5f5f5); }
+.eva-market-workspace .semi-button.eva-digital-center__filter-nav--left { left: 4px; }
+.eva-market-workspace .semi-button.eva-digital-center__filter-nav--right { right: 4px; }
 .eva-market-workspace .eva-digital-center__table .semi-button { min-height: 32px; padding: 0 8px; font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace :is(.eva-digital-center__table,.semi-table-row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 .eva-market-workspace .eva-digital-dialog .semi-modal-body { font: 400 15px/24px var(--eva-font-sans); }
@@ -105,15 +139,15 @@
 .eva-market-workspace .eva-digital-center__filters .semi-button { border: 1px solid var(--eva-border-faint); }
 .eva-market-workspace .eva-digital-center__filters .semi-button[aria-pressed="true"] { border-color: var(--eva-border-focus); }
 
-/* Market header layout only; search appearance stays in 055-search-controls.css. */
-.eva-market-workspace .eva-digital-center__market-search { width: min(350px, 100%); flex: 0 1 350px; }
+/* Market header layout only; the search entry lives in the domain filter card. */
 .eva-market-workspace .eva-digital-center__head h1 { margin: 0; }
 .eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); font-weight: var(--eva-fw-medium); }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-outer { box-sizing: border-box; padding: var(--eva-space-3) var(--eva-space-3); gap: var(--eva-space-3); flex-wrap: wrap; }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-info { min-width: 0; }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-wrapper { margin-left: auto; }
 @media (max-width: 760px) {
-  .eva-market-workspace .eva-digital-center__market-search { width: 100%; flex-basis: 100%; }
+  .eva-market-workspace .eva-digital-center__filter-card-head { flex-wrap: wrap; }
+  .eva-market-workspace .eva-digital-center__domain-search { width: 100%; flex-basis: 100%; }
 }
 
 /* Governance extension for the existing digital employee identity card. */

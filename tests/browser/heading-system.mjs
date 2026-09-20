@@ -34,7 +34,7 @@ async function verifyHeaderAppearance(head, title, label) {
     const t=el.querySelector(selector), s=getComputedStyle(t), h=getComputedStyle(el);
     return {font:s.fontSize,line:s.lineHeight,weight:s.fontWeight,
       height:el.getBoundingClientRect().height,left:h.paddingLeft,right:h.paddingRight,
-      decorations:[...el.querySelectorAll('svg')].filter(i=>!i.closest('button,label,.eva-contacts__search,.eva-digital-center__market-search')).length};
+      decorations:[...el.querySelectorAll('svg')].filter(i=>!i.closest('button,label,.eva-contacts__search')).length};
   }, title);
   assert.deepEqual(actual, HEADER_STANDARD, label);
 }

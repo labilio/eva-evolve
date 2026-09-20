@@ -84,13 +84,8 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   await page.locator('.semi-modal-close').click();
   await page.getByRole('dialog').waitFor({state:'hidden'});
   await page.goto(origin+'/#/eva-stub/数字员工');
-  const search=page.getByPlaceholder('搜索数字员工');
-  await search.fill('AS00519');
-  assert.equal(await page.locator('.semi-table-tbody tr').count(),1);
+  assert.equal(await page.locator('.eva-digital-center__market-search').count(),0,'市场不再保留右上角员工搜索框');
   assert.equal(await page.locator('.eva-digital-center__name-cell small').count(),0,'工号只在独立列展示');
-  await search.fill('不存在的数字员工');
-  await page.getByText('未找到匹配的数字员工',{exact:true}).waitFor();
-  await search.fill('');
   const pagination=await page.locator('.semi-table-pagination-outer').evaluate(e=>{
    const r=e.getBoundingClientRect(),info=e.querySelector('.semi-table-pagination-info').getBoundingClientRect(),controls=e.querySelector('.semi-table-pagination-wrapper').getBoundingClientRect();
    return {left:info.left-r.left,right:r.right-controls.right};
@@ -100,6 +95,15 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   const domains=await page.locator('.semi-table-tbody tr td:nth-child(3)').allTextContents();
   assert.ok(domains.length>0&&domains.every(d=>d==='供应链'),'业务域筛选仍生效');
   await page.getByRole('button',{name:/^全部业务域 /}).click();
+  await page.getByRole('button',{name:'搜索业务域'}).click();
+  const domainSearch=page.getByPlaceholder('搜索业务域');
+  await domainSearch.waitFor();
+  await domainSearch.fill('供应链');
+  assert.equal(await page.locator('.eva-digital-center__domain-filters .semi-button').count(),2,'业务域搜索只收敛业务域 chips');
+  assert.equal(await page.locator('.semi-table-tbody tr').count(),20,'业务域搜索不得过滤员工列表');
+  await domainSearch.press('Escape');
+  await page.locator('.eva-digital-center__domain-search').waitFor({state:'detached'});
+  assert.ok(await page.locator('.eva-digital-center__domain-filters .semi-button').count()>2,'收起业务域搜索后恢复全部 chips');
   for(const route of ['collab','contacts','eva-stub/数字员工']){
    await page.setViewportSize({width:900,height:700});
    await page.goto(origin+'/#/'+route);
