@@ -223,17 +223,6 @@
         window.__evaLoopMention={items:evaLoopMentionItems,suggestion:evaLoopMentionSuggestion};
         function MembersTab({workspaceId:rt}){return React.createElement(evaMembers().ui.Members,{key:rt,scopeId:rt})}`, '项目成员组件');
         source = root.__evaCutAll(source, replacements, '通用补丁');
-        const evaAssigneePickerStart=source.indexOf('function AssigneePicker('),evaAssigneePickerEnd=source.indexOf('function AssigneeBadge(',evaAssigneePickerStart);
-        if(evaAssigneePickerStart<0||evaAssigneePickerEnd<evaAssigneePickerStart)throw new Error('任务负责人选择器边界不匹配');
-        source=root.__evaCut(source,source.slice(evaAssigneePickerStart,evaAssigneePickerEnd),String.raw`
-function AssigneePicker({value:rt,valueName:ct,onChange:ut,size:pt="default",types:mt,searchable:evaSearchable=!1}){
-  const{t:gt}=useI18n$1(),[St,Ct]=reactExports.useState([]),xt=reactExports.useRef(0),Pt=(Vt=!1)=>{const Ht=++xt.current;(Vt?refreshAssigneeCandidates():listAssigneeCandidates$1()).then(jt=>{Ht===xt.current&&Ct(jt)}).catch(()=>{Ht===xt.current&&Ct([])})};
-  reactExports.useEffect(()=>(Pt(),()=>{xt.current++}),[]);
-  const Nt=St.find(Vt=>Vt.id===rt),Mt=[{type:"member",label:gt("loop.assignee.member")},{type:"agent",label:gt("loop.assignee.agent")},{type:"squad",label:gt("loop.assignee.squad")}],Dt=mt?Mt.filter(Vt=>mt.includes(Vt.type)):Mt,Ft=!mt||mt.includes("member"),evaTaskCandidates=St.filter(Vt=>Dt.some(Ht=>Ht.type===Vt.type)),evaTaskGroups=[{key:"member",label:gt("loop.assignee.member"),items:evaTaskCandidates.filter(Vt=>Vt.type==="member")},{key:"expert",label:gt("loop.assignee.agent"),items:evaTaskCandidates.filter(Vt=>Vt.type!=="member")}].filter(Vt=>Vt.items.length),evaFilterPerson=(Vt,Ht)=>{const jt=String(Vt||"").trim().normalize("NFKC").toLocaleLowerCase();if(!jt)return!0;const tn=evaTaskCandidates.find(Kt=>Kt.id===Ht.value);return String(tn?.name||"").normalize("NFKC").toLocaleLowerCase().includes(jt)};
-  if(evaSearchable)return React.createElement(Select,{className:"eva-loop-task-create__assignee",value:rt||void 0,filter:evaFilterPerson,emptyContent:"没有匹配的指派人",placeholder:gt("loop.assignee.unassigned"),"aria-label":"执行负责人",showClear:!0,size:pt,onDropdownVisibleChange:Vt=>{Vt&&Pt(!0)},onChange:Vt=>{if(!Vt){ut(null,null,null);return}const Ht=St.find(jt=>jt.id===Vt);Ht&&ut(Ht.id,Ht.type,Ht.name)}},evaTaskGroups.map(Vt=>React.createElement(Select.OptGroup,{key:Vt.key,label:Vt.label},Vt.items.map(Ht=>React.createElement(Select.Option,{key:Ht.id,value:Ht.id},React.createElement("span",{className:"eva-loop-task-create__identity"},React.createElement(EvaLoopIdentityAvatar,{person:Ht,size:24}),React.createElement(EvaLoopIdentityName,{person:Ht})))))));
-  const Qt=React.createElement(Dropdown.Menu,null,Ft&&React.createElement(Dropdown.Item,{onClick:()=>ut(null,null,null),icon:React.createElement(CircleSlash,{size:13})},gt("loop.assignee.unassigned")),Dt.map(Vt=>{const Ht=St.filter(jt=>jt.type===Vt.type);return Ht.length===0?null:React.createElement(React.Fragment,{key:Vt.type},React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Title,null,Vt.label),Ht.map(jt=>React.createElement(Dropdown.Item,{key:jt.id,icon:React.createElement(EvaLoopIdentityAvatar,{person:jt}),active:jt.id===rt,onClick:()=>ut(jt.id,jt.type,jt.name)},React.createElement(EvaLoopIdentityName,{person:jt}))))}));
-  return React.createElement(Dropdown,{render:Qt,trigger:"click",position:"bottomLeft",clickToHide:!0,onVisibleChange:Vt=>{Vt&&Pt(!0)}},React.createElement("span",{className:"loop-assignee-trigger",style:{fontSize:pt==="small"?12:13}},Nt||ct?React.createElement(React.Fragment,null,React.createElement(EvaLoopIdentityAvatar,{person:Nt||{id:rt,name:ct}}),React.createElement("span",{className:"loop-assignee-name"},React.createElement(EvaLoopIdentityName,{person:Nt||{id:rt,name:ct}}))):React.createElement("span",{className:"loop-assignee-empty"},React.createElement(CircleSlash,{size:13}),gt("loop.assignee.unassigned")),React.createElement(ChevronDown,{size:13,style:{opacity:.5}})));
-}`,'任务负责人选择器与新建任务共用可输入 Select');
         source=root.__evaCut(source,'onCreate:gt=>{const St=newSpace(gt),Ct=[...rt,St];','onCreate:(gt,evaClones,evaGoal)=>{const St={...newSpace(gt),desc:evaGoal||""},Ct=[...rt,St];evaMembers().store.createProject(St.id,St.name,evaMembers().store.snapshot().actorId,evaClones,evaGoal);','项目创建成员事务');
 
     var evaLoopMentionStart=source.indexOf('function buildLoopMention(rt,ct){');
@@ -247,9 +236,43 @@ function AssigneePicker({value:rt,valueName:ct,onChange:ut,size:pt="default",typ
     evaLoopSuggestionEnd+=evaLoopSuggestionMarker.length;
     source=root.__evaCut(source,evaLoopMentionBlock,evaLoopMentionBlock.slice(0,evaLoopSuggestionStart)+'suggestion:window.__evaLoopMention.suggestion()'+evaLoopMentionBlock.slice(evaLoopSuggestionEnd),'任务评论提及复用统一选人');
 
+    // 来源者、下达者必选，选择器不提供“未指派”清空项；调用方可传入项目身份候选。
+    source=root.__evaCut(source,
+      'function AssigneePicker({value:rt,valueName:ct,onChange:ut,size:pt="default",types:mt}){',
+      'function AssigneePicker({value:rt,valueName:ct,onChange:ut,size:pt="default",types:mt,allowClear:Ot=!0,candidates:evaTaskCandidateOverride}){const evaQs=reactExports.useState(""),evaQ=evaQs[0],evaSetQ=evaQs[1],evaEx=reactExports.useState({}),evaExp=evaEx[0],evaSetExp=evaEx[1],evaAi=reactExports.useState(-1),evaActive=evaAi[0],evaSetActive=evaAi[1],evaLr=reactExports.useRef([]);',
+      '任务身份选择器支持必选模式与面板内搜索');
+    // 分组按身份类型由父容器统一定义：成员／AI 分身／数字员工／专家／专家团；候选可带 group 字段细分。
+    source=root.__evaCut(source,
+      'const Nt=St.find(Vt=>Vt.id===rt),Mt=[{type:"member",label:gt("loop.assignee.member")},{type:"agent",label:gt("loop.assignee.agent")},{type:"squad",label:gt("loop.assignee.squad")}],Dt=mt?Mt.filter(Vt=>mt.includes(Vt.type)):Mt,Ft=!mt||mt.includes("member"),',
+      'const Nt=St.find(Vt=>Vt.id===rt),Ft=!mt||mt.includes("member"),',
+      '分组标题改由候选身份类型推导');
+    source=root.__evaCut(source,
+      'Pt=(Vt=!1)=>{const Ht=++xt.current;(Vt?refreshAssigneeCandidates():listAssigneeCandidates$1()).then(jt=>{Ht===xt.current&&Ct(jt)}).catch(()=>{Ht===xt.current&&Ct([])})}',
+      'Pt=(Vt=!1)=>{if(evaTaskCandidateOverride){Ct(evaTaskCandidateOverride);return}const Ht=++xt.current;(Vt?refreshAssigneeCandidates():listAssigneeCandidates$1()).then(jt=>{Ht===xt.current&&Ct(jt)}).catch(()=>{Ht===xt.current&&Ct([])})}',
+      '项目身份候选优先于全局候选');
+    source=root.__evaCut(source,
+      'reactExports.useEffect(()=>(Pt(),()=>{xt.current++}),[])',
+      'reactExports.useEffect(()=>(Pt(),()=>{xt.current++}),[evaTaskCandidateOverride])',
+      '候选随项目身份刷新');
+    source=root.__evaCut(source,
+      'Ft=!mt||mt.includes("member")',
+      'Ft=(!mt||mt.includes("member"))&&Ot',
+      '必选模式隐藏未指派项');
+    // 打开面板时重置搜索、展开与键盘焦点，避免上一次的选择状态残留。
+    source=root.__evaCut(source,
+      'onVisibleChange:Vt=>{Vt&&Pt(!0)}',
+      'onVisibleChange:Vt=>{if(Vt){Pt(!0);evaSetQ("");evaSetExp({});evaSetActive(-1)}}',
+      '面板打开时重置搜索与展开状态');
+    // 面板结构对齐统一提及候选规范：顶部搜索、按「联系人／AI 分身／数字员工」分组、
+    // 每组默认 5 条并可展开、检索态单列相关度排序、面板内容限高滚动、↑↓/Enter 键盘选择。
+    source=root.__evaCut(source,
+      'Qt=React.createElement(Dropdown.Menu,null,Ft&&React.createElement(Dropdown.Item,{onClick:()=>ut(null,null,null),icon:React.createElement(CircleSlash,{size:13})},gt("loop.assignee.unassigned")),Dt.map(Vt=>{const Ht=St.filter(jt=>jt.type===Vt.type);return Ht.length===0?null:React.createElement(React.Fragment,{key:Vt.type},React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Title,null,Vt.label),Ht.map(jt=>React.createElement(Dropdown.Item,{key:jt.id,icon:React.createElement(EvaLoopIdentityAvatar,{person:jt}),active:jt.id===rt,onClick:()=>ut(jt.id,jt.type,jt.name)},React.createElement(EvaLoopIdentityName,{person:jt}))))}))',
+      String.raw`Qt=(()=>{const evaNorm=s=>String(s||"").normalize("NFKC").toLocaleLowerCase().trim(),evaNeedle=evaNorm(evaQ),evaLabels={member:"联系人",clone:"AI 分身",employee:"数字员工",agent:gt("loop.assignee.agent"),squad:gt("loop.assignee.squad")},evaOrder=["member","clone","employee","agent","squad"],evaKeys=[];St.forEach(jt=>{const evaKey=jt.group||jt.type;evaKeys.includes(evaKey)||evaKeys.push(evaKey)}),evaKeys.sort((jt,kt)=>evaOrder.indexOf(jt)-evaOrder.indexOf(kt));const evaFilter=evaList=>evaNeedle?evaList.filter(evaP=>evaNorm(evaP.name).includes(evaNeedle)):evaList,evaRank=evaName=>{const evaN=evaNorm(evaName);return evaN===evaNeedle?3:evaN.startsWith(evaNeedle)?2:1},evaItem=(evaP,evaSuffix)=>React.createElement(Dropdown.Item,{key:evaP.id+(evaSuffix||""),icon:React.createElement(EvaLoopIdentityAvatar,{person:evaP}),active:evaP.id===rt||evaLr.current[evaActive]===evaP,onClick:()=>ut(evaP.id,evaP.type,evaP.name)},React.createElement(EvaLoopIdentityName,{person:evaP})),evaKeyDown=evaEvent=>{if(evaEvent.isComposing||229===evaEvent.keyCode)return;const evaRows=evaLr.current||[];evaEvent.key==="ArrowDown"?(evaEvent.preventDefault(),evaSetActive(evaI=>Math.min(evaI+1,evaRows.length-1))):evaEvent.key==="ArrowUp"?(evaEvent.preventDefault(),evaSetActive(evaI=>Math.max(evaI-1,0))):evaEvent.key==="Enter"&&(evaEvent.preventDefault(),evaRows[evaActive]&&ut(evaRows[evaActive].id,evaRows[evaActive].type,evaRows[evaActive].name))},evaVisible=[];let evaBody;if(evaNeedle){const evaFlat=[];evaKeys.forEach(evaKey=>{evaFilter(St.filter(evaP=>(evaP.group||evaP.type)===evaKey)).forEach(evaP=>evaFlat.push(evaP))}),evaFlat.sort((evaA,evaB)=>evaRank(evaB.name)-evaRank(evaA.name)||evaNorm(evaA.name).indexOf(evaNeedle)-evaNorm(evaB.name).indexOf(evaNeedle)||evaA.name.length-evaB.name.length),evaFlat.forEach(evaP=>evaVisible.push(evaP)),evaBody=evaFlat.length?evaFlat.map(evaP=>evaItem(evaP)):React.createElement("div",{className:"eva-task-assignee-empty"},"未找到匹配的联系人或 AI")}else evaBody=evaKeys.map((evaKey,evaIndex)=>{const evaRows=evaFilter(St.filter(evaP=>(evaP.group||evaP.type)===evaKey));if(!evaRows.length)return null;const evaOpen=!!evaExp[evaKey],evaShow=evaOpen?evaRows:evaRows.slice(0,5),evaMore=evaRows.length-evaShow.length;evaShow.forEach(evaP=>evaVisible.push(evaP));return React.createElement(React.Fragment,{key:evaKey},(evaIndex>0||Ft)&&React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Title,null,evaLabels[evaKey]||evaKey),evaShow.map(evaP=>evaItem(evaP)),evaMore>0?React.createElement("div",{key:evaKey+"-more",className:"eva-task-assignee-expand",onMouseDown:evaEvent=>evaEvent.preventDefault(),onClick:evaEvent=>{evaEvent.stopPropagation(),evaSetExp({...evaExp,[evaKey]:!0})}},"展开其余 "+evaMore+(evaKey==="member"?" 位":" 个")):null)});evaLr.current=evaVisible;return React.createElement(Dropdown.Menu,null,Ft&&React.createElement(Dropdown.Item,{onClick:()=>ut(null,null,null),icon:React.createElement(CircleSlash,{size:13})},gt("loop.assignee.unassigned")),React.createElement("div",{className:"eva-task-assignee-search",onMouseDown:evaEvent=>evaEvent.stopPropagation(),onClick:evaEvent=>evaEvent.stopPropagation()},React.createElement("input",{value:evaQ,placeholder:"搜索",onChange:evaEvent=>{evaEvent.nativeEvent.isComposing||evaSetQ(evaEvent.target.value)},onKeyDown:evaKeyDown})),React.createElement("div",{className:"eva-task-assignee-scroll"},evaBody))})()`,
+      '面板对齐提及候选规范：搜索、分组、每组 5 条展开、滚动与键盘选择');
+
     source=root.__evaCut(source,
       'updateIssue=(rt,ct)=>{const ut=issuesOf().find(pt=>pt.id===rt);return ut&&ct.status&&(ut.status=ct.status),Promise.resolve(ut)}',
-      String.raw`updateIssue=(rt,ct)=>{const ut=issuesOf().find(pt=>pt.id===rt);if(!ut)return Promise.resolve(ut);const pt={...ct};if(Object.prototype.hasOwnProperty.call(pt,"parent_issue_id")){const mt=pt.parent_issue_id||null;if(mt===ut.id)return Promise.reject(new Error("任务不能成为自己的父任务"));if(mt&&!issuesOf().some(gt=>gt.id===mt))return Promise.reject(new Error("父任务不属于当前项目"));if(mt&&evaIssueDescendantIds(ut.id).has(mt))return Promise.reject(new Error("不能将任务移动到自己的子任务下"));pt.parent_issue_id=mt}const mt=["title","description","status","priority","assignee_id","assignee_type","assignee_name","project_id","start_date","due_date","stage","parent_issue_id"];for(const gt of mt)Object.prototype.hasOwnProperty.call(pt,gt)&&(ut[gt]=gt==="status"?evaNormalizeTaskStatus(pt[gt]):pt[gt]);return ut.updated_at=new Date().toISOString(),Promise.resolve(ut)}`,
+      String.raw`updateIssue=(rt,ct)=>{const ut=issuesOf().find(pt=>pt.id===rt);if(!ut)return Promise.resolve(ut);const pt={...ct};if(Object.prototype.hasOwnProperty.call(pt,"parent_issue_id")){const mt=pt.parent_issue_id||null;if(mt===ut.id)return Promise.reject(new Error("任务不能成为自己的父任务"));if(mt&&!issuesOf().some(gt=>gt.id===mt))return Promise.reject(new Error("父任务不属于当前项目"));if(mt&&evaIssueDescendantIds(ut.id).has(mt))return Promise.reject(new Error("不能将任务移动到自己的子任务下"));pt.parent_issue_id=mt}if(Object.prototype.hasOwnProperty.call(pt,"source_id")||Object.prototype.hasOwnProperty.call(pt,"creator_id")||Object.prototype.hasOwnProperty.call(pt,"assignee_id")){const pid=ut.workspace_id||currentSpaceId(),store=evaMembers().store,scope=store.snapshot().projects[pid];if(!scope)return Promise.reject(new Error("请先进入已加入的项目"));if(Object.prototype.hasOwnProperty.call(pt,"source_id")){const sid=pt.source_id;if(!sid)return Promise.reject(new Error("来源者不能为空，请重新选择"));const sourceIdentity=evaResolveTaskIdentity(sid,scope);if(!sourceIdentity)return Promise.reject(new Error("来源者必须是联系人、AI 分身或数字员工，请重新选择"));pt.source_id=sid;pt.source_type=sourceIdentity.type;pt.source_name=sourceIdentity.name||""}if(Object.prototype.hasOwnProperty.call(pt,"assignee_id")){const aid=pt.assignee_id;if(aid===null||aid===""){pt.assignee_id=null;pt.assignee_type=null;pt.assignee_name=null}else{const assigneePerson=scope.humans.some(p=>p.id===aid)?store.person(aid):null;if(!assigneePerson)return Promise.reject(new Error("负责人只能是本项目的联系人，请重新选择"));pt.assignee_id=aid;pt.assignee_type="member";pt.assignee_name=assigneePerson.name||""}}if(Object.prototype.hasOwnProperty.call(pt,"creator_id")){const cid=pt.creator_id;if(!cid)return Promise.reject(new Error("下达者不能为空，请重新选择"));const identity=evaResolveTaskIdentity(cid,scope);if(!identity)return Promise.reject(new Error("下达者必须是联系人、AI 分身或数字员工，请重新选择"));pt.creator_id=cid;pt.creator_type=identity.type;pt.creator_name=identity.name||"";pt.creator_avatar=identity.avatar||""}}const mt=["title","description","status","priority","assignee_id","assignee_type","assignee_name","project_id","start_date","due_date","stage","parent_issue_id","source_id","source_type","source_name","creator_id","creator_type","creator_name","creator_avatar"];for(const gt of mt)Object.prototype.hasOwnProperty.call(pt,gt)&&(ut[gt]=gt==="status"?evaNormalizeTaskStatus(pt[gt]):pt[gt]);return ut.updated_at=new Date().toISOString(),Promise.resolve(ut)}`,
       '项目任务更新及父子关系校验');
     source=root.__evaCut(source,
       'batchUpdateIssues=(rt,ct)=>(rt.forEach(ut=>{const pt=issuesOf().find(mt=>mt.id===ut);pt&&Object.assign(pt,ct)}),Promise.resolve({updated:rt.length}))',
@@ -275,6 +298,7 @@ function evaIssueDescendantIds(rt,ct=issuesOf()){const ut=new Set,pt=[rt];while(
 function evaIssueDefaultCollapsedIds(rt,ct=issuesOf(),ut=3){const pt=new Set,mt=(gt,St,Ct)=>{for(const xt of evaIssueChildrenOf(gt,ct)){if(Ct.has(xt.id))continue;const Pt=St+1,Nt=evaIssueChildrenOf(xt.id,ct),Mt=new Set(Ct);Mt.add(xt.id),Nt.length&&Pt>=ut?pt.add(xt.id):mt(xt.id,Pt,Mt)}};return mt(rt,0,new Set([rt])),pt}
 const EvaHierarchyIcon=createLucideIcon("Network",[["rect",{x:"16",y:"16",width:"6",height:"6",rx:"1",key:"network-right"}],["rect",{x:"2",y:"16",width:"6",height:"6",rx:"1",key:"network-left"}],["rect",{x:"9",y:"2",width:"6",height:"6",rx:"1",key:"network-root"}],["path",{d:"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3",key:"network-branches"}],["path",{d:"M12 12V8",key:"network-stem"}]]);
 function EvaIssueAssignee({issue:rt,size:ct=20,compact:ut=!1}){if(!rt.assignee_id)return React.createElement("span",{className:"eva-issue-assignee is-empty"+(ut?" is-compact":""),title:"负责人：未指派","aria-label":"负责人：未指派"},ut?"—":"未指派");const pt=rt.assignee_type||"member",mt={id:rt.assignee_id,name:rt.assignee_name||"未命名",type:pt},gt="负责人："+mt.name+(pt==="agent"?"（AI）":"");return React.createElement("span",{className:"eva-issue-assignee"+(ut?" is-compact":""),title:gt,"aria-label":ut?gt:void 0},React.createElement(EvaLoopIdentityAvatar,{person:mt,size:ct}),!ut&&React.createElement("span",{className:"eva-issue-assignee__name"},mt.name),!ut&&pt==="agent"&&window.EvaAIIdentity.badge(React.createElement))}
+function EvaIssueSourceBadge({issue:rt,size:ct=16}){if(!rt.source_id)return null;const pt=rt.source_type||"member",mt={id:rt.source_id,name:rt.source_name||"未命名",type:pt},gt="来源者："+mt.name+(pt==="agent"?"（AI）":"");return React.createElement("span",{className:"eva-issue-assignee eva-issue-source",title:gt,"aria-label":gt},React.createElement(EvaLoopIdentityAvatar,{person:mt,size:ct}),React.createElement("span",{className:"eva-issue-assignee__name"},mt.name),pt==="agent"&&window.EvaAIIdentity.badge(React.createElement))}
 function EvaIssueRelationMeta({issue:rt,variant:ct="card"}){const ut=evaIssueParentOf(rt),pt=evaIssueChildrenOf(rt.id);if(!ut&&!pt.length)return null;const mt=pt.filter(gt=>gt.status==="done").length,gt=pt.length?Math.round(mt/pt.length*100):0;return React.createElement("div",{className:"eva-issue-relation eva-issue-relation--"+ct},ut&&React.createElement("span",{className:"eva-issue-relation__parent"+(pt.length?" has-children":""),title:"父任务："+ut.identifier+" "+ut.title},React.createElement(ChevronRight,{size:12}),React.createElement("span",{className:"eva-issue-relation__label"},"父任务"),React.createElement("strong",{className:"eva-issue-relation__id"},ut.identifier)),pt.length>0&&React.createElement("span",{className:"eva-issue-relation__children",title:"直接子任务已完成 "+mt+" 项，共 "+pt.length+" 项"},React.createElement("span",{className:"eva-issue-relation__label"},"直接子任务"),React.createElement("strong",null,mt," / ",pt.length),React.createElement("span",{className:"eva-issue-relation__track","aria-hidden":!0},React.createElement("span",{style:{width:gt+"%"}}))))}
 function EvaIssueDetailSubtaskTree({rootIssue:rt,onOpen:ct,readOnly:ut=!1}){
   const{t:pt}=useI18n$1(),mt=issuesOf(),evaTreeSignature=mt.map(St=>St.id+":"+(St.parent_issue_id||"")).join("|"),[evaCollapsedIds,evaSetCollapsedIds]=reactExports.useState(()=>evaIssueDefaultCollapsedIds(rt.id,mt));
@@ -306,7 +330,7 @@ function IssueCard(`,'任务父子关系组件与层级视图');
         React.createElement("div",{className:"loop-card__title"},rt.title),
         pt&&React.createElement(EvaIssueRelationMeta,{issue:rt}),
         rt.labels&&rt.labels.length>0&&React.createElement("div",{className:"loop-card__labels"},React.createElement(LabelChips,{labels:rt.labels,max:3})),
-        React.createElement("div",{className:"loop-card__foot"},rt.project_name&&React.createElement("span",{className:"loop-card__project"},rt.project_name),rt.due_date&&React.createElement("span",{className:"loop-card__due",style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date)),React.createElement("span",{className:"loop-card__spacer"}),React.createElement(AssigneeBadge,{type:rt.assignee_type,name:rt.assignee_name??null})));
+        React.createElement("div",{className:"loop-card__foot"},rt.project_name&&React.createElement("span",{className:"loop-card__project"},rt.project_name),rt.due_date&&React.createElement("span",{className:"loop-card__due",style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date)),React.createElement("span",{className:"loop-card__spacer"}),React.createElement("span",{className:"loop-card__spacer"}),React.createElement(EvaIssueSourceBadge,{issue:rt}),React.createElement(AssigneeBadge,{type:rt.assignee_type,name:rt.assignee_name??null})));
     }`,'任务卡支持按视图控制轻量父子关系提示');
 
     const evaIssueBoardStart=source.indexOf('function IssueBoard('),evaIssueBoardEnd=source.indexOf('function IssueGroupBoard(',evaIssueBoardStart);
@@ -335,11 +359,11 @@ function IssueCard(`,'任务父子关系组件与层级视图');
 
     source=root.__evaCut(source,
       'React.createElement(AssigneePicker,{size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
-      'React.createElement(AssigneePicker,{searchable:!0,size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
+      'React.createElement(AssigneePicker,{size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       '任务批量负责人选择器开启搜索');
     source=root.__evaCut(source,
       'React.createElement(AssigneePicker,{size:"small",value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
-      'React.createElement(AssigneePicker,{searchable:!0,size:"small",value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
+      'React.createElement(AssigneePicker,{size:"small",value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
       '任务列表负责人选择器开启搜索');
 
     // 关联父任务选择器（命令式弹窗 + Semi Select 下拉搜索）。候选 = 同项目、
@@ -479,18 +503,17 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       const pid=rt.workspace_id||currentSpaceId(),project=loadSpaces().find(p=>p.id===pid),store=evaMembers().store,snapshot=store.snapshot(),scope=snapshot.projects[pid];
       if(!project||!scope||!store.canRead(pid,snapshot.actorId))return Promise.reject(new Error("请先进入已加入的项目"));
       if(!String(rt.title||"").trim())return Promise.reject(new Error("请填写任务名称"));
-      const allowed=[...scope.humans.map(p=>p.id),...(scope.cloneIds||[]),...(scope.employeeIds||[]),store.projectAgent(pid)?.id];
-      if(rt.assignee_id&&!allowed.includes(rt.assignee_id))return Promise.reject(new Error("负责人已不在本项目，请重新选择"));
-      const agentIds=[...(scope.cloneIds||[]),...(scope.employeeIds||[]),store.projectAgent(pid)?.id].filter(Boolean);
-      if(rt.source_id&&!agentIds.includes(rt.source_id))return Promise.reject(new Error("来源者必须来自本项目的 AI，请重新选择"));
+      const allowed=scope.humans.map(p=>p.id);
+      if(rt.assignee_id&&!allowed.includes(rt.assignee_id))return Promise.reject(new Error("负责人只能是本项目的联系人，请重新选择"));
       if(!rt.source_id)return Promise.reject(new Error("请选择来源者"));
+      const sourceIdentity=evaResolveTaskIdentity(rt.source_id,scope);if(!sourceIdentity)return Promise.reject(new Error("来源者必须是联系人、AI 分身或数字员工，请重新选择"));
       if(rt.reviewer_id&&!scope.humans.some(p=>p.id===rt.reviewer_id))return Promise.reject(new Error("验收人已不在本项目，请重新选择"));
       const list=ISSUES_BY_SPACE[pid]||(ISSUES_BY_SPACE[pid]=[]);
       if(rt.parent_issue_id&&!list.some(i=>i.id===rt.parent_issue_id))return Promise.reject(new Error("父任务不属于当前项目"));
-      const prefix=evaProjectIssuePrefix(project),number=1+Math.max(0,...list.map(i=>{const match=String(i.identifier||"").match(/-(\d+)$/);return match?Number(match[1]):Number(i.number)||0;})),now=new Date().toISOString(),creator=store.person(snapshot.actorId),attachments=(rt.attachment_ids||[]).map(id=>evaLoopTaskAttachments.get(id)).filter(Boolean),attachmentText=attachments.length?"\n\n## 参考附件\n"+attachments.map(a=>"- ["+a.name.replace(/[\[\]]/g,"")+"]("+a.url+")").join("\n"):"";
-      const isHuman=scope.humans.some(p=>p.id===rt.assignee_id),assignee=rt.assignee_id?(isHuman?store.person(rt.assignee_id):(scope.cloneIds||[]).includes(rt.assignee_id)?store.clone(rt.assignee_id):(scope.employeeIds||[]).includes(rt.assignee_id)?store.employee(rt.assignee_id):store.projectAgent(pid)):null;
-      const sourceAgent=rt.source_id?((scope.cloneIds||[]).includes(rt.source_id)?store.clone(rt.source_id):(scope.employeeIds||[]).includes(rt.source_id)?store.employee(rt.source_id):store.projectAgent(pid)):null;
-      const ut={...rt,id:"issue-"+pid+"-"+prefix+"-"+number,title:rt.title.trim(),description:(rt.description||"")+attachmentText,workspace_id:pid,project_id:pid==='prod'?'p-supply':null,project_name:project.name,number,identifier:prefix+"-"+number,status:rt.status||"todo",priority:rt.priority||"none",due_date:rt.due_date||null,assignee_id:rt.assignee_id||null,assignee_type:assignee?(isHuman?"member":"agent"):null,assignee_name:assignee?.name||null,source_id:rt.source_id||null,source_type:"agent",source_name:sourceAgent?.name||null,creator_id:snapshot.actorId,creator_name:creator?.name||"",creator_avatar:creator?.avatar||window.__EVA_CURRENT_USER_PORTRAIT,created_at:now,updated_at:now,position:list.length+1,attachments};
+      const issuerId=rt.creator_id||snapshot.actorId,issuerIdentity=evaResolveTaskIdentity(issuerId,scope);if(!issuerIdentity)return Promise.reject(new Error("下达者必须是联系人、AI 分身或数字员工，请重新选择"));
+      const prefix=evaProjectIssuePrefix(project),number=1+Math.max(0,...list.map(i=>{const match=String(i.identifier||"").match(/-(\d+)$/);return match?Number(match[1]):Number(i.number)||0;})),now=new Date().toISOString(),attachments=(rt.attachment_ids||[]).map(id=>evaLoopTaskAttachments.get(id)).filter(Boolean),attachmentText=attachments.length?"\n\n## 参考附件\n"+attachments.map(a=>"- ["+a.name.replace(/[\[\]]/g,"")+"]("+a.url+")").join("\n"):"";
+      const assignee=rt.assignee_id?store.person(rt.assignee_id):null;
+      const ut={...rt,id:"issue-"+pid+"-"+prefix+"-"+number,title:rt.title.trim(),description:(rt.description||"")+attachmentText,workspace_id:pid,project_id:pid==='prod'?'p-supply':null,project_name:project.name,number,identifier:prefix+"-"+number,status:rt.status||"todo",priority:rt.priority||"none",due_date:rt.due_date||null,assignee_id:rt.assignee_id||null,assignee_type:assignee?"member":null,assignee_name:assignee?.name||null,source_id:rt.source_id||null,source_type:sourceIdentity.type,source_name:sourceIdentity.name||null,creator_id:issuerId,creator_type:issuerIdentity.type,creator_name:issuerIdentity.name||"",creator_avatar:issuerIdentity.avatar||"",created_at:now,updated_at:now,position:list.length+1,attachments};
       list.push(ut);return Promise.resolve(ut);
     }`,'项目任务完整编号');
     const evaCreateStart=source.indexOf('function CreateIssueModal('),evaCreateEnd=source.indexOf('const{Text:Text$c}=Typography;',evaCreateStart);
@@ -536,7 +559,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     function CreateIssueModal(props){
       const store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
       const project=loadSpaces().find(p=>p.id===(props.projectId||currentSpaceId()));
-      return window.EvaLoopTaskCreateUI.render({...props,parentIssue:props.parentIssue||issuesOf().find(issue=>issue.id===props.parentIssueId)},{React:reactExports,Modal,Button,LoopButton,Input:ForwardInput,AutoGrowTextarea,Select,DatePicker,Popover,LoopPropertyPill,statusOptions:ISSUE_STATUS_ORDER.map(value=>({value,label:({backlog:"待规划",todo:"待办",in_progress:"进行中",in_review:"审核中",done:"已完成",blocked:"受阻",cancelled:"已取消"})[value],icon:React.createElement(ISSUE_STATUS_ICON[value],{size:14,style:{color:ISSUE_STATUS_HEX[value]}})})),priorityOptions:PRIORITY_ORDER.map(value=>({value,label:({urgent:"紧急",high:"高",medium:"中",low:"低",none:"无"})[value],icon:React.createElement(PRIORITY_ICON[value],{size:14,style:{color:PRIORITY_HEX[value]}})})),icons:{X,ChevronRight,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue({...payload,source_conversation_id:props.conversationId||null}),uploadAttachment:file=>evaRegisterLoopAttachment(file),listLabels:()=>Promise.resolve(evaTaskLabels(project)),createLabel:name=>Promise.resolve(evaCreateTaskLabel(project,name)),attachLabel:(issueId,labelId)=>Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))});
+      return window.EvaLoopTaskCreateUI.render({...props,parentIssue:props.parentIssue||issuesOf().find(issue=>issue.id===props.parentIssueId)},{React:reactExports,Modal,Button,LoopButton,Input:ForwardInput,AutoGrowTextarea,Select,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions:ISSUE_STATUS_ORDER.map(value=>({value,label:({backlog:"待规划",todo:"待办",in_progress:"进行中",in_review:"审核中",done:"已完成",blocked:"受阻",cancelled:"已取消"})[value],icon:React.createElement(ISSUE_STATUS_ICON[value],{size:14,style:{color:ISSUE_STATUS_HEX[value]}})})),priorityOptions:PRIORITY_ORDER.map(value=>({value,label:({urgent:"紧急",high:"高",medium:"中",low:"低",none:"无"})[value],icon:React.createElement(PRIORITY_ICON[value],{size:14,style:{color:PRIORITY_HEX[value]}})})),icons:{X,ChevronRight,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue({...payload,source_conversation_id:props.conversationId||null}),uploadAttachment:file=>evaRegisterLoopAttachment(file),listLabels:()=>Promise.resolve(evaTaskLabels(project)),createLabel:name=>Promise.resolve(evaCreateTaskLabel(project,name)),attachLabel:(issueId,labelId)=>Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))});
     }`,'项目 Loop 任务完整创建表单');
     source=root.__evaCut(source,'uploadAttachment=()=>Promise.resolve({url:""})','uploadAttachment=(rt,ct)=>evaRegisterLoopAttachment(rt,ct)','已有任务附件上传写回任务数据');
     source=root.__evaCut(source,'listLabels=()=>Promise.resolve([]),createLabel=()=>Promise.resolve(),updateLabel=()=>Promise.resolve(),deleteLabel=()=>Promise.resolve(),attachLabel=()=>Promise.resolve(),detachLabel=()=>Promise.resolve()',String.raw`listLabels=()=>Promise.resolve(evaTaskLabels(evaCurrentTaskProject())),createLabel=(name,color)=>Promise.resolve(evaCreateTaskLabel(evaCurrentTaskProject(),name,color)),updateLabel=(labelId,patch)=>Promise.resolve(evaUpdateTaskLabel(evaCurrentTaskProject(),labelId,patch)),deleteLabel=labelId=>Promise.resolve(evaDeleteTaskLabel(evaCurrentTaskProject(),labelId)),attachLabel=(issueId,labelId)=>{const project=evaCurrentTaskProject();return Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))},detachLabel=(issueId,labelId)=>{const project=evaCurrentTaskProject();return Promise.resolve(evaDetachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))}`,'任务详情标签使用项目数据');
@@ -623,13 +646,39 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       'Hi("props")&&React.createElement("div",{className:"loop-idp__asec-body"},React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.status"))',
       'Hi("props")&&React.createElement("div",{className:"loop-idp__asec-body"},xt.parent_issue_id&&React.createElement("div",{className:"loop-idp__prop loop-idp__prop--parent"},React.createElement("span",{className:"loop-idp__prop-k"},"父任务"),Ct?React.createElement("span",{className:"loop-idp__prop-v"},evaParentIssue?evaParentIssue.identifier+" "+evaParentIssue.title:xt.parent_issue_id):React.createElement("button",{type:"button",className:"loop-idp__parent-link",onClick:()=>Ea(xt.parent_issue_id)},evaParentIssue?evaParentIssue.identifier+" "+evaParentIssue.title:xt.parent_issue_id)),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.status"))',
       '任务详情属性区显示父任务');
+    // Eva 的任务归属由入口和顶部路径决定；详情与创建表单一致，不再提供旧 Loop 项目切换行。
     source=root.__evaCut(source,
-      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.project"))',
-      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.dueDate")),Ct?React.createElement("span",{className:"loop-idp__prop-v loop-idp__due-value"},React.createElement(CalendarClock,{size:13}),xt.due_date?formatShortDate(xt.due_date):"未设置"):React.createElement(DatePicker,{className:"loop-idp__due-picker",type:"date",density:"compact",format:"yyyy-MM-dd",value:xt.due_date?xt.due_date.slice(0,10):void 0,placeholder:"未设置","aria-label":"截止日期",showClear:!0,onChange:(ki,Wi)=>Ta({due_date:Wi||null}),style:{width:132}})),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.project"))',
-      '任务详情直接编辑与清除截止日期');
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.project")),Ct?React.createElement("span",{className:"loop-idp__prop-v"},xt.project_name??St("loop.field.noProject")):React.createElement(Dropdown,{trigger:"click",position:"bottomRight",clickToHide:!0,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{active:!xt.project_id,onClick:()=>Ta({project_id:null})},St("loop.field.noProject")),cn.length>0&&React.createElement(Dropdown.Divider,null),cn.map(ki=>React.createElement(Dropdown.Item,{key:ki.id,active:xt.project_id===ki.id,onClick:()=>Ta({project_id:ki.id})},ki.icon," ",ki.title)))},React.createElement("button",{type:"button",className:"loop-idp__prop-edit loop-idp__prop-edit--text"},xt.project_name??St("loop.field.noProject"),React.createElement(ChevronDown,{size:12,className:"loop-idp__prop-caret"})))),',
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.field.dueDate")),Ct?React.createElement("span",{className:"loop-idp__prop-v loop-idp__due-value"},React.createElement(CalendarClock,{size:13}),xt.due_date?formatShortDate(xt.due_date):"未设置"):React.createElement(DatePicker,{className:"loop-idp__due-picker",type:"date",density:"compact",format:"yyyy-MM-dd",value:xt.due_date?xt.due_date.slice(0,10):void 0,placeholder:"未设置","aria-label":"截止日期",showClear:!0,onChange:(ki,Wi)=>Ta({due_date:Wi||null}),style:{width:132}})),',
+      '截止日期在主属性区且移除旧 Loop 项目切换行');
+    source=root.__evaCut(source,
+      ',reactExports.useEffect(()=>{Ct||listProjects().then(Cn).catch(()=>{})},[Ct])',
+      '',
+      '移除仅项目切换使用的候选加载');
+    // Eva 每个协作项目独立，任务归属不再有第二层项目维度：筛选面板不提供项目与含无项目。
+    source=root.__evaCut(source,
+      'qr.length>0&&ca(pt("loop.filter.project"),sn.projectIds,$a=>wa({projectIds:$a}),Fa,{filter:!0}),React.createElement("div",{className:"loop-fields__row"},React.createElement(CheckboxWithGroup,{className:"loop-nofilter",checked:sn.noProject,onChange:$a=>wa({noProject:!!$a.target.checked}),disabled:Sa},pt("loop.filter.noProject"))),',
+      '',
+      '任务筛选移除项目与含无项目');
+    source=root.__evaCut(source,
+      'Fa=qr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id},$a.title)),',
+      '',
+      '移除项目筛选项构建');
+    source=root.__evaCut(source,
+      '+(sn.projectIds.length||sn.noProject?1:0)',
+      '',
+      '筛选项计数不含项目');
+    source=root.__evaCut(source,
+      'project_ids:sn.projectIds.length?sn.projectIds:void 0,include_no_project:sn.noProject||void 0,',
+      '',
+      '任务查询不带项目维度');
+    source=root.__evaCut(source,
+      'projectIds:stringList(rt.projectIds),noProject:rt.noProject===!0,',
+      'projectIds:[],noProject:!1,',
+      '旧的已保存项目筛选不再生效');
     source=root.__evaCut(source,
       'React.createElement(AssigneePicker,{size:"small",value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
-      'React.createElement(AssigneePicker,{searchable:!0,size:"small",value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
+      'React.createElement(AssigneePicker,{size:"small",value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
       '任务详情负责人选择器开启搜索');
     source=root.__evaCut(source,
       'React.createElement("div",{className:"loop-fields__inline"},React.createElement("div",{style:{flex:1}},React.createElement("div",{className:"loop-fields__label"},St("loop.field.startDate")),React.createElement(DatePicker,{type:"date",format:"yyyy-MM-dd",value:xt.start_date?xt.start_date.slice(0,10):void 0,onChange:(ki,Wi)=>Ta({start_date:Wi||""}),style:{width:"100%"}})),React.createElement("div",{style:{flex:1}},React.createElement("div",{className:"loop-fields__label"},St("loop.field.dueDate")),React.createElement(DatePicker,{type:"date",format:"yyyy-MM-dd",value:xt.due_date?xt.due_date.slice(0,10):void 0,onChange:(ki,Wi)=>Ta({due_date:Wi||""}),style:{width:"100%"}})))',
@@ -655,11 +704,11 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     source=root.__evaCut(source,source.slice(contributionStart,contributionEnd),String.raw`getAgentContributions=rt=>listAgentTasks(rt).then(runs=>{const counts=new Map();for(const run of runs){const day=String(run.created_at||'').slice(0,10);if(day)counts.set(day,(counts.get(day)||0)+1);}const end=new Date();end.setUTCHours(0,0,0,0);return Array.from({length:120},(_,index)=>{const date=new Date(end.getTime()-(119-index)*864e5).toISOString().slice(0,10);return {date,count:counts.get(date)||0};});})`,'专家活跃统计取自同一运行记录');
     source=root.__evaCut(source,'ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}})', 'bi.terminalCount?ut("loop.agent.successAvg",{values:{pct:bi.successPct,avg:formatDurationMs(bi.avgMs)}}):"暂无已结束运行，成功率与耗时尚不可用"', '专家无运行时不显示虚构成功率');
     source=root.__evaCut(source,'St("loop.field.creator")','"下达者"','详情下达者文案');
-    // 来源者：与下达者同级展示，必选，且只能是 AI。
+    // 来源者与下达者在详情中都可修改：来源者在先、下达者在后；来源者限本项目联系人，下达者限本项目人类或 AI。
     source=root.__evaCut(source,
-      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
-      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},"来源者"),xt.source_id?React.createElement("span",{className:"loop-idp__prop-person"},React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.source_id,name:xt.source_name,type:"agent"}}),React.createElement(EvaLoopIdentityName,{person:{id:xt.source_id,name:xt.source_name,type:"agent"}})):React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},"未设置")),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
-      '详情来源者展示');
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},"下达者"),React.createElement("span",{className:"loop-idp__prop-person"},React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.creator_id,name:xt.creator_name,type:"member",avatar:xt.creator_avatar}}),xt.creator_name??"—")),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
+      'React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},"来源者"),Ct?(xt.source_id?React.createElement("span",{className:"loop-idp__prop-person"},React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.source_id,name:xt.source_name,type:xt.source_type||"member"}}),React.createElement(EvaLoopIdentityName,{person:{id:xt.source_id,name:xt.source_name,type:xt.source_type||"member"}})):React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},"未设置")):React.createElement(AssigneePicker,{size:"small",types:["member","agent"],allowClear:false,candidates:evaTaskIdentityCandidates(xt.workspace_id||currentSpaceId()),value:xt.source_id,valueName:xt.source_name??null,onChange:ki=>Ta({source_id:ki})})),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},"下达者"),Ct?React.createElement("span",{className:"loop-idp__prop-person"},React.createElement(EvaLoopIdentityAvatar,{person:{id:xt.creator_id,name:xt.creator_name,type:xt.creator_type||"member",avatar:xt.creator_avatar}}),React.createElement(EvaLoopIdentityName,{person:{id:xt.creator_id,name:xt.creator_name,type:xt.creator_type||"member"}})):React.createElement(AssigneePicker,{size:"small",types:["member","agent"],allowClear:false,candidates:evaTaskIdentityCandidates(xt.workspace_id||currentSpaceId()),value:xt.creator_id,valueName:xt.creator_name??null,onChange:ki=>Ta({creator_id:ki})})),React.createElement("div",{className:"loop-idp__prop loop-idp__prop--inline"},React.createElement("span",{className:"loop-idp__prop-k"},St("loop.detail.created")),React.createElement("span",{className:"loop-idp__prop-v loop-idp__prop-v--muted"},fmt(xt.created_at)))',
+      '详情来源者与下达者可编辑');
     source=root.__evaCut(source,'function CreateIssueModal(props){',String.raw`function EvaChatTaskList({projectId,conversationId,messages=[],onClose,onCreate}){
       const h=React.createElement,store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
       const actor=store.snapshot().actorId,allowed=store.canRead(projectId,actor)&&store.canRead(conversationId,actor),text=messages.map(m=>m.text||m.content||"").join(" ");
@@ -693,17 +742,59 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     source=root.__evaCut(source,'map(ct=>({path:ct.path,content:ct.content}))','map(ct=>({...ct}))','技能附件保留二进制元数据');
     source=root.__evaCut(source,'React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','Qt.find(f=>f.path===Ht)?.encoding==="base64"?window.EvaProjectSkillCreate.binaryPreview(React,Qt.find(f=>f.path===Ht)):React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','二进制附件只读下载');
     // Loop task status compatibility belongs to the shared data adapter, not a view.
+    // 负责人只能是本项目联系人，候选不再回落到旧 Loop 全局列表（专家团、其他项目 AI）。
+    source=root.__evaCut(source,
+      'React.createElement(AssigneePicker,{size:"small",value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
+      'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(xt.workspace_id||currentSpaceId(),"member"),value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
+      '详情负责人候选只限本项目联系人');
+    source=root.__evaCut(source,
+      'React.createElement(AssigneePicker,{size:"small",value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
+      'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(currentSpaceId(),"member"),value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
+      '列表负责人候选只限本项目联系人');
+    source=root.__evaCut(source,
+      'React.createElement(AssigneePicker,{size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
+      'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(currentSpaceId(),"member"),value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
+      '批量指派候选人只限本项目联系人');
     source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
     function evaNormalizeTaskStatus(status){return status==='backlog'?'todo':status}
+    // 任务身份解析：联系人不限项目；AI 分身与数字员工必须已加入所在项目（传入 scope 时校验）。
+    function evaResolveTaskIdentity(id,scope){
+      const store=evaMembers().store,snapshot=store.snapshot();
+      const human=(snapshot.people||[]).find(person=>person.id===id);
+      if(human)return{type:"member",name:human.name,avatar:human.avatar||""};
+      const clone=(snapshot.clones||[]).find(clone=>clone.id===id&&clone.active!==false);
+      const employee=clone?null:store.employee(id);
+      const identity=clone?{type:"agent",name:clone.name,avatar:clone.avatar||""}:employee?{type:"agent",name:employee.name,avatar:employee.avatar||""}:null;
+      if(identity&&scope&&![...(scope.cloneIds||[]),...(scope.employeeIds||[])].includes(id))return null;
+      return identity;
+    }
     function evaNormalizeTaskList(issues){for(const issue of issues){issue.status=evaNormalizeTaskStatus(issue.status);evaEnsureTaskSource(issue);}return issues}
+    // 旧任务缺来源者时回退到创建者本人；只在初始化后使用任务自身字段，
+    // 不能在模块初始化期调用 evaMembers()（成员 store 尚未初始化）。
     function evaEnsureTaskSource(issue){
       if(issue.source_id)return issue;
-      const pid=issue.workspace_id||issue.project_id;
-      if(!pid||typeof loadSpaces!=='function'||!window.EvaAIIdentity)return issue;
-      const project=loadSpaces().find(p=>p.id===pid);
-      if(!project)return issue;
-      issue.source_id='project-agent:'+pid;issue.source_name=window.EvaAIIdentity.projectAgentName(project);issue.source_type='agent';
+      const creatorId=issue.creator_id;
+      if(!creatorId)return issue;
+      issue.source_id=creatorId;issue.source_name=issue.creator_name||"";issue.source_type='member';
       return issue;
+    }
+    // 负责人候选仍限本项目联系人（kinds 为 "member" 时仅成员）；来源者与下达者不限项目。
+    function evaTaskProjectIdentities(pid,kinds){
+      const store=evaMembers().store,snapshot=store.snapshot(),scope=snapshot.projects[pid];
+      if(!scope)return[];
+      const humans=(scope.humans||[]).map(row=>snapshot.people.find(person=>person.id===row.id)).filter(Boolean).map(person=>({id:person.id,type:"member",name:person.name,avatar:person.avatar}));
+      if(kinds==="member")return humans;
+      const clones=(scope.cloneIds||[]).map(id=>snapshot.clones.find(clone=>clone.id===id)).filter(Boolean).map(clone=>({id:clone.id,type:"agent",group:"clone",name:clone.name}));
+      const employees=(scope.employeeIds||[]).map(id=>store.employee(id)).filter(Boolean).map(employee=>({id:employee.id,type:"agent",group:"employee",name:employee.name}));
+      return[...humans,...clones,...employees];
+    }
+    // 来源者与下达者的候选：全部联系人 + 已加入当前项目的 AI 分身与数字员工；不含项目管家。
+    function evaTaskIdentityCandidates(pid){
+      const store=evaMembers().store,snapshot=store.snapshot(),scope=snapshot.projects[pid||currentSpaceId()];
+      const humans=(snapshot.people||[]).map(person=>({id:person.id,type:"member",name:person.name,avatar:person.avatar}));
+      const clones=(scope?(scope.cloneIds||[]):[]).map(id=>snapshot.clones.find(clone=>clone.id===id)).filter(Boolean).filter(clone=>clone.active!==false).map(clone=>({id:clone.id,type:"agent",group:"clone",name:clone.name}));
+      const employees=(scope?(scope.employeeIds||[]):[]).map(id=>store.employee(id)).filter(Boolean).map(employee=>({id:employee.id,type:"agent",group:"employee",name:employee.name,kind:"employee",identityAppearance:window.EvaDigitalEmployeesStore?.appearance?.(employee)}));
+      return[...humans,...clones,...employees];
     }
     function groupIssuesByAssignee`,'旧任务状态兼容');
     source=root.__evaCut(source,'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues,official:window.__EVA_OFFICIAL_TASKS,lab:window.__EVA_CLIENT_TASKS}',

@@ -60,6 +60,10 @@
 /* Child popups share the modal stacking context, outside its scroll clipping. */
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
 
+/* 创建弹窗内的身份选择触发器：与工具栏 Select 视觉对齐。 */
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger { box-sizing: border-box; min-width: 108px; min-height: 32px; padding: 0 10px; border: 1px solid var(--semi-color-border); border-radius: var(--eva-radius-control); background: var(--semi-color-bg-0); justify-content: flex-start; }
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger:hover { background: var(--semi-color-fill-0); }
+
 .eva-loop-task-create .loop-ci__head { min-height: 52px; box-sizing: border-box; padding: 12px 24px; }
 .eva-loop-task-create .loop-ci__title { padding: 8px 24px; font: 500 16px/24px var(--eva-font-sans); }
 .eva-loop-task-create .loop-ci__desc { padding: 8px 24px; font: 400 15px/24px var(--eva-font-sans); }

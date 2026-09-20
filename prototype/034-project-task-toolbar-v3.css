@@ -649,3 +649,12 @@
 /* 项目任务评论 @ 复用统一 IM 提及选择器：宿主只负责定位，外观由共享组件决定。 */
 .eva-loop-mention-host { position: fixed; z-index: 2000; }
 .eva-loop-mention-host > .eva-im-mention-picker { position: absolute; left: 0; top: auto; bottom: calc(100% + 8px); max-width: none; }
+
+/* 任务身份选择面板（AssigneePicker）：顶部搜索 + 每组 5 条展开 + 限高滚动，对齐统一提及候选规范。 */
+.eva-task-assignee-search { padding: 8px 12px 4px; }
+.eva-task-assignee-search input { box-sizing: border-box; width: 100%; height: 28px; padding: 0 10px; border: 1px solid var(--semi-color-border); border-radius: var(--eva-radius-control); background: var(--semi-color-bg-0); color: var(--semi-color-text-0); font: 400 12px/20px var(--eva-font-sans); outline: none; }
+.eva-task-assignee-search input:focus { border-color: var(--semi-color-primary); }
+.eva-task-assignee-scroll { max-height: 480px; overflow-y: auto; padding-bottom: 6px; }
+.eva-task-assignee-expand { padding: 6px 16px; color: var(--semi-color-primary); font: 400 12px/20px var(--eva-font-sans); cursor: pointer; user-select: none; }
+.eva-task-assignee-expand:hover { background: var(--semi-color-fill-0); }
+.eva-task-assignee-empty { padding: 20px 16px; color: var(--semi-color-text-2); font: 400 12px/20px var(--eva-font-sans); text-align: center; }
