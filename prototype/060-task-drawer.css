@@ -73,10 +73,13 @@
   align-items: center;
   justify-content: center;
 }
-.loop-idp__fsbtn .eva-fs-ico > svg {
+/* 全屏图标随抽屉展开态切换：默认显示「放大」，展开后显示「收起」。
+   两枚图标同为 .eva-fs-ico 的 svg 子节点，默认显隐必须按类精确指定——
+   不能用 `.eva-fs-ico > svg{display:block}`：它会同时命中 __exit，且特异度
+   （0,2,1）盖过 `.eva-fs-ico__exit{display:none}`（0,2,0），导致两枚图标叠现。 */
+.loop-idp__fsbtn .eva-fs-ico__enter {
   display: block;
 }
-/* 全屏图标随抽屉展开态切换：默认显示「放大」，展开后显示「收起」 */
 .loop-idp__fsbtn .eva-fs-ico__exit {
   display: none;
 }

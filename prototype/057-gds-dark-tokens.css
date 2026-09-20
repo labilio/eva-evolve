@@ -87,6 +87,9 @@
   --eva-conversation-row-selected-meta: rgba(255, 255, 255, 0.78);
   /* 解耦后各自独立，不再经 --eva-nav-selected 间接取值。 */
   --eva-im-bubble-outgoing: #1e3a63;
+  /* 收到气泡/任务附件卡（054 用 --eva-im-bubble-incoming 兜底 #f2f2f2）：
+     暗色下重指为抬升面，避免浅色卡糊在暗底。 */
+  --eva-im-bubble-incoming: var(--eva-surface-paper);
   --eva-list-option-selected: #1e3a63;
   --eva-unread-surface: #2c2f33;
   --eva-unread-text: #c6cbd0;
