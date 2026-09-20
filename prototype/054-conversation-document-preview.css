@@ -202,19 +202,87 @@ html.eva-file-preview-resizing * {
 .eva-task-file-fs .wk-file-preview-header__left {
   flex: 1;
   min-width: 0;
+  max-width: none;
+}
+/* FilePreviewHost 为窄侧栏预设了 150px/110px 宽度上限，全屏下标题过早省略。
+   解除上限，标题随可用空间伸展，仅在空间不足时才省略。 */
+.eva-task-file-fs .wk-file-preview-header__dropdown {
+  min-width: 0;
+  max-width: 100%;
+}
+.eva-task-file-fs .wk-file-preview-header__dropdown-btn {
+  max-width: none;
 }
 .eva-task-file-fs .wk-file-preview-header__dropdown-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
   overflow: hidden;
   font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* 右侧动作按钮：对齐任务详情抽屉标题栏按钮（32×32、圆角 8、
+   --eva-text-secondary、hover/active 填充 overlay token、focus 环一致），
+   间距取抽屉同款 12px，去掉仅因窄侧栏而设的分隔线。
+   选择器带 .wk-file-preview-header 拉高特异度：vendor 在暗色下用
+   body[theme-mode=dark] .wk-file-preview-header__btn（0,2,1）改写颜色，
+   需 (0,3,0)+ 才能稳定压回 Eva token。 */
 .eva-task-file-fs .wk-file-preview-header__actions {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+}
+.eva-task-file-fs .wk-file-preview-header__sep {
+  display: none;
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--eva-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn:hover {
+  color: var(--eva-text-secondary);
+  background: var(--eva-overlay-hover);
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn:active {
+  background: var(--eva-overlay-pressed);
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: 2px;
+}
+/* 图标对齐抽屉的 Lucide 线性图标（18px，随 currentColor）：组件自带的
+   12px 填充图标用 mask 换成同套 Lucide 图标，仅作用于本覆盖层。 */
+.eva-task-file-fs {
+  --eva-ico-download: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' x2='12' y1='15' y2='3'/%3E%3C/svg%3E");
+  --eva-ico-x: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn > svg {
+  display: none;
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask: var(--eva-ico-download) center / contain no-repeat;
+  mask: var(--eva-ico-download) center / contain no-repeat;
+}
+.eva-task-file-fs .wk-file-preview-header .wk-file-preview-header__btn--close::before {
+  -webkit-mask-image: var(--eva-ico-x);
+  mask-image: var(--eva-ico-x);
 }
 /* 已铺满工作区，隐藏组件自带的“再全屏”按钮，避免重复层级。
    须压过下方 .wk-file-preview-header .eva-file-preview-fullscreen-button(0,2,0)，
