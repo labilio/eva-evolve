@@ -93,25 +93,25 @@
   cursor: pointer;
 }
 .eva-forward-search .eva-fp-search-clear:hover { background: var(--gds-color-overlay-hover, #f1f3f5); }
-/* 常显的新建群聊入口：与搜索框等高，只作为列表的动作按钮 */
+/* 低频动作：搜索行右侧的「新建群聊」是三级文字按钮，写出入口名称但不与搜索框争主位 */
 .eva-fp-create-group {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
   flex: none;
-  width: 32px;
   height: 32px;
-  padding: 0;
-  border: 1px solid var(--gds-color-border-subtle, #dfe3e8);
+  padding: 0 10px;
+  border: 0;
   border-radius: var(--gds-radius-control, 8px);
-  background: var(--gds-color-surface-primary, #fff);
-  color: var(--gds-color-text-secondary-accessible, #606d7f);
+  background: transparent;
+  color: var(--gds-color-text-secondary-accessible, #6f7886);
+  font: var(--gds-font-weight-regular, 400) 13px/18px var(--gds-font-family-sans, inherit);
+  white-space: nowrap;
   cursor: pointer;
 }
 .eva-fp-create-group:hover {
-  border-color: var(--gds-color-border-default, #c9cfd8);
-  background: var(--gds-color-overlay-hover, #f7f8fa);
-  color: var(--gds-color-primary, #1563eb);
+  background: var(--gds-color-overlay-hover, #f1f3f5);
+  color: var(--gds-color-text-primary, #20242c);
 }
 .eva-fp-candidates {
   flex: 1;
@@ -494,7 +494,6 @@
 html[data-theme="dark"] .eva-fp-modal,
 html[data-theme="dark"] .eva-fp-picker-menu,
 html[data-theme="dark"] .eva-fp-note,
-html[data-theme="dark"] .eva-fp-create-group,
 html[data-theme="dark"] .eva-fp-picker-new-input { background: var(--semi-color-bg-2, #1c1f23); }
 html[data-theme="dark"] .eva-fp-preview { background: var(--semi-color-fill-0, #2a2e33); }
 html[data-theme="dark"] .eva-fp-row-head.is-checked { background: var(--semi-color-primary-light-default, rgba(21, 99, 235, 0.25)); }

@@ -311,10 +311,11 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
   },[chosen]);
   reactExports.useEffect(()=>{const node=candidatesRef.current;if(node)node.scrollTop=0;},[query]);
   reactExports.useEffect(()=>{
-    const onKey=event=>{if(event.key!=='Escape')return;event.preventDefault();if(draftThread){setDraftThread(null);return;}if(picker){setPicker(null);return;}onClose();};
+    // 「创建群聊并发送」弹窗在面板之上：Escape 只交给它自己关闭，面板保持打开与已选状态。
+    const onKey=event=>{if(event.key!=='Escape')return;if(createOpen)return;event.preventDefault();if(draftThread){setDraftThread(null);return;}if(picker){setPicker(null);return;}onClose();};
     document.addEventListener('keydown',onKey);
     return()=>document.removeEventListener('keydown',onKey);
-  },[onClose,picker,draftThread]);
+  },[onClose,picker,draftThread,createOpen]);
   // 「发送至」下拉菜单接入全站唯一失焦关闭控制器（docs/弹窗失焦关闭规范.md）。
   reactExports.useEffect(()=>{
     if(!picker||!window.EvaPopupDismiss)return undefined;
@@ -560,7 +561,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
               h('input',{value:query,'aria-label':'搜索转发目标',placeholder:'搜索联系人、Agent、群聊及其子区',
                 onChange:event=>setQuery(event.target.value)}),
               query?h('button',{type:'button',className:'eva-fp-search-clear','aria-label':'清空搜索',onClick:()=>{setQuery('');}},evaForwardIcon('x',{size:14})):null),
-            h('button',{type:'button',className:'eva-fp-create-group','aria-label':'创建群聊','title':'创建群聊',onClick:()=>setCreateOpen(true)},evaForwardIcon('plus',{size:16}))),
+            h('button',{type:'button',className:'eva-fp-create-group',title:'新建群聊',onClick:()=>setCreateOpen(true)},evaForwardIcon('plus',{size:14}),h('span',null,'新建群聊'))),
           h('div',{className:'eva-fp-candidates'+(searchResults?' is-searching':''),ref:candidatesRef},leftContent())),
         h('section',{className:'eva-fp-right'},
           h('div',{className:'eva-fp-selected-head'},

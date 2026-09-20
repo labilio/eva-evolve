@@ -170,6 +170,13 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     await page.waitForTimeout(300);
     assert.equal(await page.locator('.eva-fp-picker-menu').count(), 0, '消息·转发「发送至」下拉：Escape 未收起下拉');
     assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「发送至」下拉：Escape 收起下拉时误关了整个转发面板');
+    // 「创建群聊并发送」弹窗在转发面板之上：Escape 只关它自己，面板与已选状态保持
+    await page.locator('.eva-fp-create-group').click();
+    await page.getByRole('dialog').filter({ hasText: '创建群聊并发送' }).waitFor({ timeout: 5000 });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+    assert.equal(await page.getByRole('dialog').filter({ hasText: '创建群聊并发送' }).count(), 0, '消息·转发「创建群聊并发送」：Escape 未关闭弹窗');
+    assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「创建群聊并发送」：关闭弹窗时误关了转发面板');
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
     assert.equal(await page.locator('.eva-fp-modal').count(), 0, '消息·转发面板：Escape 未关闭面板');
