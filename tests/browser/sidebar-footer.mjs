@@ -31,13 +31,14 @@ async function verifyFooter(){
   assert.ok(geometry.left>=geometry.siderLeft&&geometry.right<=geometry.siderRight);
   assert.ok(geometry.buttonLeft>=geometry.left&&geometry.buttonRight<=geometry.right&&geometry.buttonBottom<=geometry.bottom);
   assert.ok(Math.abs(geometry.bottom-geometry.siderBottom)<=10,'Footer remains at the bottom of navigation');
-  // 点击账户按钮打开悬浮菜单：含设置 + 退出登录两项，均为 icon+文字。
+  // 点击账户按钮打开悬浮菜单：含更换头像 + 设置 + 退出登录三项，均为 icon+文字。
   const url=page.url();
   await account.click();
   await page.locator('.eva-account-menu:visible').waitFor();
   assert.ok(await account.evaluate(el=>el.classList.contains('is-open')),'Account button reflects open state');
   const menuItems=page.locator('.eva-account-menu__item:visible');
-  assert.equal(await menuItems.count(),2,'Menu offers exactly settings and logout');
+  assert.equal(await menuItems.count(),3,'Menu offers avatar, settings and logout');
+  assert.equal(await page.locator('.eva-account-menu__item:visible',{hasText:'更换头像'}).count(),1,'Avatar entry present');
   assert.equal(await page.locator('.eva-account-menu__item:visible',{hasText:'设置'}).count(),1);
   assert.equal(await page.locator('.eva-account-menu__item--danger:visible',{hasText:'退出登录'}).count(),1,'Logout is present as its own item');
   assert.equal(page.url(),url,'Opening the menu does not navigate');

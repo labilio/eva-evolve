@@ -2,6 +2,7 @@
 window.__EVA_MY_ASSISTANT_IDENTITY = Object.freeze({
   name: '王宜林的 AI 分身',
   ownerName: '王宜林',
+  ownerId: 'u-wangyilin',
   logo: window.__EVA_COLLEAGUE_PORTRAIT
 });
 window.__EVA_MY_ASSISTANTS = Object.freeze([
@@ -52,12 +53,20 @@ window.EvaAIIdentity = (() => {
     return render('span',{className:'eva-identity-owner',title:text},render===html?escape(text):text);
   }
   // Default assistant main image is the owner portrait; picking an icon replaces it.
-  const assistantOwnerPortrait = () => ownerPortrait({name:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName});
+  const assistantOwnerPortrait = () => ownerPortrait({name:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName,id:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerId});
   function assistantAppearance(identity){const logo=window.__EVA_COLLEAGUE_PORTRAIT;const value=identity?.configuration?.avatar;const appearance={name:identity.name,sourceName:'Eva',sourceAssistantId:identity.sourceAssistantId,logo,evaCorner:true,kind:'assistant'};if(isAssistantIcon(value))appearance.icon=value.trim();else if(isAvatarImage(value))appearance.avatar=value.trim();else appearance.ownerAvatar=assistantOwnerPortrait();return appearance;}
   function cloneName(owner){return String(owner?.name||'未知成员')+'的 AI 分身';}
-  function cloneAppearance(owner){return {name:cloneName(owner),sourceName:'Eva',ownerName:owner?.name,ownerAvatar:ownerPortrait(owner),avatar:window.__EVA_COLLEAGUE_PORTRAIT,logo:window.__EVA_COLLEAGUE_PORTRAIT,evaCorner:true,kind:'clone'};}
+  // The clone main image is one global property resolved by stable owner ID: the
+  // owner may upload a replacement, otherwise the owner portrait is shown. The Eva
+  // logo stays as the bottom-right corner in both cases.
+  let cloneAvatarResolver=()=>'';
+  function setCloneAvatarResolver(resolve){cloneAvatarResolver=typeof resolve==='function'?resolve:()=>'';}
+  function cloneAppearance(owner){
+    const ownerId=owner?.id||owner?.ownerId||'',custom=ownerId?cloneAvatarResolver(ownerId):'',logo=window.__EVA_COLLEAGUE_PORTRAIT;
+    return {name:cloneName(owner),sourceName:'Eva',ownerName:owner?.name,ownerAvatar:custom||ownerPortrait(owner),avatar:custom||logo,logo,evaCorner:true,kind:'clone'};
+  }
   function projectAgentName(project){return project?.name?String(project.name)+' · 项目管家':'项目管家';}
   function projectAgentLegacyNames(project){return ['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];}
   function projectAgentAppearance(project){return {project:project?{id:project.id,colorKey:window.EvaProjectAppearance.keyFor(project)}:undefined,name:projectAgentName(project),sourceName:'Eva',avatar:'prototype/assets/project-agent-bot.svg',logo:window.__EVA_COLLEAGUE_PORTRAIT,markerKind:'bot'};}
-  return Object.freeze({avatar,badge,ownerLabel,assistantAppearance,assistantIcons,isAvatarImage,isAssistantIcon,cloneName,cloneAppearance,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
+  return Object.freeze({avatar,badge,ownerLabel,assistantAppearance,assistantIcons,isAvatarImage,isAssistantIcon,cloneName,cloneAppearance,setCloneAvatarResolver,projectAgentName,projectAgentLegacyNames,projectAgentAppearance});
 })();

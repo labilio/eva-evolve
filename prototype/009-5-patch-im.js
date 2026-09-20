@@ -266,7 +266,7 @@ function evaComposerPlainText(element) {
 }
 function evaIdentityAppearance(identity) {
   const original = window.__EVA_MY_ASSISTANT_IDENTITY;
-  if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName});
+  if(identity.role==='persona')return window.EvaAIIdentity.cloneAppearance({name:original.ownerName,id:original.ownerId});
   return window.EvaAIIdentity.assistantAppearance(identity);
 }
 function EvaAIIdentityAvatar({appearance,size=32}) {
@@ -419,7 +419,7 @@ function EvaAssistantEditor({request,host,onClose}) {
     }catch(e){if(alive.current)setError(e.message||'保存失败，请重试');}
     finally{if(alive.current)setBusy(false);}
   }
-  const previewAppearance=persona?window.EvaAIIdentity.cloneAppearance({name:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName}):window.EvaAIIdentity.assistantAppearance({name:draft.name||role,configuration:{avatar:draft.avatar}});
+  const previewAppearance=persona?window.EvaAIIdentity.cloneAppearance({name:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName,id:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerId}):window.EvaAIIdentity.assistantAppearance({name:draft.name||role,configuration:{avatar:draft.avatar}});
   const editor=h('section',{className:'eva-create-assistant-modal',ref:scope,'aria-label':editorTitle},
       h('header',{className:'eva-create-assistant-modal__head'},persona?h(EvaAIIdentityAvatar,{appearance:previewAppearance,size:34}):h('div',{className:'eva-editor-avatar-upload'},
         h('button',{type:'button',className:'eva-editor-avatar-button',title:'选择头像图标','aria-label':draft.avatar?'更换助理头像':'选择助理头像图标',disabled:busy,'aria-expanded':iconOpen,onClick:()=>setIconOpen(v=>!v)},h(EvaAIIdentityAvatar,{appearance:previewAppearance,size:34}),h('span',{className:'eva-editor-avatar-action','aria-hidden':true},h(Plus$c,{size:12,strokeWidth:1.75}))),

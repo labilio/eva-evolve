@@ -785,7 +785,15 @@
       "role": "prototype"
     },
     {
-      "order": 96,
+      "order": 98,
+      "tag": "style",
+      "name": "avatar-editor",
+      "file": "prototype/060-avatar-editor.css",
+      "bytes": 2106,
+      "role": "prototype"
+    },
+    {
+      "order": 99,
       "tag": "style",
       "name": "task-drawer",
       "file": "prototype/060-task-drawer.css",
@@ -793,7 +801,7 @@
       "role": "prototype"
     },
     {
-      "order": 97,
+      "order": 100,
       "tag": "script",
       "name": "task-drawer-controller",
       "file": "prototype/060-task-drawer.js",

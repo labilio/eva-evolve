@@ -8,6 +8,9 @@
 .eva-person-card__back{position:absolute;top:var(--gds-space-3);left:var(--gds-space-3);min-height:var(--gds-space-8);z-index:1}
 .eva-person-card__scroll{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;padding:var(--gds-space-8) var(--gds-space-7) var(--gds-space-6)}
 .eva-person-card__identity{display:flex;flex-direction:column;align-items:center;text-align:center}
+.eva-person-card__avatar{position:relative;display:inline-flex}
+.eva-person-card__avatar-edit{position:absolute;right:-2px;bottom:-2px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:2px solid var(--semi-color-bg-2);border-radius:50%;background:var(--semi-color-primary);color:var(--semi-color-white,#fff);cursor:pointer;box-shadow:var(--eva-shadow-floating)}
+.eva-person-card__avatar-edit:hover{background:var(--semi-color-primary-hover,var(--semi-color-primary))}
 .eva-profile-human-avatar{display:block;object-fit:cover;border-radius:50%;flex:none}
 .eva-person-card__name-row{display:flex;align-items:center;justify-content:center;gap:var(--gds-space-2);max-width:100%;margin-top:var(--gds-space-3)}
 .eva-person-card__name-row h2{min-width:0;margin:0;font-size:var(--gds-type-header-font-size);line-height:var(--gds-type-header-line-height);font-weight:var(--gds-font-weight-medium);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
