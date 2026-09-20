@@ -379,6 +379,8 @@
   cursor: pointer;
 }
 .eva-fp-picker-option:hover { background: var(--gds-color-overlay-hover, #f5f7fa); }
+/* 子区选项：复用全站统一的子区图标（Lucide corner-down-right），与「本群」区分 */
+.eva-fp-picker-option-icon { flex: none; color: var(--gds-color-text-muted, #7d8693); }
 .eva-fp-picker-option input { flex: none; width: 14px; height: 14px; margin: 0; accent-color: var(--gds-color-primary, #1563eb); }
 /* 「新建子区」：默认是一个菜单项，点击后就地展开命名输入行（Enter 确认、Esc 取消） */
 .eva-fp-picker-new-btn {

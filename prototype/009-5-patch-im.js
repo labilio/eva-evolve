@@ -146,6 +146,8 @@ function evaForwardIcon(name,props){
     'layout-grid':[['rect',{width:'7',height:'7',x:'3',y:'3',rx:'1'}],['rect',{width:'7',height:'7',x:'14',y:'3',rx:'1'}],['rect',{width:'7',height:'7',x:'14',y:'14',rx:'1'}],['rect',{width:'7',height:'7',x:'3',y:'14',rx:'1'}]],
     users:[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:'9',cy:'7',r:'4'}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
     'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+    // 全站统一的子区图标（Lucide corner-down-right），与 009-5 的 ThreadIcon 同源
+    'corner-down-right':[['path',{d:'m15 10 5 5-5 5',key:'1mk7zo'}],['path',{d:'M4 4v7a4 4 0 0 0 4 4h12',key:'zqzwo1'}]],
     plus:[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
     x:[['path',{d:'M18 6 6 18'}],['path',{d:'m6 6 12 12'}]]
   };
@@ -466,6 +468,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
           picker===id?h('div',{className:'eva-fp-picker-menu',role:'group','aria-label':'选择 '+group.name+' 的发送目标'},
             options.map(option=>h('label',{key:option.id,className:'eva-fp-picker-option'},
               h('input',{type:'checkbox',checked:entry.sessions.includes(option.id),onChange:()=>toggleGroupDestination(group,option.id)}),
+              option.id==='self'?null:evaForwardIcon('corner-down-right',{size:14,className:'eva-fp-picker-option-icon'}),
               h('span',null,option.name))),
             creatable?(draftThread&&draftThread.groupId===group.id
               ?h('div',{className:'eva-fp-picker-new'},

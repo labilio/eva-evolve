@@ -174,6 +174,24 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     await page.waitForTimeout(300);
     assert.equal(await page.locator('.eva-fp-picker-menu').count(), 0, '消息·转发「发送至」下拉：Escape 未收起下拉');
     assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「发送至」下拉：Escape 收起下拉时误关了整个转发面板');
+    // 子区选项带全站统一的子区图标（Lucide corner-down-right，与中栏「子区」同形），「本群」不加
+    await page.locator('.eva-forward-search input').fill('每日进展同步确认');
+    await page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ hasText: '每日进展同步确认' }).first().locator('input[type="checkbox"]').check();
+    const threadCard = page.locator('.eva-fp-selected--group').last();
+    await threadCard.waitFor({ timeout: 5000 });
+    if (!(await threadCard.locator('.eva-fp-picker-control').count())) await threadCard.locator('.eva-fp-row-toggle').click();
+    await threadCard.locator('.eva-fp-picker-control').click();
+    await threadCard.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
+    const pickerRows = await threadCard.locator('.eva-fp-picker-option').evaluateAll(nodes => nodes.map(node => ({
+      text: node.innerText.trim(),
+      icon: node.querySelector('svg') ? node.querySelector('svg').getAttribute('class') || '' : ''
+    })));
+    assert.ok(pickerRows.length > 1, '消息·转发「发送至」：搜索命中的子区应出现在父群卡片下拉里');
+    assert.equal(pickerRows[0].icon, '', '消息·转发「发送至」：「本群」不加子区图标');
+    pickerRows.slice(1).forEach(row => assert.match(row.icon, /lucide-corner-down-right/, `消息·转发「发送至」：子区「${row.text}」缺少统一子区图标`));
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator('.eva-fp-picker-menu').count(), 0, '消息·转发「发送至」下拉：Escape 未收起子区下拉');
     // 「创建群聊并发送」弹窗在转发面板之上：Escape 只关它自己，面板与已选状态保持
     await page.locator('.eva-fp-create-group').click();
     await page.getByRole('dialog').filter({ hasText: '创建群聊并发送' }).waitFor({ timeout: 5000 });
