@@ -5,12 +5,12 @@
   }
 
   /* 「全部项目」是跳出当前项目的全局导航动作，与项目自身页签分属两组：
-     用竖分割线把它与页签隔开；按钮本身无边框无填充（三级动作观感），
-     仅靠 hover 填充反馈，视觉最轻、层级最清晰。 */
+     紧跟在最后一个页签之后（不再顶到最右，便于点击），用竖分割线隔开两组；
+     按钮本身无边框无填充（三级动作观感），仅靠 hover 填充反馈。 */
   .eva-project-directory-button.semi-button {
     order: 1;
     flex: none;
-    margin-left: auto;
+    margin-left: 22px;
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -25,11 +25,12 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
 
-  /* 竖分割线：落在按钮左侧留白里（在 hover 填充之外），把「全部项目」与页签分组。 */
+  /* 竖分割线：居中落在页签与按钮之间的留白里（两侧视觉间距≈16px，均衡分组），
+     且在 hover 填充之外，填充不会盖住它。 */
   .eva-project-directory-button.semi-button::before {
     content: "";
     position: absolute;
-    left: -12px;
+    left: -6px;
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
