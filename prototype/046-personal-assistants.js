@@ -95,7 +95,7 @@
       name = String(name || '').trim();
       if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
       if (name === '默认' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名文件夹');
-      var f = {id:'folder-' + crypto.randomUUID(), name:name}; folders.push(f); persist(); return f.id;
+      var f = {id:'folder-' + crypto.randomUUID(), name:name, createdAt:Date.now()}; folders.unshift(f); persist(); return f.id;
     },
     renameFolder: function (id, name) {
       var f = folders.find(function (f) { return f.id === id; }); name = String(name || '').trim();

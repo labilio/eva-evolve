@@ -15,15 +15,15 @@
     active.delete(pageId);
   }
 
-  function mount(pageId, host) {
+  function mount(pageId, host, services) {
     if (!host) return;
     var renderer = renderers.get(pageId);
     if (!renderer) return;
     var mounted = active.get(pageId);
-    if (mounted && mounted.host === host) return;
+    if (mounted && mounted.host === host && mounted.services === services) return;
     unmount(pageId);
-    var cleanup = renderer(host);
-    active.set(pageId, { host: host, cleanup: cleanup });
+    var cleanup = renderer(host, services);
+    active.set(pageId, { host: host, services: services, cleanup: cleanup });
   }
 
   function register(pageId, renderer) {
