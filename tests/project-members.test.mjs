@@ -72,18 +72,21 @@ test('全员群继承项目管理员且撤销后管理操作立即拒绝',()=>{
 test('私聊设置与清空记录按联系人和会话隔离，不删除其他人的消息',()=>{const s=setup();s.setChatPreferences('dm-b','a',{mute:true,top:true,clearedCount:2});assert.equal(s.chatPreferences('dm-b','a').mute,true);assert.equal(s.chatPreferences('dm-b','b').mute,undefined);assert.equal(s.chatPreferences('dm-c','a').mute,undefined);assert.equal(s.visibleMessages('dm-b','a',[1,2,3]).join(','),'3');assert.equal(s.visibleMessages('dm-b','b',[1,2,3]).length,3);const restored=windowlessRestore(s.snapshot());assert.equal(restored.chatPreferences('dm-b','a').top,true);});
 function windowlessRestore(seed){const window={};loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});return window.EvaMembership.create(seed);}
 
-test('演示项目默认全部置顶，按访问范围初始化且取消置顶后刷新不重置',()=>{
+test('演示项目默认只关注随包的四个项目，新增项目不默认关注且关注设置刷新不重置',()=>{
  let saved=null;
  const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:()=>saved,setItem:(_,value)=>{saved=value;}}};
  loadIdentityEnvironment(window);
  vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});
- const people=[{uid:'u-wangyilin',name:'王宜林'},{uid:'u-b',name:'乙'}],projects=[{id:'p1',name:'一',members:[]},{id:'p2',name:'二',members:[{name:'乙'}]}];
+ const people=[{uid:'u-wangyilin',name:'王宜林'},{uid:'u-b',name:'乙'}],
+  projects=[{id:'prod',name:'供应链运营协同',members:[]},{id:'drive-design',name:'团队文件功能设计',members:[{name:'乙'}]},{id:'project-agent-review',name:'项目专员验收',members:[]}];
  const s=window.EvaMembership.bootstrap(people,projects,{});
- assert.deepEqual(Array.from(s.pinnedProjects('u-wangyilin')),['p1','p2']);
- assert.deepEqual(Array.from(s.pinnedProjects('u-b')),['p2']);
- s.setPinnedProjects('u-wangyilin',['p1']);
- const restored=window.EvaMembership.bootstrap(people,projects,{});
- assert.deepEqual(Array.from(restored.pinnedProjects('u-wangyilin')),['p1']);
+ assert.equal(s.canRead('project-agent-review','u-wangyilin'),true,'新增项目照常可访问');
+ assert.deepEqual(Array.from(s.pinnedProjects('u-wangyilin')),['prod','drive-design'],'新增项目不进入默认关注');
+ assert.deepEqual(Array.from(s.pinnedProjects('u-b')),['drive-design']);
+ s.setPinnedProjects('u-wangyilin',['prod']);
+ assert.deepEqual(Array.from(window.EvaMembership.bootstrap(people,projects,{}).pinnedProjects('u-wangyilin')),['prod'],'取消关注后刷新不重置');
+ s.setPinnedProjects('u-wangyilin',['prod','project-agent-review']);
+ assert.deepEqual(Array.from(window.EvaMembership.bootstrap(people,projects,{}).pinnedProjects('u-wangyilin')),['prod','project-agent-review'],'新增项目可手动关注');
 });
 
 test('旧项目记录缺少 colorKey 时从项目注册表恢复统一配色',()=>{

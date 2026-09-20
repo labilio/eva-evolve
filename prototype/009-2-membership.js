@@ -683,16 +683,19 @@
       const c=saved.clones?.find(c=>c.id===id),seed=root.__EVA_MEMBERSHIP_CLONES?.find(c=>c.id===id);
       if(c?.name===oldName&&seed)c.name=seed.name;
     }
+    // 随包演示的默认关注项目：首次进入只关注这 4 个。之后新加进演示数据或用户新建的项目
+    // 默认都不关注，由用户自己在项目目录里关注；已保存的个人关注永远不被覆盖。
+    const evaDefaultPinnedProjectIds=['prod','drive-design','official','lab'];
     // Import the former project-directory preference once. Future pin changes
     // are owned by the member store and shared with the follow list.
     if(!saved.pinnedProjects){
-      let ids=['prod','drive-design','official','lab'];
+      let ids=[...evaDefaultPinnedProjectIds];
       try{
         const raw=root.localStorage.getItem('eva:pinned-project-ids:v3');
         const legacy=raw===null?root.localStorage.getItem('eva:pinned-project-ids:v2'):null;
-        const value=JSON.parse(raw??legacy??'["prod","drive-design","official","lab"]');
+        const value=JSON.parse(raw??legacy??JSON.stringify(evaDefaultPinnedProjectIds));
         ids=Array.isArray(value)?value.slice(0,6):ids;
-        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=['prod','drive-design','official','lab'];
+        if(raw===null&&ids.length===1&&ids[0]==='drive-design')ids=[...evaDefaultPinnedProjectIds];
       }catch{}
       saved.pinnedProjects={'u-wangyilin':ids};
     }
@@ -737,12 +740,14 @@
       if(old&&!Object.values(saved.threads).includes(old.id)&&!(saved.messages[old.id]||[]).length&&!saved.chatSettings?.[old.id]&&!Object.values(saved.chatPreferences||{}).some(p=>p[old.id]))delete saved.groups[old.id];
       saved.seededMockLayoutV1=true;
     }
-    // The review defaults pin every accessible demo project once. Subsequent
-    // unpinning remains a personal preference and must survive reloads.
+    // The review defaults pin the packaged demo projects once. Projects added to the
+    // bundle later (or created by the user) are not followed automatically, so the
+    // default follow list stays at the four packaged projects. Subsequent pin changes
+    // remain a personal preference and must survive reloads.
     if(!saved.seededAllProjectPinsV1){
       saved.pinnedProjects||={};
       for(const human of saved.people.filter(p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot)){
-        saved.pinnedProjects[human.id]=Object.values(saved.projects).filter(p=>p.humans.some(m=>m.id===human.id)).map(p=>p.id).slice(0,6);
+        saved.pinnedProjects[human.id]=Object.values(saved.projects).filter(p=>p.humans.some(m=>m.id===human.id)&&evaDefaultPinnedProjectIds.includes(p.id)).map(p=>p.id).slice(0,6);
       }
       saved.seededAllProjectPinsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
