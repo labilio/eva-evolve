@@ -4,23 +4,45 @@
     padding-inline: 28px;
   }
 
-  /* 「全部项目」位于项目设置右侧，以左边框与页签区分。 */
   .eva-project-directory-button.semi-button {
     order: 1;
     flex: none;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     height: 32px;
-    margin-left: 12px;
-    padding: 0 12px 0 16px;
-    border: 0;
-    border-left: 1px solid var(--semi-color-border);
-    border-radius: 0 7px 7px 0;
+    padding: 0 12px;
+    line-height: 1;
+    border-radius: 7px;
+    border-color: var(--semi-color-border);
     color: var(--semi-color-text-1);
-    background: transparent;
+    background: var(--semi-color-bg-0);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
 
+  /* B4·图标与文案垂直居中：Semi 内容容器强制居中，消除图标基线偏移 */
+  .eva-project-directory-button.semi-button .semi-button-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+  }
+  .eva-project-directory-button.semi-button .semi-icon,
+  .eva-project-directory-button.semi-button svg {
+    display: block;
+    flex: none;
+  }
+
+  /* B4·hover 不再"消失"：填充加深一档 + 描边点亮，明确可感 */
   .eva-project-directory-button.semi-button:hover {
     color: var(--semi-color-text-0, #1c1f23);
     background: var(--semi-color-fill-1, #f2f3f5);
+    border-color: var(--semi-color-border-hover, var(--semi-color-text-3, #a5abb3));
+  }
+  .eva-project-directory-button.semi-button:active {
+    background: var(--semi-color-fill-2, #e7e9ec);
   }
 
   .eva-project-switcher-anchor {
@@ -35,18 +57,23 @@
     min-height: 32px;
     margin-bottom: 2px;
     padding: 0 10px;
-    border: 1px solid var(--semi-color-border, #dfe3e8);
+    /* B2·默认态即采用原 hover 的填充观感（弱化描边为透明，靠填充成形） */
+    border: 1px solid transparent;
     border-radius: 7px;
-    background: var(--semi-color-bg-0, #fff);
+    background: var(--semi-color-fill-1, #f2f3f5);
     color: var(--semi-color-text-0, #1c1f23);
     font-family: inherit;
     font-size: 15px;
     font-weight: 500;
     line-height: 20px;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
 
+  /* B2·hover 引入项目主题色淡 tint（12% accent 融于表面），呼应项目身份，
+     而非通用灰；--eva-project-accent 由 060 控制器按当前项目写入 .collab-frame。 */
   body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher:hover {
-    background: var(--semi-color-fill-1, #f2f3f5);
+    background: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 12%, var(--semi-color-bg-0, #fff));
+    border-color: color-mix(in srgb, var(--eva-project-accent, #7f3bf5) 26%, transparent);
   }
 
   .collab-sp-chip.eva-project-switcher .semi-button-content {

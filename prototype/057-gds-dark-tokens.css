@@ -588,3 +588,82 @@ body[theme-mode="dark"] {
   color: #b3a3e0;
 }
 
+/* ============================================================
+   项目详情外壳（collab-frame / collab-tabs / 右侧路由）暗色适配
+   ------------------------------------------------------------
+   vendor/eva-legacy.css 里这些容器写死了 #fff / #1c1c23 / #e8e8e8，
+   浅色下与主题一致（无缺陷），但暗色下不跟随 → 产生「两侧白边」等问题。
+   这里在暗色作用域用 eva 语义 token 重指，只改容器，不动业务用法。
+   注意：Semi 的 --semi-color-* 在本项目暗色下未接入（semi-always-dark
+   触发类从未设置），故顶栏按钮的暗色态一律改用 eva token 表达。
+   ============================================================ */
+
+/* B1·白边根因：collab-frame / 原生页宿主 写死 #fff。内容有横向内边距，
+   暗底上会从两侧露出白色 frame 底 → 表现为「两侧白边」。改为抬升面。 */
+:root[data-theme="dark"] .collab-frame {
+  background: var(--eva-surface-primary);
+  color: var(--eva-text-primary);
+}
+:root[data-theme="dark"] .collab-crumb {
+  color: var(--eva-text-secondary);
+}
+
+/* B1·右侧路由面板底色（任务抽屉与其它详情页共用），写死 #fff → 抬升面 */
+:root[data-theme="dark"] .collab-route-right .panel {
+  background: var(--eva-surface-primary);
+}
+
+/* B3·顶栏暗色真身：016 的 collab-tabs 背景是「项目色 → #fff」横向渐变，
+   暗色下右段写死 #fff 会刷出白块。这里在暗色重指渐变右端为中性抬升面，
+   左端沿用已按项目色调 dark-map 的 --eva-space-card-surface（保留主题色渐入），
+   得到「项目色淡染 → 中性卡面」的暗色顶栏。底边框保留 016 的项目色
+   （--eva-space-card-border 已 dark-map），即顶栏主题色适配，无需再覆盖。 */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation > .collab-tabs {
+  background: linear-gradient(
+    90deg,
+    var(--eva-space-card-surface) 0 clamp(160px, 18vw, 220px),
+    var(--eva-surface-primary) clamp(460px, 48vw, 620px)
+  );
+}
+
+/* B2·项目切换器暗色：默认填充用白透明抬升罩，文案/字形提亮；
+   hover 保留项目主题色 tint（--eva-project-accent 暗色下已是提亮值）。 */
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher {
+  background: var(--eva-overlay-hover);
+  border-color: transparent;
+  color: var(--eva-text-primary);
+}
+:root[data-theme="dark"] body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher:hover {
+  background: color-mix(in srgb, var(--eva-project-accent, var(--eva-c-blue-400)) 22%, var(--eva-surface-primary));
+  border-color: color-mix(in srgb, var(--eva-project-accent, var(--eva-c-blue-400)) 40%, transparent);
+}
+:root[data-theme="dark"] .collab-sp-chip.eva-project-switcher .eva-project-switcher__chevron {
+  color: var(--eva-text-secondary);
+}
+
+/* B4·「全部项目」按钮暗色：默认描边 + 透明底，hover 用白透明罩 + 描边点亮，
+   保证暗底上 hover 明确可感（不再"消失"）。 */
+:root[data-theme="dark"] .eva-project-directory-button.semi-button {
+  border-color: var(--eva-border-subtle);
+  color: var(--eva-text-secondary);
+  background: transparent;
+}
+:root[data-theme="dark"] .eva-project-directory-button.semi-button:hover {
+  color: var(--eva-text-primary);
+  background: var(--eva-overlay-hover);
+  border-color: var(--eva-border-default);
+}
+:root[data-theme="dark"] .eva-project-directory-button.semi-button:active {
+  background: var(--eva-overlay-pressed);
+}
+
+/* A·任务抽屉暗色投影加深（浅色投影在暗底几乎不可见）。
+   蒙层保持透明（需求④：抽屉不压暗，仅靠左缘投影做视觉分离），
+   故此处不覆盖 .mask 背景。 */
+:root[data-theme="dark"] .collab-route-right.eva-route-drawer .panel {
+  box-shadow:
+    -12px 0 40px rgba(0, 0, 0, 0.5),
+    -1px 0 0 var(--eva-border-subtle);
+}
+
+
