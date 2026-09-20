@@ -185,14 +185,14 @@ html.eva-file-preview-resizing * {
 }
 /* 标题栏：.wk-file-preview-header 的高度/内边距只在 .ch-layout 作用域下定义，
    本覆盖层 portal 到 .collab-body 不在其内，header 会塌成内容高度而显局促。
-   在此补齐，对齐全站预览头的 56px 标准（居中、上下留白、下边框、表面色），
-   保持与项目文件库预览头一致的调性，且高度适度不占多余空间。 */
+   在此补齐，并对齐任务详情抽屉标题栏（.loop-idp__topbar 52px / 内边距 24px）——
+   两者处于同一工作区、概念上是同层替换关系，高度须一致。 */
 .eva-task-file-fs .wk-file-preview-header {
   box-sizing: border-box;
-  height: 56px;
-  min-height: 56px;
+  height: 52px;
+  min-height: 52px;
   margin: 0;
-  padding: 0 20px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   gap: 12px;
