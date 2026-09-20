@@ -18,7 +18,7 @@
   align-items: center;
   color: var(--semi-color-text-2, #8f959e);
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 16px;
   user-select: none;
 }
@@ -450,9 +450,9 @@
   grid-template-columns: minmax(2px, 1fr) auto minmax(2px, 1fr);
   align-items: center;
   gap: 3px;
-  color: var(--semi-color-text-0, #1d2129);
+  color: var(--semi-color-text-2, #8f959e);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 16px;
   text-align: center;
   white-space: nowrap;
@@ -462,7 +462,7 @@
 .eva-nav-section.is-collapsed .eva-nav-section__title::after {
   content: "";
   height: 1px;
-  background: #b8bec7;
+  background: var(--eva-border-subtle);
 }
 
 .eva-nav-section.is-collapsed .eva-nav-section__items {
