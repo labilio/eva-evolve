@@ -96,7 +96,7 @@ for (const [name, route, selector] of [
     assert.notEqual((await appearance(field)).color, focused.color);
   });
 }
-test('文件库工具栏与项目文件按钮一致，搜索框同行且最右对齐', async () => {
+test('文件库工具栏与项目文件按钮一致，项目回收站位于搜索框左侧', async () => {
   const search = await open('/drive', '.eva-drive__toolbar .eva-drive__side-search');
   const driveToolbar = page.locator('.eva-drive__toolbar');
   const driveActions = await actionAppearance(driveToolbar);
@@ -126,6 +126,25 @@ test('文件库工具栏与项目文件按钮一致，搜索框同行且最右�
   await projectToolbar.waitFor();
   const projectActions = await actionAppearance(projectToolbar);
   assert.deepEqual(projectActions, driveActions, '两处同名操作应使用相同的高度、内距、圆角、字号、间距、边框和图标规则');
+  assert.equal(await page.locator('.eva-project-files__header').count(), 0, '项目文件列表上方不应重复显示团队文件 head');
+  assert.equal(await page.locator('.eva-file-role-badge').count(), 0, '删除 head 后不应残留孤立的角色徽标');
+  const trashButton = projectToolbar.getByRole('button', { name: '回收站', exact: true });
+  await trashButton.waitFor();
+  const projectGeometry = await projectToolbar.evaluate(toolbar => {
+    const trash = toolbar.querySelector('.eva-project-files__trash-toggle').getBoundingClientRect();
+    const searchField = toolbar.querySelector('.eva-drive__side-search').getBoundingClientRect();
+    const table = document.querySelector('.eva-project-files__table').getBoundingClientRect();
+    return { trashRight: trash.right, searchLeft: searchField.left, searchRight: searchField.right, tableRight: table.right };
+  });
+  assert.ok(projectGeometry.trashRight <= projectGeometry.searchLeft, '回收站应位于搜索框左侧');
+  assert.ok(Math.abs(projectGeometry.searchRight - projectGeometry.tableRight) <= 1, '项目搜索框仍应与表格右边缘对齐');
+  await trashButton.click();
+  const backButton = projectToolbar.getByRole('button', { name: '返回团队文件', exact: true });
+  await backButton.waitFor();
+  await page.locator('.eva-project-files__table[aria-label="项目回收站"], .eva-project-files__empty').waitFor();
+  assert.equal(await projectToolbar.locator('.eva-drive__action').count(), 0, '回收站态不显示创建和上传操作');
+  await backButton.click();
+  await page.locator('.eva-project-files__table[aria-label="团队文件列表"]').waitFor();
 });
 test('文件预览打开时两处搜索框缩短，关闭后恢复常规宽度', async () => {
   const searchGeometry = selector => page.locator(selector).evaluate(element => {
@@ -162,7 +181,7 @@ test('文件预览打开时两处搜索框缩短，关闭后恢复常规宽度',
   const projectCompact = await searchGeometry('.eva-project-files__toolbar .eva-drive__side-search');
   assert.ok(projectCompact.width <= 240 && projectCompact.width < projectNormal.width, '项目文件预览态搜索框应缩短到 240px 以内');
   assert.ok(Math.abs(projectCompact.right - projectCompact.toolbarContentRight) <= 1, '项目文件预览态搜索框仍应右对齐');
-  await page.locator('.eva-project-files__header').click();
+  await page.locator('.eva-project-files__toolbar').click({ position: { x: 4, y: 4 } });
   await page.locator('.eva-project-file-preview-sidebar').waitFor({ state: 'detached' });
   assert.equal(Math.round((await searchGeometry('.eva-project-files__toolbar .eva-drive__side-search')).width), Math.round(projectNormal.width));
 });

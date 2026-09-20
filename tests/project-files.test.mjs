@@ -36,6 +36,7 @@ test('文件库在当前文件库新建文件夹时不再选择所属文件库',
 test('文件库使用与项目文件一致的单行工具栏并在两个入口展示完整创建时间',()=>{
   const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
+  const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');
   const driveHTMLStart=drive.indexOf('  function driveHTML('),driveHTMLEnd=drive.indexOf('  function renderDrive()',driveHTMLStart);
   const driveHTML=drive.slice(driveHTMLStart,driveHTMLEnd);
   assert.doesNotMatch(driveHTML,/data-drive-search="side"|搜索当前范围/);
@@ -50,6 +51,14 @@ test('文件库使用与项目文件一致的单行工具栏并在两个入口�
   assert.match(project,/'aria-label':'添加外部资源'\},h\('span',null,'添加外部资源'\),icon\('arrow'\)\)/);
   assert.match(project,/uploadInput\.current\?\.click\(\)\},'上传本地文件'\)/);
   assert.match(project,/eva-project-files__toolbar[^]*eva-drive__side-search/);
+  assert.doesNotMatch(project,/eva-project-files__header|eva-file-role-badge/);
+  const projectToolbarStart=project.indexOf("h('div',{className:'eva-project-files__toolbar'}");
+  const projectToolbarEnd=project.indexOf("!trashMode&&crumbs.length",projectToolbarStart);
+  const projectToolbar=project.slice(projectToolbarStart,projectToolbarEnd);
+  assert.ok(projectToolbar.includes("'回收站'"));
+  assert.ok(projectToolbar.indexOf("'回收站'")<projectToolbar.indexOf("eva-drive__side-search"));
+  assert.match(styles,/\.eva-project-files__trash-toggle\s*\{[^}]*margin-left:\s*auto;/);
+  assert.doesNotMatch(styles,/\.eva-project-files__header/);
 
   const driveTimeStart=drive.indexOf('  function formatDriveTime('),driveTimeEnd=drive.indexOf('  function scopeSpaceId()',driveTimeStart);
   const projectTimeStart=project.indexOf('    const time=value=>'),projectTimeEnd=project.indexOf('\n\n    function Dialog',projectTimeStart);
