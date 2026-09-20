@@ -970,16 +970,29 @@ function EvaAITeamPage() {
       return React.createElement('div',{ref:drag.setNodeRef,className:'eva-follow-channel'+(drag.isDragging?' is-dragging':''),style:{transform:CSS$1.Transform.toString(drag.transform?{...drag.transform,scaleX:1,scaleY:1}:null),transition:drag.transition}},items);
     }
     function EvaConversationCategoryEditor({store,actorId,record,channels,onClose,onSaved}){
-      const h=React.createElement, [name,setName]=reactExports.useState(record.name||''),[error,setError]=reactExports.useState('');
+      const h=React.createElement;
       const available=channels.filter(c=>!c.category?.startsWith('space:'));
-      const [selected,setSelected]=reactExports.useState(()=>record.id?available.filter(c=>c.category===record.id).map(c=>c.id):(record.initialChannelIds||[]));
-      return h(Modal,{visible:true,title:record.id?'编辑分组':'创建分组',width:440,okText:record.id?'保存':'创建',cancelText:'取消',onCancel:onClose,onOk:()=>{try{store.saveConversationCategory(actorId,{id:record.id,name,channelIds:selected,availableChannels:available});onSaved();}catch(e){setError(e.message);}}},
-        h(ForwardInput,{value:name,onChange:setName,maxLength:50,placeholder:'输入分组名称','aria-label':'分组名称',autoFocus:true}),
-        h('p',null,'选择放入此分组的非项目会话（可选）'),
-        h('div',{className:'eva-category-conversations'},available.map(c=>h('label',{key:c.id,className:'eva-category-conversation'},
-          h('input',{type:'checkbox',checked:selected.includes(c.id),onChange:e=>setSelected(ids=>e.target.checked?[...ids,c.id]:ids.filter(id=>id!==c.id))}),
-          h('img',{src:window.EvaAvatar.conversationUri(c),width:22,height:22,alt:''}),h('span',null,c.name)))),
-        error&&h('p',{role:'alert'},error));
+      const initial=record.id?available.filter(c=>c.category===record.id).map(c=>c.id):(record.initialChannelIds||[]);
+      return h(evaMembers().ui.MemberPicker,{
+        visible:true,
+        title:record.id?'编辑分组':'创建分组',
+        className:'eva-conversation-category-editor',
+        items:available.map(c=>({id:c.id,name:c.name,kind:'channel',channel:c,appearance:c.identityAppearance||null,ai:!!c.identityId})),
+        groups:[{kind:'channel',label:'会话'}],
+        memberLabel:'会话',
+        itemNoun:'会话',
+        allowEmpty:true,
+        initialSelectedIds:initial,
+        searchLabel:'搜索会话',
+        searchPlaceholder:'搜索会话',
+        emptyTitle:'暂无可放入分组的非项目会话',
+        emptyDescription:'项目群及子区按项目归属，不能移入自定义分组。',
+        noResultsText:'没有匹配的会话',
+        nameField:{id:'eva-category-name',label:'分组名称',placeholder:'输入分组名称',initialValue:record.name||'',required:true,maxLength:50,autoFocus:true},
+        submit:record.id?'保存':'创建',
+        onCancel:onClose,
+        onSubmit:(chosen,name)=>{store.saveConversationCategory(actorId,{id:record.id,name,channelIds:chosen.map(item=>item.id),availableChannels:available});onSaved();}
+      });
     }
     function EvaFollowCategory({categoryId,sortableItems,children,title,extra,onContextMenu}){
       const drag=useSortable({id:'category:'+categoryId,data:{type:'category'}});

@@ -156,6 +156,26 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await createGroup.locator('.eva-member-picker--selection-only').count(),0,'带名称的创建流程保留表单形态');
     assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).count(),1);
     assert.equal(await createGroup.getByRole('button',{name:'创建群聊',exact:true}).isDisabled(),true,'群名与成员为空时不能创建');
+    await createGroup.getByRole('button',{name:'取消',exact:true}).click();
+    await createGroup.waitFor({state:'detached'});
+
+    await page.locator('.eva-message-invite').click();
+    await page.getByRole('menuitem',{name:'创建分组',exact:true}).click();
+    const category=page.getByRole('dialog').filter({hasText:'创建分组'});
+    await category.waitFor();
+    assert.equal(await category.locator('.eva-member-picker').count(),1,'创建分组必须使用模板 A');
+    assert.equal(await category.locator('.eva-member-picker__candidate-group legend').count(),0,'会话只有一种候选类别，不渲染分组头');
+    assert.equal(await category.locator('.eva-member-picker__selected').getAttribute('aria-label'),'已选会话');
+    assert.equal(await category.getByRole('textbox',{name:'搜索会话'}).count(),1,'会话候选提供搜索');
+    assert.equal(await category.getByLabel('分组名称',{exact:true}).count(),1);
+    const categoryCandidate=category.locator('.eva-member-picker__candidate').first();
+    assert.equal(await categoryCandidate.locator('.semi-checkbox').count(),1,'会话候选使用公共复选框');
+    assert.equal(await categoryCandidate.locator('img.eva-members-human-avatar, .eva-ai-avatar').count(),1,'会话候选复用公共头像渲染');
+    await category.getByText('从左侧选择会话',{exact:true}).waitFor();
+    await categoryCandidate.click();
+    assert.equal(await category.locator('.eva-member-picker__selected-item').count(),1);
+    await category.getByRole('button',{name:'取消',exact:true}).click();
+    await category.waitFor({state:'detached'});
     assert.deepEqual(errors,[]);
   } finally {
     await browser.close();

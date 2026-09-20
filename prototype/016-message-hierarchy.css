@@ -1799,11 +1799,5 @@ body.eva-message-hierarchy-ready .eva-space-tree__item:focus-visible {
 
 }
 
-/* Custom conversation categories reuse the message rail and shared modal. */
-.eva-category-conversations { max-height: 300px; overflow-y: auto; margin-top: 8px; }
-.eva-category-conversation { display: flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; }
-.eva-category-conversation img { border-radius: 50%; flex-shrink: 0; }
-.eva-category-conversation span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 /* Chat owns the full project content surface, matching the other rails. */
 .collab-body:has(> .ch-layout) { padding-inline: 0; }
