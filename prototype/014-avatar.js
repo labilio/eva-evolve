@@ -68,10 +68,11 @@
     return uri;
   }
 
-  function personUri(id) {
+  // Generated portrait for an identity, ignoring any uploaded replacement. Owned AI
+  // uses this as an independent default so the owner uploading a new avatar never
+  // rewrites the clone main image.
+  function personBaseUri(id) {
     var stableId = String(id || 'unknown-person');
-    var profile = personResolver(stableId);
-    if (profile?.avatar) return profile.avatar;
     if (/(^|:)(u-wangyilin|u-current-user(?:-[a-z-]+)?|王宜林)$/.test(stableId) && root.__EVA_CURRENT_USER_PORTRAIT) {
       return root.__EVA_CURRENT_USER_PORTRAIT;
     }
@@ -87,6 +88,13 @@
     var uri = dataUri(svg);
     cache.set(key, uri);
     return uri;
+  }
+
+  function personUri(id) {
+    var stableId = String(id || 'unknown-person');
+    var profile = personResolver(stableId);
+    if (profile?.avatar) return profile.avatar;
+    return personBaseUri(stableId);
   }
 
   function groupUri(id, color, theme) {
@@ -125,6 +133,7 @@
     uri: uri,
     conversationUri: conversationUri,
     personUri: personUri,
+    personBaseUri: personBaseUri,
     groupUri: groupUri,
     squadUri: squadUri,
     automationUri: automationUri

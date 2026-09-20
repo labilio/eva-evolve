@@ -8,7 +8,7 @@ const runtime = createPatchedRuntime().source;
 const helper = runtime.slice(runtime.indexOf('function evaIdentityAppearance('), runtime.indexOf('function EvaAITeamPage('));
 function identityContext() {
   return {
-    window: { __EVA_MY_ASSISTANT_IDENTITY: { logo: 'eva-logo', ownerName: '王宜林' }, __EVA_CURRENT_USER_PORTRAIT: 'owner-photo', __EVA_COLLEAGUE_PORTRAIT: 'eva-logo', EvaAvatar: { personUri: id => 'portrait:' + id } },
+    window: { __EVA_MY_ASSISTANT_IDENTITY: { logo: 'eva-logo', ownerName: '王宜林' }, __EVA_CURRENT_USER_PORTRAIT: 'owner-photo', __EVA_COLLEAGUE_PORTRAIT: 'eva-logo', EvaAvatar: { personUri: id => 'portrait:' + id, personBaseUri: id => 'portrait:' + id } },
     React: { createElement: (type, props, ...children) => ({type, props, children}) }
   };
 }
@@ -79,10 +79,11 @@ test('无主人的 AI 身份保持单张圆形主图、不叠加 Eva 角图', ()
   assert.equal(avatar.children[0].props.src, 'https://example.test/none.png');
 });
 
-test('分身头像来自主人身份，不另建头像来源', () => {
+test('分身主图来自主人身份的基础头像，不随主人更换头像同步', () => {
   const identity = loadIdentity();
   const a = identity.cloneAppearance({id:'u-wangyilin',name:'王宜林'});
-  assert.equal(a.ownerAvatar, 'portrait:u-wangyilin');
+  assert.equal(a.avatar, 'portrait:u-wangyilin');
+  assert.equal(a.ownerAvatar, undefined);
   assert.equal(a.evaCorner, true);
   const markup = identity.avatar(a,32);
   assert.match(markup, /portrait:u-wangyilin/);

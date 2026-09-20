@@ -38,27 +38,32 @@ test('本人可以更换自己的头像，其他人与非法数据都被拒绝',
   assert.notEqual(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
 });
 
-test('分身头像只有一个数据源：默认主人主图 + Eva 角标，主人可改，其他人与非法数据被拒绝', () => {
+test('分身头像与主人头像相互独立：默认主人基础头像 + Eva 角标，主人可改，其他人与非法数据被拒绝', () => {
   const {window, store, model} = setup();
-  const ownerPortrait = window.EvaAvatar.personUri('u-wangyilin');
+  const ownerBase = window.EvaAvatar.personBaseUri('u-wangyilin');
   const before = model.resolve('b-wangyilin').appearance;
-  assert.equal(before.avatar, window.__EVA_COLLEAGUE_PORTRAIT);
-  assert.equal(before.ownerAvatar, ownerPortrait);
+  assert.equal(before.avatar, ownerBase);
+  assert.equal(before.ownerAvatar, undefined);
   assert.equal(before.evaCorner, true);
+  // 主人更换头像不再带动分身主图：两者是各自独立的数据。
+  store.setPersonAvatar('u-wangyilin', CUSTOM);
+  assert.equal(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
+  assert.equal(model.resolve('u-wangyilin').avatar, CUSTOM);
+  assert.equal(model.resolve('b-wangyilin').appearance.avatar, ownerBase, '主人换头像后分身保持自己的主图');
+  store.setPersonAvatar('u-wangyilin', '');
+  // 分身主人可以单独更换分身主图。
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', CUSTOM);
   assert.equal(store.cloneAvatar('u-wangyilin'), CUSTOM);
   // Membership clone, 我的 AI persona and the contact model all read the same value.
   assert.equal(model.resolve('b-wangyilin').appearance.avatar, CUSTOM);
-  assert.equal(model.resolve('b-wangyilin').appearance.ownerAvatar, CUSTOM);
   assert.equal(model.resolve('persona-initial').appearance.avatar, CUSTOM);
   assert.throws(() => store.setCloneAvatar('u-linxiao', 'u-linxiao', CUSTOM), /只能更换自己的头像/);
   assert.throws(() => store.setCloneAvatar('u-wangyilin', 'u-linxiao', CUSTOM), /只有本人可以更换自己的分身头像/);
   assert.throws(() => store.setCloneAvatar('u-wangyilin', 'u-wangyilin', 'data:text/html,<b>x</b>'), /头像数据无效/);
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', '');
-  assert.equal(model.resolve('b-wangyilin').appearance.avatar, window.__EVA_COLLEAGUE_PORTRAIT);
-  assert.equal(model.resolve('b-wangyilin').appearance.ownerAvatar, ownerPortrait);
+  assert.equal(model.resolve('b-wangyilin').appearance.avatar, ownerBase);
 
-  // 旧数据曾把 Eva Logo 存成分身自定义主图：Logo 只能作角标，主图必须回落主人头像。
+  // 旧数据曾把 Eva Logo 存成分身自定义主图：Logo 只能作角标，主图必须回落主人基础头像。
   const render = (type, props, ...children) => ({type, props: props || {}, children});
   const layers = appearance => {
     const node = window.EvaAIIdentity.avatar(appearance, 32, render);
@@ -68,9 +73,9 @@ test('分身头像只有一个数据源：默认主人主图 + Eva 角标，主�
   };
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', window.__EVA_COLLEAGUE_PORTRAIT);
   const legacy = model.resolve('b-wangyilin').appearance;
-  assert.equal(legacy.ownerAvatar, ownerPortrait, 'Logo 不作分身主图，回落主人头像');
+  assert.equal(legacy.avatar, ownerBase, 'Logo 不作分身主图，回落主人基础头像');
   assert.equal(legacy.evaCorner, true);
-  assert.deepEqual(layers(legacy), {main: ownerPortrait, corner: window.__EVA_COLLEAGUE_PORTRAIT}, '主人主图与 Eva 角标同时保留');
+  assert.deepEqual(layers(legacy), {main: ownerBase, corner: window.__EVA_COLLEAGUE_PORTRAIT}, '主人基础主图与 Eva 角标同时保留');
 });
 
 test('个人助理头像写入助理配置并即时反映到身份外观，纯 AI 表单不套用', () => {
