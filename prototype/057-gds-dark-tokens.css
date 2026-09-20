@@ -93,6 +93,11 @@
   --eva-list-option-selected: #1e3a63;
   --eva-unread-surface: #2c2f33;
   --eva-unread-text: #c6cbd0;
+  /* 会话列表「@我」红（浅色 #dc1a12 的暗色对应，定义见 047 该 token 注释）。
+   * 与暗色品牌蓝 --eva-c-blue-400 #6d98f7 = hsl(221,90%,70%) 同规格，
+   * 取 hsl(2,90%,70%) = #f7726e。暗色高明度区红蓝亮度差收窄，字面等值即成立：
+   * #222 中栏上 CR 5.75（蓝 5.67）、L* 64.2（蓝 63.8）。 */
+  --eva-im-mention-accent: #f7726e;
 
   /* ---- shadow / elevation（大扩散 + 白色发丝描边）---- */
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);
@@ -644,22 +649,8 @@ body[theme-mode="dark"] {
   color: var(--eva-text-secondary);
 }
 
-/* B4·「全部项目」按钮暗色：无边框（与浅色一致），默认文案柔化，
-   hover 用白透明罩 + 文案提亮，暗底上明确可感。 */
-:root[data-theme="dark"] .eva-project-directory-button.semi-button {
-  color: var(--eva-text-secondary);
-  background: transparent;
-}
-:root[data-theme="dark"] .eva-project-directory-button.semi-button::before {
-  background: var(--eva-border-subtle);
-}
-:root[data-theme="dark"] .eva-project-directory-button.semi-button:hover {
-  color: var(--eva-text-primary);
-  background: var(--eva-overlay-hover);
-}
-:root[data-theme="dark"] .eva-project-directory-button.semi-button:active {
-  background: var(--eva-overlay-pressed);
-}
+/* B4·「全部项目」按钮暗色：已随 035 改为主页图标按钮并全量消费 semi token
+   （fill/border/text 在上方桥接层自动映射暗色），无需再单独覆写。 */
 
 /* A·任务抽屉暗色投影加深（浅色投影在暗底几乎不可见）。
    蒙层保持透明（需求④：抽屉不压暗，仅靠左缘投影做视觉分离），

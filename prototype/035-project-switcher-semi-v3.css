@@ -4,66 +4,51 @@
     padding-inline: 28px;
   }
 
-  /* 「全部项目」是跳出当前项目的全局导航动作，与项目自身页签分属两组：
-     紧跟在最后一个页签之后（不再顶到最右，便于点击），用竖分割线隔开两组；
-     按钮本身无边框无填充（三级动作观感），仅靠 hover 填充反馈。 */
+  /* 「全部项目」收敛为主页图标按钮，置于项目切换器左侧：与切换器构成
+     「全局入口 + 当前项目」相邻控件组，页签顺延其后（容器 gap 14px，
+     用负 margin 收紧组内间距到 8px）。默认态复用切换器非 hover 的胶囊
+     观感（填充成形 + 细边框描形）；图标按钮视觉质量比文字轻，描边让它
+     在组内立得住。hover 加深填充并提亮图标——它是全局导航动作而非
+     项目身份，故不引入项目主题色，与切换器的项目色 hover 形成分工。 */
   .eva-project-directory-button.semi-button {
-    order: 1;
     flex: none;
-    margin-left: 22px;
-    position: relative;
+    margin-right: -6px;
+    margin-bottom: 2px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    width: 32px;
+    min-width: 32px;
     height: 32px;
-    padding: 0 10px;
-    line-height: 1;
-    border: 0;
+    padding: 0;
+    border: 1px solid var(--semi-color-border);
     border-radius: 7px;
-    background: transparent;
-    color: var(--semi-color-text-2, #6b7075);
-    transition: background 0.15s ease, color 0.15s ease;
+    background: var(--semi-color-fill-1);
+    color: var(--semi-color-text-2);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
 
-  /* 竖分割线：居中落在「项目设置」文字与「全部项目」图标之间的留白正中
-     （两侧视觉间距≈23px 对称），且在 hover 填充之外，填充不会盖住它。 */
-  .eva-project-directory-button.semi-button::before {
-    content: "";
-    position: absolute;
-    left: -13px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1px;
-    height: 18px;
-    background: var(--semi-color-border);
-  }
-
-  /* 图标与文案垂直居中、紧邻成组；清零 Semi 默认图标间距，仅留 6px 亲密间隙 */
-  .eva-project-directory-button.semi-button .semi-button-content {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    line-height: 1;
-  }
   .eva-project-directory-button.semi-button .semi-icon,
   .eva-project-directory-button.semi-button svg {
     display: block;
     flex: none;
     margin: 0;
   }
-  /* Semi 给带图标按钮的文案包了 .semi-button-content-right 并加 margin-left:8px，
-     与 content 的 6px gap 叠加成 14px。清零它，图标与文案只保留 6px 亲密间隙。 */
-  .eva-project-directory-button.semi-button .semi-button-content-right {
-    margin-left: 0;
-  }
 
-  /* hover/active：无边框，仅填充 + 文案提亮 */
+  /* hover：填充加深一档、图标提亮，边框保持——反馈集中在面上，不加噪 */
   .eva-project-directory-button.semi-button:hover {
-    color: var(--semi-color-text-0, #1c1f23);
-    background: var(--semi-color-fill-1, #f2f3f5);
+    color: var(--semi-color-text-0);
+    background: var(--semi-color-fill-2);
+    border-color: var(--semi-color-border);
   }
   .eva-project-directory-button.semi-button:active {
-    background: var(--semi-color-fill-2, #e7e9ec);
+    color: var(--semi-color-text-0);
+    background: var(--semi-color-fill-2);
+    border-color: var(--semi-color-border);
+  }
+  .eva-project-directory-button.semi-button:focus-visible {
+    outline: var(--eva-border-focus-w, 2px) solid var(--eva-border-focus);
+    outline-offset: 2px;
   }
 
   .eva-project-switcher-anchor {
