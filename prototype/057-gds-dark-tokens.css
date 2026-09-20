@@ -644,17 +644,18 @@ body[theme-mode="dark"] {
   color: var(--eva-text-secondary);
 }
 
-/* B4·「全部项目」按钮暗色：默认描边 + 透明底，hover 用白透明罩 + 描边点亮，
-   保证暗底上 hover 明确可感（不再"消失"）。 */
+/* B4·「全部项目」按钮暗色：无边框（与浅色一致），默认文案柔化，
+   hover 用白透明罩 + 文案提亮，暗底上明确可感。 */
 :root[data-theme="dark"] .eva-project-directory-button.semi-button {
-  border-color: var(--eva-border-subtle);
   color: var(--eva-text-secondary);
   background: transparent;
+}
+:root[data-theme="dark"] .eva-project-directory-button.semi-button::before {
+  background: var(--eva-border-subtle);
 }
 :root[data-theme="dark"] .eva-project-directory-button.semi-button:hover {
   color: var(--eva-text-primary);
   background: var(--eva-overlay-hover);
-  border-color: var(--eva-border-default);
 }
 :root[data-theme="dark"] .eva-project-directory-button.semi-button:active {
   background: var(--eva-overlay-pressed);

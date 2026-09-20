@@ -4,25 +4,40 @@
     padding-inline: 28px;
   }
 
+  /* 「全部项目」是跳出当前项目的全局导航动作，与项目自身页签分属两组：
+     用竖分割线把它与页签隔开；按钮本身无边框无填充（三级动作观感），
+     仅靠 hover 填充反馈，视觉最轻、层级最清晰。 */
   .eva-project-directory-button.semi-button {
     order: 1;
     flex: none;
     margin-left: auto;
+    position: relative;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 6px;
     height: 32px;
-    padding: 0 12px;
+    padding: 0 10px;
     line-height: 1;
+    border: 0;
     border-radius: 7px;
-    border-color: var(--semi-color-border);
-    color: var(--semi-color-text-1);
-    background: var(--semi-color-bg-0);
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    background: transparent;
+    color: var(--semi-color-text-2, #6b7075);
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
-  /* B4·图标与文案垂直居中：Semi 内容容器强制居中，消除图标基线偏移 */
+  /* 竖分割线：落在按钮左侧留白里（在 hover 填充之外），把「全部项目」与页签分组。 */
+  .eva-project-directory-button.semi-button::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 18px;
+    background: var(--semi-color-border);
+  }
+
+  /* 图标与文案垂直居中、紧邻成组 */
   .eva-project-directory-button.semi-button .semi-button-content {
     display: inline-flex;
     align-items: center;
@@ -35,11 +50,10 @@
     flex: none;
   }
 
-  /* B4·hover 不再"消失"：填充加深一档 + 描边点亮，明确可感 */
+  /* hover/active：无边框，仅填充 + 文案提亮 */
   .eva-project-directory-button.semi-button:hover {
     color: var(--semi-color-text-0, #1c1f23);
     background: var(--semi-color-fill-1, #f2f3f5);
-    border-color: var(--semi-color-border-hover, var(--semi-color-text-3, #a5abb3));
   }
   .eva-project-directory-button.semi-button:active {
     background: var(--semi-color-fill-2, #e7e9ec);
