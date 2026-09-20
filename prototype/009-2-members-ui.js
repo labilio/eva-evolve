@@ -194,7 +194,7 @@
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIcon,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,useNavigate},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate},store);
     return {...cards,HumanIdentity,ChatSettings,Members,CloneChoice,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker};
   }};
 })(window);

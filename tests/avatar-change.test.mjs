@@ -12,8 +12,9 @@ const CUSTOM = 'https://example.test/custom.png';
 function setup() {
   const storage = new Map();
   const window = {
-    __EVA_CURRENT_USER_PORTRAIT: 'current.png',
-    __EVA_COLLEAGUE_PORTRAIT: 'eva.png',
+    // Valid image data URLs: the shared validator must accept what the store persists.
+    __EVA_CURRENT_USER_PORTRAIT: 'data:image/png;base64,Y3VycmVudA==',
+    __EVA_COLLEAGUE_PORTRAIT: 'data:image/png;base64,ZXZh',
     localStorage: {getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value)}
   };
   loadIdentityEnvironment(window);
@@ -56,6 +57,20 @@ test('分身头像只有一个数据源：默认主人主图 + Eva 角标，主�
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', '');
   assert.equal(model.resolve('b-wangyilin').appearance.avatar, window.__EVA_COLLEAGUE_PORTRAIT);
   assert.equal(model.resolve('b-wangyilin').appearance.ownerAvatar, ownerPortrait);
+
+  // 旧数据曾把 Eva Logo 存成分身自定义主图：Logo 只能作角标，主图必须回落主人头像。
+  const render = (type, props, ...children) => ({type, props: props || {}, children});
+  const layers = appearance => {
+    const node = window.EvaAIIdentity.avatar(appearance, 32, render);
+    const main = node.children.find(child => child.props.className === 'eva-identity-avatar__logo');
+    const corner = node.children.find(child => child.props.className === 'eva-identity-avatar__owner');
+    return {main: main?.props.src, corner: corner?.props.src};
+  };
+  store.setCloneAvatar('u-wangyilin', 'u-wangyilin', window.__EVA_COLLEAGUE_PORTRAIT);
+  const legacy = model.resolve('b-wangyilin').appearance;
+  assert.equal(legacy.ownerAvatar, ownerPortrait, 'Logo 不作分身主图，回落主人头像');
+  assert.equal(legacy.evaCorner, true);
+  assert.deepEqual(layers(legacy), {main: ownerPortrait, corner: window.__EVA_COLLEAGUE_PORTRAIT}, '主人主图与 Eva 角标同时保留');
 });
 
 test('个人助理头像写入助理配置并即时反映到身份外观，纯 AI 表单不套用', () => {
@@ -93,18 +108,20 @@ test('资料卡只为本人、分身主人和个人助理提供更换头像入�
     useLayoutEffect: () => {}
   };
   const cards = window.EvaIdentityCard.create({React, Modal: 'modal', Button: 'button', BackIcon: 'back-icon', ProjectIcon: 'project-icon', CameraIcon: 'camera-icon', useNavigate: () => () => {}}, store);
-  const hasEdit = identity => {
-    const tree = cards.IdentityCard({identity, onClose: () => {}});
-    let found = false;
+  // Collect the rendered surface without a DOM: aria-labels and class names are enough.
+  const surface = identity => {
+    const found = {labels: new Set(), classes: new Set()};
     const walk = node => {
-      if (!node || typeof node !== 'object' || found) return;
-      if (node.props?.['aria-label'] === '更换头像') { found = true; return; }
+      if (!node || typeof node !== 'object') return;
+      if (node.props?.['aria-label']) found.labels.add(node.props['aria-label']);
+      if (node.props?.className) String(node.props.className).split(/\s+/).forEach(name => found.classes.add(name));
       if (typeof node.type === 'function') { walk(node.type({...node.props, children: node.children})); return; }
       (node.children || []).forEach(walk);
     };
-    walk(tree);
+    walk(cards.IdentityCard({identity, onClose: () => {}}));
     return found;
   };
+  const hasEdit = identity => surface(identity).labels.has('更换头像');
   assert.equal(hasEdit('u-wangyilin'), true, '本人可以更换头像');
   assert.equal(hasEdit('u-linxiao'), false, '不能更换别人的头像');
   assert.equal(hasEdit('b-wangyilin'), true, '分身主人可以更换分身头像');
@@ -113,6 +130,16 @@ test('资料卡只为本人、分身主人和个人助理提供更换头像入�
   assert.equal(hasEdit('ai-general'), true, '个人助理可以更换头像');
   assert.equal(hasEdit('project-agent:prod'), false, '项目管家头像固定');
   assert.equal(hasEdit('emp-1'), false, '数字员工头像固定');
+  // 资料卡入口保留隐藏文件输入；选图后才进入共用圆形裁切编辑器（见浏览器验收）。
+  const self = surface('u-wangyilin');
+  assert.equal(self.classes.has('eva-avatar-editor'), false, '资料卡未选图时不渲染编辑器');
+  assert.equal(self.labels.has('选择头像图片'), true, '资料卡入口提供文件输入');
+  // 共用编辑器与统一读取契约导出给群头像等入口复用，不另写第二套裁切。
+  assert.equal(typeof cards.AvatarEditor, 'function', '导出共用圆形裁切编辑器');
+  assert.equal(typeof cards.readAvatarFile, 'function', '导出统一图片读取契约');
+  const chatSettings = read('009-2-chat-settings.js');
+  assert.match(chatSettings, /AvatarEditor/, '群头像入口复用共用编辑器');
+  assert.match(chatSettings, /readAvatarFile/, '群头像入口复用统一读取契约');
   // 左下角账号菜单以 startAvatarEditing 直接进入同一个编辑器，不新写第二套。
   const tree = cards.IdentityCard({identity: 'u-wangyilin', startAvatarEditing: true, onClose: () => {}});
   let editor = false;

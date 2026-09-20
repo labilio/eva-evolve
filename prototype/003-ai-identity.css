@@ -35,6 +35,8 @@
 
   .eva-identity-avatar__owner {
     position: absolute;
+    /* 角标是身份的一部分，始终显示在头像主体之上，包括资料卡悬停遮罩等覆盖层。 */
+    z-index: 2;
     box-sizing: border-box;
     right: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
     bottom: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
