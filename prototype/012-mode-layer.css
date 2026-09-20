@@ -579,18 +579,18 @@
 }
 
 .eva-my-ai-collaboration-icon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
+  width: var(--eva-icon-nav);
+  height: var(--eva-icon-nav);
+  flex: 0 0 var(--eva-icon-nav);
   display: block;
 }
 
 .eva-my-ai-collaboration-icon-wrap {
   position: relative;
   display: inline-flex;
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
+  width: var(--eva-icon-nav);
+  height: var(--eva-icon-nav);
+  flex: 0 0 var(--eva-icon-nav);
 }
 
 .eva-my-ai-collaboration-icon__unread {
