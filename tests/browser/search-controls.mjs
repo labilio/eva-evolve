@@ -118,6 +118,23 @@ test('转发面板搜索：沿用公共搜索外观，悬停和聚焦不改变�
   assert.equal(idle.gap, 8);
   assert.equal(idle.fill, 'none', '图标不能回归为实心圆点');
   assert.equal(await input.getAttribute('placeholder'), '搜索联系人、Agent、群聊及其子区');
+  // 搜索框右侧常显「新建群聊」：写出入口名称，但作为低频三级按钮与搜索框同行等高、不争主位
+  const createGroup = page.locator('.eva-fp-create-group');
+  assert.equal(await createGroup.count(), 1, '转发面板搜索框右侧未显示新建群聊入口');
+  assert.equal((await createGroup.innerText()).trim(), '新建群聊', '新建群聊入口必须写出文字，不能只给一个加号');
+  const createGroupGeometry = await page.evaluate(() => {
+    const field = document.querySelector('.eva-forward-search').getBoundingClientRect();
+    const node = document.querySelector('.eva-fp-create-group');
+    const button = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return { gap: button.left - field.right, height: button.height, top: Math.abs(button.top + button.height / 2 - (field.top + field.height / 2)), background: style.backgroundColor, border: style.borderTopWidth, width: button.width, fieldWidth: field.width };
+  });
+  assert.ok(createGroupGeometry.gap >= 6 && createGroupGeometry.gap <= 10, '新建群聊按钮与搜索框间距应为 8px');
+  assert.equal(Math.round(createGroupGeometry.height), 32, '新建群聊按钮应与搜索框等高');
+  assert.ok(createGroupGeometry.top <= 1, '新建群聊按钮应与搜索框垂直居中');
+  assert.equal(createGroupGeometry.background, 'rgba(0, 0, 0, 0)', '低频入口不得填充底色而与搜索框争主位');
+  assert.equal(createGroupGeometry.border, '0px', '低频入口不得再叠一层边框');
+  assert.ok(createGroupGeometry.width < createGroupGeometry.fieldWidth / 2, '低频入口不应挤压搜索框的可用宽度');
   await field.hover();
   const hover = await appearance(field);
   assert.equal(hover.height, idle.height);
