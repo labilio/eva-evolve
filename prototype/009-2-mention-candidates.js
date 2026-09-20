@@ -1,11 +1,11 @@
 (function (root) {
   'use strict';
 
-  // 提及候选的唯一数据源：人类、AI 分身、数字员工、本地助理、专家、专家团。
+  // 提及候选的唯一数据源：联系人、AI 分身、数字员工、本地助理、专家、专家团。
   // IM 与项目任务评论共用同一份身份数据和同一个 MentionPicker 组件渲染。
   const ORDER = [
     { kind: 'assistant', label: '本地助理' },
-    { kind: 'human', label: '人类' },
+    { kind: 'human', label: '联系人' },
     { kind: 'clone', label: 'AI 分身' },
     { kind: 'employee', label: '数字员工' },
     { kind: 'agent', label: '专家' },

@@ -29,7 +29,7 @@ test('供应链教程闭环：直接添加、主人带入分身、文件共享�
  assert.equal(JSON.stringify(s.snapshot().projects.other),before);
 });
 
-test('供应链项目预设保留人类和负责人 AI 分身可同时拉入普通群',()=>{
+test('供应链项目预设保留联系人和负责人 AI 分身可同时拉入普通群',()=>{
  const {s}=setup();s.loadSupplyDemo();const state=s.snapshot(),project=state.projects.prod;
  assert.equal(state.actorId,'u-wangyilin');
  assert.equal(project.ownerId,'u-wangyilin');
@@ -38,9 +38,9 @@ test('供应链项目预设保留人类和负责人 AI 分身可同时拉入普�
  assert.ok(project.cloneIds.includes('b-wangyilin'));
  for(const id of ['c-eva','c-review','c-weekly','supply-demo-rectification']){
    const group=state.groups[id];
-   assert.ok(group.humans.length<project.humans.length,id+'应保留未入群的项目人类');
+   assert.ok(group.humans.length<project.humans.length,id+'应保留未入群的项目联系人');
    assert.equal(group.cloneIds.includes('b-wangyilin'),false,id+'应保留王宜林的 AI 分身可拉入');
-   assert.ok(s.candidates(id,'u-wangyilin').length>0,id+'应存在人类候选');
+   assert.ok(s.candidates(id,'u-wangyilin').length>0,id+'应存在联系人候选');
  }
  assert.equal(s.groupMembers('all:prod').filter(member=>member.kind==='human').length,8);
  assert.equal(s.groupMembers('all:prod').filter(member=>member.kind==='clone').length,6);

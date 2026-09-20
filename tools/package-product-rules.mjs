@@ -10,7 +10,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const entries = [
   ['docs/开发规范总览.md', 'references/index.md'],
   ['docs/通用规范/图标使用规范.md', 'references/common/icons.md'],
-  ['docs/通用规范/人类与AI身份展示规范.md', 'references/common/identity.md'],
+  ['docs/通用规范/联系人与AI身份展示规范.md', 'references/common/identity.md'],
   ['docs/通用规范/布局规范.md', 'references/common/layout.md'],
   ['docs/通用规范/配色规范.md', 'references/common/colors.md'],
   ['docs/专项规范/Eva同学.md', 'references/menus/personal-eva.md'],
@@ -45,7 +45,7 @@ for (const [source, target] of entries) {
 ## 通用
 
 - [图标规范](./通用规范/图标使用规范.md)
-- [人类与 AI 身份展示规范](./通用规范/人类与AI身份展示规范.md)
+- [联系人与 AI 身份展示规范](./通用规范/联系人与AI身份展示规范.md)
 - [布局规范](./通用规范/布局规范.md)
 - [配色规范](./通用规范/配色规范.md)
 
