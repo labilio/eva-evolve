@@ -376,7 +376,7 @@ test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () =
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
 });
 
-test('我的 AI 团队父群去掉左侧箭头并由父群行同时切换子区', () => {
+test('我的 AI 小队父群去掉左侧箭头并由父群行同时切换子区', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const start = imPatch.indexOf('function teamGroupItem(group)');
@@ -403,7 +403,7 @@ test('我的 AI 团队父群去掉左侧箭头并由父群行同时切换子区'
   assert.match(aiTeamCss, /\.eva-ai-team__team-button:focus-visible\s*\{[^}]*outline:/s);
 });
 
-test('我的 AI 团队和身份会话均默认预览最新三条并按需展开', () => {
+test('我的 AI 小队和身份会话均默认预览最新三条并按需展开', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
 

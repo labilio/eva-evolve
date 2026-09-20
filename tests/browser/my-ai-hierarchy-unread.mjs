@@ -93,7 +93,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     }
 
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
-    assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的AI团队');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-name').innerText(), '我的 AI 小队');
     assert.equal(await systemTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);

@@ -7,7 +7,7 @@ const members=[{id:'u-wangyilin',name:'王宜林',kind:'human'},{id:'persona',na
 test('fixed group derives all member kinds without duplicates and isolates history',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage:null});
  const source=group.source([...members,members[1]]),channel=source.channels[0];
- assert.equal(channel.name,'我的AI团队');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
+ assert.equal(channel.name,'我的 AI 小队');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
  assert.equal(channel.replyPolicy,'mention-only');assert.equal(channel.memberIds.join(','),members.map(m=>m.id).join(','));
  source.onSend('普通群消息');assert.equal(group.source(members).messages[group.id].length,1);
  source.onSend('@通用助理 请整理');let history=group.source(members).messages[group.id];assert.equal(history.length,3);assert.equal(history[2].sender.uid,'assistant');
@@ -27,7 +27,7 @@ test('legacy default group name is normalized while custom team names are retain
  ]});
  const storage={getItem:key=>key==='eva:my-ai-groups:v2'?saved:null,setItem:()=>{}};
  const group=window.EvaMyAITeamGroup.createStore({storage});
- assert.equal(group.get(group.id).name,'我的AI团队');assert.equal(group.get('my-ai-group:legacy').name,'原有团队');
+ assert.equal(group.get(group.id).name,'我的 AI 小队');assert.equal(group.get('my-ai-group:legacy').name,'原有团队');
 });
 test('group and subzones isolate messages and drafts across reloads',()=>{
  let saved;const storage={getItem:()=>saved,setItem:(_,v)=>{saved=v;}};
@@ -78,7 +78,7 @@ test('custom AI teams can be dissolved with all nested data while the default te
  const restored=window.EvaMyAITeamGroup.createStore({storage});
  assert.equal(restored.groups().some(item=>item.id===customId),false);
  assert.equal(JSON.stringify(saved).includes('待删除草稿'),false);
- assert.equal(restored.get(restored.id).name,'我的AI团队');
+ assert.equal(restored.get(restored.id).name,'我的 AI 小队');
 });
 test('team groups expose exact child unread counts and aggregate only unread presence',()=>{
  let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};
