@@ -278,10 +278,12 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   }
   assert.match(aiTeamCss, /--gds-type-caption-font-size/);
   // Unread badges now belong to the common IM component, with the approved compact 11px size.
+  // 2026-09-20 未读徽标改为主色胶囊 + 反白数字，字号取 EvaMate Label/Small 12px。
+  // 前景走 --eva-action-primary-text（暗色自动转近黑），不得写死白色。
   const imShellCss = read('prototype/017-im-shell.css');
   assert.match(imShellCss, /wk-conv-unread-num/);
   assert.match(imShellCss, /font: 500 11px\/16px var\(--eva-font-sans\)/);
-  assert.match(imShellCss, /--eva-unread-surface/);
+  assert.match(imShellCss, /background:\s*var\(--eva-unread-tonal-surface\);\s*\n\s*color:\s*var\(--eva-unread-tonal-text\)/);
   assert.match(hierarchyCss, /wk-category-header__name\s*\{[^}]*font-size:\s*var\(--gds-type-label-medium-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-medium\)/s);
   assert.match(hierarchyCss, /eva-space-card \.wk-category-header\s*\{[^}]*width:\s*100%[^}]*margin-inline-start:\s*0[^}]*gap:\s*var\(--gds-space-1\)/s);
   assert.match(hierarchyCss, /wk-category-header__arrow\s*\{[^}]*width:\s*var\(--gds-icon-size-chevron\)[^}]*margin-right:\s*0/s);

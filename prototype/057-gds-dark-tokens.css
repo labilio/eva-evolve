@@ -98,6 +98,12 @@
    * 取 hsl(2,90%,70%) = #f7726e。暗色高明度区红蓝亮度差收窄，字面等值即成立：
    * #222 中栏上 CR 5.75（蓝 5.67）、L* 64.2（蓝 63.8）。 */
   --eva-im-mention-accent: #f7726e;
+  /* 未读徽标淡底：暗色改用 8%（浅色是 10%）。暗色下提高混入比例会把底提亮、
+   * 与提亮文字的对比度反向下降。8% 落地 #352a2a，配 @我 红 #f7726e 得 CR 5.00。
+   * 文字不像浅色那样需要再压深一档——暗色的 #f7726e 本就是提亮值，直接可用，
+   * 故此处把 tonal-text 重指回 --eva-im-mention-accent，覆盖 047 的深红。 */
+  --eva-unread-tonal-surface: color-mix(in srgb, var(--eva-im-mention-accent) 8%, var(--eva-surface-primary));
+  --eva-unread-tonal-text: var(--eva-im-mention-accent);
 
   /* ---- shadow / elevation（大扩散 + 白色发丝描边）---- */
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);

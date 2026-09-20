@@ -554,7 +554,11 @@ body.eva-message-hierarchy-ready :is(
   line-height: 0;
   padding: 0;
   box-sizing: border-box;
-  margin-left: 4px;
+  /* 负外边距抵掉行内 8px flex gap 的一半，使徽标与箭头的盒间距落到 4px。
+   * 依据：32px 是 GDS §14 触控下限，不能压缩，但箭头字形只有 14px，盒内
+   * 天然含约 9px 光学留白；盒间距若按常规 8px，光学间距会涨到 17px，徽标
+   * 与箭头就散成两个东西。取 4px 后光学间距约 13px，两者读作一个行尾簇。 */
+  margin-left: -4px;
   border-radius: 6px;
   color: #7c8790;
   cursor: pointer;

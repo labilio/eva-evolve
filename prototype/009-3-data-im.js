@@ -2,9 +2,16 @@
   'use strict';
   window.__EVA_IM_DEMO = {
     // Sparse initial project unread hints; conversation history and saved user state stay intact.
+    // 2026-09-20 演示加密度：覆盖父频道/子区/99+ 溢出/@我 四种形态，供未读视觉验收。
     projectUnreadSeeds: {
-      "c-eva": { unread: 2, atMe: true },
-      "th-demo-route": { unread: 1, atMe: false }
+      "c-eva": { unread: 12, atMe: true },
+      "th-msg-architecture": { unread: 3, atMe: true },
+      "th-mode-switch": { unread: 1, atMe: false },
+      "c-review": { unread: 128, atMe: false },
+      "th-demo-route": { unread: 1, atMe: false },
+      "c-weekly": { unread: 5, atMe: false },
+      "c-client-delivery": { unread: 2, atMe: true },
+      "c-drive-design": { unread: 7, atMe: true }
     },
     aiTeamSessions: [
   {

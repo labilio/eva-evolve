@@ -67,16 +67,26 @@
 :is(.eva-msg, .ch-layout) .wk-code-highlight-container { --wk-text-accent: var(--wk-purple-500); }
 
 /* Shared unread semantics for global, project and assistant conversations. */
+/* 2026-09-20 未读计数：淡主色底 + 主色数字（tonal），借鉴气泡内 @提及标签的
+ * 配色语言，但底色改为不透明混色——理由见 047 的 --eva-unread-tonal-surface。
+ * 先前试过主色实底 + 反白字，墨量近 100%，在一屏多行的列表里压过会话名与
+ * 选中行（权重应与出现频次成反比）；tonal 把墨量降到约 15%，醒目度改由色相
+ * 跳变承担，而不是面积。
+ * 与书面规范的偏离（本轮用户明确决定，未改规范文档）：
+ *   · 三栏式现行视觉规范「未读数量使用中性灰色数字徽标」→ 现为主色系淡底+蓝字
+ *   · IM 界面一致性规范「…5px 圆角」→ 现为胶囊（999px）
+ * 字号 11px 与最近列日期同档；字重 500 取 EvaMate「Badge / Compact」。
+ * 高度 16px、min-width 18px 维持规范几何未变。 */
 .ch-layout :is(.wk-conv-compact-badge, .wk-category-header__badge, .wk-sidebar-tabbar__badge, .wk-conv-unread-num),
 .collab-tab .badge {
   box-sizing: border-box;
   min-width: 18px;
   height: 16px;
-  padding: 0 5px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 5px;
-  background: var(--eva-unread-surface);
-  color: var(--eva-unread-text);
+  border-radius: var(--eva-radius-full, 999px);
+  background: var(--eva-unread-tonal-surface);
+  color: var(--eva-unread-tonal-text);
   font: 500 11px/16px var(--eva-font-sans);
   display: inline-flex;
   align-items: center;
@@ -99,12 +109,20 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--eva-action-primary);
+  color: var(--eva-im-mention-accent);
+  /* 字号与最近列的日期同档（11px），两者都是行尾的次要信息，同字阶才不抢戏。
+   * 字重保持 600：@我 是无填充的纯文字，只能靠字重立住，不能照搬填充胶囊的 500。 */
   font: 600 11px/18px var(--eva-font-sans);
 }
-/* Reserve the disclosure slot so child and parent unread counts share an edge. */
+/* 行尾「控件列」：最右侧 32px 是固定槽位，父行放展开箭头，子区行没有箭头，
+ * 就由计数徽标占据同一槽位并在其中居中——两类行的最右元素共享同一条中轴
+ * （x=箭头中心），而不是各自悬空。这比「让子区徽标与父行徽标右缘对齐」更稳：
+ * 后者会在子区行的最右留下 44px 空档，视觉上像缺了一块。
+ * min-width 而非定宽：99+ 或 @我+计数 更宽时向左生长，中轴仍然成立。 */
 .ch-layout .wk-conv-compact-item:not(:has(.wk-conv-compact-thread-toggle)) .wk-conv-compact-badges {
-  margin-right: 24px;
+  min-width: 32px;
+  margin-right: 0;
+  justify-content: center;
 }
 
 /* Recent conversations share unread semantics with the compact tree. */

@@ -118,10 +118,39 @@
   --eva-mention-hover: color-mix(in srgb, var(--eva-action-primary) 12%, transparent);
 
   /* IM emphasis palette; neutral hover and business identity colors stay separate. */
-  --eva-unread-surface: #eef0f2;
-  --eva-unread-text: #4f5b64;
+  /* 未读徽标 2026-09-20 加深一档以提升醒目度：底 #eef0f2→#e2e5e8、字 #4f5b64→#1d2329。
+   * 规范约束是「中性灰数字徽标、禁红」（三栏式现行视觉规范 / IM 界面一致性规范），
+   * 未锁具体色值；原值与白底 ΔL*≈4 徽标轮廓不显。仍为中性灰，未读红点语义
+   * （--eva-unread-indicator）不受影响。 */
+  --eva-unread-surface: #e2e5e8;
+  --eva-unread-text: #1d2329;
   --eva-unread-indicator: var(--eva-c-mac-red);
   --eva-im-accent: var(--eva-action-primary);
+  /* 未读徽标的「淡底 + 同色系深字」配色（2026-09-20）。实底主色墨量近 100%，
+   * 在高频出现的列表里压过会话名与选中行；淡底把墨量降到约 15%，醒目度改由
+   * 色相跳变承担。底色与 @我 同红色系，两者归入同一「需要注意」通道。
+   * 两条硬约束决定取值：
+   *   · 必须用「不透明混色」而非 --eva-mention-background 那种透明叠加。
+   *     气泡里的 @提及能用 8% 透明，是因为背后只会是白/浅灰；会话行背后可能是
+   *     浅蓝选中面，透明色叠上去会把底压深，文字对比度跌破 AA。
+   *   · 文字必须比 @我 的 #dc1a12 再深一档：红的感知明度天生低于蓝，#dc1a12
+   *     落在自己的 10% 红底上只有 CR 4.40，11px 正文不达 AA。
+   * #d11610 = hsl(2, 86%, 44%)，与 #dc1a12 = hsl(2, 85%, 47%) 同色相同饱和度，
+   * 只压低明度 3 点，属同一色阶的「on-container」档，CR 4.65（AA 阈值 4.5，
+   * 留 0.15 余量）。明度是能取到的上限：45% 时 CR 恰好 4.50 无余量，47%（即
+   * 直接用 @我 的值）只有 4.40 不达标。 */
+  --eva-unread-tonal-surface: color-mix(in srgb, var(--eva-im-mention-accent) 10%, var(--eva-surface-primary));
+  --eva-unread-tonal-text: #d11610;
+  /* 会话列表「@我」标记专用色（2026-09-20 用户决定：由蓝改红，提高醒目度）。
+   * 取值按「与品牌蓝同规格的红」推导，而非直接借用既有红：
+   *   品牌蓝 #1563eb = hsl(218, 84%, 50%)，红取 hsl(2, 85%, 47%) = #dc1a12
+   * 饱和度对齐（85% vs 84%）；HSL 明度刻意低 3 点，因为 HSL 的 L 不是感知量，
+   * 同 L 的红比蓝暗：字面等值的 hsl(2,84%,50%)=#eb1d14 在白底 CR 仅 4.45，
+   * 11px 文字不达 AA。降到 47% 后 CIELAB L*≈47（蓝为 46）真正对应，
+   * 白底 CR 5.0（蓝为 5.2）。
+   * 不复用 --eva-c-mac-red(#ff5d56)：那是「红点」用色，作文字白底 CR 仅 3.02，不合格。
+   * 注意：与 docs/IM界面一致性规范.md「@我使用蓝色文字」冲突，属用户本轮明确决定。 */
+  --eva-im-mention-accent: #dc1a12;
   /* 解耦：外发气泡、@提及下拉选中项与一级导航选中态原为同一 token
    * （--eva-nav-selected），三处语义不同却共用一个名字，现各自独立。
    * @提及下拉选中项与导航选中同属「选中表面」语义，因此共用 EvaMate
