@@ -634,10 +634,10 @@ body[theme-mode="dark"] {
   );
 }
 
-/* B2·项目切换器暗色：默认填充用白透明抬升罩，文案/字形提亮；
-   hover 保留项目主题色 tint（--eva-project-accent 暗色下已是提亮值）。 */
+/* B2·项目切换器暗色：默认态随浅色同步回归 ghost（无填充，仅文字/图标），
+   文案/字形提亮；hover 保留项目主题色 tint（--eva-project-accent 暗色下已是提亮值）。 */
 :root[data-theme="dark"] body.eva-message-hierarchy-ready .collab-frame.eva-space-card-foundation .collab-sp-chip.eva-project-switcher {
-  background: var(--eva-overlay-hover);
+  background: transparent;
   border-color: transparent;
   color: var(--eva-text-primary);
 }

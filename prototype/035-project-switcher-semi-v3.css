@@ -11,10 +11,12 @@
      仅提亮。特异度须压过 vendor
      .semi-button.semi-button-with-icon-only.semi-button-size-small（0,3,0，
      会把图标按钮压成 24×24），故带 .collab-tabs 作用域拉到 (0,3,0) 且后加载。
-     容器 gap 14px 用负 margin 收紧组内间距到 8px。 */
+     与切换器的间距（16px）大于页签的组内节奏（14px）：切换器默认态回归
+     ghost 后，主页按钮是左侧唯一的实心控件，须以「大一级」的间隔表明
+     它不属于页签组，避免与相邻元素黏连。 */
   .collab-tabs .eva-project-directory-button.semi-button {
     flex: none;
-    margin-right: -6px;
+    margin-right: 2px;
     margin-bottom: 2px;
     display: inline-flex;
     align-items: center;
@@ -66,10 +68,11 @@
     min-height: 32px;
     margin-bottom: 2px;
     padding: 0 10px;
-    /* B2·默认态即采用原 hover 的填充观感（弱化描边为透明，靠填充成形） */
+    /* B2·默认态回归 ghost 形态：无填充无描边，仅图标+项目名+箭头；
+       描边占位保留（透明），hover 出现 tint 时无布局位移 */
     border: 1px solid transparent;
     border-radius: 7px;
-    background: var(--semi-color-fill-1, #f2f3f5);
+    background: transparent;
     color: var(--semi-color-text-0, #1c1f23);
     font-family: inherit;
     font-size: 15px;
