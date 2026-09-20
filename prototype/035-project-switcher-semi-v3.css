@@ -25,12 +25,12 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
 
-  /* 竖分割线：居中落在页签与按钮之间的留白里（两侧视觉间距≈16px，均衡分组），
-     且在 hover 填充之外，填充不会盖住它。 */
+  /* 竖分割线：居中落在「项目设置」文字与「全部项目」图标之间的留白正中
+     （两侧视觉间距≈23px 对称），且在 hover 填充之外，填充不会盖住它。 */
   .eva-project-directory-button.semi-button::before {
     content: "";
     position: absolute;
-    left: -6px;
+    left: -13px;
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
@@ -38,7 +38,7 @@
     background: var(--semi-color-border);
   }
 
-  /* 图标与文案垂直居中、紧邻成组 */
+  /* 图标与文案垂直居中、紧邻成组；清零 Semi 默认图标间距，仅留 6px 亲密间隙 */
   .eva-project-directory-button.semi-button .semi-button-content {
     display: inline-flex;
     align-items: center;
@@ -49,6 +49,12 @@
   .eva-project-directory-button.semi-button svg {
     display: block;
     flex: none;
+    margin: 0;
+  }
+  /* Semi 给带图标按钮的文案包了 .semi-button-content-right 并加 margin-left:8px，
+     与 content 的 6px gap 叠加成 14px。清零它，图标与文案只保留 6px 亲密间隙。 */
+  .eva-project-directory-button.semi-button .semi-button-content-right {
+    margin-left: 0;
   }
 
   /* hover/active：无边框，仅填充 + 文案提亮 */
