@@ -713,17 +713,42 @@
   outline-offset: 2px;
 }
 
-.ch-stream > .eva-conversation-search-hit {
-  animation: eva-conversation-search-highlight 2.2s ease-out;
+/* 定位高亮：琥珀是「跳转命中」的通用视觉语言（搜索命中/行定位），与蓝色
+ * outgoing 气泡、灰色 incoming 气泡都不同色族，两类气泡上表现一致，也不会
+ * 被误读成选中态或 focus 态。
+ * 暗色刻意用实色而非半透明叠加：橙与气泡蓝是互补色，叠加会互相中和，实测
+ * rgba(255,174,67,.2) 叠在 #1e3a63 上得 #4b515d 灰蓝（对比原气泡仅 1.43），
+ * 琥珀特征全失、读作「禁用」。实色 #54401f 保住暖色特征，白字在其上 CR 10.2。 */
+.ch-stream .eva-conversation-search-hit {
+  --eva-message-locate-surface: #ffeec2;
+  animation: eva-conversation-search-highlight 1.8s ease-in-out;
+}
+:root[data-theme="dark"] .ch-stream .eva-conversation-search-hit {
+  --eva-message-locate-surface: #54401f;
+}
+/* 动画的回落点必须是气泡自身的底色：落到 transparent 会让气泡在动画中途
+ * 掉色、露出画布。按收发方向各自绑定，供关键帧统一引用。 */
+.ch-stream .wk-msg-row .eva-conversation-search-hit {
+  --eva-message-locate-base: var(--eva-bubble-incoming);
+}
+.ch-stream .wk-msg-row--send .eva-conversation-search-hit {
+  --eva-message-locate-base: var(--eva-bubble-outgoing);
 }
 
 @keyframes eva-conversation-search-spin {
   to { transform: rotate(360deg); }
 }
 
+/* 三次呼吸，每次约 600ms：亮 → 退 → 亮 → 退 → 亮 → 收。
+ * 起闪时机由 JS 推到滚动停稳之后，否则平滑滚动会吃掉前几次。 */
 @keyframes eva-conversation-search-highlight {
-  0%, 36% { background: var(--semi-color-warning-light-default); }
-  100% { background: transparent; }
+  0% { background-color: var(--eva-message-locate-base, transparent); }
+  10%, 23% { background-color: var(--eva-message-locate-surface); }
+  33% { background-color: var(--eva-message-locate-base, transparent); }
+  43%, 56% { background-color: var(--eva-message-locate-surface); }
+  66% { background-color: var(--eva-message-locate-base, transparent); }
+  76%, 89% { background-color: var(--eva-message-locate-surface); }
+  100% { background-color: var(--eva-message-locate-base, transparent); }
 }
 
 @media (max-width: 1439px) {
@@ -742,8 +767,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eva-conversation-search__spinner,
-  .ch-stream > .eva-conversation-search-hit {
+  .eva-conversation-search__spinner {
     animation: none;
+  }
+  /* 原先一并置 animation:none，等于完全没有定位反馈。改为保留静态琥珀底，
+   * 由 JS 的 1.8s 定时移除 class 收场——去掉闪动，但不丢失「命中在哪」。 */
+  .ch-stream .eva-conversation-search-hit {
+    animation: none;
+    background-color: var(--eva-message-locate-surface);
   }
 }
