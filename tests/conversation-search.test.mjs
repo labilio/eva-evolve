@@ -59,7 +59,8 @@ test('统一 IM 内核在当前 Ta 消息集合挂载唯一查找面板', async 
   assert.match(source, /function EvaConversationSearch\(/);
   assert.match(source, /messages:Ta,onClose:/);
   assert.match(source, /conversationId:va/);
-  assert.match(source, /onLocate:index=>evaRevealConversationMessage\(da\.current,index\)/);
+  assert.match(source, /onLocate:index=>\{if\(evaStreamFilter\)[\s\S]{0,160}?evaRevealConversationMessage\(da\.current,index\)\}/);
+  assert.match(source, /evaStreamFilter\.index\.get\(index\)/);
   assert.match(source, /onPreview:file=>void \$a\(file\)/);
   assert.match(source, /onDownload:file=>void Na\(file\)/);
   assert.match(source, /预览文件 /);

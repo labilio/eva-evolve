@@ -11,6 +11,42 @@
   outline-offset: 2px;
 }
 
+/* 「消息」一级菜单会话头：AI 发言显示/隐藏开关。默认展示 AI 标（显示中），
+   点击后叠加左下→右上禁用斜线表示不再展示 AI 回复。每个会话独立记忆。 */
+.ch-head .ops button.eva-chat-ai-filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+.ch-head .ops button.eva-chat-ai-filter .ai-badge {
+  box-shadow: none;
+}
+.ch-head .ops button.eva-chat-ai-filter:focus-visible {
+  outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+  outline-offset: 2px;
+}
+.eva-chat-ai-filter__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.eva-chat-ai-filter__slash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(100% + 8px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--semi-color-text-2, #6b7280);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
+}
+
 .ch-right-panel--search {
   --eva-search-accent: var(--eva-action-primary, var(--gds-color-action-primary));
   --eva-search-accent-soft: var(--eva-im-tint-12, rgba(21, 99, 235, 0.12));

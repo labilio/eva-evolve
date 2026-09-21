@@ -567,6 +567,11 @@ body[theme-mode="dark"] {
 :root[data-theme="dark"] .ch-head .ops .op:hover,
 :root[data-theme="dark"] .ch-head .ops .op.is-on { background: var(--eva-overlay-hover); }
 
+/* —— AI 发言显示/隐藏开关（2026-09-22 新增）——
+   AI 标沿用品牌紫底白字（暗底仍达标）；禁用斜线用次级文字色。
+   开关本体与斜线都不使用阴影。 */
+:root[data-theme="dark"] .eva-chat-ai-filter__slash { background: var(--eva-text-secondary-accessible); }
+
 /* @提及：填充蓝 #6d98f7 在提及底上实测 4.07，略低于 AA 4.5。按 gds §3.4
    「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
 :root[data-theme="dark"] :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-c-blue-300); }
