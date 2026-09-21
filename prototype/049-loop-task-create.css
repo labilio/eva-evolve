@@ -31,13 +31,13 @@
   background: transparent;
 }
 .eva-loop-task-create .eva-loop-task-create__due.semi-datepicker { width: auto; min-width: 0; }
-/* 截止日期胶囊：与工具栏其他胶囊同一外观，选中值后附快捷清除。 */
-.eva-loop-task-create .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; padding: 0; }
+/* 截止日期胶囊与同区其他胶囊同形：前置日历图标 + 文案 + 尾部箭头；有值时附快捷清除。 */
+.eva-loop-task-create .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; padding: 0 10px; gap: 6px; }
 .eva-loop-task-create .eva-loop-task-create__due-pill button { min-height: 0; height: 100%; }
-.eva-loop-task-create__due-trigger { appearance: none; border: 0; background: transparent; padding: 0 10px; font: 400 12px/1 var(--eva-font-sans); color: var(--semi-color-text-0); white-space: nowrap; cursor: pointer; }
-.eva-loop-task-create__due-pill:not(.has-value) .eva-loop-task-create__due-trigger { color: var(--semi-color-text-2); }
-.eva-loop-task-create__due-pill.has-value .eva-loop-task-create__due-trigger { padding-right: 4px; }
-.eva-loop-task-create__due-clear { appearance: none; display: inline-flex; align-items: center; border: 0; background: transparent; padding: 0 8px 0 0; color: var(--semi-color-text-2); cursor: pointer; }
+.eva-loop-task-create__pill-icon { color: var(--semi-color-text-2); }
+.eva-loop-task-create__due-trigger { appearance: none; border: 0; background: transparent; padding: 0; font: inherit; color: inherit; white-space: nowrap; cursor: pointer; }
+.eva-loop-task-create__due-pill.has-value .eva-loop-task-create__due-trigger { max-width: 168px; overflow: hidden; text-overflow: ellipsis; }
+.eva-loop-task-create__due-clear { appearance: none; display: inline-flex; align-items: center; border: 0; background: transparent; padding: 0; color: var(--semi-color-text-2); cursor: pointer; }
 .eva-loop-task-create__due-clear:hover { color: var(--semi-color-text-0); }
 .eva-loop-task-create__identity { display: inline-flex; align-items: center; gap: 4px; }
 .eva-loop-task-create__attachments { padding: 0 16px 12px; }
@@ -61,9 +61,17 @@
 /* Child popups share the modal stacking context, outside its scroll clipping. */
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
 
-/* 创建弹窗内的负责人胶囊触发器：与工具栏其他胶囊视觉对齐。 */
-.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger { box-sizing: border-box; min-width: 108px; min-height: 32px; padding: 0 10px; border: 1px solid var(--semi-color-border); border-radius: 999px; background: var(--semi-color-bg-0); justify-content: flex-start; }
-.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger:hover { background: var(--semi-color-fill-0); }
+/* 创建弹窗选项区（父容器）统一四类胶囊：同一高度/圆角/边框/底色/内距/间距/字号/文字色/悬停；
+   每个胶囊 = 前置图标 + 文案 + 尾部下拉箭头，子组件只提供图标与文案，外观由本区统一。 */
+.eva-loop-task-create .loop-ci__toolbar .loop-pill,
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger,
+.eva-loop-task-create .loop-ci__toolbar .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; min-height: 32px; padding: 0 10px; gap: 6px; border: 1px solid var(--semi-color-border); border-radius: 999px; background: var(--semi-color-bg-0); color: var(--semi-color-text-0); font: 400 13px/1 var(--eva-font-sans); }
+.eva-loop-task-create .loop-ci__toolbar .loop-pill:hover,
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger:hover,
+.eva-loop-task-create .loop-ci__toolbar .eva-loop-task-create__due-pill:hover { background: var(--semi-color-fill-0); }
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger { max-width: 240px; }
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-empty { color: var(--semi-color-text-0); }
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger > svg:last-child { color: var(--semi-color-text-2); }
 
 .eva-loop-task-create .loop-ci__head { min-height: 52px; box-sizing: border-box; padding: 12px 24px; }
 .eva-loop-task-create .loop-ci__title { padding: 8px 24px; font: 500 16px/24px var(--eva-font-sans); }

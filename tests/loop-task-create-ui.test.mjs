@@ -7,7 +7,7 @@ function harness(overrides={}){
   const hooks=[],effects=[];let cursor=0,tree;
   const R={Fragment:'Fragment',createElement:(type,props,...children)=>({type,props:props||{},children:children.flat(Infinity)}),useSyncExternalStore:()=>{},useState(init){const i=cursor++;hooks[i]??={value:typeof init==='function'?init():init};return[hooks[i].value,value=>{hooks[i].value=typeof value==='function'?value(hooks[i].value):value;}];},useRef(value){const i=cursor++;return hooks[i]??={current:value};},useEffect(fn,deps){const i=cursor++,old=hooks[i];if(!old||deps.some((v,n)=>v!==old.deps[n])){effects.push(()=>{old?.cleanup?.();hooks[i]={deps,cleanup:fn()};});}}};
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
-  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',AssigneePicker:'AssigneePicker',DatePicker:'DatePicker',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2'},members:{memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
+  const calls=[],deps={React:R,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',AssigneePicker:'AssigneePicker',DatePicker:'DatePicker',Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2',X:'X',ChevronRight:'ChevronRight',ChevronDown:'ChevronDown',CalendarClock:'CalendarClock'},members:{memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
   const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
@@ -98,4 +98,46 @@ test('项目角色仅属于成员管理，创建任务不增加角色选择',()=
 });
 test('切换操作账号时清空旧任务草稿与下达角色',()=>{
  const h=harness();h.fill();h.state.actorId='u2';h.render();h.render();assert.equal(h.find('任务标题').props.value,'');
+});
+
+// 选项区（父容器）契约：顺序固定、单一容器收口、四类胶囊同形。
+// 这些断言把 docs/会话内项目任务规范.md 的约定变成机器检查，回退即失败。
+test('创建弹窗选项区是单一父容器，四类胶囊顺序固定且各自闭合',()=>{
+  const h=harness();
+  const toolbar=h.all().find(n=>n.props&&n.props.className==='loop-ci__toolbar');
+  assert.ok(toolbar,'选项区父容器必须存在');
+  const children=toolbar.children.filter(Boolean);
+  assert.equal(children.length,4,'选项区父容器必须恰好包含四个胶囊，且没有节点漏到容器外（禁止把收尾括号挂在末位子节点上）');
+  assert.equal(children[0].props.ariaLabel,'状态');
+  assert.equal(children[1].props.ariaLabel,'优先级');
+  assert.equal(children[2].props.className,'eva-loop-task-create__assignee');
+  assert.ok(children[2].children.find(n=>n&&n.type==='AssigneePicker'),'负责人胶囊必须由 AssigneePicker 承载');
+  assert.equal(children[3].type,'DatePicker');
+  assert.equal(children[3].props['aria-label'],'截止日期');
+});
+
+test('截止日期胶囊与同区胶囊同形：前置日历图标 + 文案 + 尾部下拉箭头',()=>{
+  const h=harness();
+  const due=h.all().find(n=>n.type==='DatePicker'&&n.props['aria-label']==='截止日期');
+  const trigger=due.props.triggerRender();
+  const kids=trigger.children.filter(Boolean);
+  assert.ok(trigger.props.className.startsWith('loop-pill eva-loop-task-create__due-pill'),'截止日期必须复用公共胶囊样式');
+  assert.ok(kids.some(n=>n&&n.type==='CalendarClock'),'截止日期缺少前置日历图标');
+  assert.ok(kids.some(n=>n&&n.type==='button'&&n.props.className==='eva-loop-task-create__due-trigger'),'截止日期缺少文案触发器');
+  assert.ok(kids.some(n=>n&&n.type==='ChevronDown'&&n.props.className==='loop-pill__caret'),'截止日期缺少尾部下拉箭头');
+});
+
+test('创建弹窗胶囊外观由父容器统一，禁止子胶囊自带宽度/字号/文字色',()=>{
+  const css=fs.readFileSync(new URL('../prototype/049-loop-task-create.css',import.meta.url),'utf8');
+  const rules=[];let m;const re=/([^{}]+)\{([^{}]*)\}/g;
+  while((m=re.exec(css)))rules.push({selector:m[1].trim(),body:m[2]});
+  const unified=rules.find(r=>r.selector.includes('.loop-ci__toolbar')&&r.selector.includes('.loop-pill')&&r.selector.includes('.loop-assignee-trigger')&&r.selector.includes('.eva-loop-task-create__due-pill')&&r.body.includes('border-radius: 999px'));
+  assert.ok(unified,'缺少父容器统一胶囊规则（同一高度/圆角/边框/底色/内距/间距/字号/文字色）');
+  assert.ok(/font/.test(unified.body)&&/color/.test(unified.body),'父容器统一规则必须同时约束字号与文字色');
+  assert.ok(!/min-width/.test(unified.body),'父容器统一规则不得为某一类胶囊设最小宽度');
+  for(const r of rules){
+    if(r===unified)continue;
+    if(r.selector.includes('.loop-assignee-trigger'))assert.ok(!/min-width/.test(r.body),'负责人胶囊不得自带 min-width（会在箭头右侧留下空白）：'+r.selector);
+    if(r.selector.includes('.eva-loop-task-create__due-pill')){assert.ok(!/font/.test(r.body),'截止日期胶囊不得自带字号覆盖父容器：'+r.selector);assert.ok(!/(^|[;{])\s*color\s*:/.test(r.body),'截止日期胶囊不得自带文字色覆盖父容器：'+r.selector);}
+  }
 });
