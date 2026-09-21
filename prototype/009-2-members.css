@@ -77,6 +77,12 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-project-settings-info .eva-project-info-field label{font-size:14px;font-weight:500;line-height:22px;color:var(--semi-color-text-0)}
 .eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:88px;resize:none;padding:10px 12px;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
 .eva-project-settings-info .eva-project-info-field textarea:hover{border-color:var(--semi-color-primary)}
+/* P1·暗色行 hover：vendor :hover 走 fill-0(=subtle)，暗色下变暗（#242424→#1a1a1a），
+ * 与通讯录/IM 行的白 6% 变亮相反。按 057 遮罩翻转原则改为白 6%；浅色不动
+ * （subtle 与 6% 黑在白底上等值）。固定列的 hover 变体一并覆盖。 */
+:root[data-theme="dark"] .eva-members-table .semi-table-row:hover>.semi-table-row-cell,
+:root[data-theme="dark"] .eva-members-table .semi-table-tbody>.semi-table-row:hover>.semi-table-row-cell.semi-table-cell-fixed-left,
+:root[data-theme="dark"] .eva-members-table .semi-table-tbody>.semi-table-row:hover>.semi-table-row-cell.semi-table-cell-fixed-right{background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover));background-color:var(--eva-surface-primary)}
 .eva-project-settings-info .eva-project-info-field textarea:focus-visible{border-color:var(--semi-color-primary);outline:0}
 .eva-project-settings-info .eva-project-info-field p{margin:0}
 .eva-project-settings-info > .eva-project-settings-info__hero{align-items:start;grid-template-columns:1fr;gap:20px;padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}

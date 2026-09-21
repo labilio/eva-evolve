@@ -25,6 +25,9 @@
   padding:var(--gds-space-1);border-radius:var(--gds-radius-control);cursor:pointer;
 }
 .eva-contact-identity-button:hover {background:var(--gds-color-overlay-hover)}
+/* P2·pressed：规范 pressed 在 hover 基础上加到 9%（design.md:366）；按钮可点
+ * （打开资料），补齐点击瞬间的反馈。token 浅色 9% 黑 / 暗色 9% 白自动翻转。 */
+.eva-contact-identity-button:active {background:var(--eva-overlay-pressed)}
 .eva-contact-identity-button:focus-visible {outline:var(--gds-border-focus) solid var(--gds-color-border-focus);outline-offset:var(--gds-space-0-5)}
 .eva-contacts__human {padding:var(--gds-space-0-5) var(--gds-space-1);display:inline-flex;align-items:center;gap:var(--gds-space-3);min-width:0;width:100%}
 .eva-contacts__avatar {display:block;flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--gds-color-surface-subtle)}

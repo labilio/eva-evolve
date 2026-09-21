@@ -37,6 +37,19 @@
 .eva-digital-center__table .semi-table-thead>.semi-table-row>.semi-table-row-head,.eva-digital-center__table .semi-table-tbody>.semi-table-row>.semi-table-row-cell{padding:8px 6px;font-size:12px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-digital-center__table .semi-table-thead>.semi-table-row>.semi-table-row-head{font-weight:500}
 .eva-digital-center__table .semi-table-row{cursor:pointer}
+/* P2·pressed：规范 pressed 在 hover 基础上加到 9%；行可点（打开详情），补点击反馈。
+ * --eva-overlay-pressed 浅色 9% 黑 / 暗色 9% 白自动翻转，单条规则两档通用。
+ * 特异度必须 ≥(0,5,0)：vendor 的 tbody:hover 也是 (0,4,0)，同分时 vendor
+ * （最后加载）会反超——这里加 .semi-table-tbody 压过它。 */
+.eva-digital-center__table .semi-table-tbody>.semi-table-row:active>.semi-table-row-cell{background-image:linear-gradient(0deg,var(--eva-overlay-pressed),var(--eva-overlay-pressed))}
+/* P1·暗色行 hover：vendor :hover 走 fill-0(=subtle)，暗色下是变暗
+ * （#242424→#1a1a1a），感知为按下/禁用，且与通讯录/IM 行的白 6% 变亮相反。
+ * 按 057 遮罩翻转原则改为白 6%；浅色不动——subtle 与 6% 黑在白底上等值。
+ * 不改全局 fill-0 映射（下拉菜单等仍正常消费它）。 */
+:root[data-theme="dark"] .eva-digital-center__table .semi-table-row:hover>.semi-table-row-cell{background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover));background-color:var(--eva-surface-primary)}
+/* 暗色 pressed 需与上面的暗色 hover 同特异度且排在其后，否则按下时被 6% hover 反超。 */
+:root[data-theme="dark"] .eva-digital-center__table .semi-table-row:active>.semi-table-row-cell{background-image:linear-gradient(0deg,var(--eva-overlay-pressed),var(--eva-overlay-pressed))}
+:root[data-theme="dark"] .eva-digital-center__filter-nav:hover{background:var(--eva-overlay-hover)}
 .eva-digital-center__table .semi-button{white-space:nowrap;font-size:12px;font-weight:400;padding:0 5px;min-width:28px;height:28px}
 .eva-digital-center__table .eva-digital-center__actions{flex-wrap:nowrap;gap:6px;min-width:288px}
 .eva-digital-center__table .eva-digital-center__identity{gap:6px;width:100%}
@@ -89,7 +102,6 @@
 .eva-market-workspace .eva-digital-center__table { border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); overscroll-behavior-x: contain; }
 .eva-market-workspace .eva-digital-center__table .semi-table { min-width: 900px; font: 400 14px/22px var(--eva-font-sans); }
 .eva-market-workspace .eva-digital-center__table :is(.semi-table-row-head,.semi-table-row-cell) { padding: 12px; font: 400 14px/22px var(--eva-font-sans); }
-.eva-market-workspace .eva-digital-center__table .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary); font-weight: 500; }
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__identity { gap: 10px; }
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__identity strong { font: 500 14px/22px var(--eva-font-sans); }
 .eva-market-workspace .eva-digital-center__table .eva-digital-center__identity small { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
@@ -141,7 +153,7 @@
 
 /* Market header layout only; the search entry lives in the domain filter card. */
 .eva-market-workspace .eva-digital-center__head h1 { margin: 0; }
-.eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); font-weight: var(--eva-fw-medium); }
+.eva-market-workspace .eva-digital-center__table .semi-table-thead > .semi-table-row > .semi-table-row-head { background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); font-weight: var(--eva-fw-medium); border-bottom: 1px solid var(--eva-border-faint); }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-outer { box-sizing: border-box; padding: var(--eva-space-3) var(--eva-space-3); gap: var(--eva-space-3); flex-wrap: wrap; }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-info { min-width: 0; }
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-wrapper { margin-left: auto; }
