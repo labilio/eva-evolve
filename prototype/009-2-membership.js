@@ -383,7 +383,7 @@
       setChatPreferences(id,uid,patch){
         requireHuman(uid);if(!id)fail('会话不存在');
         if((state.groups[id]||state.threads[id]||id.startsWith('all:'))&&!api.canRead(id,uid))fail('请先加入群聊');
-        if(Object.keys(patch).some(k=>!['mute','top','hidden','restoreOnMention','clearedCount','hideAi'].includes(k)))fail('未知个人设置');
+        if(Object.keys(patch).some(k=>!['mute','top','hidden','restoreOnMention','clearedCount'].includes(k)))fail('未知个人设置');
         state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],...patch};notify();
       },
       visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));},

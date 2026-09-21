@@ -17,7 +17,7 @@
 | 快速降噪 | 一键只看人的发言，隐藏全部 AI 回复 |
 | 可还原 | 再点一次立即恢复全部消息，不丢任何数据 |
 | 认知成本低 | 图标语义来自已有的全局 AI 标，不引入新符号体系 |
-| 状态可预期 | 每个会话独立记忆，刷新后仍保持；跨会话互不干扰 |
+| 状态可预期 | 单次有效：进入会话默认展示全部消息，离开或切换会话后自动重置 |
 | 零副作用 | 不影响搜索、引用、中栏摘要、未读与权限 |
 
 ## 3. 范围边界
@@ -50,31 +50,35 @@
 - 禁用态**不置灰**，保持 AI 标原有紫色，只用斜线表达「不再展示」，与「AI 身份」语义解耦。
 - 点击切换时若处于多选态，先退出多选，避免选中项被隐藏后计数与视图不一致。
 
-### 4.3 记忆粒度
+### 4.3 生效范围（单次有效）
 
-按**当前会话**记忆：
+开关是**会话内的临时阅读态**，不做持久化、不按会话各自记忆：
 
-- 群聊父群与每个子区各自独立（以运行时 `va` 为准）；
-- 「A 群隐藏、B 群显示」互不影响；
-- 本地持久化，刷新与重新进入后保持。
+- 每次进入一个会话（或从别的会话 / 别的入口回到「消息」）都重置为默认「展示全部消息」；
+- 在同一会话内切换父群与各子区同样重置；
+- 切换「关注 / 最近」列表会重建会话视图，因此也回到默认态；
+- 不写入任何偏好存储，刷新页面立即恢复默认。
+
+这样保证用户任何一次进入群聊，看到的都是完整消息，不会因上次的临时查看而误以为 AI 没有发言。
 
 ## 5. 状态与数据设计
 
 ### 5.1 唯一数据源
 
-复用既有会话偏好存储 `evaMemberStore.chatPreferences(va, actorId)` / `setChatPreferences(...)`，新增字段 `hideAi`。
+状态是 `ChannelsView` 内部的 `useState`（`[evaHideAi, setEvaHideAi]`），属于**组件渲染态**，不进入任何持久化存储：
 
-- 不新增第二份全局变量、DOM class 或 `window` 状态；
-- 读取随 `evaMemberRevision`（`useSyncExternalStore`）驱动重渲染；
-- 写入经 `setChatPreferences` 的字段白名单校验。
+- 不新增全局变量、DOM class、`window` 状态或 `chatPreferences` 字段；
+- 通过 `useEffect(() => setEvaHideAi(false), [va, evaActorId])` 在会话切换时重置；
+- 切换「关注 / 最近」或离开「消息」会卸载 / 重建 `ChannelsView`，状态自然归零。
 
 ### 5.2 派生而非改写
 
 `Ta`（`visibleMessages` 结果）保持**全量不变**，供搜索、引用与定位使用；仅在**消息流渲染处**派生「隐藏 AI 后」的数组：
 
 ```
-evaHideAi = 开关可见 && chatPreferences(va, actorId).hideAi === true
-evaStreamMessages = evaHideAi ? 过滤掉 AI 与多余分隔条后的 Ta : Ta
+evaShowAiFilter = 当前入口是「消息」（evaTeamGlobal === true）
+evaHideAi       = 组件临时状态，默认 false
+evaStreamMessages = (evaShowAiFilter && evaHideAi) ? 过滤掉 AI 与多余分隔条后的 Ta : Ta
 ```
 
 ### 5.3 AI 判定口径
@@ -114,8 +118,7 @@ sender.ai === true || sender.identityAppearance 存在
 
 | 关注点 | 位置 |
 | --- | --- |
-| 顶栏按钮、状态变量、消息流过滤、搜索定位映射 | `prototype/009-5-patch-im.js` |
-| 会话偏好字段 `hideAi` 白名单 | `prototype/009-2-membership.js` |
+| 顶栏按钮、临时状态变量、消息流过滤、搜索定位映射 | `prototype/009-5-patch-im.js` |
 | 按钮几何、默认无底色 / 无阴影、斜线 | `prototype/055-conversation-search.css` |
 | 暗色斜线 | `prototype/057-gds-dark-tokens.css` |
 
@@ -129,8 +132,8 @@ sender.ai === true || sender.identityAppearance 存在
 
 1. 「消息」打开含项目管家的群：AI 标默认显示，点按后 AI 回复消失、再点恢复。
 2. 切换后不残留连续 / 孤立时间分隔条。
-3. 同群与各子区分别记忆；A 群隐藏不影响 B 群；刷新后保持。
-4. 关注 / 最近往返切换后状态与滚动不串。
+3. 开关仅单次有效：进入会话默认全展示；切到别的会话再回来、或切换子区、或切换关注 / 最近后，均回到默认全展示；刷新页面恢复默认。
+4. 关注 / 最近往返切换后状态与滚动不串，且 AI 开关回到默认。
 5. 查找聊天内容结果条数不变，定位到人消息命中正确；引用块与中栏摘要未变。
 6. 我的 Agent、项目 Space 内嵌会话、数字员工面板**无**此按钮。
 7. 暗色模式下 AI 标与斜线对比度正常；默认态无底色、无阴影。
