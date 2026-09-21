@@ -554,7 +554,8 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--semi-color-text-1, #4e5969);
-  font-size: 11px !important;
+  /* 12/16 为 GDS caption 档,与分组标题同档;折叠标签 ≤5 字(72px 盒宽)不会截断 */
+  font-size: 12px !important;
   font-weight: 400 !important;
   line-height: 16px !important;
   text-align: center;
