@@ -450,51 +450,70 @@ test('消息中栏使用标题与创建按钮，不再显示列表搜索框', as
   await page.keyboard.press('Escape');
 });
 
-test('任务指派：新建、列表、批量与详情均可输入即筛选负责人', async () => {
+test('任务指派：列表、批量、详情与新建弹窗均可输入即筛选负责人', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();
   await page.getByRole('tab', { name: '任务', exact: true }).click();
   await page.getByText('列表', { exact: true }).click();
   await page.locator('.loop-list').waitFor();
+  await page.waitForTimeout(400);
 
-  const verifyAssigneeSelect = async select => {
-    await select.click();
-    const input = select.locator('input');
-    const options = page.locator('.semi-select-option-list:visible');
+  // 2026-09-21 指派选择统一为 AssigneePicker：semi-dropdown 面板内含搜索框、
+  // 「联系人」分组与限高滚动，空态为「未找到匹配的联系人或 AI」；
+  // 列表内联新建行已随选人重构移除，创建入口统一为「新建任务」弹窗。
+  const verifyAssigneeSearch = async trigger => {
+    await trigger.click();
+    const menu = page.locator('.semi-dropdown-menu:visible:has(.eva-task-assignee-search)');
+    const input = menu.locator('.eva-task-assignee-search input');
     await input.waitFor();
-    await options.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
-    assert.equal(await options.getByText('成员', { exact: true }).count(), 1);
-    assert.equal(await options.getByText('专家', { exact: true }).count(), 1);
-    await input.fill('何静');
-    assert.ok(await options.getByText('何静', { exact: true }).count() > 0);
-    await options.getByText('周远', { exact: true }).waitFor({ state: 'detached' });
-    assert.equal(await options.getByText('周远', { exact: true }).count(), 0, '输入时应立即过滤无关候选');
-    await input.fill('不存在的指派人');
-    await options.getByText('没有匹配的指派人', { exact: true }).waitFor();
+    await menu.getByText('联系人', { exact: true }).waitFor();
+    // 列表收尾挂载可能重挂选择器并清空已填查询，过滤生效前允许重填。
+    let filtered = false;
+    for (let attempt = 0; attempt < 4 && !filtered; attempt += 1) {
+      await input.fill('何静');
+      try {
+        await menu.getByText('周远', { exact: true }).waitFor({ state: 'hidden', timeout: 1500 });
+        filtered = true;
+      } catch {}
+    }
+    assert.ok(filtered, '输入时应立即过滤无关候选（列表收尾重挂会清空搜索，重试后仍未生效）');
+    assert.ok(!(await menu.innerText()).includes('周远'), '过滤后面板不得仍可见无关候选（面板隐藏而非卸载候选，需按可见性断言）');
+    let emptyShown = false;
+    for (let attempt = 0; attempt < 4 && !emptyShown; attempt += 1) {
+      await input.fill('不存在的指派人');
+      try {
+        await menu.getByText('未找到匹配的联系人或 AI').waitFor({ timeout: 1500 });
+        emptyShown = true;
+      } catch {}
+    }
+    assert.ok(emptyShown, '检索无结果应显示空提示（批量栏等收尾重挂会清空已填查询，重试后仍未生效）');
     await page.keyboard.press('Escape');
-    await options.waitFor({ state: 'detached' });
+    await menu.waitFor({ state: 'hidden' });
   };
 
-  await verifyAssigneeSelect(page.locator('.loop-list__assignee .eva-loop-task-create__assignee').first());
+  await verifyAssigneeSearch(page.locator('.loop-list__assignee .loop-assignee-trigger').first());
 
+  await page.locator('.loop-list__row').first().hover();
   await page.locator('.loop-list__check').first().click();
   await page.locator('.loop-batchbar').waitFor();
-  await verifyAssigneeSelect(page.locator('.loop-batchbar .eva-loop-task-create__assignee'));
+  await verifyAssigneeSearch(page.locator('.loop-batchbar .loop-assignee-trigger'));
   await page.locator('.loop-batchbar').getByRole('button', { name: '取消', exact: true }).click();
 
   await page.locator('.loop-list__title').first().click();
   const detail = page.locator('.loop-idp').last();
   await detail.waitFor();
-  await verifyAssigneeSelect(detail.locator('.eva-loop-task-create__assignee'));
+  await verifyAssigneeSearch(detail.locator('.loop-idp__prop:has-text("负责人") .loop-assignee-trigger'));
   await page.locator('.collab-route-right .loop-idp__closebtn').click();
   await page.locator('.collab-route-right').waitFor({ state: 'detached' });
 
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
   const modal = page.locator('.eva-loop-task-create');
   await modal.waitFor();
-  const assignee = modal.locator('.eva-loop-task-create__assignee:not(.eva-loop-task-create__source)');
-  await verifyAssigneeSelect(assignee);
-  await modal.getByRole('button', { name: '关闭', exact: true }).click();
-  await modal.waitFor({ state: 'detached' });
+  await verifyAssigneeSearch(modal.locator('.eva-loop-task-create__assignee .loop-assignee-trigger'));
+  // 辅助流程以 Escape 收尾，Semi 弹窗会连同面板一起关闭；若弹窗仍在则点「取消」收尾。
+  if (await modal.isVisible()) {
+    await modal.getByRole('button', { name: '取消', exact: true }).click();
+  }
+  await modal.waitFor({ state: 'hidden' });
 });

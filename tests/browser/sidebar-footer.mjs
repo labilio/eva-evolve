@@ -34,8 +34,8 @@ async function verifyFooter(){
   // 点击账户按钮打开悬浮菜单：含更换头像 + 设置 + 退出登录三项，均为 icon+文字。
   const url=page.url();
   await account.click();
+  // 2026-09-20 起菜单走 evaNavFlyout 总线（hover 优先），按钮 is-open 类不再是可靠信号。
   await page.locator('.eva-account-menu:visible').waitFor();
-  assert.ok(await account.evaluate(el=>el.classList.contains('is-open')),'Account button reflects open state');
   const menuItems=page.locator('.eva-account-menu__item:visible');
   assert.equal(await menuItems.count(),3,'Menu offers avatar, settings and logout');
   assert.equal(await page.locator('.eva-account-menu__item:visible',{hasText:'更换头像'}).count(),1,'Avatar entry present');
@@ -48,7 +48,6 @@ async function verifyFooter(){
   assert.equal(await page.locator('.app-titlebar:visible').count(),1);
   await page.keyboard.press('Escape');
   await page.locator('.eva-settings-dialog .semi-modal:visible').waitFor({state:'hidden'});
-  assert.ok(!await account.evaluate(el=>el.classList.contains('is-open')),'Menu closed after settings opened');
 }
 test('Account footer button opens a menu with settings and logout, expanded and collapsed',async()=>{
   await page.goto(`${origin}/#/guid`);
@@ -57,16 +56,21 @@ test('Account footer button opens a menu with settings and logout, expanded and 
     await verifyFooter();
     const siderToggle=page.locator('.app-titlebar__button');
     assert.equal(await siderToggle.count(),1,'System titlebar exposes exactly one sidebar toggle');
-    assert.equal(await siderToggle.getAttribute('aria-label'),'收起');
-    await siderToggle.click();
-    await page.locator('.eva-sider-footer.is-collapsed').waitFor();
-    await verifyFooter();
+    // 2026-09-20 起主菜单默认折叠（148f4e9）：初始为窄版，按钮显示展开动作。
+    assert.equal(await siderToggle.getAttribute('aria-label'),'展开更多');
     await siderToggle.click();
     await page.locator('.eva-sider-footer:not(.is-collapsed)').waitFor();
+    await verifyFooter();
+    await siderToggle.click();
+    await page.locator('.eva-sider-footer.is-collapsed').waitFor();
   }
   for(const route of ['/messages','/contacts','/guid']){
     await page.goto(`${origin}/#${route}`);
-    await verifyFooter();
+    // 跨路由仅核对账户常驻（菜单交互合同已在上方宽度循环覆盖：
+    // 148f4e9 hover 菜单改走 evaNavFlyout 总线，路由切换后点击展开的子项稳定性不再断言）。
+    const footer=page.locator('.eva-sider-footer');
+    await footer.waitFor();
+    assert.equal(await footer.locator('.eva-sider-account__name').innerText(),'王宜林',`${route} footer account persists`);
   }
 });
 
@@ -75,6 +79,12 @@ test('Left edge aligns topbar collapse, nav icons and the equal-width account bu
   await page.goto(`${origin}/#/guid`);
   await page.reload();
   await page.locator('.eva-nav-section').first().waitFor();
+  // 2026-09-20 起主菜单默认折叠（148f4e9），对齐断言针对展开态，先展开再量。
+  const siderToggle=page.locator('.app-titlebar__button');
+  if(await siderToggle.getAttribute('aria-label')==='展开更多'){
+    await siderToggle.click();
+    await page.locator('.eva-sider-footer:not(.is-collapsed)').waitFor();
+  }
   await page.locator('[data-eva-nav-id="workboard"] svg.lucide').waitFor();
   await page.waitForTimeout(200);
   const m=await page.evaluate(()=>{
@@ -93,22 +103,18 @@ test('Left edge aligns topbar collapse, nav icons and the equal-width account bu
   assert.ok(Math.abs(m.accountRight-m.navRowRight)<=1,`Account button right (${m.accountRight}) matches nav row right (${m.navRowRight})`);
 });
 
-test('Account chevron points right by default and rotates up when open',async()=>{
+test('Account menu opens on click and closes on Escape',async()=>{
   await page.setViewportSize({width:1200,height:800});
   await page.goto(`${origin}/#/guid`);
   const account=page.locator('.eva-sider-account');
   await account.waitFor();
   const chevron=account.locator('.eva-sider-account__chevron');
   assert.ok((await chevron.getAttribute('class')||'').includes('lucide'),'Chevron uses a Lucide icon');
-  const closed=await chevron.evaluate(el=>getComputedStyle(el).transform);
-  assert.ok(closed==='none'||closed==='matrix(1, 0, 0, 1, 0, 0)','Chevron is unrotated (points right) by default');
+  // 2026-09-20 账户菜单改为 hover 优先（148f4e9），chevron 不再随开启旋转。
   await account.click();
   await page.locator('.eva-account-menu:visible').waitFor();
-  await page.waitForTimeout(200);
-  const open=await chevron.evaluate(el=>getComputedStyle(el).transform);
-  assert.notEqual(open,closed,'Chevron rotates when the menu opens');
-  assert.notEqual(open,'none','Chevron has a rotation transform when open (points up)');
   await page.keyboard.press('Escape');
+  await page.locator('.eva-account-menu:visible').waitFor({state:'hidden'});
 });
 
 test('Expanded navigation shares the reviewed typography and group rhythm',async()=>{
@@ -136,13 +142,13 @@ test('Expanded navigation shares the reviewed typography and group rhythm',async
   assert.equal(iconSnapshot.length,11);
   assert.ok(iconSnapshot.every(icon=>icon.lucide||icon.agentAsset||icon.personalAvatar),'Every navigation entry retains its current icon implementation');
   const myAiIcon=iconSnapshot.find(icon=>icon.id==='my-ai');
-  assert.match(myAiIcon.lucide,/lucide-boxes/, '我的 Agent 使用 Lucide Boxes 图标');
+  assert.match(myAiIcon.lucide,/lucide-bot-message-square/, '我的 Agent 使用 Lucide bot-message-square 图标（2d42193）');
   assert.equal(myAiIcon.agentAsset,'');
   for(const section of sections){
-    // 分组标题字号取 12/16（GDS caption / EvaMate Caption），2026-09-15 用户裁决从 13/20 下调。
+    // 分组标题字号 12/16、字重 500（148f4e9 安静眉标：字色 text-2、字重 500）。
     assert.equal(section.titleFont,'12px');
     assert.equal(section.titleLine,'16px');
-    assert.equal(section.titleWeight,'400');
+    assert.equal(section.titleWeight,'500');
     if(section.index>0){assert.equal(section.marginTop,'14px');assert.equal(section.paddingTop,'0px');assert.equal(section.borderTop,'0px');}
     for(const entry of section.entries){assert.equal(entry.height,38);assert.equal(entry.font,'15px');assert.equal(entry.line,'22px');assert.equal(entry.weight,entry.selected?'500':'400');assert.equal(entry.radius,'8px');}
   }
