@@ -132,7 +132,7 @@ test('文件详情支持定位文件和回到可访问的来源会话', () => {
   const projectFiles = fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js', import.meta.url), 'utf8');
   const messageHierarchy = fs.readFileSync(new URL('../prototype/021-message-hierarchy.js', import.meta.url), 'utf8');
   assert.match(modeLayer, /__evaOpenDriveFile/);
-  assert.match(modeLayer, /AI 团队会话/);
+  assert.match(modeLayer, /AI 小队会话/);
   assert.match(modeLayer, /查看来源/);
   assert.match(projectFiles, /evaMessage/);
   assert.match(messageHierarchy, /__evaOpenDriveFile/);

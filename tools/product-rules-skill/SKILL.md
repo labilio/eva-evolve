@@ -29,13 +29,13 @@ description: 在开发、评审或解释 Eva 产品功能时，按需应用已�
 | 一级菜单或任务对象 | 读取 |
 | --- | --- |
 | Eva 同学、个人主助理与文件夹 | [Eva 同学](references/menus/personal-eva.md) |
-| 我的 AI、默认／自定义团队、AI 单聊、分身数量 | [我的 AI](references/menus/my-ai.md) |
+| 我的 AI、默认／自定义 AI 小队、AI 单聊、分身数量 | [我的 AI](references/menus/my-ai.md) |
 | 我的消息、关注／最近、项目→大群→子区、群聊拉人、AI 触发、退出／解散 | [我的消息](references/menus/messages.md) |
 | 我的项目、成员资格与治理、项目任务；任务看板中的任务定义 | [我的项目](references/menus/projects.md) |
 | 通讯录、目录可见性与历史身份 | [通讯录](references/menus/contacts.md) |
 | 数字员工市场、加入我的 AI／项目 | [数字员工市场](references/menus/digital-employees.md) |
 
-“拉人”不是独立通用技能：弹窗形态读布局，头像与标记读身份，候选权限与事务读项目／消息／我的 AI 专项。“解散群聊”读消息，“解散 AI 团队”读我的 AI，不混用。
+“拉人”不是独立通用技能：弹窗形态读布局，头像与标记读身份，候选权限与事务读项目／消息／我的 AI 专项。“解散群聊”读消息，“解散 AI 小队”读我的 AI，不混用。
 
 完整目录见 [规则总览](references/index.md)。没有对应专项的菜单不建立空文档，也不补造要求。
 

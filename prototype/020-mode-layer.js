@@ -409,7 +409,7 @@
   }
 
   function relationTypeLabel(type) {
-    return type === 'task' ? '任务' : type === 'group' ? '群聊' : type === 'chat' ? '私聊' : type === 'ai-conversation' ? 'AI 团队会话' : '来源文件';
+    return type === 'task' ? '任务' : type === 'group' ? '群聊' : type === 'chat' ? '私聊' : type === 'ai-conversation' ? 'AI 小队会话' : '来源文件';
   }
 
   function openRelationSource(relation) {

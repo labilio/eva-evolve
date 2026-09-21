@@ -99,14 +99,14 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /'新建 AI 小队'.+'新建个人助理'/s);
-  assert.match(imPatch, /title:membersOnly\?'编辑团队成员':record\?'编辑 AI 团队':'新建 AI 团队'/);
+  assert.match(imPatch, /title:membersOnly\?'编辑 AI 小队成员':record\?'编辑 AI 小队':'新建 AI 小队'/);
   assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
   assert.doesNotMatch(imPatch, /evaCreate=mine&evaReturn=/);
   assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
   assert.match(imPatch, /className:'eva-ai-team__teams'.+className:'eva-ai-team__list-divider',role:'separator'.+className:'eva-ai-team__direct-groups'/s);
   assert.doesNotMatch(imPatch, /type:'file',[^)]*accept:'image\//);
   assert.doesNotMatch(imPatch, /new FileReader\(\)/);
-  assert.doesNotMatch(imPatch, /更换团队头像|上传团队头像/);
+  assert.doesNotMatch(imPatch, /更换 AI 小队头像|上传 AI 小队头像/);
   assert.match(imPatch, /'aria-label':draft\.avatar\?'更换助理头像':'选择助理头像图标'/);
   assert.match(imPatch, /className:'eva-editor-avatar-button'.+setIconOpen/s);
   assert.doesNotMatch(imPatch, /头像图片地址|粘贴头像图片地址/);
@@ -122,15 +122,15 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /fixedGroupActions:ct\?\.fixedGroupActions/);
   assert.match(chatSettings, /fixedGroupActions/);
   assert.match(chatSettings, /const openFixedAction=action=>\{onClose\(\);requestAnimationFrame\(action\);\}/);
-  assert.doesNotMatch(chatSettings, /title:'编辑 AI 团队'/);
-  assert.match(chatSettings, /h\(EditRow,\{title:'团队名称',value:name,allowEmpty:false,onSave:fixedGroupActions\.onRename\}\)/);
-  assert.doesNotMatch(chatSettings, /fixedGroupActions&&section\(h\(Row,\{title:'团队头像'/);
+  assert.doesNotMatch(chatSettings, /title:'编辑 AI 小队'/);
+  assert.match(chatSettings, /h\(EditRow,\{title:'AI 小队名称',value:name,allowEmpty:false,onSave:fixedGroupActions\.onRename\}\)/);
+  assert.doesNotMatch(chatSettings, /fixedGroupActions&&section\(h\(Row,\{title:'AI 小队头像'/);
   assert.doesNotMatch(chatSettings, /fixedGroupActions\?\.onUpdateAvatar/);
-  assert.match(chatSettings, /title:'解散 AI 团队'.+danger:true.+onClick:\(\)=>openFixedAction\(fixedGroupActions\.onDissolve\)/s);
-  assert.match(chatSettings, /'aria-label':editableFixed\?'添加 AI 团队成员':'添加群聊成员'/);
-  assert.match(imPatch, /membersOnly\?'编辑团队成员'/);
-  assert.match(imPatch, /nameField:membersOnly\?null:\{id:'eva-ai-team-name',label:'团队名称'/);
-  assert.match(imPatch, /title:'解散 AI 团队'.+okText:'解散群'.+okButtonProps:\{type:'danger'\}/s);
+  assert.match(chatSettings, /title:'解散 AI 小队'.+danger:true.+onClick:\(\)=>openFixedAction\(fixedGroupActions\.onDissolve\)/s);
+  assert.match(chatSettings, /'aria-label':editableFixed\?'添加 AI 小队成员':'添加群聊成员'/);
+  assert.match(imPatch, /membersOnly\?'编辑 AI 小队成员'/);
+  assert.match(imPatch, /nameField:membersOnly\?null:\{id:'eva-ai-team-name',label:'AI 小队名称'/);
+  assert.match(imPatch, /title:'解散 AI 小队'.+okText:'解散群'.+okButtonProps:\{type:'danger'\}/s);
   assert.match(imPatch, /groupStore\.removeGroup\(id\).+selection\.identityId===id.+choose\(groupStore\.id,null\)/s);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__group-count'/);
   assert.match(imPatch, /className:'eva-ai-team__session-unread'/);
@@ -344,7 +344,7 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(imPatch, /EvaAIIdentity\.avatar\(digitalStore\.appearance\(item\),22,h\)/);
 });
 
-test('我的 AI 去掉顶层分组标题并用细线分隔团队与单聊', () => {
+test('我的 AI 去掉顶层分组标题并用细线分隔 AI 小队与单聊', () => {
   const imPatch = read('prototype/009-5-patch-im.js');
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
   const modeCss = read('prototype/012-mode-layer.css');
@@ -395,11 +395,11 @@ test('我的 AI 小队父群去掉左侧箭头并由父群行同时切换子区'
   const conversationStart = teamGroupItem.indexOf("h('button',{type:'button',className:'eva-ai-team__team-button'");
   const conversationButton = teamGroupItem.slice(conversationStart, teamGroupItem.indexOf("h('img'", conversationStart));
 
-  assert.ok(start >= 0 && end > start, '未找到 AI 团队父群渲染函数');
-  assert.ok(conversationStart >= 0, '未找到团队父群按钮');
+  assert.ok(start >= 0 && end > start, '未找到 AI 小队父群渲染函数');
+  assert.ok(conversationStart >= 0, '未找到 AI 小队父群按钮');
   assert.doesNotMatch(teamGroupItem, /className:'eva-ai-team__team-toggle'/);
   assert.doesNotMatch(teamGroupItem, /h\(ChevronRight,\{size:12,className:'eva-ai-team__group-chevron'/);
-  assert.match(conversationButton, /'aria-label':'进入团队会话 '\+group\.name/);
+  assert.match(conversationButton, /'aria-label':'进入 AI 小队会话 '\+group\.name/);
   assert.match(conversationButton, /'aria-current':selected&&!selection\.sessionId\?'true':undefined/);
   assert.match(conversationButton, /'aria-expanded':expanded/);
   assert.match(conversationButton, /'aria-controls':threadsId/);
@@ -530,7 +530,7 @@ test('其他菜单只保留数字员工市场，市场身份统一展示公共 A
   assert.ok(listFilter, '数字员工列表筛选表达式缺失');
   assert.equal(listFilter[1], 'a=>!domain||a.domain===domain', '员工列表只能按业务域筛选');
   assert.match(css, /\.eva-digital-center__filter-bar \.eva-digital-center__domain-filters\{flex-wrap:nowrap/);
-  assert.doesNotMatch(market, /加入 AI 团队|已加入 AI 团队/);
+  assert.doesNotMatch(market, /加入 AI 小队|已加入 AI 小队/);
   const columns = market.match(/const columns=\[[\s\S]*?\];/);
   assert.ok(columns, '数字员工市场列定义缺失');
   assert.doesNotMatch(columns[0], /disabled:store\.hasInTeam/);

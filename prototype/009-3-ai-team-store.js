@@ -85,7 +85,7 @@
     const defaultPersonaName=ownerName+'的 AI 分身';
     const localAssistants = [
       { id: 'assistant-general', name: defaultName, isDefault:true, version: 1, online: true, configuration: configuration({ identity: defaultName, skills: ['沟通', '文档整理'] }) },
-      { id: 'assistant-rd', name: 'Eva研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva研发助理', skills: ['研发资料整理'] }) }
+      { id: 'assistant-rd', name: 'Eva 研发助理', version: 1, online: true, configuration: configuration({ identity: 'Eva 研发助理', skills: ['研发资料整理'] }) }
     ];
     const identities = [makeIdentity('ai-general', 'assistant', defaultName, localAssistants[0], time), makeIdentity('persona-initial', 'persona', defaultPersonaName, localAssistants[0], time)];
     const sessions = identities.map((identity, i) => ({
@@ -553,10 +553,10 @@
     }
     return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
-  // “我的 AI”中的默认群“我的 AI 小队”动态包含所有 AI；自定义团队保存创建时的成员快照。
+  // “我的 AI”中的默认群“我的 AI 小队”动态包含所有 AI；自定义 AI 小队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
     const id = 'my-ai-team:u-wangyilin', key = 'eva:my-ai-groups:v2';
-    const blankGroup = (record = {}) => ({id:record.id || id, name:record.system === false ? record.name || 'AI 团队' : '我的 AI 小队', avatar:record.avatar || '', system:record.system !== false,
+    const blankGroup = (record = {}) => ({id:record.id || id, name:record.system === false ? record.name || 'AI 小队' : '我的 AI 小队', avatar:record.avatar || '', system:record.system !== false,
       memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
       messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
       threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
@@ -579,7 +579,7 @@
     state.groups.forEach(group=>[group,...group.threads].forEach(item=>normalizeReadState(item,true)));
     const groupById = groupId => {
       const group=state.groups.find(item=>item.id===(groupId||id));
-      if(!group)throw new Error('AI 团队不存在');
+      if(!group)throw new Error('AI 小队不存在');
       return group;
     };
     const target = (groupId, channelId) => {
@@ -613,20 +613,20 @@
       get(groupId) { return publicGroup(groupById(groupId)); },
       createGroup(record) {
         const name=String(record?.name||'').trim(),memberIds=[...new Set((record?.memberIds||[]).filter(Boolean))];
-        if(!name||name.length>50)throw new Error('请输入 1–50 个字符的团队名称');
+        if(!name||name.length>50)throw new Error('请输入 1–50 个字符的 AI 小队名称');
         if(!memberIds.length)throw new Error('至少选择 1 个 AI 成员');
         let groupId;do{groupId='my-ai-group:'+Date.now().toString(36)+'-'+(++serial);}while(state.groups.some(group=>group.id===groupId));
         const group=blankGroup({id:groupId,name,avatar:String(record?.avatar||'').trim(),system:false,memberIds});
         state.groups.push(group);publish();return groupId;
       },
       updateGroup(groupId, patch) {
-        const group=groupById(groupId);if(group.system)throw new Error('默认团队不可编辑');
-        if(patch.name!==undefined){const name=String(patch.name||'').trim();if(!name||name.length>50)throw new Error('请输入 1–50 个字符的团队名称');group.name=name;}
+        const group=groupById(groupId);if(group.system)throw new Error('默认 AI 小队不可编辑');
+        if(patch.name!==undefined){const name=String(patch.name||'').trim();if(!name||name.length>50)throw new Error('请输入 1–50 个字符的 AI 小队名称');group.name=name;}
         if(patch.avatar!==undefined)group.avatar=String(patch.avatar||'').trim();
         if(patch.memberIds!==undefined){const ids=[...new Set((patch.memberIds||[]).filter(Boolean))];if(!ids.length)throw new Error('至少选择 1 个 AI 成员');group.memberIds=ids;}
         group.updatedAt=new Date().toISOString();publish();
       },
-      removeGroup(groupId) { const group=groupById(groupId);if(group.system)throw new Error('默认团队不可删除');state.groups=state.groups.filter(item=>item.id!==groupId);publish(); },
+      removeGroup(groupId) { const group=groupById(groupId);if(group.system)throw new Error('默认 AI 小队不可删除');state.groups=state.groups.filter(item=>item.id!==groupId);publish(); },
       createThread(groupOrRecord, recordMaybe) {
         const {groupId,record}=argsForThread(groupOrRecord,recordMaybe),group=groupById(groupId);
         const name = String(record.name || '').trim();

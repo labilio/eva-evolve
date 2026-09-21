@@ -196,7 +196,7 @@ test('legacy multiple personas consolidate without losing sessions or drafts',()
  assert.ok(snapshot.sessions.filter(session=>session.identityId==='persona-initial').flatMap(session=>session.messages).filter(message=>message.sender.uid==='persona-initial').every(message=>message.sender.name==='王宜林的 AI 分身'));
 });
 
-test('AI 团队文件先留在会话中，不会由会话数据层直接写入文件库',()=>{
+test('AI 小队文件先留在会话中，不会由会话数据层直接写入文件库',()=>{
  const snapshot=make().getSnapshot();
  const message=snapshot.sessions.flatMap(session=>session.messages).find(item=>item.id==='ai-file-artifact-v1');
  assert.equal(message.kind,'file');

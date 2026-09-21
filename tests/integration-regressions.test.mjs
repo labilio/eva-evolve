@@ -13,7 +13,7 @@ test('个人页使用当前main的独立宿主，不加载旧历史栏隐藏脚�
   assert.doesNotMatch(read('prototype/044-final-layout-convergence.js'),/eva-history-source|historyDivider/);
 });
 
-test('AI团队包含个人助理且保留分身员工', () => {
+test('AI 小队包含个人助理且保留分身员工', () => {
   const source=read('prototype/009-5-patch-im.js');
   const match=source.match(/const teamIdentities\s*=\s*([^;]+);/);
   assert.ok(match,'缺少团队身份过滤');

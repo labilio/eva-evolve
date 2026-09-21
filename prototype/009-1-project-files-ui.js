@@ -16,7 +16,7 @@
     const fileIcon=item=>item.type==='folder'||isExternalFolder(item)?'folder':item.type==='external_link'?'link':['xlsx','xls','csv'].includes(item.extension)?'sheet':'file';
     const markClass=item=>item.type==='folder'?'is-folder':isExternalFolder(item)?'is-external-folder':item.type==='external_link'?'is-external-link':item.type==='shortcut'?'is-shortcut':item.extension==='pdf'?'is-pdf':['doc','docx'].includes(item.extension)?'is-word':['xlsx','xls','csv'].includes(item.extension)?'is-sheet':['ppt','pptx'].includes(item.extension)?'is-presentation':['zip','rar','7z','tar','gz'].includes(item.extension)?'is-archive':['md','markdown'].includes(item.extension)?'is-markdown':'';
     const fileMarkIcon=item=>h(R.Fragment,null,icon(fileIcon(item)),isExternalFolder(item)?h('span',{className:'eva-drive__file-external-badge'},icon('external')):null,item.type==='shortcut'?h('span',{className:'eva-drive__shortcut-badge'},icon('external')):null);
-    const relationTypeLabel={task:'任务',group:'群聊',chat:'私聊','ai-conversation':'AI 团队会话',file:'来源文件'};
+    const relationTypeLabel={task:'任务',group:'群聊',chat:'私聊','ai-conversation':'AI 小队会话',file:'来源文件'};
     const relationIcon={task:'task',group:'users',chat:'users','ai-conversation':'automation',file:'file'};
     const bytes=value=>{
       if(!value)return'—';

@@ -61,7 +61,7 @@ test('custom AI teams keep a member snapshot and isolate group data',()=>{
  assert.equal(restored.source(customId,members).channels[0].name,'上市协作组');
  assert.equal(restored.source(customId,members).channels[0].identityAvatarUrl,'data:image/png;base64,dGVhbQ==');
  assert.equal(restored.source(customId,members).channels[0].memberIds.join(','),'u-wangyilin,assistant,persona');
- assert.throws(()=>restored.updateGroup(restored.id,{name:'不可修改'}),/默认团队不可编辑/);
+ assert.throws(()=>restored.updateGroup(restored.id,{name:'不可修改'}),/默认 AI 小队不可编辑/);
  assert.throws(()=>restored.createGroup({name:'空团队',memberIds:[]}),/至少选择/);
 });
 test('custom AI teams can be dissolved with all nested data while the default team stays protected',()=>{
@@ -72,9 +72,9 @@ test('custom AI teams can be dissolved with all nested data while the default te
  group.source(customId,members,threadId).onDraftChange('待删除草稿',threadId);
  group.source(customId,members,threadId).onSend('@通用助理 临时消息',threadId);
  group.removeGroup(customId);
- assert.throws(()=>group.get(customId),/AI 团队不存在/);
+ assert.throws(()=>group.get(customId),/AI 小队不存在/);
  assert.equal(group.groups().some(item=>item.id===customId),false);
- assert.throws(()=>group.removeGroup(group.id),/默认团队不可删除/);
+ assert.throws(()=>group.removeGroup(group.id),/默认 AI 小队不可删除/);
  const restored=window.EvaMyAITeamGroup.createStore({storage});
  assert.equal(restored.groups().some(item=>item.id===customId),false);
  assert.equal(JSON.stringify(saved).includes('待删除草稿'),false);
