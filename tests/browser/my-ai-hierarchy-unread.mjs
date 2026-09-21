@@ -264,7 +264,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.equal(await page.evaluate(id => window.EvaMyAITeamGroup.groups().some(group => group.id === id), fixture.customGroupId), false);
     await page.reload();
     await page.locator('.eva-ai-team').waitFor();
-    assert.equal(await page.locator(`.eva-ai-team__team-button[aria-label="进入 AI 小队会话 ${fixture.renamedGroupName}"]`).count(), 0, '刷新后已解散团队不会恢复');
+    assert.equal(await page.locator(`.eva-ai-team__team-button[aria-label="进入 AI 小队会话 ${fixture.renamedGroupName}"]`).count(), 0, '刷新后已解散 AI 小队不会恢复');
     assert.deepEqual(errors, []);
 
     await page.screenshot({ path: '/tmp/eva-my-ai-hierarchy-unread-1200.png' });

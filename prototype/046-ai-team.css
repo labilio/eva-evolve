@@ -50,7 +50,7 @@
      13px label and an 8px icon/text gap. */
   --eva-rail-identity-height: 32px;
   --eva-rail-session-height: 32px;
-  /* 我的 Agent 移除左侧 disclosure 后，二级团队与身份只保留一个紧凑层级。 */
+  /* 我的 Agent 移除左侧 disclosure 后，二级 AI 小队与身份只保留一个紧凑层级。 */
   --eva-ai-team-secondary-inset: var(--gds-space-2);
   /* Primary avatars and labels share the same columns as the message rail.
      Team subzone icons retain one compact connector step. */
@@ -137,7 +137,7 @@
 .eva-ai-team__team-button > .eva-ai-team__unread-dot { margin-left: auto; }
 .eva-ai-team__team-thread-row { position: relative; min-height: var(--eva-rail-identity-height); border-radius: var(--eva-rail-nested-row-radius); }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { width: 100%; padding-left: var(--eva-rail-team-thread-inset); padding-right: var(--gds-space-2); min-height: var(--eva-rail-identity-height); }
-/* 团队子区行名称走 vendor 的 .wk-conv-compact-name 基础样式（13/1.4），
+/* AI 小队子区行名称走 vendor 的 .wk-conv-compact-name 基础样式（13/1.4），
    不消费 --eva-rail-* 变量，2026-09-20 字阶收敛时漏掉。补齐到末级行档
    14/22/400（GDS §4.2 label）；字重语义不变：基线 400、未读 600（vendor）。 */
 /* 小队子区行名称三态统一 secondary：vendor 的常态 0.6 灰、未读/hover/选中 0.9 深色

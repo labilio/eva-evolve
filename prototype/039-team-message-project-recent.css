@@ -167,7 +167,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-follow-channel > .wk-conv-compact
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;
-  /* 容器行字色与 Agent 团队行/个人页文件夹行同源 text-primary；
+  /* 容器行字色与 AI 小队行/个人页文件夹行同源 text-primary；
      原 0.9 透明黑来自 vendor --wk-text-strong，非规范档。 */
   color: var(--eva-text-primary);
 }
