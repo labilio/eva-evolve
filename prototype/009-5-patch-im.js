@@ -1366,7 +1366,7 @@ function EvaAITeamPage() {
     h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 AI',ref:rail},
       h('div',{className:'eva-conversation-rail-resizer',role:'separator','aria-label':'调整中间栏宽度','aria-orientation':'vertical',tabIndex:0,'data-eva-conversation-rail-resizer':true}),
       h('header',{className:'eva-ai-team__sidebar-header eva-rail-header'},h('h1',null,'我的 Agent'),h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,
-        h(Dropdown.Item,{icon:h(Users,{size:16}),onClick:()=>setGroupEditor({mode:'create'})},'新建 AI 团队'),
+        h(Dropdown.Item,{icon:h(Users,{size:16}),onClick:()=>setGroupEditor({mode:'create'})},'新建 AI 小队'),
         h(Dropdown.Item,{icon:h(Sparkles,{size:16}),onClick:openPersonalAssistant},'新建个人助理'))},h('span',{onFocus:event=>{groupEditorOpener.current=event.target;}},h(Button,{className:'eva-ai-team__create',theme:'borderless',type:'tertiary',icon:h(Plus$c,{size:18,strokeWidth:1.75}),title:'新建','aria-label':'新建'})))),
       h('div',{className:'eva-ai-team__roles'},
         h('div',{className:'eva-ai-team__teams'},teamGroups.map(teamGroupItem)),

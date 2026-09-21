@@ -16,8 +16,8 @@ test('AI 团队编辑器：双栏选择、搜索、创建与重新编辑', async
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(origin+'/#/messages?evaIM=my-ai');
     await page.locator('.eva-ai-team__create').click();
-    await page.getByRole('menuitem',{name:'新建 AI 团队',exact:true}).click();
-    const dialog=page.locator('.eva-ai-team-editor [role="dialog"]');
+    await page.getByRole('menuitem',{name:'新建 AI 小队',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:'新建 AI 团队',exact:true});
     await dialog.waitFor();
     assert.equal(await dialog.locator('.eva-member-picker').count(),1,'AI 团队必须复用全局拉人模板 A');
     const create=dialog.getByRole('button',{name:'创建',exact:true});
@@ -68,7 +68,7 @@ test('AI 团队编辑器：双栏选择、搜索、创建与重新编辑', async
     await page.locator('[data-eva-nav-id="messages"]').click();
     await page.locator('[data-eva-nav-id="my-ai"]').click();
     await page.locator('.eva-ai-team__create').click();
-    await page.getByRole('menuitem',{name:'新建 AI 团队',exact:true}).click();
+    await page.getByRole('menuitem',{name:'新建 AI 小队',exact:true}).click();
     await dialog.waitFor();
     assert.equal(await dialog.getByLabel('团队名称',{exact:true}).inputValue(),'');
     assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),0);

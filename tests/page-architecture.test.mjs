@@ -98,7 +98,8 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /roleGroup\('persona','云端分身',personas\)/);
   assert.match(imPatch, /roleGroup\('digital','数字员工',digitalEmployees\)/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
-  assert.match(imPatch, /'新建 AI 团队'.+'新建个人助理'/s);
+  assert.match(imPatch, /'新建 AI 小队'.+'新建个人助理'/s);
+  assert.match(imPatch, /title:membersOnly\?'编辑团队成员':record\?'编辑 AI 团队':'新建 AI 团队'/);
   assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);
   assert.doesNotMatch(imPatch, /evaCreate=mine&evaReturn=/);
   assert.doesNotMatch(imPatch, /function sectionTitle\(|sectionCollapsed|setSectionCollapsed/);
