@@ -554,6 +554,19 @@ body[theme-mode="dark"] {
 :root[data-theme="dark"] .eva-rt-head h1,
 :root[data-theme="dark"] .eva-rt-host .engine { color: var(--eva-text-primary); }
 
+/* —— 会话头右侧图标按钮组的静止态（2026-09-20 补）——
+   Part 5 初版只收了 .op:hover/.is-on，漏了静止态：vendor 写死
+   .ch-head .ops{color:#1c1c2359} / .ops .op{color:#1c1c2373}（浅底上的
+   半透明深墨图标），暗底 #242424 上对比度仅约 1.03——查找/聊天任务/子区/
+   聊天信息四个入口整排隐形。静止取次级可读档，悬停提亮到主文字。
+   svg:hover 单列是因为 vendor 对 svg 直接悬停另有写死 #1c1c23 的规则，
+   继承 .op 的提亮色盖不掉它。 */
+:root[data-theme="dark"] .ch-head .ops,
+:root[data-theme="dark"] .ch-head .ops .op { color: var(--eva-text-secondary-accessible); }
+:root[data-theme="dark"] .ch-head .ops svg:hover { color: var(--eva-text-primary); }
+:root[data-theme="dark"] .ch-head .ops .op:hover,
+:root[data-theme="dark"] .ch-head .ops .op.is-on { background: var(--eva-overlay-hover); }
+
 /* @提及：填充蓝 #6d98f7 在提及底上实测 4.07，略低于 AA 4.5。按 gds §3.4
    「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
 :root[data-theme="dark"] :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-c-blue-300); }

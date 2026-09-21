@@ -20,10 +20,18 @@
     // Repository edition marker belongs to the shared client titlebar.
     source = root.__evaCut(source,
       'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学")',
-      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"原型 Evolve 版"))',
+      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 智能办公助手",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"原型 Evolve 版"))',
       'shared titlebar edition badge');
     // Semi imperative Modal/Toast roots use the same React 19 client entry as Eva.
     source = root.__evaCut(source, 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot}', 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot;return clientExports.createRoot}', 'Semi React 19 root adapter');
+    // No login: the web runtime behaves like desktop and starts authenticated,
+    // so the /login route always redirects to /guid and LoginPage is unreachable.
+    source = root.__evaCut(source,
+      'if(isDesktopRuntime){mt("authenticated"),ut(null),St(!0);return}',
+      '{mt("authenticated"),ut(null),St(!0);return}',
+      'web starts authenticated, no login');
+    source = source.split('AionUi - ').join('');
+    if (source.includes('AionUi - ')) throw new Error('AionUi 登录页品牌残留未清除');
     // A queued textarea resize may run after a configuration pane unmounts.
     source = root.__evaCut(source, 'getSizingData=rt=>{const ct=window.getComputedStyle(rt);', 'getSizingData=rt=>{if(!rt||!rt.isConnected)return null;const ct=window.getComputedStyle(rt);', 'ignore detached textarea resize');
         var evaRelease = root.__EVA_RELEASE;
