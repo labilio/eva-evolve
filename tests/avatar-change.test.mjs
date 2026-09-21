@@ -38,18 +38,18 @@ test('本人可以更换自己的头像，其他人与非法数据都被拒绝',
   assert.notEqual(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
 });
 
-test('分身头像与主人头像相互独立：默认主人基础头像 + Eva 角标，主人可改，其他人与非法数据被拒绝', () => {
+test('分身头像与主人头像相互独立：默认单张 Eva logo，主人可改，其他人与非法数据被拒绝', () => {
   const {window, store, model} = setup();
-  const ownerBase = window.EvaAvatar.personBaseUri('u-wangyilin');
+  const logo = window.__EVA_COLLEAGUE_PORTRAIT;
   const before = model.resolve('b-wangyilin').appearance;
-  assert.equal(before.avatar, ownerBase);
+  assert.equal(before.avatar, logo);
   assert.equal(before.ownerAvatar, undefined);
-  assert.equal(before.evaCorner, true);
+  assert.equal(before.evaCorner, undefined);
   // 主人更换头像不再带动分身主图：两者是各自独立的数据。
   store.setPersonAvatar('u-wangyilin', CUSTOM);
   assert.equal(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
   assert.equal(model.resolve('u-wangyilin').avatar, CUSTOM);
-  assert.equal(model.resolve('b-wangyilin').appearance.avatar, ownerBase, '主人换头像后分身保持自己的主图');
+  assert.equal(model.resolve('b-wangyilin').appearance.avatar, logo, '主人换头像后分身保持默认 Eva logo');
   store.setPersonAvatar('u-wangyilin', '');
   // 分身主人可以单独更换分身主图。
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', CUSTOM);
@@ -61,26 +61,23 @@ test('分身头像与主人头像相互独立：默认主人基础头像 + Eva �
   assert.throws(() => store.setCloneAvatar('u-wangyilin', 'u-linxiao', CUSTOM), /只有本人可以更换自己的分身头像/);
   assert.throws(() => store.setCloneAvatar('u-wangyilin', 'u-wangyilin', 'data:text/html,<b>x</b>'), /头像数据无效/);
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', '');
-  assert.equal(model.resolve('b-wangyilin').appearance.avatar, ownerBase);
+  assert.equal(model.resolve('b-wangyilin').appearance.avatar, logo);
 
-  // 旧数据曾把 Eva Logo 存成分身自定义主图：Logo 只能作角标，主图必须回落主人基础头像。
+  // 旧数据曾把 Eva Logo 存成分身自定义主图：按未自定义处理，仍是单张 Eva logo 主图。
   const render = (type, props, ...children) => ({type, props: props || {}, children});
-  const layers = appearance => {
-    const node = window.EvaAIIdentity.avatar(appearance, 32, render);
-    const main = node.children.find(child => child.props.className === 'eva-identity-avatar__logo');
-    const corner = node.children.find(child => child.props.className === 'eva-identity-avatar__owner');
-    return {main: main?.props.src, corner: corner?.props.src};
-  };
+  const images = appearance => window.EvaAIIdentity.avatar(appearance, 32, render).children
+    .filter(child => child.props.className === 'eva-identity-avatar__logo')
+    .map(child => child.props.src);
   store.setCloneAvatar('u-wangyilin', 'u-wangyilin', window.__EVA_COLLEAGUE_PORTRAIT);
   const legacy = model.resolve('b-wangyilin').appearance;
-  assert.equal(legacy.avatar, ownerBase, 'Logo 不作分身主图，回落主人基础头像');
-  assert.equal(legacy.evaCorner, true);
-  assert.deepEqual(layers(legacy), {main: ownerBase, corner: window.__EVA_COLLEAGUE_PORTRAIT}, '主人基础主图与 Eva 角标同时保留');
+  assert.equal(legacy.avatar, logo, 'Logo 主图按未自定义处理');
+  assert.deepEqual(images(legacy), [logo], '只有一张 Eva logo 主图，不拼接角图');
 });
 
-test('个人助理头像写入助理配置并即时反映到身份外观，纯 AI 表单不套用', () => {
+test('个人助理头像写入助理配置并即时反映到身份外观，默认单张 Eva logo', () => {
   const {window, store} = setup();
   const team = window.EvaAITeam;
+  const logo = window.__EVA_COLLEAGUE_PORTRAIT;
   const assistant = team.getSnapshot().identities.find(identity => identity.id === 'ai-general');
   assert.equal(assistant.role, 'assistant');
   team.setAssistantAvatar('ai-general', CUSTOM);
@@ -90,13 +87,13 @@ test('个人助理头像写入助理配置并即时反映到身份外观，纯 A
   assert.throws(() => team.setAssistantAvatar('ai-general', 'javascript:alert(1)'), /头像数据无效|头像/);
   team.setAssistantAvatar('ai-general', '');
   const cleared = window.EvaAIIdentity.assistantAppearance(team.getSnapshot().identities.find(identity => identity.id === 'ai-general'));
-  assert.equal(cleared.avatar, window.EvaAvatar.personBaseUri('u-wangyilin'));
+  assert.equal(cleared.avatar, logo);
   assert.equal(cleared.ownerAvatar, undefined);
-  assert.equal(cleared.evaCorner, true);
-  // 主人更换头像不带动个人助理，助理保持主人基础头像。
+  assert.equal(cleared.evaCorner, undefined);
+  // 主人更换头像不带动个人助理，助理保持默认 Eva logo。
   store.setPersonAvatar('u-wangyilin', CUSTOM);
   assert.equal(window.EvaAvatar.personUri('u-wangyilin'), CUSTOM);
-  assert.equal(window.EvaAIIdentity.assistantAppearance(team.getSnapshot().identities.find(identity => identity.id === 'ai-general')).avatar, window.EvaAvatar.personBaseUri('u-wangyilin'), '主人换头像后个人助理保持自己的主图');
+  assert.equal(window.EvaAIIdentity.assistantAppearance(team.getSnapshot().identities.find(identity => identity.id === 'ai-general')).avatar, logo, '主人换头像后个人助理保持默认 Eva logo');
   store.setPersonAvatar('u-wangyilin', '');
 });
 

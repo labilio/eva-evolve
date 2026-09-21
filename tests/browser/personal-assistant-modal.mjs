@@ -41,7 +41,7 @@ test('个人助理在我的 Agent 内用共享弹窗新建，并通过图标选�
     await picker.getByRole('option', { name: firstIcon }).click();
     await editor.getByRole('button', { name: '更换助理头像' }).waitFor();
     assert.equal((await editor.locator('.eva-editor-avatar-button .eva-identity-avatar__icon').textContent()).trim(), firstIcon);
-    assert.equal(await editor.locator('.eva-editor-avatar-button .eva-identity-avatar__owner').count(), 1);
+    assert.equal(await editor.locator('.eva-editor-avatar-button .eva-identity-avatar__owner').count(), 0);
 
     if (process.env.EVA_ASSISTANT_SCREENSHOT) {
       await page.screenshot({ path: process.env.EVA_ASSISTANT_SCREENSHOT, animations: 'disabled' });

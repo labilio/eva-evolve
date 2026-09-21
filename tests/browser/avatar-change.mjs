@@ -74,35 +74,25 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     await selfAvatar.waitFor();
     assert.equal(await selfAvatar.getAttribute('src'), humanUploaded, '刷新后本人头像持久化');
 
-    // 本人分身：主人基础主图 + Eva 角标，主人可更换主图，通讯录与资料卡同源。
+    // 本人分身：默认单张 Eva logo 主图，主人可更换主图，通讯录与资料卡同源。
     const cloneTrigger = humanTrigger('王宜林的 AI 分身');
     const cloneMain = () => cloneTrigger.locator('img.eva-identity-avatar__logo').getAttribute('src');
-    const cloneCorner = cloneTrigger.locator('img.eva-identity-avatar__owner');
     const evaLogo = await page.evaluate(() => window.__EVA_COLLEAGUE_PORTRAIT);
-    const cloneMainPortrait = await cloneMain();
-    assert.equal(cloneMainPortrait, humanDefault, '分身主图固定在主人登录时的头像');
-    assert.notEqual(cloneMainPortrait, humanUploaded, '主人更换头像后分身不再同步');
-    assert.equal(await cloneCorner.getAttribute('src'), evaLogo, '分身右下角恒为 Eva Logo');
+    assert.equal(await cloneMain(), evaLogo, '分身默认主图为 Eva logo');
+    assert.notEqual(await cloneMain(), humanUploaded, '主人更换头像后分身不再同步');
+    assert.equal(await cloneTrigger.locator('img.eva-identity-avatar__owner').count(), 0, '分身不再拼接第二张角图');
     await cloneTrigger.click();
     await card.waitFor();
-    assert.equal(await card.locator('img.eva-identity-avatar__logo').getAttribute('src'), cloneMainPortrait);
-    // 蒙版显示时，右下角 Eva 角标仍在蒙版之上可见。
+    assert.equal(await card.locator('img.eva-identity-avatar__logo').getAttribute('src'), evaLogo);
+    // 资料卡悬停蒙版照常出现（已无角标需要留在蒙版之上）。
     await card.locator('.eva-person-card__avatar').hover();
     await page.waitForFunction(() => {
       const el = document.querySelector('.eva-person-card__avatar-edit');
       return el && getComputedStyle(el).opacity === '1';
     });
-    assert.equal(await card.evaluate(cardEl => {
-      const corner = cardEl.querySelector('.eva-identity-avatar__owner');
-      if (!corner) return false;
-      const r = corner.getBoundingClientRect();
-      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-      return Boolean(top) && (top === corner || corner.contains(top));
-    }), true, '蒙版显示时 Eva 角标仍在最上层');
     await uploadFromCardWithCrop();
     const cloneUploaded = await cloneMain();
     assert.match(cloneUploaded, /^data:image\/png;base64,/, '分身主图可更换');
-    assert.equal(await cloneCorner.getAttribute('src'), evaLogo, '更换主图后角标仍为 Eva Logo');
     await closeCard();
 
     // 别人的资料卡不提供更换头像入口。
@@ -116,7 +106,7 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     await selfAvatar.waitFor();
     assert.equal(await cloneMain(), cloneUploaded, '刷新后分身主图持久化');
 
-    // 旧数据把 Eva Logo 存成分身主图：仍显示主人基础主图 + Eva 角标，不把 Logo 当主图。
+    // 旧数据把 Eva Logo 存成分身主图：按未自定义处理，仍是单张 Eva logo 主图。
     await page.evaluate(() => {
       const key = 'eva:project-members:v1';
       const state = JSON.parse(localStorage.getItem(key));
@@ -126,8 +116,8 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     });
     await page.reload();
     await selfAvatar.waitFor();
-    assert.equal(await cloneMain(), humanDefault, '旧 Logo 数据不能成为分身主图，回落主人基础头像');
-    assert.equal(await cloneCorner.getAttribute('src'), evaLogo, '旧 Logo 数据下 Eva 角标仍在');
+    assert.equal(await cloneMain(), evaLogo, '旧 Logo 数据按未自定义处理，仍显示默认 Eva logo');
+    assert.equal(await cloneTrigger.locator('img.eva-identity-avatar__owner').count(), 0, '旧 Logo 数据下也不拼接角图');
 
     assert.deepEqual(pageErrors, [], '页面不应出现未捕获 JavaScript 错误');
   } finally {

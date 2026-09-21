@@ -17,34 +17,23 @@ window.EvaAIIdentity = (() => {
     if(key==='style')value=Object.entries(value).map(([k,v])=>k+':'+v).join(';');
     return ' '+(key==='className'?'class':key)+'="'+escape(value)+'"';
   }).join('')+'>'+children.join('')+(tag==='img'?'':'</'+tag+'>');
-  // Owned AI (clone / assistant) default main image is the owner's generated base
-  // portrait, resolved by stable owner ID. The owner uploading a new avatar replaces
-  // only the human portrait and never rewrites the owned AI.
-  const basePortrait = key => {
-    if(key && window.EvaAvatar && window.EvaAvatar.personBaseUri) return window.EvaAvatar.personBaseUri(key);
-    return window.__EVA_CURRENT_USER_PORTRAIT || null;
-  };
-  // Personal assistants pick an emoji/icon as their own image; otherwise both owned-AI
-  // kinds default to the owner's base portrait.
+  // Every owned AI (clone / assistant) defaults to one circular Eva logo and never
+  // follows the owner's avatar. Personal assistants may instead pick an emoji/icon or
+  // upload an image; the owner uploading a new avatar replaces only the human portrait.
   const ASSISTANT_ICONS = ['✨','🌱','🍀','🐱','🐼','🦊','🐣','🍌','🎯','📎','🧭','💡','🚀','🧩','📚','🎨','☕','🛠️'];
   const AVATAR_IMAGE_PATTERN = /^(?:https:\/\/\S+|data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+)$/;
   const isAvatarImage = value => typeof value === 'string' && AVATAR_IMAGE_PATTERN.test(value.trim());
   const isAssistantIcon = value => { const text = typeof value === 'string' ? value.trim() : ''; return !!text && text.length <= 16 && !/[\u0000-\u001f]/.test(text) && !isAvatarImage(text); };
   const assistantIcons = () => ASSISTANT_ICONS.slice();
-  // Owned AI renders a main image plus the Eva logo as the bottom-right corner.
+  // Every identity renders one circular main image (icon or image); no second badge
+  // image is composed on top. Owned AI defaults to the Eva logo as that main image.
   function avatar(appearance, size=32, render=html) {
     const label=appearance.markerKind==='bot'?appearance.name+'，Eva 云端项目 AI':appearance.name+'，来自'+(appearance.sourceName||'Eva');
     const icon=appearance.icon||null;
-    const image=appearance.ownerAvatar||appearance.avatar||appearance.logo;
-    const main=icon||image;
-    const corner=appearance.evaCorner?(window.__EVA_COLLEAGUE_PORTRAIT||null):null;
-    // Owned AI always keeps the Eva logo as the bottom-right corner, even if the main
-    // image resolves to the same asset (legacy data stored the logo as a custom image).
-    const showCorner=!!corner;
+    const image=appearance.avatar||appearance.logo;
     const children=[icon
       ?render('span',{className:'eva-identity-avatar__icon','aria-hidden':'true'},render===html?escape(icon):icon)
       :render('img',{className:'eva-identity-avatar__logo',src:image,alt:'',draggable:false})];
-    if(showCorner)children.push(render('img',{className:'eva-identity-avatar__owner',src:corner,alt:'',draggable:false}));
     return render('span',{className:'eva-identity-avatar',role:'img','aria-label':label,title:label,style:{'--eva-identity-avatar-size':size+'px',...(appearance.project?{'--eva-identity-avatar-background':window.EvaProjectAppearance.css(appearance.project).surface}:{})}},...children);
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
@@ -54,24 +43,20 @@ window.EvaAIIdentity = (() => {
     const text='所属人：'+profile.owner.name;
     return render('span',{className:'eva-identity-owner',title:text},render===html?escape(text):text);
   }
-  // The Eva logo is the bottom-right corner, never an owned-AI main image. Legacy
-  // data that stored the logo as a custom main image falls back to the owner base
-  // portrait, so the owner main image and the Eva corner both stay visible.
+  // Owned AI defaults to the Eva logo main image; picking an icon or uploading an image
+  // replaces it. Legacy records that stored the logo as a custom image are treated as
+  // not customised, so they keep rendering the default logo.
   const customAvatar = value => { const text=typeof value==='string'?value.trim():''; return text && text!==window.__EVA_COLLEAGUE_PORTRAIT ? text : ''; };
-  // Default assistant main image is the owner's base portrait; picking an icon or
-  // uploading an image replaces it. It never follows the owner's later avatar changes.
-  const assistantBasePortrait = () => basePortrait(window.__EVA_MY_ASSISTANT_IDENTITY?.ownerId || window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName);
-  function assistantAppearance(identity){const logo=window.__EVA_COLLEAGUE_PORTRAIT;const value=identity?.configuration?.avatar;const appearance={name:identity.name,sourceName:'Eva',sourceAssistantId:identity.sourceAssistantId,logo,evaCorner:true,kind:'assistant'};if(isAssistantIcon(value))appearance.icon=value.trim();else appearance.avatar=customAvatar(value)||assistantBasePortrait();return appearance;}
+  function assistantAppearance(identity){const logo=window.__EVA_COLLEAGUE_PORTRAIT;const value=identity?.configuration?.avatar;const appearance={name:identity.name,sourceName:'Eva',sourceAssistantId:identity.sourceAssistantId,logo,kind:'assistant'};if(isAssistantIcon(value))appearance.icon=value.trim();else appearance.avatar=customAvatar(value)||logo;return appearance;}
   function cloneName(owner){return String(owner?.name||'未知成员')+'的 AI 分身';}
   // Owned AI main image is one global property resolved by stable owner ID: the owner
-  // may upload a replacement for the clone, otherwise the owner's base portrait is
-  // shown. The two are independent — the owner uploading a new avatar never rewrites
-  // the clone. The Eva logo stays as the bottom-right corner in both cases.
+  // may upload a replacement for the clone, otherwise one circular Eva logo is shown.
+  // The two are independent — the owner uploading a new avatar never rewrites the clone.
   let cloneAvatarResolver=()=>'';
   function setCloneAvatarResolver(resolve){cloneAvatarResolver=typeof resolve==='function'?resolve:()=>'';}
   function cloneAppearance(owner){
     const ownerRef=owner&&typeof owner==='object'?owner:{},ownerId=ownerRef.id||ownerRef.ownerId||'',key=ownerId||ownerRef.name||'',custom=customAvatar(key?cloneAvatarResolver(key):''),logo=window.__EVA_COLLEAGUE_PORTRAIT;
-    return {name:cloneName(ownerRef),sourceName:'Eva',ownerName:ownerRef.name,avatar:custom||basePortrait(key)||logo,logo,evaCorner:true,kind:'clone'};
+    return {name:cloneName(ownerRef),sourceName:'Eva',ownerName:ownerRef.name,avatar:custom||logo,logo,kind:'clone'};
   }
   function projectAgentName(project){return project?.name?String(project.name)+' · 项目管家':'项目管家';}
   function projectAgentLegacyNames(project){return ['Eva 项目管理专员','Eva 项目助手',...(project?.name?[String(project.name)+'项目管家']:[])];}

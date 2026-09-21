@@ -68,9 +68,9 @@
     return uri;
   }
 
-  // Generated portrait for an identity, ignoring any uploaded replacement. Owned AI
-  // uses this as an independent default so the owner uploading a new avatar never
-  // rewrites the clone main image.
+  // Generated portrait for an identity, ignoring any uploaded replacement. Human
+  // identities use it as the fallback when no avatar was uploaded; owned AI now
+  // defaults to the Eva logo instead and no longer depends on the owner's portrait.
   function personBaseUri(id) {
     var stableId = String(id || 'unknown-person');
     if (/(^|:)(u-wangyilin|u-current-user(?:-[a-z-]+)?|王宜林)$/.test(stableId) && root.__EVA_CURRENT_USER_PORTRAIT) {
