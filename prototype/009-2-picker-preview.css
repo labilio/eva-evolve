@@ -12,8 +12,12 @@
    --picker-group-gap 分组之间
    --picker-legend-gap 分组标题到它自己的候选
    --picker-row-gap   候选行之间 */
-/* 行与工具栏同样由父容器给值，单栏（选人）与双栏（拉人）因此长得一样。 */
-.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px;--picker-row-height:52px;--picker-row-pad-x:var(--gds-space-2);--picker-row-inner-gap:var(--gds-space-2);--picker-avatar-size:28px;--picker-toolbar-pad:var(--gds-space-3) var(--gds-space-3) 0}
+/* 行与工具栏同样由父容器给值，单栏（选人）与双栏（拉人）因此长得一样。
+   搜索框只在这里定位：外观（32px 高、8px 圆角、1px 边框、16px Lucide Search、左右 12px 内边距、
+   8px 图文间距，聚焦只变边框）全部来自公共 055-search-controls.css，模板不重复声明、不按入口改写；
+   工具栏左右内缩 12px 是既定基准（候选行的盒是 8px、行内容与分组标题是 16px，谁也不将就谁），
+   宽度由工具栏撑满给出，下留白 8px 让列表滚动后候选行不再贴住搜索框下边框。 */
+.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px;--picker-row-height:52px;--picker-row-pad-x:var(--gds-space-2);--picker-row-inner-gap:var(--gds-space-2);--picker-avatar-size:28px;--picker-toolbar-pad:var(--gds-space-3) var(--gds-space-3) var(--gds-space-2)}
 .eva-picker-list{max-height:min(400px,calc(100vh - 340px));overscroll-behavior:contain}
 /* 契约只在模板容器内生效：048 层给 .eva-picker-list 的通用内边距/溢出不得改写本模板节奏
    （该通用规则服务于个人 Eva 技能选择器，不是本模板）。 */
@@ -52,30 +56,47 @@
 .eva-picker-result{padding:12px;border-radius:8px;background:var(--semi-color-success-light-default);font-size:12px;line-height:18px;margin-bottom:12px}
 @media(max-width:680px){.eva-picker-modal{max-width:calc(100vw - 32px)}.eva-picker-modal .semi-modal-content{padding:20px}.eva-picker-selection-hint{max-width:34%}.eva-picker-footer{flex-wrap:wrap}}
 
-/* Shared add-member template A. Business entry points only configure data and copy. */
+/* Shared add-member template A. Business entry points only configure data and copy.
+   模板 A 的全局父容器：外壳只固定标题与页脚，中间区（.semi-modal-body）不滚动，
+   只有左右两个列表各自滚动。面板高度由可用视口高度减去字段行推导，
+   因此增加附加字段（如新建项目的「共同目标」）不会再让外壳长出滚动条。 */
 .eva-member-picker-modal .semi-modal-content{display:flex;max-height:calc(100dvh - 84px);flex-direction:column}
-.eva-member-picker-modal .semi-modal-header,.eva-member-picker-modal .semi-modal-footer{flex-shrink:0}
 .eva-member-picker-modal .semi-modal-footer{margin-top:var(--gds-space-5)}
-.eva-member-picker-modal .semi-modal-body{min-height:0;padding-top:0;overflow-y:auto}
+.eva-member-picker-modal .semi-modal-body{display:flex;min-height:0;max-height:none;flex:1 1 auto;margin:0;padding:0 24px;overflow:hidden}
+/* 外壳几何由模板自己拥有。本模板同时挂着成员族外壳类（.eva-members-modal，用于遮罩与通用成员弹窗规则），
+   AI 小队入口还额外挂在 .eva-ai-team__modal-host 下，因此这里必须比那两处声明更具体：
+   留白、阴影、标题与页脚间距都以本模板为准，业务入口和宿主页不得改写。
+   单栏变体（.eva-members-modal--transfer）不挂 .eva-member-picker-modal，保留自己更紧凑的标题/页脚留白。 */
+.eva-members-modal.eva-member-picker-modal .semi-modal-content{padding:0;background:var(--semi-color-bg-2);box-shadow:var(--eva-shadow-floating)}
+.eva-members-modal.eva-member-picker-modal .semi-modal-header{flex-shrink:0;align-items:flex-start;margin:0;padding:var(--gds-space-5) var(--gds-space-6) var(--gds-space-4)}
+.eva-members-modal.eva-member-picker-modal .semi-modal-footer{flex-shrink:0;margin:0;padding:var(--gds-space-4) var(--gds-space-6) var(--gds-space-6)}
+.eva-member-picker-modal .semi-modal-body>.eva-member-picker{flex:1 1 auto;min-height:0}
 .eva-member-picker{display:flex;flex-direction:column;gap:var(--gds-space-5);color:var(--gds-color-text-primary);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
-.eva-member-picker__field,.eva-member-picker__members{display:grid;grid-template-columns:80px minmax(0,1fr);gap:var(--gds-space-5) var(--gds-space-4);align-items:start}
+.eva-member-picker__field,.eva-member-picker__members{display:grid;grid-template-columns:var(--eva-member-picker-label-w,80px) minmax(0,1fr);gap:var(--gds-space-5) var(--gds-space-4);align-items:start}
 .eva-member-picker__members--selection-only{grid-template-columns:minmax(0,1fr);gap:0}
 .eva-member-picker__field>label,.eva-member-picker__label{padding-top:var(--gds-space-2);font-weight:var(--gds-font-weight-medium)}
 /* 提交时校验的行内错误：长在出错字段旁边（名称在输入框下方、成员不足在成员面板下方），不再堆到弹窗底部。 */
 .eva-member-picker__field-error{grid-column:2;margin:-12px 0 0;color:var(--semi-color-danger);font-size:13px;line-height:20px}
-.eva-member-picker__panel{display:grid;height:clamp(320px,calc(100dvh - 340px),600px);min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:var(--gds-border-standard) solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary)}
+.eva-member-picker__panel{display:grid;height:clamp(180px,calc(100dvh - 340px - var(--eva-member-picker-extra-fields,0px)),600px);min-width:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:var(--gds-border-standard) solid var(--gds-color-border-subtle);border-radius:var(--gds-radius-control);background:var(--gds-color-surface-primary)}
 .eva-member-picker__available,.eva-member-picker__selected{display:flex;min-width:0;min-height:0;flex-direction:column}
 .eva-member-picker__toolbar,.eva-picker-toolbar{padding:var(--picker-toolbar-pad)}
 .eva-member-picker__selected{border-left:var(--gds-border-standard) solid var(--gds-color-border-subtle)}
 .eva-member-picker__selected-head{display:flex;min-height:40px;flex-shrink:0;align-items:center;justify-content:space-between;gap:var(--gds-space-2);padding:var(--gds-space-2) var(--gds-space-3) 0}
 .eva-member-picker__selected-head strong{font-weight:var(--gds-font-weight-regular)}
 .eva-member-picker__candidates,.eva-member-picker__selected-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:var(--picker-list-pad)}
-.eva-member-picker__candidate-group{min-width:0;margin:0;padding:0;border:0}
+.eva-member-picker__candidate-group{display:flex;min-width:0;flex-direction:column;margin:0;padding:0;border:0}
 /* 只声明一个候选类别时不渲染分组头，候选直接平铺。 */
 .eva-member-picker__candidate-flat{display:flex;min-width:0;flex-direction:column}
 
-.eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--picker-group-gap);padding-top:var(--picker-group-gap);border-top:var(--gds-border-standard) solid var(--gds-color-border-faint)}
-.eva-member-picker__candidate-group legend{display:flex;width:auto;max-width:100%;box-sizing:border-box;align-items:center;gap:6px;padding:0 var(--gds-space-2) var(--picker-legend-gap);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
+/* 分组间只留父容器给的间距；分割线画在分组标题同一行、与标题文字垂直居中。
+   不再用 fieldset 的 border-top：legend 会被浏览器顶到边框上，线会从标题中间穿过。 */
+.eva-member-picker__candidate-group+.eva-member-picker__candidate-group{margin-top:var(--picker-group-gap)}
+.eva-member-picker__candidate-group-head{display:flex;min-width:0;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-2);margin-bottom:var(--picker-legend-gap);color:var(--gds-color-text-secondary-accessible);font-size:var(--gds-type-caption-font-size);font-weight:var(--gds-font-weight-medium);line-height:var(--gds-type-caption-line-height)}
+.eva-member-picker__group-title{flex:none}
+.eva-member-picker__candidate-group-rule{flex:1 1 auto;min-width:16px;height:1px;background:var(--gds-color-border-faint)}
+/* 分割线是组间的区分手段，第一个分组上方没有可区分的对象：由父容器决定只在组间出现，
+   分组自身不判断序号，也不为“首组少一条线”单独改内边距。 */
+.eva-member-picker__candidates>.eva-member-picker__candidate-group:first-child .eva-member-picker__candidate-group-rule{display:none}
 .eva-member-picker__group-count{color:var(--gds-color-text-muted);font-weight:var(--gds-font-weight-regular)}
 .eva-member-picker__selected-item{display:flex;min-height:40px;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-1);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 .eva-member-picker__selected-avatar{display:inline-flex;width:28px;height:28px;flex:0 0 28px;align-items:center;justify-content:flex-start;overflow:hidden}

@@ -11,7 +11,7 @@
 .eva-members-role{margin-left:10px;color:var(--semi-color-text-2);font-size:12px}
 .eva-members-clones,.eva-members-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .eva-members-clone-row{padding:12px 0;border-bottom:1px solid var(--semi-color-border)}
-.eva-members-field label{display:block;margin-bottom:8px}
+.eva-members-field>label{display:block;margin-bottom:8px}
 .eva-members-select{width:100%}
 .eva-members-notice{padding:12px;background:var(--semi-color-fill-0);border-radius:8px}
 .eva-members-error{color:var(--semi-color-danger);font-size:13px}
@@ -140,7 +140,8 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-table .semi-button { min-height:32px;font-size:14px;line-height:22px; }
 .eva-members-modal .semi-modal-content { padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating); }
 .eva-members-modal .semi-modal-header { margin:0;padding:20px 24px 16px; }
-.eva-members-modal .semi-modal-body { margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px; }
+/* 通用成员弹窗（确认移除、分身详情）保持旧的外壳；拉人模板 A 由 009-2-picker-preview.css 自己声明外壳，不再继承这条上限与滚动。 */
+.eva-members-modal:not(.eva-member-picker-modal) .semi-modal-body { margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px; }
 .eva-members-modal .semi-modal-footer { margin:0;padding:16px 24px 24px; }
 .eva-members-modal .eva-members-field + .eva-members-field { margin-top:24px; }
 .eva-members-notice { border-radius:12px;padding:12px 16px;line-height:22px; }

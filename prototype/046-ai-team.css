@@ -392,6 +392,9 @@
   max-width: 100%;
   max-height: 100%;
 }
+/* 只作用于宿主内的普通弹窗（解散 AI 小队、重命名会话）。拉人模板 A（新建/编辑 AI 小队）
+   挂着 .eva-members-modal.eva-member-picker-modal，外壳留白与阴影由
+   prototype/009-2-picker-preview.css 拥有，比本规则更具体；不要把模板又改回本文件的值。 */
 .eva-ai-team__modal-host .semi-modal-content {
   pointer-events: auto;
   border-radius: var(--gds-radius-panel);
@@ -524,6 +527,7 @@
 .eva-ai-team__employee-options .eva-ai-team__connection-option { min-height: 54px; }
 .eva-ai-team__employee-options .eva-identity-name-row { display: inline-flex; min-width: 0; align-items: center; gap: var(--gds-space-1); }
 .eva-ai-team__employee-options .eva-identity-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 普通 AI 小队弹窗的标题间距；拉人模板 A 的标题间距由 009-2-picker-preview.css 拥有。 */
 .eva-ai-team__modal .semi-modal-header { align-items: center; margin: 24px 0 16px; }
 .eva-ai-team__modal .semi-modal-title { line-height: 24px; }
 .eva-ai-team__modal .semi-modal-close { flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; }

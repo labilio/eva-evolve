@@ -21,7 +21,12 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     await dialog.waitFor();
     assert.equal(await dialog.locator('.eva-member-picker').count(),1,'AI 小队必须复用全局拉人模板 A');
     const create=dialog.getByRole('button',{name:'创建',exact:true});
-    assert.equal(await create.isDisabled(),true);
+    // 主按钮不再因名称或成员数未满足而禁用（2026-09-21）：保持可点，点击时校验并给出行内反馈。
+    assert.equal(await create.isDisabled(),false,'主按钮保持可点，未满足条件时按提交校验给出反馈');
+    await create.click();
+    await dialog.locator('#eva-ai-team-name-error').waitFor({timeout:5000});
+    assert.equal(await dialog.locator('#eva-ai-team-name').evaluate(node=>node===document.activeElement),true,'报错后焦点回到名称输入框');
+    assert.equal(await dialog.count(),1,'校验失败不创建也不关闭弹窗');
     await dialog.getByLabel('AI 小队名称',{exact:true}).fill('双栏验收团队');
     assert.equal(await dialog.getByText('AI 小队头像',{exact:true}).count(),0);
     assert.equal(await dialog.getByRole('button',{name:'点击修改',exact:true}).count(),0);
@@ -35,7 +40,9 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),1);
     await search.fill('');
     await dialog.getByRole('button',{name:'移除 通用助理',exact:true}).click();
-    assert.equal(await create.isDisabled(),true);
+    await create.click();
+    await dialog.locator('.eva-member-picker__members-error').waitFor({timeout:5000});
+    assert.equal(await dialog.count(),1,'未选成员时不提交，错误紧贴成员面板');
     await dialog.locator('.eva-member-picker__candidate').filter({hasText:'通用助理'}).click();
     const geometry=await dialog.evaluate(node=>{
       const box=element=>{const r=element.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};};
@@ -44,6 +51,13 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     assert.ok(Math.abs(geometry.name.x-geometry.picker.x)<1);
     assert.ok(geometry.search.right<=geometry.selected.x+1);
     assert.ok(geometry.modal.y>=40&&geometry.modal.bottom<=800);
+    // 外壳几何由模板 A 拥有：AI 小队宿主（046-ai-team.css）不得再改标题外距或阴影（规范 §4）。
+    const shell=await dialog.evaluate(node=>{
+      const read=selector=>{const element=node.querySelector(selector),computed=getComputedStyle(element);return {margin:computed.margin,padding:computed.padding};};
+      return {padding:getComputedStyle(node).padding,shadow:getComputedStyle(node).boxShadow,header:read('.semi-modal-header'),footer:read('.semi-modal-footer')};
+    });
+    assert.deepEqual({padding:shell.padding,header:shell.header,footer:shell.footer},{padding:'0px',header:{margin:'0px',padding:'20px 24px 16px'},footer:{margin:'0px',padding:'16px 24px 24px'}},'AI 小队弹窗外壳与模板 A 一致：标题外距 0、固定标题与页脚留白');
+    assert.ok(!shell.shadow.includes('0px 0px 0px 0.5px'),'外壳阴影不含 AI 小队宿主的发丝边，与其它入口同一条 --eva-shadow-floating');
     await mkdir('artifacts/ai-team-editor',{recursive:true});
     await page.screenshot({path:'artifacts/ai-team-editor/selected.png',animations:'disabled'});
     await create.click();
@@ -52,19 +66,23 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     assert.match(await createdAvatar.getAttribute('src'),/^data:image\/svg\+xml/);
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
     assert.equal(await page.getByText('AI 小队头像',{exact:true}).count(),0);
+    // 回归：AI 小队父群没有 store 群记录，g 为空；此前 ChatSettings 直接读 g.ownerId 会抛错并让面板空白。
+    assert.equal(await page.locator('.eva-chat-member-grid .eva-chat-member-tile').filter({hasText:'通用助理'}).count(),1,'聊天信息面板必须渲染 AI 小队成员网格（本人＋AI）');
     await page.getByRole('button',{name:'添加 AI 小队成员',exact:true}).click();
-    await dialog.waitFor();
-    assert.equal(await dialog.locator('#eva-ai-team-name').count(),0);
-    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),1);
-    await dialog.locator('.eva-member-picker__candidate').filter({hasText:'Eva 研发助理'}).click();
-    await dialog.getByRole('button',{name:'保存',exact:true}).click();
-    await dialog.waitFor({state:'hidden'});
+    // 成员区加号打开的是仅成员态（无名称字段），标题为「编辑 AI 小队成员」，不是「新建 AI 小队」。
+    const membersDialog=page.getByRole('dialog',{name:'编辑 AI 小队成员',exact:true});
+    await membersDialog.waitFor();
+    assert.equal(await membersDialog.locator('#eva-ai-team-name').count(),0);
+    assert.equal(await membersDialog.locator('.eva-member-picker__selected-item').count(),1);
+    await membersDialog.locator('.eva-member-picker__candidate').filter({hasText:'Eva 研发助理'}).click();
+    await membersDialog.getByRole('button',{name:'保存',exact:true}).click();
+    await membersDialog.waitFor({state:'hidden'});
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
     await page.getByRole('button',{name:'添加 AI 小队成员',exact:true}).click();
-    await dialog.waitFor();
-    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),2);
+    await membersDialog.waitFor();
+    assert.equal(await membersDialog.locator('.eva-member-picker__selected-item').count(),2);
     await page.screenshot({path:'artifacts/ai-team-editor/edit.png',animations:'disabled'});
-    await dialog.getByRole('button',{name:'取消',exact:true}).click();
+    await membersDialog.getByRole('button',{name:'取消',exact:true}).click();
     await page.locator('[data-eva-nav-id="messages"]').click();
     await page.locator('[data-eva-nav-id="my-ai"]').click();
     await page.locator('.eva-ai-team__create').click();
