@@ -1252,6 +1252,7 @@ function EvaAITeamPage() {
   const openGroupMembersEditor=group=>{rememberGroupActionOpener();setGroupEditor({mode:'members',record:group});};
   const openGroupDissolve=group=>{rememberGroupActionOpener();setGroupToDissolve(group);};
   const newConversation = id => choose(id,digitalEmployees.some(item=>item.id===id)?digitalStore.createThread(id):store.createThread(id));
+  const openLatestConversation = (id,sessions) => choose(id,sessions[0]?.id||null);
   const openAssistantConfig=(item,returnFocus)=>window.__evaOpenAssistantEditor?.({mode:'edit',role:'assistant',id:item.sourceAssistantId,returnFocus});
   const removeDigitalEmployee=item=>{digitalStore.removeFromTeam(item.id);if(employee?.id===item.id){const next=teamIdentities[0]||digitalEmployees.find(candidate=>candidate.id!==item.id);choose(next?.id,next&&snapshot.identities.some(candidate=>candidate.id===next.id)?snapshot.sessions.find(candidate=>candidate.identityId===next.id)?.id:digitalStore.sessions(next?.id)[0]?.id);}};
   const openIdentityMenu=(event,item,digital=false)=>{
@@ -1317,12 +1318,11 @@ function EvaAITeamPage() {
   }
   function identityItem(i){
     const sessions=snapshot.sessions.filter(s=>s.identityId===i.id).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt));
-    const showAll=showAllIdentitySessions[i.id]===true, visibleSessions=showAll?sessions:sessions.slice(0,3), hasMore=sessions.length>3, hasUnread=sessions.some(item=>item.unreadCount>0), abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced'),assistant=i.role==='assistant';
+    const showAll=showAllIdentitySessions[i.id]===true, visibleSessions=showAll?sessions:sessions.slice(0,3), hasMore=sessions.length>3, hasUnread=sessions.some(item=>item.unreadCount>0), abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced');
     return h('section',{className:'eva-ai-team__identity',key:i.id},
       h('div',{className:'eva-ai-team__identity-heading',onContextMenu:event=>openIdentityMenu(event,i)},
-        assistant&&h(TooltipComponent,{content:'编辑配置',position:'right'},h('button',{type:'button',className:'eva-ai-team__assistant-avatar','aria-label':'编辑配置 '+i.name,onClick:event=>{event.stopPropagation();openAssistantConfig(i,event.currentTarget);},onKeyUp:event=>identityMenuKey(event,i)},h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}))),
-        h('button',{type:'button',className:'eva-ai-team__identity-button'+(assistant?' has-config-avatar':''),'aria-label':'新建会话 '+i.name,onKeyUp:event=>identityMenuKey(event,i),onClick:()=>newConversation(i.id)},
-          !assistant&&h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':'进入最近会话 '+i.name,onKeyUp:event=>identityMenuKey(event,i),onClick:()=>openLatestConversation(i.id,sessions)},
+          h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(i.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(identity?.id===i.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(i.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
       abnormal&&h('p',{className:'eva-ai-team__identity-status'},status(i)),
@@ -1336,7 +1336,7 @@ function EvaAITeamPage() {
     const sessions=digitalStore.sessions(item.id), showAll=showAllIdentitySessions[item.id]===true, visibleSessions=showAll?sessions:sessions.slice(0,3), hasMore=sessions.length>3, hasUnread=sessions.some(session=>session.unreadCount>0);
     return h('section',{className:'eva-ai-team__identity',key:item.id},
       h('div',{className:'eva-ai-team__identity-heading',onContextMenu:event=>openIdentityMenu(event,item,true)},
-        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':'新建会话 '+item.name,onKeyUp:event=>identityMenuKey(event,item,true),onClick:()=>newConversation(item.id)},
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':'进入最近会话 '+item.name,onKeyUp:event=>identityMenuKey(event,item,true),onClick:()=>openLatestConversation(item.id,sessions)},
           window.EvaAIIdentity.avatar(digitalStore.appearance(item),22,h),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(item.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(employee?.id===item.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(item.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),

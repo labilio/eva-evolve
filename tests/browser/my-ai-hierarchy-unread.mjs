@@ -97,7 +97,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.equal(await systemTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '系统团队默认展开');
     const identityButtons = page.locator('.eva-ai-team__identity-button');
     assert.ok(await identityButtons.count() > 0);
-    assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.hasAttribute('aria-expanded')))).every(value => value === false), 'AI 身份名称只负责新建会话，不再声明折叠状态');
+    assert.ok((await identityButtons.evaluateAll(nodes => nodes.map(node => node.hasAttribute('aria-expanded')))).every(value => value === false), 'AI 身份入口只负责进入最近会话，不再声明折叠状态');
     assert.equal(await page.locator('.eva-ai-team__identity-heading .eva-ai-team__chevron').count(), 0, 'AI 身份行右侧不再显示展开箭头');
     const assistantFixture = await page.evaluate(() => {
       const store = window.EvaAITeam;
@@ -106,7 +106,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       return { id: assistant.id, name: assistant.name, count: store.getSnapshot().sessions.filter(session => session.identityId === assistant.id).length };
     });
     const assistantIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: assistantFixture.name }).first();
-    await page.waitForFunction(id => document.querySelector(`[aria-label="新建会话 ${window.EvaAITeam.getSnapshot().identities.find(item => item.id === id)?.name}"]`)?.closest('.eva-ai-team__identity')?.querySelectorAll('.eva-ai-team__session-row').length === 3, assistantFixture.id);
+    await page.waitForFunction(id => document.querySelector(`[aria-label="进入最近会话 ${window.EvaAITeam.getSnapshot().identities.find(item => item.id === id)?.name}"]`)?.closest('.eva-ai-team__identity')?.querySelectorAll('.eva-ai-team__session-row').length === 3, assistantFixture.id);
     const assistantButton = assistantIdentity.locator('.eva-ai-team__identity-button');
     const assistantDisclosure = assistantIdentity.locator('.eva-ai-team__identity-sessions-more');
     assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, 'AI 身份默认展示最新三条会话');
@@ -115,6 +115,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await assistantDisclosure.click();
     assert.equal(await assistantDisclosure.innerText(), '收起');
     assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), assistantFixture.count, '超过三条后可展开全部历史会话');
+    await assistantIdentity.locator('.eva-ai-team__session').last().click();
     const assistantNameBox = await assistantIdentity.locator('.eva-ai-team__identity-name').boundingBox();
     const assistantSessionBox = await assistantIdentity.locator('.eva-ai-team__session-title').first().boundingBox();
     assert.ok(assistantNameBox && assistantSessionBox && Math.abs(assistantNameBox.x - assistantSessionBox.x) < 1, '个人助理会话名称与助理名称起点对齐');
@@ -122,8 +123,11 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.equal(await assistantDisclosure.innerText(), '展开查看');
     assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, '收起后恢复三条预览');
     await assistantButton.click();
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session').first().getAttribute('aria-current'), 'true', '点击 AI 身份入口进入下面列表第一条会话');
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, assistantFixture.id), assistantFixture.count, '点击 AI 身份入口不新建会话');
+    await assistantIdentity.getByRole('button', { name: '新建会话', exact: true }).click();
     await page.waitForFunction(({ id, count }) => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length === count + 1, assistantFixture);
-    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, '点击 AI 名称新建会话后仍保持三条预览');
+    assert.equal(await assistantIdentity.locator('.eva-ai-team__session-row').count(), 3, '点击加号新建会话后仍保持三条预览');
 
     const fixture = await page.evaluate(() => {
       const groupStore = window.EvaMyAITeamGroup;
@@ -165,7 +169,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     const selectedThreadState = await selectedTeamThread.getAttribute('aria-current');
     const unreadIdentity = page.locator('.eva-ai-team__identity:has(.eva-ai-team__unread-dot)').first();
     const unreadIdentityName = await unreadIdentity.locator('.eva-ai-team__identity-name').innerText();
-    const selectedIdentity = page.locator('.eva-ai-team__identity').filter({ has: page.getByRole('button', { name: '新建会话 ' + unreadIdentityName, exact: true }) });
+    const selectedIdentity = page.locator('.eva-ai-team__identity').filter({ has: page.getByRole('button', { name: '进入最近会话 ' + unreadIdentityName, exact: true }) });
     const unreadDisclosure = unreadIdentity.locator('.eva-ai-team__identity-sessions-more');
     if (await unreadDisclosure.count()) await unreadDisclosure.click();
     assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '展开历史会话不切换当前子区');
@@ -269,7 +273,64 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
   }
 });
 
-test('云端分身删空后不显示占位，点击身份名称直接新建会话', async () => {
+test('所有 AI 身份入口进入其列表第一条会话且不新建', async () => {
+  const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  const browser = await chromium.launch(process.platform === 'darwin' ? { channel: 'msedge' } : {});
+  try {
+    const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${origin}/#/messages?evaIM=my-ai`);
+    await page.locator('.eva-ai-team').waitFor();
+    const systemTeamButton = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-button');
+
+    for (const label of ['个人助理', '云端分身', '数字员工']) {
+      const identity = page.locator(`.eva-ai-team__role-group[aria-label="${label}"] .eva-ai-team__identity`).first();
+      assert.equal(await identity.count(), 1, `${label}身份必须存在并参与验收`);
+      const name = await identity.locator('.eva-ai-team__identity-name').innerText();
+      const sessions = identity.locator('.eva-ai-team__session');
+      const before = await page.evaluate(({ label, name }) => {
+        if (label === '数字员工') {
+          const item = window.EvaDigitalEmployeesStore.teamIds().map(id => window.EvaDigitalEmployeesStore.get(id)).find(candidate => candidate?.name === name);
+          return window.EvaDigitalEmployeesStore.sessions(item.id).length;
+        }
+        const item = window.EvaAITeam.getSnapshot().identities.find(candidate => candidate.name === name);
+        return window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === item.id).length;
+      }, { label, name });
+      assert.ok(await sessions.count() > 0, `${label}应至少有一条会话用于验收`);
+      if (await sessions.count() > 1) await sessions.last().click();
+      else await systemTeamButton.click();
+      await identity.getByRole('button', { name: '进入最近会话 ' + name, exact: true }).click();
+      assert.equal(await sessions.first().getAttribute('aria-current'), 'true', `${label}身份入口应进入列表第一条会话`);
+      const after = await page.evaluate(({ label, name }) => {
+        if (label === '数字员工') {
+          const item = window.EvaDigitalEmployeesStore.teamIds().map(id => window.EvaDigitalEmployeesStore.get(id)).find(candidate => candidate?.name === name);
+          return window.EvaDigitalEmployeesStore.sessions(item.id).length;
+        }
+        const item = window.EvaAITeam.getSnapshot().identities.find(candidate => candidate.name === name);
+        return window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === item.id).length;
+      }, { label, name });
+      assert.equal(after, before, `${label}身份入口不应新建会话`);
+    }
+    const digitalIdentity = page.locator('.eva-ai-team__role-group[aria-label="数字员工"] .eva-ai-team__identity').first();
+    const digitalName = await digitalIdentity.locator('.eva-ai-team__identity-name').innerText();
+    const digitalId = await page.evaluate(name => window.EvaDigitalEmployeesStore.teamIds().find(id => window.EvaDigitalEmployeesStore.get(id)?.name === name), digitalName);
+    await page.evaluate(id => window.EvaDigitalEmployeesStore.sessions(id).forEach(session => window.EvaDigitalEmployeesStore.deleteSession(id, session.id)), digitalId);
+    assert.equal(await digitalIdentity.locator('.eva-ai-team__session').count(), 0, '数字员工空会话列表不显示占位');
+    await digitalIdentity.getByRole('button', { name: '进入最近会话 ' + digitalName, exact: true }).click();
+    assert.equal(await page.evaluate(id => window.EvaDigitalEmployeesStore.sessions(id).length, digitalId), 0, '数字员工空列表点击身份入口不新建会话');
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
+test('云端分身删空后身份入口不新建会话，加号仍可新建', async () => {
   const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -309,8 +370,10 @@ test('云端分身删空后不显示占位，点击身份名称直接新建会�
     const systemTeam = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default)');
     await systemTeam.locator('.eva-ai-team__team-button').click();
     await identityButton.click();
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 0, '没有历史时点击 AI 身份入口不新建会话');
+    await persona.getByRole('button', { name: '新建会话', exact: true }).click();
     await persona.locator('.eva-ai-team__session-row').waitFor();
-    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 1, '点击 AI 名称立即创建一条新会话');
+    assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 1, '点击加号立即创建一条新会话');
     assert.match(await persona.locator('.eva-ai-team__session-title').innerText(), /^新对话/, '新会话立即显示在身份下');
     assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '新建后的单条会话不显示展开查看');
     const editor = page.getByRole('textbox', { name: '发送给 ' + fixture.name, exact: true });
