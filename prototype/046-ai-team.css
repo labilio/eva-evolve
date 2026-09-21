@@ -181,18 +181,12 @@
 .eva-ai-team__team-thread-row:focus-within .wk-conv-compact-badges { opacity: 0; }
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):hover .wk-conv-compact-item--thread,
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):focus-within .wk-conv-compact-item--thread { padding-right: 36px; }
-.eva-ai-team__team-threads-more,
-.eva-ai-team__identity-sessions-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
+.eva-ai-team__team-threads-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
 .eva-ai-team__team-threads-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); }
-.eva-ai-team__identity-sessions-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-session-indent); }
-.eva-ai-team__team-threads-more:hover,
-.eva-ai-team__identity-sessions-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
-.eva-ai-team__team-threads-more:focus-visible,
-.eva-ai-team__identity-sessions-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team__team-threads-more-chevron,
-.eva-ai-team__identity-sessions-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
-.eva-ai-team__team-threads-more-chevron.is-expanded,
-.eva-ai-team__identity-sessions-more-chevron.is-expanded { transform: rotate(180deg); }
+.eva-ai-team__team-threads-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
+.eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
 .eva-ai-team__direct-groups { margin-top: 0; }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
