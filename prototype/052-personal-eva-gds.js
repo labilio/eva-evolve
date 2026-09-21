@@ -134,7 +134,7 @@
     return '<form class="eva-personal-rail-form" data-eva-rail-form>'
       + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : '重命名文件夹') + '</label>'
       + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="' + (moving ? '对话名称' : '文件夹名称') + '" value="' + escapeHTML(detail ? (moving ? detail.title : detail.name) : '') + '" required>'
-      + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">默认</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
+      + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">最近</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
       + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">保存</button></div></form>';
   }
 
@@ -154,7 +154,7 @@
 
   function folderMenuHTML(folder) {
     var pinned = (personalSnapshot().folderPins || []).includes(folder.id);
-    var locked = folder.id ? '' : ' disabled title="默认文件夹固定保留"';
+    var locked = folder.id ? '' : ' disabled title="「最近」为默认分组，固定保留"';
     return '<div class="eva-personal-folder-menu" role="menu" aria-label="文件夹设置">'
       + '<button type="button" role="menuitem" data-eva-rename-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('pencil',16,'eva-i') + '重命名</button>'
       + '<button type="button" role="menuitem" data-eva-delete-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('trash-2',16,'eva-i') + '删除</button>'
@@ -166,10 +166,10 @@
     var recentFolders = snapshot.folders.filter(function (folder) { return Number.isFinite(folder.createdAt); });
     var legacyFolders = snapshot.folders.filter(function (folder) { return !Number.isFinite(folder.createdAt); });
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 文件夹与对话">'
-      + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">新对话</span><button type="button" class="eva-personal-rail-new" data-eva-create-folder aria-label="新建分组" title="新建分组">' + icon('plus',16,'eva-i') + '</button></div>'
-      + '<div class="eva-personal-sider-panel__body"><div class="eva-personal-rail-section"><span>文件夹</span></div>'
+      + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">分组</span><button type="button" class="eva-personal-rail-new" data-eva-create-folder aria-label="新建分组" title="新建分组">' + icon('folder-plus',16,'eva-i') + '</button></div>'
+      + '<div class="eva-personal-sider-panel__body">'
       + railFormHTML()
-      + recentFolders.concat([{id:'',name:'默认'}],legacyFolders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
+      + recentFolders.concat([{id:'',name:'最近'}],legacyFolders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
         return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
@@ -225,7 +225,7 @@
   }
 
   function folderPickerHTML() {
-    var folders = [{id:'',name:'默认'}].concat(personalSnapshot().folders);
+    var folders = [{id:'',name:'最近'}].concat(personalSnapshot().folders);
     var selected = folders.find(function (folder) { return folder.id === selectedFolderId; }) || folders[0];
     return '<label class="eva-newchat-context eva-personal-folder-picker" title="' + escapeHTML(selected.name) + '">' + icon('folder',18,'eva-i')
       + '<span class="eva-personal-folder-picker__label" aria-hidden="true">' + escapeHTML(selected.name) + '</span>'
@@ -714,7 +714,7 @@
     if (renameFolder) { railForm = {type:'rename-folder', id:renameFolder.dataset.evaRenameFolder}; folderMenu = null; renderRail(); root.querySelector('#eva-rail-name').focus(); return; }
     var deleteFolder = event.target.closest('[data-eva-delete-folder]');
     if (deleteFolder) {
-      if (!window.confirm('删除这个文件夹？其中的对话会移回“默认”。')) return;
+      if (!window.confirm('删除这个文件夹？其中的对话会移回「最近」。')) return;
       window.EvaPersonal.deleteFolder(deleteFolder.dataset.evaDeleteFolder);
       if (selectedFolderId === deleteFolder.dataset.evaDeleteFolder) selectedFolderId = '';
       folderMenu = null; renderRail();
@@ -900,7 +900,7 @@
       if (!root || root !== owner || !root.isConnected || activeConversationId !== conversationId) return;
       // The prototype records only the folder name; no file content is read or uploaded.
       var existing = personalSnapshot().folders.find(function (folder) { return folder.name === directory.name; });
-      var folderId = directory.name === '默认' ? '' : existing ? existing.id : window.EvaPersonal.createFolder(directory.name);
+      var folderId = directory.name === '最近' ? '' : existing ? existing.id : window.EvaPersonal.createFolder(directory.name);
       if (activeConversationId) window.EvaPersonal.moveConversation(activeConversationId, folderId);
       selectedFolderId = folderId; personalDrafts['new:' + folderId] = draft;
       renderRail();
@@ -918,7 +918,7 @@
     if (activeConversationId && window.EvaPersonal) window.EvaPersonal.moveConversation(activeConversationId, next);
     selectedFolderId = next;
     var picker = event.target.closest('.eva-personal-folder-picker');
-    var selected = [{id:'',name:'默认'}].concat(personalSnapshot().folders).find(function (folder) { return folder.id === next; });
+    var selected = [{id:'',name:'最近'}].concat(personalSnapshot().folders).find(function (folder) { return folder.id === next; });
     picker.querySelector('.eva-personal-folder-picker__label').textContent = selected.name;
     picker.title = selected.name;
     personalDrafts['new:' + next] = draft;
