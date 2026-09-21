@@ -780,15 +780,18 @@ function EvaArchivePreviewRenderer({file}) {
 
 function EvaInlineProjectPanel({projectId}) {
   const h=React.createElement;
+  const navigate=useNavigate();
   const [spaces,setSpaces]=reactExports.useState(()=>loadSpaces());
   const [activeProjectId,setActiveProjectId]=reactExports.useState(projectId);
   reactExports.useEffect(()=>setActiveProjectId(projectId),[projectId]);
   const space=spaces.find(item=>item.id===activeProjectId);
   if(!space)return null;
   setCurrentSpace(space.id,space.name);
+  // 内联面板里的「全部项目」必须离开消息路由进入项目目录；仅置空 activeProjectId 只会让面板消失。
+  const switchProject=id=>{if(id)setActiveProjectId(id);else navigate('/collab');};
   return h('section',{className:'eva-inline-project-panel','aria-label':space.name+' 项目页面'},
     h('div',{className:'eva-inline-project-panel__body'},
-      h(SpaceFrame,{key:space.id,space,spaces,onSwitch:setActiveProjectId,onProjectUpdated:setSpaces})));
+      h(SpaceFrame,{key:space.id,space,spaces,onSwitch:switchProject,onProjectUpdated:setSpaces})));
 }
 
 function EvaAssistantSourceCards({sources,value,disabled,onChange}) {
@@ -1604,7 +1607,7 @@ function EvaAITeamPage() {
       .replaceAll('className:"lb"','className:"eva-thread-setting-label"')
       .replaceAll('className:"vl"','className:"eva-chat-setting-value"')
       .replace('value:fa.creator_name','value:fa.creator_name||"未记录"');
-    const evaParentGroupRow='React.createElement(evaMembers().ui.ChatSettings.Row,{title:"所属群聊",value:React.createElement("span",{className:"eva-thread-parent-group"},React.createElement("img",{className:"eva-chat-group-avatar",src:window.EvaAvatar.groupUri(Sa.id,Sa.color),alt:"",draggable:!1}),React.createElement("span",{className:"eva-thread-parent-group-name",title:Sa.name},Sa.name)),onClick:()=>La(Sa.id)})';
+    const evaParentGroupRow='React.createElement(evaMembers().ui.ChatSettings.ProjectRow,{context:evaMemberStore.conversationContext(fa.id,evaActorId)}),React.createElement(evaMembers().ui.ChatSettings.Row,{title:"所属群聊",value:React.createElement("span",{className:"eva-thread-parent-group"},React.createElement("img",{className:"eva-chat-group-avatar",src:window.EvaAvatar.groupUri(Sa.id,Sa.color),alt:"",draggable:!1}),React.createElement("span",{className:"eva-thread-parent-group-name",title:Sa.name},Sa.name)),onClick:()=>La(Sa.id)})';
     evaThreadBody=root.__evaCut(evaThreadBody,
       'React.createElement(evaMembers().ui.ChatSettings.Row,{title:"所属群聊",value:Sa.name}),',
       '',

@@ -241,6 +241,8 @@ test('消息内嵌项目隐藏群聊标签并在会话选择时返回群聊', ()
   assert.doesNotMatch(hierarchyCss, /eva-inline-project-panel__(?:head|back|title)/);
   assert.match(imPatch, /La=ci=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(null\)/);
   assert.match(imPatch, /Za=\(ci,Zi\)=>\{setEvaInlineProjectId\(null\),xt\(ci\),Nt\(Zi\)/);
+  assert.match(imPatch, /const switchProject=id=>\{if\(id\)setActiveProjectId\(id\);else navigate\('\/collab'\);\}/, '内联项目「全部项目」未离开消息路由进入项目目录');
+  assert.match(imPatch, /h\(SpaceFrame,\{key:space\.id,space,spaces,onSwitch:switchProject,onProjectUpdated:setSpaces\}\)/, '内联项目未使用可退出到目录的切换处理器');
 });
 
 test('点击群聊内容区会关闭已打开的子区、聊天信息、文件预览、查找与任务面板', () => {

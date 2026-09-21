@@ -95,7 +95,9 @@ test('子区信息成员区置顶且在父群之上，只读且头像按当前�
   assert.match(settings, /eva-chat-member-search-block/, '子区成员页缺少搜索区');
   assert.doesNotMatch(settings.slice(settings.indexOf('function ThreadMembers'), settings.indexOf('ChatSettings.ThreadMembers=ThreadMembers;')), /'移除'|removeButton|eva-chat-member-add|eva-members-modal/, '子区成员页不应提供增删改或弹窗');
 
-  assert.match(runtime, /ChatSettings\.ThreadMembers,\{groupId:Sa\.id,actorId:evaActorId\}\),React\.createElement\("div",\{className:"eva-chat-setting-section"\},React\.createElement\(evaMembers\(\)\.ui\.ChatSettings\.Row,\{title:"所属群聊"/, '子区成员区未置于所属群聊之上');
+  assert.match(runtime, /ChatSettings\.ThreadMembers,\{groupId:Sa\.id,actorId:evaActorId\}\),React\.createElement\("div",\{className:"eva-chat-setting-section"\},React\.createElement\(evaMembers\(\)\.ui\.ChatSettings\.ProjectRow,\{context:evaMemberStore\.conversationContext\(fa\.id,evaActorId\)\}\),React\.createElement\(evaMembers\(\)\.ui\.ChatSettings\.Row,\{title:"所属群聊"/, '子区成员区未置于所属项目与所属群聊之上');
+  assert.match(settings, /ChatSettings\.ProjectRow=ProjectRow;/, '所属项目行未挂到公共设置组件');
+  assert.match(settings, /function ProjectRow\(\{context\}\)\{const navigate=useNavigate\(\);if\(!context\)return null;return h\(Row,\{title:'所属项目'/, '子区所属项目行未复用公共设置行');
   assert.match(runtime, /wk-chat-conversation-header-channel-avatar"\+\(!fa&&Sa\.chatType!=="direct"&&!Sa\.id\.startsWith\("dm-"\)\|\|fa&&ct\?\.presentation!=="ai-direct"/, '子区头像未打开子区信息');
   assert.doesNotMatch(runtime, /title:"参与人数"/, '子区信息不应再显示参与人数');
   assert.doesNotMatch(runtime, /' 条回复 · '/, '子区列表不应再显示参与人数');
