@@ -10,6 +10,7 @@ test('任务身份公共选择器面板支持搜索、分组上限与滚动', ()
   assert.ok(pickerStart >= 0 && pickerEnd > pickerStart);
   const picker = source.slice(pickerStart, pickerEnd);
   assert.match(picker, /eva-task-assignee-search/, '面板顶部应有搜索框');
+  assert.match(picker, /St\.length>5&&React\.createElement\("div",\{className:"eva-task-assignee-search"/, '候选不超过一组上限时隐藏搜索框');
   assert.match(picker, /normalize\("NFKC"\)\.toLocaleLowerCase\(\)/, '检索按 NFKC 归一后做名称匹配');
   assert.match(picker, /未找到匹配的联系人或 AI/, '检索无结果应有空提示');
   assert.match(picker, /eva-task-assignee-scroll/, '面板内容应限高滚动');

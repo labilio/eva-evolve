@@ -30,14 +30,15 @@
   border: 1px solid var(--semi-color-border); border-radius: 999px;
   background: transparent;
 }
-.eva-loop-task-create__due.semi-datepicker {
-  width: 144px;
-  min-width: 132px;
-}
-.eva-loop-task-create__due .semi-datepicker-input {
-  height: 32px;
-  border-radius: var(--eva-radius-full);
-}
+.eva-loop-task-create .eva-loop-task-create__due.semi-datepicker { width: auto; min-width: 0; }
+/* 截止日期胶囊：与工具栏其他胶囊同一外观，选中值后附快捷清除。 */
+.eva-loop-task-create .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; padding: 0; }
+.eva-loop-task-create .eva-loop-task-create__due-pill button { min-height: 0; height: 100%; }
+.eva-loop-task-create__due-trigger { appearance: none; border: 0; background: transparent; padding: 0 10px; font: 400 12px/1 var(--eva-font-sans); color: var(--semi-color-text-0); white-space: nowrap; cursor: pointer; }
+.eva-loop-task-create__due-pill:not(.has-value) .eva-loop-task-create__due-trigger { color: var(--semi-color-text-2); }
+.eva-loop-task-create__due-pill.has-value .eva-loop-task-create__due-trigger { padding-right: 4px; }
+.eva-loop-task-create__due-clear { appearance: none; display: inline-flex; align-items: center; border: 0; background: transparent; padding: 0 8px 0 0; color: var(--semi-color-text-2); cursor: pointer; }
+.eva-loop-task-create__due-clear:hover { color: var(--semi-color-text-0); }
 .eva-loop-task-create__identity { display: inline-flex; align-items: center; gap: 4px; }
 .eva-loop-task-create__attachments { padding: 0 16px 12px; }
 .eva-loop-task-create__attachment { display: flex; align-items: center; gap: 8px; }
@@ -60,8 +61,8 @@
 /* Child popups share the modal stacking context, outside its scroll clipping. */
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
 
-/* 创建弹窗内的身份选择触发器：与工具栏 Select 视觉对齐。 */
-.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger { box-sizing: border-box; min-width: 108px; min-height: 32px; padding: 0 10px; border: 1px solid var(--semi-color-border); border-radius: var(--eva-radius-control); background: var(--semi-color-bg-0); justify-content: flex-start; }
+/* 创建弹窗内的负责人胶囊触发器：与工具栏其他胶囊视觉对齐。 */
+.eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger { box-sizing: border-box; min-width: 108px; min-height: 32px; padding: 0 10px; border: 1px solid var(--semi-color-border); border-radius: 999px; background: var(--semi-color-bg-0); justify-content: flex-start; }
 .eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger:hover { background: var(--semi-color-fill-0); }
 
 .eva-loop-task-create .loop-ci__head { min-height: 52px; box-sizing: border-box; padding: 12px 24px; }

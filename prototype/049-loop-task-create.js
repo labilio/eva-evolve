@@ -5,11 +5,11 @@
   function create(R){
     const h=R.createElement;
     return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,deps}){
-      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,Select,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
+      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
-      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',source:snapshot.actorId||'',issuer:snapshot.actorId||'',dueDate:'',labels:[]});
+      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
       const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
       R.useEffect(()=>{
@@ -18,16 +18,10 @@
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
       },[visible,project?.id,parentIssueId,snapshot.actorId]);
-      // 负责人只能是本项目联系人；来源者与下达者可为全部联系人，但 AI 分身与数字员工必须已加入当前项目，默认本人。
+      // 负责人只能是本项目联系人；来源者与创建者不提供选项，提交时固定为当前操作人本人。
       const humans=(scope?.humans||[]).map(row=>snapshot.people.find(p=>p.id===row.id)).filter(Boolean);
       const candidates=humans.map(p=>({...p,type:'member'}));
-      const issuerCandidates=[
-        ...(snapshot.people||[]).map(p=>({...p,type:'member'})),
-        ...((scope?.cloneIds||[]).map(id=>snapshot.clones.find(c=>c.id===id)).filter(Boolean).filter(c=>c.active!==false).map(c=>({...c,type:'agent',group:'clone'}))),
-        ...((scope?.employeeIds||[]).map(id=>members.employee(id)).filter(Boolean).map(e=>({...e,type:'agent',group:'employee',kind:'employee',identityAppearance:root.EvaDigitalEmployeesStore?.appearance?.(e)})))
-      ];
-      const sourceCandidates=issuerCandidates;
-      const selected=candidates.find(p=>p.id===form.assignee),selectedSource=sourceCandidates.find(p=>p.id===form.source),selectedIssuer=issuerCandidates.find(p=>p.id===form.issuer),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
+      const selected=candidates.find(p=>p.id===form.assignee),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
       const popup=()=>host.current;
       function identity(person){
         if(person.type!=='agent'&&deps.HumanIdentity)return h(deps.HumanIdentity,{id:person.id,compact:true});
@@ -41,14 +35,12 @@
         if(!scope||!project?.id||!members.canRead(pid,snapshot.actorId)){setError('请从具体项目中创建任务。');return;}
         if(!form.title.trim()){setError('请填写任务标题。');return;}
         if(form.assignee&&!selected){setError('负责人已不在当前项目，请重新选择。');return;}
-        if(!selectedSource){setError('请选择来源者（联系人）。');return;}
-        if(!selectedIssuer){setError('请选择下达者。');return;}
         lock.current=true;setBusy(true);setError('');const token=generation.current;
         try{
           const attachmentIds=[];
           for(const file of files){if(!uploaded.current.has(file)){const result=await uploadAttachment(file);if(token!==generation.current)return;if(!result?.id)throw new Error('附件上传失败');uploaded.current.set(file,result.id);}attachmentIds.push(uploaded.current.get(file));}
           if(token!==generation.current)return;
-          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,source_id:selectedSource?.id||null,source_type:selectedSource?.type||'member',source_name:selectedSource?.name||null,creator_id:selectedIssuer?.id||snapshot.actorId,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
+          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,source_id:snapshot.actorId,creator_id:snapshot.actorId,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
           if(!created.current?.id)throw new Error('任务创建未返回任务编号，请重试。');
           for(const id of form.labels){if(!attached.current.has(id)){await attachLabel(created.current.id,id);if(token!==generation.current)return;attached.current.add(id);}}
           if(token===generation.current){onCreated?.(created.current);onClose();}
@@ -93,10 +85,8 @@
             h('div',{className:'loop-ci__toolbar'},
               h(LoopPropertyPill,{value:form.status,options:statusOptions,onChange:value=>{if(!disabled)patch('status',value)},ariaLabel:'状态',disabled,getPopupContainer:popup}),
               h(LoopPropertyPill,{value:form.priority,options:priorityOptions,onChange:value=>{if(!disabled)patch('priority',value)},ariaLabel:'优先级',disabled,getPopupContainer:popup}),
-              h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||'')}),
-              h(Select,{className:'eva-loop-task-create__assignee',value:form.assignee||undefined,optionList:candidates.map(person=>({value:person.id,label:identity(person)})),filter:(pattern,option)=>{const q=String(pattern||'').trim().normalize('NFKC').toLocaleLowerCase();if(!q)return true;const person=candidates.find(row=>row.id===option.value);return String(person?.name||'').normalize('NFKC').toLocaleLowerCase().includes(q);},emptyContent:'没有匹配的指派人',placeholder:'未指派','aria-label':'执行负责人',showClear:true,disabled,getPopupContainer:popup,onChange:value=>patch('assignee',value||'')}),
-              h('span',{className:'eva-loop-task-create__assignee eva-loop-task-create__source','aria-label':'来源者（联系人）'},h(AssigneePicker,{size:'default',allowClear:false,candidates:sourceCandidates,value:selectedSource?.id??null,valueName:selectedSource?.name??null,onChange:value=>patch('source',value||'')})),
-              h('span',{className:'eva-loop-task-create__assignee','aria-label':'下达者'},h(AssigneePicker,{size:'default',allowClear:false,candidates:issuerCandidates,value:selectedIssuer?.id??null,valueName:selectedIssuer?.name??null,onChange:value=>patch('issuer',value||'')}))),
+              h(DatePicker,{className:'eva-loop-task-create__due',type:'date',density:'compact',format:'yyyy-MM-dd',value:form.dueDate||undefined,placeholder:'截止日期','aria-label':'截止日期',showClear:true,disabled,getPopupContainer:popup,onChange:(_,value)=>patch('dueDate',value||''),triggerRender:()=>h('span',{className:'loop-pill eva-loop-task-create__due-pill'+(form.dueDate?' has-value':'')},h('button',{type:'button',className:'eva-loop-task-create__due-trigger','aria-label':'截止日期'+(form.dueDate?'：'+form.dueDate:''),disabled},form.dueDate||'截止日期'),form.dueDate?h('button',{type:'button',className:'eva-loop-task-create__due-clear','aria-label':'清除截止日期',disabled,onClick:event=>{event.stopPropagation();patch('dueDate','');}},h(icons.X,{size:12})):null)}),
+              h('span',{className:'eva-loop-task-create__assignee','aria-label':'执行负责人'},h(AssigneePicker,{size:'default',candidates,value:selected?.id??null,valueName:selected?.name??null,onChange:value=>patch('assignee',value||'')}))),
             h('div',{className:'loop-ci__labels'},taskLabels),
             files.length>0&&h('div',{className:'eva-loop-task-create__attachments'},files.map((file,index)=>h('div',{className:'eva-loop-task-create__attachment',key:index},h('span',null,file.name),h(Button,{theme:'borderless',icon:h(icons.Trash2,{size:14}),'aria-label':'移除 '+file.name,disabled,onClick:()=>setFiles(old=>old.filter((_,i)=>i!==index))})))),
             error&&h('p',{className:'eva-loop-task-create__error',role:'alert'},error),

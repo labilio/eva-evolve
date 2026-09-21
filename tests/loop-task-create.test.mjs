@@ -55,20 +55,20 @@ test('附件解析成详情引用与附件对象，未知ID不会复制旧附件
 test('其他项目不接受来自供应链的看板项目归属',async()=>{
  const s=setup();const a=await s.ctx.createIssue({workspace_id:'q',project_id:'p-supply',title:'任务'});assert.notEqual(a.project_id,'p-supply');
 });
-test('下达者默认创建者本人，可指定为任何联系人、AI 分身或数字员工',async()=>{
+test('创建者默认创建者本人，可指定为任何联系人、AI 分身或数字员工',async()=>{
  const s=setup();const self=await s.ctx.createIssue({title:'任务0'});assert.equal(self.creator_id,'member');assert.equal(self.creator_type,'member');
  const a=await s.ctx.createIssue({title:'任务',creator_id:'clone'});assert.equal(a.creator_id,'clone');assert.equal(a.creator_type,'agent');assert.equal(a.creator_name,'成员分身');
  const b=await s.ctx.createIssue({title:'任务2',creator_id:'employee'});assert.equal(b.creator_type,'agent');assert.equal(b.creator_name,'数字员工');
- await assert.rejects(s.ctx.createIssue({title:'任务3',creator_id:'unknown'}),/下达者/);
+ await assert.rejects(s.ctx.createIssue({title:'任务3',creator_id:'unknown'}),/创建者/);
 });
-test('来源者与下达者可为任何联系人，但 AI 分身与数字员工必须已加入项目',async()=>{
+test('来源者与创建者可为任何联系人，但 AI 分身与数字员工必须已加入项目',async()=>{
  const s=setup();
  const a=await s.ctx.createIssue({title:'任务',source_id:'outsider',creator_id:'outsider'});assert.equal(a.source_type,'member');assert.equal(a.creator_type,'member');
  const b=await s.ctx.createIssue({title:'任务2',source_id:'clone',creator_id:'employee'});assert.equal(b.source_type,'agent');assert.equal(b.creator_type,'agent');assert.equal(b.source_name,'成员分身');assert.equal(b.creator_name,'数字员工');
  await assert.rejects(s.ctx.createIssue({title:'任务3',source_id:'clone2'}),/来源者/);
- await assert.rejects(s.ctx.createIssue({title:'任务4',creator_id:'clone2'}),/下达者/);
+ await assert.rejects(s.ctx.createIssue({title:'任务4',creator_id:'clone2'}),/创建者/);
  await assert.rejects(s.ctx.createIssue({title:'任务5',source_id:'unknown'}),/来源者/);
- await assert.rejects(s.ctx.createIssue({title:'任务6',creator_id:'unknown'}),/下达者/);
+ await assert.rejects(s.ctx.createIssue({title:'任务6',creator_id:'unknown'}),/创建者/);
 });
 test('负责人显示信息从身份数据确定，不接受伪造身份名称和类型',async()=>{
  const s=setup();const a=await s.ctx.createIssue({title:'任务',assignee_id:'member',assignee_type:'agent',assignee_name:'其他人'});assert.equal(a.assignee_name,'当前成员');assert.equal(a.assignee_type,'member');

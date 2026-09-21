@@ -15,11 +15,11 @@ function harness(overrides={}){
   const find=label=>all().find(n=>n.props['aria-label']===label);
   const picker=label=>{const wrapper=find(label);return wrapper&&wrapper.children.find(x=>x&&x.type==='AssigneePicker');};
   const button=label=>all().find(n=>n.type==='Button'&&n.children.includes(label));
-  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){find(label).props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
+  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){const node=label==='执行负责人'?picker(label):find(label);node.props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
   render();render();return {render,find,picker,button,fill,calls,props,deps,state,all};
 }
 test('creates project-bound task with original fields and only current project candidates',async()=>{
-  const h=harness();h.fill();const options=h.find('执行负责人').props.optionList;assert.deepEqual(Array.from(options,x=>x.value),['u1']);await h.button('创建').props.onClick();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
+  const h=harness();h.fill();const candidates=Array.from(h.picker('执行负责人').props.candidates,x=>x.id);assert.deepEqual(candidates,['u1']);await h.button('创建').props.onClick();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
   assert.equal(payload.due_date,null);
 });
 test('创建任务可设置和清空截止日期，并提交同一 due_date 字段',async()=>{
@@ -53,32 +53,18 @@ test('新建任务支持一次选择多个附件并按选择顺序上传',async(
   await h.button('创建').props.onClick();assert.deepEqual(uploaded,['成本明细.xlsx','分析报告.pdf']);assert.deepEqual(Array.from(h.calls[0].attachment_ids),['att-成本明细.xlsx','att-分析报告.pdf']);
 });
 test('负责人只能选择本项目联系人，头像使用稳定身份 ID',async()=>{
-  const h=harness();h.fill();const options=h.find('执行负责人').props.optionList;assert.deepEqual(Array.from(options,x=>x.value),['u1']);
-  assert.equal(options[0].label.children[0].props.src,'avatar:u1');
+  const h=harness();h.fill();const candidates=Array.from(h.picker('执行负责人').props.candidates,x=>x.id);
+  assert.deepEqual(candidates,['u1']);
   await h.button('创建').props.onClick();assert.equal(h.calls[0].assignee_type,'member');assert.equal(h.calls[0].status,'todo');
 });
-test('创建时来源者与下达者默认本人且都可修改，负责人只有联系人',async()=>{
+test('创建弹窗不提供来源者与创建者选项，提交固定为本人，负责人只有联系人',async()=>{
   const h=harness();h.fill();
-  const src=h.picker('来源者（联系人）'),iss=h.picker('下达者');
-  assert.equal(src.props.value,'u1');
-  assert.equal(iss.props.value,'u1');
-  assert.deepEqual(Array.from(src.props.candidates,x=>x.id),['u1','u2','c1']);
-  assert.deepEqual(Array.from(iss.props.candidates,x=>x.id),['u1','u2','c1']);
-  assert.deepEqual(Array.from(h.find('执行负责人').props.optionList,x=>x.value),['u1']);
-  iss.props.onChange('c1','agent','甲分身');h.render();
-  assert.equal(h.picker('下达者').props.value,'c1');
+  assert.equal(h.find('来源者（联系人）'),undefined,'来源者不提供选择面板');
+  assert.equal(h.find('下达者'),undefined,'创建者不提供选择面板');
+  assert.deepEqual(Array.from(h.picker('执行负责人').props.candidates,x=>x.id),['u1']);
   await h.button('创建').props.onClick();
-  assert.equal(h.calls[0].creator_id,'c1');
+  assert.equal(h.calls[0].creator_id,'u1');
   assert.equal(h.calls[0].source_id,'u1');
-  assert.equal(h.calls[0].source_type,'member');
-});
-test('新建任务负责人支持输入即按姓名筛选',()=>{
-  const h=harness();h.fill();
-  const picker=h.find('执行负责人'),options=Array.from(picker.props.optionList,(x,i)=>({value:x.value,name:h.deps.members.snapshot().people.find(p=>p.id===x.value)?.name||''}));
-  assert.equal(typeof picker.props.filter,'function');
-  assert.equal(picker.props.filter('甲',{value:'u1'}),true);
-  assert.equal(picker.props.filter('乙',{value:'u1'}),false);
-  assert.equal(picker.props.filter('',{value:'u1'}),true);
 });
 test('原版创建布局保留外层项目路径且没有旧 Loop 项目选择器',()=>{
   const h=harness();assert.ok(h.all().some(n=>n.props.className==='loop-ci__crumb-ws'&&n.children.includes('供应链')));
