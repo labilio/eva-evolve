@@ -26,13 +26,20 @@
 .wk-ctx-sep{height:1px;background:#f2f3f5;margin:4px 0}
 .wk-contextmenus-mask{width:100%;height:100%;position:fixed;top:0;left:0;visibility:hidden;z-index:11999}
 
-/* Shared IM reading scale. Applies to messages, AI conversations and subzone panels. */
-.eva-msg .wk-msg-row-sender { color: var(--eva-text-primary); font: 500 15px/24px var(--eva-font-sans); }
-.eva-msg :is(.wk-msg-text-content,.wk-markdown) { color: var(--eva-text-primary); font: 400 15px/24px var(--eva-font-sans); }
-.eva-msg .wk-msg-row-timestamp { color: var(--eva-text-muted); font: 400 12px/16px var(--eva-font-sans); }
-.eva-msg .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
-.eva-msg .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
-.eva-msg .wk-markdown th { background: var(--eva-surface-subtle); }
+/* Shared IM reading scale. Applies to messages, AI conversations and subzone panels.
+ * 作用域必须同时覆盖 .eva-msg（全局 IM/私聊/AI 会话）与 .eva-channel-surface
+ * （该类同时挂在项目 collab-frame 上）：vendor 对 .wk-msg-text-content/时间戳
+ * 硬编码浅色墨色（#1c1c23cc/#1c1c2366），项目群聊容器没有 .eva-msg 类，
+ * 曾导致项目内群聊正文与时间戳在暗色下是墨色画暗底（对比不足 1:1）。 */
+:is(.eva-msg,.eva-channel-surface) .wk-msg-row-sender { color: var(--eva-text-primary); font: 500 15px/24px var(--eva-font-sans); }
+:is(.eva-msg,.eva-channel-surface) :is(.wk-msg-text-content,.wk-markdown) { color: var(--eva-text-primary); font: 400 15px/24px var(--eva-font-sans); }
+:is(.eva-msg,.eva-channel-surface) .wk-msg-row-timestamp { color: var(--eva-text-muted); font: 400 12px/16px var(--eva-font-sans); }
+/* vendor 对 hover 时间气泡与「已编辑」标记同样硬编码墨色（#1c1c2366），
+ * 且从未有任何作用域救过它们——IM 页与项目页一样漏。 */
+:is(.eva-msg,.eva-channel-surface) :is(.wk-msg-row-timestamp-hover,.wk-msg-row-edited) { color: var(--eva-text-muted); }
+:is(.eva-msg,.eva-channel-surface) .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
+:is(.eva-msg,.eva-channel-surface) .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
+:is(.eva-msg,.eva-channel-surface) .wk-markdown th { background: var(--eva-surface-subtle); }
 :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); padding:2px 6px; font-weight:500; font-size:inherit; line-height:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 :is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
