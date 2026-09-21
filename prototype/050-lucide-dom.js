@@ -3,7 +3,7 @@
   'use strict';
 
   /* ============================================================
-     Eva GDS · 纯 DOM 图标渲染器（AGENTS.md:151）
+     Eva GDS · 纯 DOM 图标渲染器（AGENTS.md「IM 内核、输入提示与图标」）
      createLucideIcon 只在打包运行时（vendor/eva-legacy-runtime.js）
      内部可见，009-6／009-7 注入的 React 代码可以裸用，纯 DOM 的
      prototype 模块拿不到。这里把它在 DOM 侧对等实现：

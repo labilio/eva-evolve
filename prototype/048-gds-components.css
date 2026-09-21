@@ -1,8 +1,8 @@
 /* ============================================================
-   Eva GDS for AI 2.0 · 组件适配层（AGENTS.md:141）
+   Eva GDS for AI 2.0 · 组件适配层（AGENTS.md「客户设计规范」）
    采用设计规范包 tokens/eva.css 中的「裸／固有尺寸」部分：
    组件只声明自身内在尺寸，不含画板绝对坐标，因此可以直接挂进
-   真实应用外壳（Router Outlet 宿主）内，满足 AGENTS.md:8-9。
+   真实应用外壳（Router Outlet 宿主）内，满足 AGENTS.md「客户端窗口外壳」与「架构不变量」。
 
    已剔除的部分：
    - `.eva-window` / `.eva-abs` 画板绝对定位模式（1200x800 artboard）

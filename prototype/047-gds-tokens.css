@@ -4,7 +4,7 @@
    Source: Figma uglNwB9uiCqB1f5IdTKBM5 / Page 1 / 6 artboards
    Reference viewport: 1200 x 800
 
-   AGENTS.md:141 —— GDS 必须经由「语义 token + 组件适配层」进入，
+   AGENTS.md「客户设计规范」—— GDS 必须经由「语义 token + 组件适配层」进入，
    业务 CSS 只引用这里的变量，不写原始色值。
    Primitives（--eva-c-*）只供本 token 层内部组合，不要直接使用。
    ============================================================ */
