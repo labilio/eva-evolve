@@ -20,8 +20,13 @@
     // Repository edition marker belongs to the shared client titlebar.
     source = root.__evaCut(source,
       'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学")',
-      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 智能办公助手",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"原型 Evolve 版"))',
+      'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva智能办公系统",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"原型 Evolve 版"))',
       'shared titlebar edition badge');
+    // Settings > About shows the product name; the assistant identity keeps "Eva 同学".
+    source = root.__evaCut(source,
+      'React.createElement(Row,{label:"Eva 同学"},React.createElement(TagComponent,{size:"small"},"1.4.0"))',
+      'React.createElement(Row,{label:"Eva智能办公系统"},React.createElement(TagComponent,{size:"small"},"1.4.0"))',
+      'settings about product name');
     // Semi imperative Modal/Toast roots use the same React 19 client entry as Eva.
     source = root.__evaCut(source, 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot}', 'if(typeof fullClone.createRoot=="function")return fullClone.createRoot;return clientExports.createRoot}', 'Semi React 19 root adapter');
     // No login: the web runtime behaves like desktop and starts authenticated,
