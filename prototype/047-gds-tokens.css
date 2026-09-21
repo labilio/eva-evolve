@@ -162,9 +162,16 @@
   --eva-list-option-selected: var(--eva-c-blue-50);
   --eva-im-bubble-incoming: #f2f2f2;
   --eva-im-bubble-radius: 14px;
-  --eva-contacts-header-background: #F7F8FA;
-  --eva-contacts-header-border: #EEF0F2;
-  --eva-contacts-header-text: #646A73;
+  /* 表头 = 「同平面 chrome 分区带」（banding），不参与高程：填充取 subtle——
+   * 比内容面深一档的凹陷带，不亮于工作区。GDS §3.4「越靠上越亮」只管 Z 轴
+   * 浮层；表头不 sticky、不悬浮，给抬升面（paper）会错误暗示它浮在行上方。
+   * 唯一升格条件：未来改 sticky 吸顶，届时应换 --eva-surface-paper + 投影。
+   * 通讯录列头（032）与成员 Semi 表头（009-2-members.css）共用这三个令牌；
+   * 三个值必须消费语义阶梯而非散值——浅色曾硬编码 Arco 灰（#F7F8FA/#EEF0F2/
+   * #646A73），与暗色「映射回阶梯」的镜像律只是巧合成立，2026-09-21 归位。 */
+  --eva-contacts-header-background: var(--eva-surface-subtle);
+  --eva-contacts-header-border: var(--eva-border-faint);
+  --eva-contacts-header-text: var(--eva-text-secondary-accessible);
   --eva-im-tint-03: color-mix(in srgb, var(--eva-im-accent) 3%, transparent);
   --eva-im-tint-06: color-mix(in srgb, var(--eva-im-accent) 6%, transparent);
   --eva-im-tint-08: color-mix(in srgb, var(--eva-im-accent) 8%, transparent);
