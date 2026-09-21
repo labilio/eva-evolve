@@ -82,15 +82,13 @@ test('文件库独立预览提供同一全屏状态与退出规则', async () =>
   assert.match(css, /\.eva-project-file-preview-sidebar:has\(\.wk-file-preview-panel\.is-fullscreen\)/);
 });
 
-test('任务附件接入统一预览并挂载在任务详情右栏', async () => {
+test('任务附件接入统一预览并以全屏覆盖层打开', async () => {
   const patch = await read('prototype/009-6-patch-general.js');
   const supply = await read('prototype/009-2-data-supply.js');
   assert.match(patch, /function LoopAttachments\(\{attachments:rt,workspaceSlug:ct,onPreview:evaOnPreview,onDownload:evaOnDownload,onSave:evaOnSave/);
   assert.match(patch, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
   assert.match(patch, /evaOpenTaskAttachment=async/);
   assert.match(patch, /saveTaskAttachment\(evaTaskFileActor,evaTaskSpaceId,ki,xt\)/);
-  assert.match(patch, /eva-task-file-preview-pane/);
-  assert.match(patch, /data-eva-file-preview-resizer/);
   assert.match(supply, /task-file-a2409-checklist[\s\S]*?A-2409现场复核清单\.md/);
   assert.match(supply, /task-file-cost-variance-analysis[\s\S]*?核心品类采购成本偏差\.csv/);
   const {createPatchedRuntime} = await import('../tools/build-runtime.mjs');
@@ -115,8 +113,9 @@ test('任务附件接入统一预览并挂载在任务详情右栏', async () =>
   assert.match(source, /evaOpenTaskFileLibrary=evaSavedFile=>\{const evaTargetProjectId=evaSavedFile\?\.spaceId\|\|evaSavedFile\?\.projectId\|\|evaTaskSpaceId/);
   assert.match(source, /evaProject="\+encodeURIComponent\(evaTargetProjectId\)\+"&evaTab=files"/);
   assert.match(source, /uploadAttachment=\(rt,ct\)=>evaRegisterLoopAttachment\(rt,ct\)/);
-  assert.match(source, /evaTaskFilePreview\?" eva-task-file-preview-open"/);
-  assert.match(source, /className:"eva-task-file-preview-pane"[\s\S]*?React\.createElement\(FilePreviewHost/);
+  // 2026-09-21 任务附件预览改为铺满工作区的全屏覆盖层（1eac1f4），统一 FilePreviewHost 渲染。
+  assert.match(source, /evaTaskFilePreview&&reactDomExports\.createPortal\(React\.createElement\("div",\{className:"eva-task-file-fs",role:"dialog","aria-modal":"true","aria-label":"任务附件预览"/);
+  assert.match(source, /className:"eva-task-file-fs__stage"\},React\.createElement\(FilePreviewHost,\{file:evaTaskFilePreview,onClose:\(\)=>setEvaTaskFilePreview\(null\)\}/);
 });
 
 test('任务附件列表左对齐并按文件类型使用语义标识', async () => {

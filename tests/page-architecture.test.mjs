@@ -302,7 +302,8 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   assert.match(imPatch, /项目一级分组使用共享 Lucide 折叠箭头/);
   assert.match(imPatch, /React\.createElement\(ChevronRight,\{size:12,className:"eva-ai-team__group-chevron"\+\(mt\?"":" is-expanded"\),"aria-hidden":true\}\)/);
   assert.match(hierarchyCss, /wk-conv-compact-item--thread \.wk-conv-compact-name\s*\{[^}]*font-size:\s*var\(--gds-type-label-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
-  assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*13px[^}]*line-height:\s*1\.5[^}]*font-weight:\s*var\(--gds-font-weight-semibold\)/s);
+  // 2026-09-21 分组标题对齐 GDS caption 档（12/16/regular）；原 13px/semibold 属「未读/Hero」语义，不作组头层级。
+  assert.match(aiTeamCss, /eva-ai-team__group-title\s*\{[^}]*font-size:\s*var\(--gds-type-caption-font-size\)[^}]*line-height:\s*var\(--gds-type-caption-line-height\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(aiTeamCss, /eva-ai-team__session-title\s*\{[^}]*font-size:\s*var\(--eva-rail-label-size\)[^}]*font-weight:\s*var\(--gds-font-weight-regular\)/s);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-level-indent:\s*var\(--gds-space-1\)/);
   assert.match(read('prototype/047-gds-tokens.css'), /--eva-rail-identity-content-inset:\s*calc\(var\(--eva-rail-identity-avatar-size\) \+ var\(--eva-rail-level-indent\)\)/);
@@ -489,13 +490,14 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(sider, /EVA_TEAM_NAV=Object\.freeze\(\["messages","projects","contacts","drive","sites"\]\)/);
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
-  assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:rt\.collapsed\?"Agent":"我的 Agent"/);
-  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+EvaNavIcon\(React\.createElement\(EvaBoxesIcon/s);
+  // 折叠态 label 断言不锚定压缩变量名（2026-09-21 重构后折叠标志为局部 evaSectionCollapsed）。
+  assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:[A-Za-z_$][\w$]*\?"Agent":"我的 Agent"/);
+  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+EvaNavIcon\(React\.createElement\(EvaMyAgentIcon/s);
   assert.match(sider, /EvaNavIcon=\(rt,ct,ut\)=>React\.createElement\("span",\{className:"eva-nav-icon"\},rt,ct&&React\.createElement\("span",\{className:"eva-nav-icon__unread"/);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
   assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
-  assert.match(sider, /label:rt\.collapsed\?"自动化":"自动化任务"/);
-  assert.match(sider, /label:rt\.collapsed\?"数字员工":"数字员工市场"/);
+  assert.match(sider, /label:[A-Za-z_$][\w$]*\?"自动化":"自动化任务"/);
+  assert.match(sider, /label:[A-Za-z_$][\w$]*\?"数字员工":"数字员工市场"/);
   assert.doesNotMatch(sider, /label:"我的 AI"/);
   assert.match(imPatch, /className:'eva-ai-team__sidebar-header eva-rail-header'.+h\('h1',null,'我的 Agent'\)/s);
   assert.match(imPatch, /const openPersonalAssistant=\(\)=>window\.__evaOpenAssistantEditor\?\.\(\{mode:'create',role:'assistant',returnFocus:groupEditorOpener\.current\}\)/);

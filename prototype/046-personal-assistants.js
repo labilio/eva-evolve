@@ -94,18 +94,18 @@
     createFolder: function (name) {
       name = String(name || '').trim();
       if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
-      if (name === '默认' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名文件夹');
+      if (name === '最近' || folders.some(function (f) { return f.name === name; })) throw new Error('已有同名文件夹');
       var f = {id:'folder-' + crypto.randomUUID(), name:name, createdAt:Date.now()}; folders.unshift(f); persist(); return f.id;
     },
     renameFolder: function (id, name) {
       var f = folders.find(function (f) { return f.id === id; }); name = String(name || '').trim();
-      if (!f) throw new Error('默认文件夹不能重命名');
+      if (!f) throw new Error('固定分组不能重命名');
       if (!name || name.length > 60) throw new Error('请输入 1–60 字的文件夹名称');
-      if (name === '默认' || folders.some(function (f) { return f.id !== id && f.name === name; })) throw new Error('已有同名文件夹');
+      if (name === '最近' || folders.some(function (f) { return f.id !== id && f.name === name; })) throw new Error('已有同名文件夹');
       f.name = name; persist();
     },
     deleteFolder: function (id) {
-      if (!id) throw new Error('默认文件夹不能删除');
+      if (!id) throw new Error('固定分组不能删除');
       folders = folders.filter(function (f) { return f.id !== id; });
       conversations.forEach(function (c) { if (c.folderId === id) c.folderId = ''; });
       collapsed = collapsed.filter(function (x) { return x !== id; }); persist();

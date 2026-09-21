@@ -24,10 +24,10 @@ function setup(saved=new Map(),hash='#/guid') {
   return {window,document,q,input,route,submit,saved,complete:()=>complete(),store:window.EvaPersonal,dialogs};
 }
 
-test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人页不再出现助理选择',()=>{
+test('最近也是可折叠分类，历史会话稳定 ID 全部保留，个人页不再出现助理选择',()=>{
  const a=setup();assert.equal(a.store.getSnapshot().conversations.length,5);
- assert.equal(a.q('[data-eva-toggle-folder=""]').textContent,'默认');
- assert.equal(a.document.querySelector('.eva-personal-folder__main span').textContent,'默认');
+ assert.equal(a.q('[data-eva-toggle-folder=""]').textContent,'最近');
+ assert.equal(a.document.querySelector('.eva-personal-folder__main span').textContent,'最近');
  assert.equal(a.q('[data-eva-selected-assistant]'),null);assert.doesNotMatch(a.document.body.textContent,/通用助理|研发助理|创建助理|未归类/);
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('[data-eva-personal-conversation-id="personal-ui-designer-ppt"]'),null);
  const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'true');
@@ -37,7 +37,7 @@ test('默认也是可折叠分类，历史会话稳定 ID 全部保留，个人�
 test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',()=>{
  const a=setup();const id=a.store.createFolder('本周工作');a.store.createFolder('临时讨论');
  assert.equal(JSON.stringify(a.store.getSnapshot().folders.slice(0,2).map(folder=>folder.name)),JSON.stringify(['临时讨论','本周工作']));
- assert.throws(()=>a.store.createFolder(' 默认 '));assert.throws(()=>a.store.createFolder('本周工作'));assert.throws(()=>a.store.createFolder('  '));
+ assert.throws(()=>a.store.createFolder(' 最近 '));assert.throws(()=>a.store.createFolder('本周工作'));assert.throws(()=>a.store.createFolder('  '));
  a.store.moveConversation('personal-api-regression',id);a.store.renameConversation('personal-api-regression','回归验收');
  const b=setup(a.saved,'#/conversation/personal-api-regression');const c=b.store.getSnapshot().conversations.find(c=>c.id==='personal-api-regression');
  assert.equal(c.folderId,id);assert.equal(c.title,'回归验收');assert.match(b.q('.eva-history-flow').textContent,/高风险/);
@@ -66,7 +66,7 @@ test('浏览本地目录和折叠不重建输入框，目录名保存为文件�
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('.eva-composer-prompt'),input);
 });
 
-test('组内新对话归属正确，发送后会话可刷新恢复，顶部新对话归默认',()=>{
+test('组内新对话归属正确，发送后会话可刷新恢复，顶部新对话归最近',()=>{
  const a=setup();a.q('[data-eva-new-folder-chat="personal-supply"]').click();a.input('准备供应链周会');a.q('[data-eva-personal-send]').click();
  a.complete();const c=a.store.getSnapshot().conversations.find(c=>c.title==='准备供应链周会');assert.equal(c.folderId,'personal-supply');
  const b=setup(a.saved,'#/conversation/'+c.id);assert.match(b.q('.eva-history-flow').textContent,/准备供应链周会/);
@@ -108,7 +108,7 @@ test('个人 Eva 不暴露助理创建，但我的 AI 使用共享编辑弹窗�
 });
 
 
-test('输入框下拉可选择默认或本地目录，不丢失草稿，发送归属选择的文件夹',async()=>{
+test('输入框下拉可选择最近或本地目录，不丢失草稿，发送归属选择的文件夹',async()=>{
  const a=setup();a.input('保留这段中文输入');const textarea=a.q('.eva-composer-prompt');
  a.window.showDirectoryPicker=async()=>({name:'下拉新文件夹'});
  const browse=a.q('[data-eva-composer-folder]');assert.equal(browse.lastElementChild.textContent,'浏览本地目录...');Object.defineProperty(browse,'value',{configurable:true,writable:true,value:'__browse_local__'});browse.dispatchEvent(new a.window.Event('change',{bubbles:true}));await new Promise(resolve=>setImmediate(resolve));

@@ -22,7 +22,7 @@ function setup() {
     {id:'grandchild',identifier:'SC-103',title:'孙任务',status:'done',priority:'low',parent_issue_id:'child'},
     {id:'peer',identifier:'SC-104',title:'同级任务',status:'todo',priority:'none',parent_issue_id:null},
   ];
-  const ctx = {issuesOf:()=>issues,Date};
+  const ctx = {issuesOf:()=>issues,Date,createLucideIcon: () => function EvaIconStub(){ return null; }};
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
