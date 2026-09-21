@@ -49,7 +49,7 @@ export async function probe(port, worktreePath) {
   }
 }
 
-if (import.meta.url === path.resolve(process.argv[1] || '')) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] || '')) {
   const worktrees = listWorktrees();
   const current = path.resolve(process.cwd());
   const rows = await Promise.all(worktrees.map(async entry => {
