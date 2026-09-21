@@ -51,7 +51,7 @@ test('重复同步相同草稿不发布更新，避免路由挂载反复中断',
 
 test('个人助理读取同一头像与名称，不泄漏配置或跨账号对话',()=>{
  const {store,model}=setup();const p=model.resolve('assistant');
- assert.equal(p.name,'我的助理');assert.equal(p.appearance.icon,'🍌');assert.equal(p.appearance.evaCorner,true);assert.equal(p.appearance.ownerAvatar,undefined);
+ assert.equal(p.name,'我的助理');assert.equal(p.appearance.icon,'🍌');assert.equal(p.appearance.evaCorner,undefined);assert.equal(p.appearance.ownerAvatar,undefined);
  assert.equal(p.description,undefined);assert.equal(p.owner,null);
  assert.equal(p.action.url,'/messages?evaIM=my-ai&evaIdentity=assistant');
  store.setActor('a');assert.equal(model.resolve('assistant'),null);

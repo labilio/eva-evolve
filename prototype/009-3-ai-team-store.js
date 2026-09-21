@@ -32,7 +32,7 @@
     return {sidebarVariant: 'ai-sessions', conversationOnly: true, presentation: 'ai-direct',
       selectedThreadId: selected.id, channels: [{...group, name, threads, unread: 0,
         sessionTitle: selected.name, identityName: name, identityAppearance: appearance,
-        identityAvatarUrl: appearance.ownerAvatar || appearance.avatar || appearance.logo, conversationKind: 'ai-private-group'}],
+        identityAvatarUrl: appearance.avatar || appearance.logo, conversationKind: 'ai-private-group'}],
       cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
       scopeNameOf: {}};
   };

@@ -1,6 +1,6 @@
-/* Project-wide AI avatar geometry. Clones render the owner portrait and personal
-   assistants render a chosen icon; both add an Eva-logo corner badge. Other
-   identities keep a single circular image. */
+/* Project-wide AI avatar geometry. Every identity renders one circular main image:
+   clones and personal assistants default to the Eva logo (or a chosen icon/image),
+   other identities keep their own single image. No second corner badge is composed. */
   .eva-identity-avatar {
     position: relative;
     display: inline-flex;
@@ -31,22 +31,6 @@
     font-size: calc(var(--eva-identity-avatar-size, 32px) * 0.5);
     line-height: 1;
     user-select: none;
-  }
-
-  .eva-identity-avatar__owner {
-    position: absolute;
-    /* 角标是身份的一部分，始终显示在头像主体之上，包括资料卡悬停遮罩等覆盖层。 */
-    z-index: 2;
-    box-sizing: border-box;
-    right: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
-    bottom: calc(var(--eva-identity-avatar-size, 32px) * -0.03125);
-    display: block;
-    width: calc(var(--eva-identity-avatar-size, 32px) * 0.4375);
-    height: calc(var(--eva-identity-avatar-size, 32px) * 0.4375);
-    border: calc(var(--eva-identity-avatar-size, 32px) * 0.03125) solid var(--semi-color-bg-0, #fff);
-    border-radius: 50%;
-    background: var(--semi-color-fill-0, #f2f3f5);
-    object-fit: cover;
   }
 
 /* Placement belongs to the name row; badge appearance stays with Octo. */
