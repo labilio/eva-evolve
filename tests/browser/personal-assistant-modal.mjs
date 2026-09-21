@@ -71,7 +71,9 @@ test('个人助理在我的 Agent 内用共享弹窗新建，并通过图标选�
     await contextMenu.getByRole('menuitem', { name: '编辑配置', exact: true }).waitFor();
     await page.keyboard.press('Escape');
     await contextMenu.waitFor({ state: 'detached' });
-    await createdIdentity.getByRole('button', { name: `编辑配置 ${name}` }).click();
+    await createdIdentity.locator('.eva-ai-team__identity-button').click({ button: 'right' });
+    await contextMenu.getByRole('menuitem', { name: '编辑配置', exact: true }).waitFor();
+    await contextMenu.getByRole('menuitem', { name: '编辑配置', exact: true }).click();
     await editor.locator('.eva-create-assistant-modal').waitFor();
     assert.equal(await editor.getByRole('tab', { name: '协作', exact: true }).count(), 0);
     await editor.getByRole('button', { name: '更换助理头像' }).click();

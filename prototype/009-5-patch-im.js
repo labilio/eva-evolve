@@ -1221,7 +1221,7 @@ function EvaAITeamPage() {
   const saveRename=()=>{try{if(groupIds.has(rename.identityId))groupStore.updateThread(rename.identityId,rename.id,{name:renameTitle});else (digitalEmployees.some(i=>i.id===rename.identityId)?digitalStore:store).renameThread(rename.identityId,rename.id,renameTitle);setRename(null);}catch(e){setRenameError(e.message);}};
   const [collapsed,setCollapsed] = reactExports.useState(()=>Object.fromEntries([...teamGroups.map(group=>[group.id,!group.system]),...(requestedIdentity&&groupIds.has(requestedIdentity.id)?[[requestedIdentity.id,false]]:[])]));
   const [showAllTeamThreads,setShowAllTeamThreads]=reactExports.useState(()=>requestedIdentity&&groupIds.has(requestedIdentity.id)&&requestedSessionId?{[requestedIdentity.id]:true}:{});
-  const [showAllIdentitySessions,setShowAllIdentitySessions]=reactExports.useState(()=>requestedIdentity&&!groupIds.has(requestedIdentity.id)&&requestedSessionId?{[requestedIdentity.id]:true}:{});
+  const [collapsedIdentitySessions,setCollapsedIdentitySessions]=reactExports.useState({});
   reactExports.useEffect(()=>{
     if(!requestedIdentity)return;
     const next=requestedSelection(requestedIdentity.id);
@@ -1230,7 +1230,7 @@ function EvaAITeamPage() {
     if(groupIds.has(requestedIdentity.id)){
       setCollapsed(value=>({...value,[requestedIdentity.id]:false}));
       if(requestedSessionId)setShowAllTeamThreads(value=>({...value,[requestedIdentity.id]:true}));
-    }else if(requestedSessionId)setShowAllIdentitySessions(value=>({...value,[requestedIdentity.id]:true}));
+    }else setCollapsedIdentitySessions(value=>({...value,[requestedIdentity.id]:false}));
   },[teamSearch,requestedIdentity?.id]);
   const [collapsedGroups,setCollapsedGroups]=reactExports.useState({assistant:false,persona:false,digital:false});
   const [groupEditor,setGroupEditor]=reactExports.useState(null);
@@ -1251,7 +1251,8 @@ function EvaAITeamPage() {
   const rememberGroupActionOpener=()=>{groupEditorOpener.current=document.activeElement;};
   const openGroupMembersEditor=group=>{rememberGroupActionOpener();setGroupEditor({mode:'members',record:group});};
   const openGroupDissolve=group=>{rememberGroupActionOpener();setGroupToDissolve(group);};
-  const newConversation = id => choose(id,digitalEmployees.some(item=>item.id===id)?digitalStore.createThread(id):store.createThread(id));
+  const newConversation = id => {setCollapsedIdentitySessions(value=>({...value,[id]:false}));choose(id,digitalEmployees.some(item=>item.id===id)?digitalStore.createThread(id):store.createThread(id));};
+  const toggleIdentitySessions = id => setCollapsedIdentitySessions(value=>({...value,[id]:!value[id]}));
   const openAssistantConfig=(item,returnFocus)=>window.__evaOpenAssistantEditor?.({mode:'edit',role:'assistant',id:item.sourceAssistantId,returnFocus});
   const removeDigitalEmployee=item=>{digitalStore.removeFromTeam(item.id);if(employee?.id===item.id){const next=teamIdentities[0]||digitalEmployees.find(candidate=>candidate.id!==item.id);choose(next?.id,next&&snapshot.identities.some(candidate=>candidate.id===next.id)?snapshot.sessions.find(candidate=>candidate.identityId===next.id)?.id:digitalStore.sessions(next?.id)[0]?.id);}};
   const openIdentityMenu=(event,item,digital=false)=>{
@@ -1309,42 +1310,33 @@ function EvaAITeamPage() {
         h(Dropdown.Item,{onClick:()=>groupStore.updateThread(group.id,record.id,{status:record.status===2?1:2})},record.status===2?'取消归档':'归档子区'))},
       h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(EllipsisIcon),title:'会话操作','aria-label':'会话操作 '+record.name})));
   }
-  function identitySessionsDisclosure(item,showAll,hasMore){
-    if(!hasMore)return null;
-    return h('button',{type:'button',className:'eva-ai-team__identity-sessions-more','aria-expanded':showAll,'aria-controls':'ai-sessions-'+item.id,'aria-label':(showAll?'收起 ':'展开查看 ')+item.name+' 会话',onClick:()=>setShowAllIdentitySessions(value=>({...value,[item.id]:!showAll}))},
-      h('span',null,showAll?'收起':'展开查看'),
-      h(ChevronDown,{size:12,className:'eva-ai-team__identity-sessions-more-chevron'+(showAll?' is-expanded':''),'aria-hidden':true}));
-  }
   function identityItem(i){
     const sessions=snapshot.sessions.filter(s=>s.identityId===i.id).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||b.updatedAt.localeCompare(a.updatedAt));
-    const showAll=showAllIdentitySessions[i.id]===true, visibleSessions=showAll?sessions:sessions.slice(0,3), hasMore=sessions.length>3, hasUnread=sessions.some(item=>item.unreadCount>0), abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced'),assistant=i.role==='assistant';
+    const collapsed=collapsedIdentitySessions[i.id]===true, hasUnread=sessions.some(item=>item.unreadCount>0), abnormal=i.status==='offline'||(i.role==='persona'&&i.syncStatus!=='synced');
     return h('section',{className:'eva-ai-team__identity',key:i.id},
       h('div',{className:'eva-ai-team__identity-heading',onContextMenu:event=>openIdentityMenu(event,i)},
-        assistant&&h(TooltipComponent,{content:'编辑配置',position:'right'},h('button',{type:'button',className:'eva-ai-team__assistant-avatar','aria-label':'编辑配置 '+i.name,onClick:event=>{event.stopPropagation();openAssistantConfig(i,event.currentTarget);},onKeyUp:event=>identityMenuKey(event,i)},h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}))),
-        h('button',{type:'button',className:'eva-ai-team__identity-button'+(assistant?' has-config-avatar':''),'aria-label':'新建会话 '+i.name,onKeyUp:event=>identityMenuKey(event,i),onClick:()=>newConversation(i.id)},
-          !assistant&&h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':(collapsed?'展开 ':'收起 ')+i.name+' 会话列表','aria-expanded':!collapsed,'aria-controls':'ai-sessions-'+i.id,onKeyUp:event=>identityMenuKey(event,i),onClick:()=>toggleIdentitySessions(i.id)},
+          h(EvaAIIdentityAvatar,{appearance:evaIdentityAppearance(i),size:22}),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:i.name},i.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(i.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(identity?.id===i.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(i.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
       abnormal&&h('p',{className:'eva-ai-team__identity-status'},status(i)),
-      sessions.length>0&&h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+i.id},
-        visibleSessions.map(s=>h('div',{key:s.id,className:'eva-ai-team__session-row'+(session?.id===s.id?' is-selected':'')},
+      h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+i.id,hidden:collapsed},
+        sessions.map(s=>h('div',{key:s.id,className:'eva-ai-team__session-row'+(session?.id===s.id?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':session?.id===s.id?'true':undefined,onClick:()=>choose(i.id,s.id)},h('span',{className:'eva-ai-team__session-title',title:s.title},s.title),unreadBadge(s.unreadCount)),
-          h('div',{className:'eva-ai-team__session-actions'},conversationMenu(i.id,s))))),
-      identitySessionsDisclosure(i,showAll,hasMore));
+          h('div',{className:'eva-ai-team__session-actions'},conversationMenu(i.id,s))))));
   }
   function employeeItem(item){
-    const sessions=digitalStore.sessions(item.id), showAll=showAllIdentitySessions[item.id]===true, visibleSessions=showAll?sessions:sessions.slice(0,3), hasMore=sessions.length>3, hasUnread=sessions.some(session=>session.unreadCount>0);
+    const sessions=digitalStore.sessions(item.id), collapsed=collapsedIdentitySessions[item.id]===true, hasUnread=sessions.some(session=>session.unreadCount>0);
     return h('section',{className:'eva-ai-team__identity',key:item.id},
       h('div',{className:'eva-ai-team__identity-heading',onContextMenu:event=>openIdentityMenu(event,item,true)},
-        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':'新建会话 '+item.name,onKeyUp:event=>identityMenuKey(event,item,true),onClick:()=>newConversation(item.id)},
+        h('button',{type:'button',className:'eva-ai-team__identity-button','aria-label':(collapsed?'展开 ':'收起 ')+item.name+' 会话列表','aria-expanded':!collapsed,'aria-controls':'ai-sessions-'+item.id,onKeyUp:event=>identityMenuKey(event,item,true),onClick:()=>toggleIdentitySessions(item.id)},
           window.EvaAIIdentity.avatar(digitalStore.appearance(item),22,h),
           h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-ai-team__identity-name eva-identity-name-text',title:item.name},item.name),h(AiBadge,{size:'small'}),hasUnread&&unreadDot(item.name+'有未读消息'))),
         h(TooltipComponent,{content:'新建会话',position:'right'},h('span',{className:'eva-ai-team__new-session-anchor'},h('button',{type:'button',className:'eva-ai-team__identity-action eva-ai-team__new-session'+(employee?.id===item.id?' is-active':''),'aria-label':'新建会话',onClick:event=>{event.stopPropagation();newConversation(item.id);}},h(Plus$c,{size:14,strokeWidth:1.75}))))),
-      sessions.length>0&&h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+item.id},
-        visibleSessions.map(itemSession=>{const selected=employee?.id===item.id&&employeeSession?.id===itemSession.id;return h('div',{key:itemSession.id,className:'eva-ai-team__session-row'+(selected?' is-selected':'')},
+      h('div',{className:'eva-ai-team__sessions',id:'ai-sessions-'+item.id,hidden:collapsed},
+        sessions.map(itemSession=>{const selected=employee?.id===item.id&&employeeSession?.id===itemSession.id;return h('div',{key:itemSession.id,className:'eva-ai-team__session-row'+(selected?' is-selected':'')},
           h('button',{type:'button',className:'eva-ai-team__session','aria-current':selected?'true':undefined,onClick:()=>choose(item.id,itemSession.id)},h('span',{className:'eva-ai-team__session-title',title:itemSession.title},itemSession.title),unreadBadge(itemSession.unreadCount)),
-          h('div',{className:'eva-ai-team__session-actions'},conversationMenu(item.id,itemSession,true)));})),
-      identitySessionsDisclosure(item,showAll,hasMore));
+          h('div',{className:'eva-ai-team__session-actions'},conversationMenu(item.id,itemSession,true)));})));
   }
   function roleGroup(role,label,items) {
     const groupId='eva-ai-team-group-'+role, groupCollapsed=collapsedGroups[role], hasUnread=role==='digital'&&items.some(item=>digitalStore.hasUnread(item.id));

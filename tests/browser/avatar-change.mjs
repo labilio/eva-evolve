@@ -151,7 +151,7 @@ test('我的 AI 的个人助理经身份资料卡更换头像，身份行与会�
 
     const card = page.locator('.eva-person-card');
     const editor = page.locator('.eva-avatar-editor');
-    const assistantAvatars = page.locator('.eva-ai-team__role-group[aria-label="个人助理"] .eva-ai-team__assistant-avatar img');
+    const assistantAvatars = page.locator('.eva-ai-team__role-group[aria-label="个人助理"] .eva-ai-team__identity-button img');
     const hasAssistantAvatar = value => assistantAvatars.evaluateAll((nodes, src) => nodes.some(node => node.getAttribute('src') === src), value);
 
     await page.goto(`${origin}/#/messages?evaIM=my-ai`);

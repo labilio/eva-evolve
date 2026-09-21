@@ -57,8 +57,8 @@
   --eva-rail-team-thread-label-inset: calc(var(--eva-rail-team-thread-inset) + 14px + var(--gds-space-1-5));
   --eva-rail-identity-avatar-trailing: 0px;
   box-sizing: border-box;
-  /* Assistant sessions have no leading avatar, so their labels reuse the
-     assistant-name column, including the avatar's trailing margin. */
+  /* Session rows have no leading avatar, so their labels reuse the
+     identity-name column, including the avatar's trailing margin. */
   --eva-rail-session-indent: calc(var(--eva-ai-team-secondary-inset) + var(--eva-rail-identity-avatar-size) + var(--gds-space-2) + var(--eva-rail-identity-avatar-trailing));
   position: relative;
   flex: 0 0 var(--eva-conversation-rail-current);
@@ -181,18 +181,12 @@
 .eva-ai-team__team-thread-row:focus-within .wk-conv-compact-badges { opacity: 0; }
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):hover .wk-conv-compact-item--thread,
 .eva-ai-team__team-thread-row:not(:has(.wk-conv-compact-badges)):focus-within .wk-conv-compact-item--thread { padding-right: 36px; }
-.eva-ai-team__team-threads-more,
-.eva-ai-team__identity-sessions-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
+.eva-ai-team__team-threads-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; }
 .eva-ai-team__team-threads-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-team-thread-label-inset); }
-.eva-ai-team__identity-sessions-more { padding: 0 var(--gds-space-2) 0 var(--eva-rail-session-indent); }
-.eva-ai-team__team-threads-more:hover,
-.eva-ai-team__identity-sessions-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
-.eva-ai-team__team-threads-more:focus-visible,
-.eva-ai-team__identity-sessions-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
-.eva-ai-team__team-threads-more-chevron,
-.eva-ai-team__identity-sessions-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
-.eva-ai-team__team-threads-more-chevron.is-expanded,
-.eva-ai-team__identity-sessions-more-chevron.is-expanded { transform: rotate(180deg); }
+.eva-ai-team__team-threads-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
+.eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+.eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
+.eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
 .eva-ai-team__direct-groups { margin-top: 0; }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
   /* Match adjacent project groups: whitespace separates sections; a divider
@@ -244,7 +238,7 @@
   transition: background-color 120ms ease;
 }
 /* 同 team-heading：改用 :has(:focus-visible)，避免点击后灰色残留。
-   身份名称用于新建会话，本身不是现有会话的选中目标，因此不给它
+   身份入口用于进入列表第一条会话，但选中态仍属于具体会话行，因此不给它
    --eva-rail-selected 的浅蓝：那会造出一个假的选中项，
    与真正被选中的会话行并列成两处强蓝，违反 evamate §3.1「避免多处并列强蓝」。 */
 .eva-ai-team__identity-heading:hover,
@@ -261,24 +255,6 @@
   cursor: pointer;
 }
 .eva-ai-team__identity-button { display: flex; align-items: center; gap: var(--gds-space-2); min-height: var(--eva-rail-identity-height); padding: 0 0 0 var(--eva-ai-team-secondary-inset); border-radius: var(--eva-rail-primary-row-radius); flex: 1; }
-.eva-ai-team__identity-button.has-config-avatar { padding-left: var(--eva-rail-session-indent); }
-.eva-ai-team__assistant-avatar {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: calc(var(--eva-ai-team-secondary-inset) - 5px);
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-}
-.eva-ai-team__assistant-avatar:hover { background: var(--eva-rail-hover); }
-.eva-ai-team__assistant-avatar:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__identity-name { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--eva-rail-name-size); line-height: var(--eva-rail-line-height); font-weight: var(--gds-font-weight-medium); color: var(--eva-rail-primary); }
 .eva-ai-team__identity-button > svg,
 .eva-ai-team__identity-button > .ai-badge,
