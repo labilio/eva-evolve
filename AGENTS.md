@@ -73,7 +73,8 @@
 - 当前唯一页面入口为 `index.html`，业务模块位于 `prototype/`。`prototype-manifest.json` 是源码职责与装配顺序清单，`index.html` 是浏览器实际加载入口；两者由合同检查保持一致。仓库只维护这一套模块化页面源码。
 - `009-0` 维护时间，`009-1` 维护云盘数据，`009-2` 维护供应链数据，`009-3` 维护 IM 数据；`009-4` 是补丁注册器，`009-5` 是 IM 补丁，`009-6` 是通用补丁，`009-7` 是侧栏/路由补丁，`009-8` 是自动化补丁。`009-0` 至 `009-3` 在浏览器加载，`009-4` 至 `009-8` 只在 Node 构建阶段运行。
 - `009-5` 至 `009-8` 只能通过 `window.__evaPatch` 注册，由 `tools/build-runtime.mjs` 在构建时按固定顺序执行并生成 `dist/vendor/eva-runtime.module.js`。浏览器禁止读取、拼接、编译 `eva-legacy-runtime.js`。修改补丁链后必须运行 `node tools/patch-hash.mjs` 与 `node --check dist/vendor/eva-runtime.module.js`。
-- 项目仓库为 `https://github.com/labilio/eva-evolve`；线上评审入口为 `https://eva-evolve.vercel.app/`。本地在仓库根目录运行 `npm start`，默认访问 `http://127.0.0.1:4173/`。
+- 项目仓库为 `https://github.com/labilio/eva-evolve`；线上评审入口为 `https://eva-evolve.vercel.app/`。本地在仓库根目录运行 `npm start`，端口按 worktree 路径自动派生并打印 URL，以启动输出为准，不假定固定 4173；可用 `npm run ports` 查看各 worktree 端口分配。
+- 多 agent 并行时一个任务一个 worktree；端口冲突由 serve.mjs 自动让位解决，禁止结束或抢占其他进程监听的端口（不得 `lsof`/`kill` 占用方），并始终报告启动输出中的实际 URL。提到具体 worktree 时一并给出其预览端口或 URL（`npm run ports` 可查全部映射）。
 - GitHub、Vercel 和本地使用同一套模块化源码。GitHub `main` 是 Vercel 生产发布的唯一来源；允许小改动直接推送 `main`，复杂改动使用功能分支和评审，具体遵循 CONTRIBUTING.md。
 - `vendor/eva-legacy-runtime.js` 是当前构建兼容依赖，不是 Eva 产品或设计参照。AionUI 与 Eva 没有产品关系；新增能力不得照搬或参照 AionUI。
 - 本地预览必须通过 `npm start` 使用 HTTP，不以 `file://` 作为运行合同。

@@ -15,7 +15,7 @@ Eva 桌面端交互原型的在线进度预览。
 - 文件库角色、权限动作与任务产出设计：[`docs/file-library-permissions/index.html`](docs/file-library-permissions/index.html)
 - 团队文件与文件库需求及修改计划：[`docs/团队文件与文件库需求文档.md`](docs/团队文件与文件库需求文档.md)
 
-本地使用 `npm start` 后访问 `http://127.0.0.1:4173`。应用通过 HTTP 加载；线上由 GitHub `main` 自动发布到 Vercel。
+本地使用 `npm start` 启动后访问启动输出的地址。端口按 worktree 路径自动分配（多 worktree 并行开发互不冲突），以启动输出中的 URL 为准；也可运行 `npm run ports` 查看全部 worktree 的名字/端口/分支映射，或 `npm run demo <worktree名或分支片段>` 自动启动并打开某个 worktree 的预览。应用通过 HTTP 加载；线上由 GitHub `main` 自动发布到 Vercel。
 
 ## 演示项目
 

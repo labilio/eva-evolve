@@ -6,6 +6,8 @@
     "build": "node tools/build-runtime.mjs",
     "prestart": "npm run build",
     "start": "node tools/serve.mjs dist",
+    "ports": "node tools/ports.mjs",
+    "demo": "node tools/demo.mjs",
     "check:manifest": "node tools/check-manifest.mjs prototype-manifest.json",
     "check:project": "node scripts/verify-project-contract.mjs",
     "check:collaboration": "node scripts/verify-collaboration-contract.mjs",
