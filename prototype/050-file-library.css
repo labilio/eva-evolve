@@ -202,15 +202,15 @@ body.eva-message-hierarchy-ready .eva-drive__action:hover,
 
 .eva-drive__action--primary,
 body.eva-message-hierarchy-ready .eva-drive__action--primary {
-  border-color: var(--gds-color-action-primary, #1563eb);
-  color: var(--gds-color-action-primary-text, #fff);
-  background: var(--gds-color-action-primary, #1563eb);
+  border-color: var(--eva-action-primary-solid);
+  color: var(--eva-action-primary-solid-text);
+  background: var(--eva-action-primary-solid);
 }
 
 .eva-drive__action--primary:hover,
 body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
-  border-color: #0e54ca;
-  background: #0e54ca;
+  border-color: var(--eva-action-primary-solid-hover);
+  background: var(--eva-action-primary-solid-hover);
 }
 
 .eva-drive__action .eva-drive-icon {
@@ -2118,9 +2118,9 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 }
 
 .eva-drive-dialog button.is-primary {
-  border-color: var(--gds-color-action-primary, #1563eb);
-  color: var(--gds-color-action-primary-text, #fff);
-  background: var(--gds-color-action-primary, #1563eb);
+  border-color: var(--eva-action-primary-solid);
+  color: var(--eva-action-primary-solid-text);
+  background: var(--eva-action-primary-solid);
 }
 
 /* Project > Team Files uses the same file primitives without the global space tree. */

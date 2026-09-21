@@ -678,4 +678,19 @@ body[theme-mode="dark"] {
     -1px 0 0 var(--eva-border-subtle);
 }
 
+/* ============================================================
+   主按钮暗色配对（方案 A · 2026-09-21 全站对齐，取代此前仅「我的项目」页的试点）
+   实心主按钮不再消费 --eva-action-primary / --gds-color-action-primary（这两枚
+   在暗色被提亮为 blue/400 服务文字/描边/选中强调，白字在其上仅 2.8:1 不达 AA），
+   统一改消费 047 新增的 --eva-action-primary-solid / -solid-text / -solid-hover
+   三件套：两模式同配对（GDS action/primary=brandBlue + primaryText=white），
+   hover 沿用 049 [D] 的明度 -14% 降档（#1255ca），浅暗同向同幅。
+   本文件不重指这三枚 solid 令牌，即暗色自动继承浅色值。涉及文件：
+   048（Semi 实心全局规则）/ 017（发送）/ 043（个人设置提交）/ 028（连接中心）
+   / 031（自动化弹窗 arco-btn）/ 036（项目目录 collab-btn）/ 030+034（loop-btn）
+   / 050+012（文件库 drive 按钮）/ 024（demo workboard）。
+   非按钮的品牌填充（eva-edition-badge、eva-bubble、消息多选勾选框）仍走
+   --eva-action-primary + --eva-text-inverse 的暗色 EvaMate 配对，不受影响。
+   ============================================================ */
+
 

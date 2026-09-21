@@ -28,14 +28,14 @@
     justify-content: center;
     gap: 8px;
     padding: 0 14px;
-    border: 1px solid var(--eva-action-primary);
+    border: 1px solid var(--eva-action-primary-solid);
     border-radius: var(--eva-radius-control);
-    background: var(--eva-action-primary);
-    color: var(--eva-surface-primary);
+    background: var(--eva-action-primary-solid);
+    color: var(--eva-action-primary-solid-text);
     font: inherit;
     cursor: pointer;
   }
-  .eva-center-primary:hover { background: color-mix(in srgb, var(--eva-action-primary), black 6%); }
+  .eva-center-primary:hover { background: var(--eva-action-primary-solid-hover); }
   .eva-center-primary svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   .eva-center-empty {
     grid-column: 1 / -1;

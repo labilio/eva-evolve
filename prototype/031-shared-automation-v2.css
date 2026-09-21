@@ -10,7 +10,7 @@
   .eva-auto-segmented button:hover { color: var(--gds-color-text-primary); }
   .eva-auto-segmented button.is-active, .eva-auto-segmented button.is-active:hover { color: var(--gds-color-action-primary); font-weight: var(--gds-font-weight-medium); box-shadow: none; }
   .eva-auto-segmented button:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-border-focus); outline-offset: -2px; }
-  .eva-auto-create-button { height: 32px !important; padding: 0 17px !important; border: 1px solid var(--gds-color-action-primary) !important; border-radius: var(--gds-radius-control) !important; background: var(--gds-color-action-primary) !important; color: var(--gds-color-action-primary-text) !important; font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans) !important; box-shadow: none; }
+  .eva-auto-create-button { height: 32px !important; padding: 0 17px !important; border: 1px solid var(--eva-action-primary-solid) !important; border-radius: var(--gds-radius-control) !important; background: var(--eva-action-primary-solid) !important; color: var(--eva-action-primary-solid-text) !important; font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans) !important; box-shadow: none; }
   .eva-auto-create-button:hover { border-color: var(--eva-action-primary-hover) !important; background: var(--eva-action-primary-hover) !important; }
   .eva-shared-auto__loading, .eva-auto-unified-list { width: 100%; margin: 0; }
   .eva-shared-auto__loading, .eva-shared-auto__empty { min-height: 220px; display: flex; align-items: center; justify-content: center; color: var(--gds-color-text-secondary-accessible); }
@@ -61,7 +61,7 @@
   .eva-auto-create-modal .arco-form-item { margin-bottom: 24px; }
   .eva-auto-create-modal .arco-form-label-item { padding-bottom: 8px; color: var(--eva-text-primary); }
   .eva-auto-create-modal :is(.arco-input:focus, .arco-select-focused .arco-select-view, .arco-textarea:focus) { border-color: var(--eva-border-focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--eva-action-primary) 12%, transparent); }
-  .eva-auto-create-modal .arco-btn-primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
+  .eva-auto-create-modal .arco-btn-primary { background: var(--eva-action-primary-solid); border-color: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
   .eva-auto-create-modal .arco-btn-primary[disabled] { background: var(--eva-action-disabled-fill); border-color: transparent; color: var(--eva-text-muted); }
   @media (max-width: 900px) {
     .eva-auto-unified-row__main { grid-template-columns: minmax(0, 1fr); }
@@ -72,7 +72,7 @@
   @media (prefers-reduced-motion: reduce) { .eva-auto-segmented::before, .eva-auto-segmented button, .eva-auto-unified-row { transition: none; } }
 
   .semi-modal:has(.eva-auto-settings) .arco-btn { min-height: 32px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
-  .semi-modal:has(.eva-auto-settings) .arco-btn-primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
+  .semi-modal:has(.eva-auto-settings) .arco-btn-primary { background: var(--eva-action-primary-solid); border-color: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
   .semi-modal:has(.eva-auto-settings) .arco-btn-primary[disabled] { background: var(--eva-action-disabled-fill); border-color: transparent; color: var(--eva-text-muted); }
 
 /* Run details have their own compact content layout, separate from settings forms. */

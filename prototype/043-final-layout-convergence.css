@@ -141,7 +141,7 @@
   .eva-personal-rail-form input, .eva-personal-rail-form select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; border: 1px solid var(--eva-border-default); border-radius: var(--eva-radius-key); background: var(--eva-surface-primary); color: var(--eva-text-primary); padding: 0 var(--eva-space-2); font: inherit; }
   .eva-personal-rail-form__actions { display: flex; justify-content: flex-end; gap: var(--eva-space-2); }
   .eva-personal-rail-form__actions button { min-height: 32px; padding: 0 var(--eva-space-3); border: 0; border-radius: var(--eva-radius-key); background: var(--eva-overlay-hover); color: var(--eva-text-primary); font: inherit; cursor: pointer; }
-  .eva-personal-rail-form__actions button[type="submit"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
+  .eva-personal-rail-form__actions button[type="submit"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
   .eva-personal-rail-form [role="alert"]:empty { display: none; }
   .eva-personal-sider-panel button:focus-visible, .eva-personal-rail-form input:focus-visible, .eva-personal-rail-form select:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
   .eva-create-group-member .eva-identity-avatar.eva-create-group-member__avatar {

@@ -239,7 +239,7 @@
   color: var(--eva-text-inverse);
 }
 .eva-send[data-state="enabled"],
-.eva-send[data-state="running"] { background: var(--eva-action-primary); }
+.eva-send[data-state="running"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
 .eva-send:disabled { cursor: not-allowed; }
 /* quickSkills belong to the WRAPPER, never to the panel */
 .eva-quickskills {
@@ -698,12 +698,12 @@
   font-weight: var(--eva-fw-medium);
 }
 .semi-button-primary.semi-button-solid {
-  background: var(--eva-action-primary);
-  color: var(--eva-text-inverse);
-  border-color: var(--eva-action-primary);
+  background: var(--eva-action-primary-solid);
+  color: var(--eva-action-primary-solid-text);
+  border-color: var(--eva-action-primary-solid);
 }
 .semi-button-primary.semi-button-solid:hover:not(.semi-button-disabled) {
-  background: var(--eva-action-primary-hover);
+  background: var(--eva-action-primary-solid-hover);
 }
 .semi-button-primary:is(.semi-button-light,.semi-button-borderless) {
   color: var(--eva-text-secondary);

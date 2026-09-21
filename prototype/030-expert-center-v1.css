@@ -5,7 +5,7 @@
   .eva-expert-center__tabs .arco-tabs-content { display: none; }
   .eva-expert-center__body { flex: 1; min-height: 0; overflow: hidden; }
   .eva-expert-center__body > .loop-page { height: 100%; min-height: 0; }
-  .eva-expert-center .loop-btn--primary { border-color: var(--gds-color-action-primary); background: var(--gds-color-action-primary); color: var(--gds-color-action-primary-text); }
+  .eva-expert-center .loop-btn--primary { border-color: var(--eva-action-primary-solid); background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
   .eva-expert-center .loop-btn--primary:hover { border-color: var(--eva-action-primary-hover); background: var(--eva-action-primary-hover); }
 
 /* Project resource directories: consistent two-line rows and aligned metadata. */

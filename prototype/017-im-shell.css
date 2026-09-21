@@ -36,7 +36,7 @@
 :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); padding:2px 6px; font-weight:500; font-size:inherit; line-height:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 :is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
-.wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary); color: var(--eva-text-inverse); }
+.wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
 .wk-messageinput-actionitem:hover { background: var(--eva-overlay-hover); }
 /* 原型暂未实现语音输入，隐藏右下角麦克风入口。 */
 .wk-messageinput-actionitem[aria-label="语音"],.wk-messageinput-actionitem[title="语音"],.wk-messageinput-actionitem[aria-label="语音输入"],.wk-messageinput-actionitem[title="语音输入"]{display:none!important}

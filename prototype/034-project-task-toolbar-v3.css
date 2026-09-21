@@ -73,14 +73,14 @@
   }
 
   .loop-page:has(.eva-task-view-switcher) .loop-btn--primary {
-    border-color: var(--gds-color-action-primary);
-    background: var(--gds-color-action-primary);
-    color: var(--gds-color-action-primary-text);
+    border-color: var(--eva-action-primary-solid);
+    background: var(--eva-action-primary-solid);
+    color: var(--eva-action-primary-solid-text);
   }
 
   .loop-page:has(.eva-task-view-switcher) .loop-btn--primary:hover {
-    border-color: var(--eva-action-primary-hover);
-    background: var(--eva-action-primary-hover);
+    border-color: var(--eva-action-primary-solid-hover);
+    background: var(--eva-action-primary-solid-hover);
   }
 
   .loop-page__toolbar:has(.eva-task-view-switcher) > button:last-child {

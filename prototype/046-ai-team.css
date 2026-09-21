@@ -423,8 +423,8 @@
 .eva-ai-team__modal-host .semi-button:not(.semi-modal-close) { min-height: var(--gds-space-8); border-radius: var(--gds-radius-control); }
 .eva-ai-team__sidebar .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled),
 .eva-ai-team__modal-host .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled) {
-  background: var(--gds-color-action-primary);
-  color: var(--gds-color-action-primary-text);
+  background: var(--eva-action-primary-solid);
+  color: var(--eva-action-primary-solid-text);
 }
 .eva-ai-team__identity-button:focus-visible,
 .eva-ai-team__session:focus-visible,
@@ -476,7 +476,7 @@
   .eva-create-assistant-modal__footer { box-sizing: border-box; display: flex; flex-shrink: 0; min-height: 68px; align-items: center; gap: 10px; padding: 0 24px; border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
   .eva-create-assistant-modal__chip { padding: 8px 12px; border-radius: var(--gds-radius-control); background: var(--gds-color-surface-subtle); color: var(--gds-color-text-secondary); font-size: 13px; }
   .eva-create-assistant-modal__spacer { flex: 1; }
-  .eva-create-assistant-modal__submit { height: 32px; padding: 0 16px; border: 0; border-radius: var(--gds-radius-control); background: var(--gds-color-action-primary); color: var(--gds-color-action-primary-text); font: inherit; font-weight: var(--gds-font-weight-semibold); cursor: pointer; }
+  .eva-create-assistant-modal__submit { height: 32px; padding: 0 16px; border: 0; border-radius: var(--gds-radius-control); background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); font: inherit; font-weight: var(--gds-font-weight-semibold); cursor: pointer; }
 /* Shared editor preserves the original layout and stays below the client titlebar. */
 .eva-editor-host { position: fixed; inset: 36px 0 0; z-index: 1000; pointer-events: none; }
 .eva-editor-host > .semi-portal,
@@ -492,7 +492,7 @@
 .eva-editor-dialog .eva-create-assistant-modal__identity .eva-editor-description { margin-top: 6px; font-size: 13px; line-height: 20px; font-weight: normal; }
 .eva-editor-dialog .eva-create-assistant-modal__chip { display: inline-flex; align-items: center; }
 .eva-editor-dialog .eva-create-assistant-modal__tabs { flex-shrink: 0; }
-.eva-editor-dialog .eva-create-assistant-modal__submit { background: var(--gds-color-action-primary); }
+.eva-editor-dialog .eva-create-assistant-modal__submit { background: var(--eva-action-primary-solid); }
 
 .eva-editor-kind { display: block; margin-bottom: var(--gds-space-1); }
 .eva-editor-dialog .eva-create-assistant-modal__body { display: flex; flex-direction: column; overflow: auto; }

@@ -74,6 +74,13 @@
 
   --eva-action-primary: var(--eva-c-brand-blue);    /* send, selected, brand */
   --eva-action-primary-text: var(--eva-c-white);
+  /* 实心主按钮专用三件套：两模式同配对（GDS action/primary=brandBlue + primaryText=white）。
+     与上面的强调类 --eva-action-primary 分离——后者在暗色被 057 提亮为 blue/400
+     服务文字/描边/选中，若实心填充跟着提亮，白字会掉出 AA（blue/400 上白字仅 2.8:1）。
+     hover 沿用 049 [D] 的「明度 -14%」降档语言，浅暗两模式同一方向同一幅度。 */
+  --eva-action-primary-solid: var(--eva-c-brand-blue);
+  --eva-action-primary-solid-text: var(--eva-c-white);
+  --eva-action-primary-solid-hover: #1255ca;
   --eva-action-dark: var(--eva-c-ink);              /* operation-card CTA */
   --eva-action-disabled-fill: rgba(30, 30, 30, 0.09); /* never a faded brand blue */
 

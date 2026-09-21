@@ -250,10 +250,10 @@
   .collab-btn-primary,
   .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .loop-btn--primary,
   .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-head .loop-btn--primary {
-    border-color: var(--gds-color-action-primary);
+    border-color: var(--eva-action-primary-solid);
     border-radius: var(--gds-radius-control);
-    background: var(--gds-color-action-primary);
-    color: var(--gds-color-action-primary-text);
+    background: var(--eva-action-primary-solid);
+    color: var(--eva-action-primary-solid-text);
     font: var(--gds-font-weight-medium) var(--gds-type-label-medium-font-size)/var(--gds-type-label-medium-line-height) var(--gds-font-family-sans);
     box-shadow: none;
   }
@@ -261,8 +261,8 @@
   .collab-btn-primary:hover,
   .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .loop-btn--primary:hover,
   .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-drive-head .loop-btn--primary:hover {
-    border-color: var(--eva-action-primary-hover);
-    background: var(--eva-action-primary-hover);
+    border-color: var(--eva-action-primary-solid-hover);
+    background: var(--eva-action-primary-solid-hover);
   }
 
   .collab-btn-primary:focus-visible,
@@ -556,11 +556,11 @@
 .eva-project-directory-list { border: 1px solid var(--eva-border-faint); }
 
 .eva-project-directory .collab-btn-primary.semi-button {
-  background: var(--eva-action-primary);
+  background: var(--eva-action-primary-solid);
   border-radius: var(--eva-radius-control);
   padding-inline: var(--eva-space-4);
 }
-.eva-project-directory .collab-btn-primary.semi-button:hover { background: var(--eva-action-primary-hover); }
+.eva-project-directory .collab-btn-primary.semi-button:hover { background: var(--eva-action-primary-solid-hover); }
 .eva-project-directory-icon svg { width: var(--eva-icon-content); height: var(--eva-icon-content); }
   .eva-project-pinned-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));

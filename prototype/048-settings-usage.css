@@ -91,7 +91,7 @@
 /* 二维码刻意保留白底：扫码需要高对比，不随主题翻转；只把外描边接回令牌。 */
 .eva-settings-dialog .eva-set-qr { border-color:var(--eva-border-subtle); }
 /* 原值 #6a5cff 是遗留紫，越过品牌蓝；浅暗两档统一改回 action.primary。 */
-.eva-settings-dialog .eva-set-primary { background:var(--eva-action-primary)!important;border-color:var(--eva-action-primary)!important;color:var(--eva-action-primary-text)!important; }
+.eva-settings-dialog .eva-set-primary { background:var(--eva-action-primary-solid)!important;border-color:var(--eva-action-primary-solid)!important;color:var(--eva-action-primary-solid-text)!important; }
 .eva-settings-dialog .eva-set-primary:hover { background:var(--eva-action-primary-hover)!important;border-color:var(--eva-action-primary-hover)!important; }
 
 /* Shared navigation footer: passive identity and one settings action. */

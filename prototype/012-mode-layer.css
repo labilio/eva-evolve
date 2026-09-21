@@ -820,9 +820,9 @@
 .eva-drive__ghost-button:hover { background: var(--gds-color-surface-subtle); }
 
 .eva-drive__primary-button {
-  border: var(--gds-border-standard) solid var(--gds-color-action-primary);
-  color: var(--gds-color-action-primary-text);
-  background: var(--gds-color-action-primary);
+  border: var(--gds-border-standard) solid var(--eva-action-primary-solid);
+  color: var(--eva-action-primary-solid-text);
+  background: var(--eva-action-primary-solid);
 }
 
 .eva-drive__scroll {

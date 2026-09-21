@@ -47,7 +47,7 @@
      horizontal scrolling belongs to the board, never the whole window. */
   [data-eva-page="workboard"] .eva-feature-body { padding: 24px; }
   [data-eva-page="workboard"] .eva-ui-btn { height: 32px; gap: 8px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
-  [data-eva-page="workboard"] .eva-ui-btn--primary { background: var(--eva-action-primary); border-color: var(--eva-action-primary); color: #fff; }
+  [data-eva-page="workboard"] .eva-ui-btn--primary { background: var(--eva-action-primary-solid); border-color: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
   [data-eva-page="workboard"] .eva-ui-btn--primary:hover { background: color-mix(in srgb, var(--eva-action-primary), black 6%); }
   [data-eva-page="workboard"] :is(button, input, [tabindex]):focus-visible { outline: 2px solid var(--eva-action-primary); outline-offset: 2px; }
   [data-eva-page="workboard"] svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 1.5; }
