@@ -212,6 +212,33 @@ window.__EVA_PEOPLE = [
     });
   });
 
+  // 任务评论演示数据：正文使用 Markdown 与 mention:// 提及令牌，
+  // 由 009-6 的 listComments 适配读取，评论正文复用 IM 的渲染与提及样式。
+  var supplyComments = {
+    'supply-1': [
+      {
+        id: 'cm-supply-1-1', parent_id: null, author_type: 'member', author_id: 'u-wangyilin', author_name: '王宜林',
+        created_at: '2026-09-03T09:05:00Z', resolved_at: null, reactions: null, attachments: null,
+        content: '[@采购与招投标专家团](mention://squad/sq-supply-procurement) 请完成本季度行政、IT 和设备维保的间接采购需求归集。\n\n**要求**\n\n- 先核对群聊与团队文件，别遗漏已确认的口径\n- 缺口直接问我，不要自行假设\n- 最后给出可评审的**汇总表**和风险建议'
+      },
+      {
+        id: 'cm-supply-1-2', parent_id: null, author_type: 'squad', author_id: 'sq-supply-procurement', author_name: '采购与招投标专家团',
+        created_at: '2026-09-03T09:14:00Z', resolved_at: null, reactions: null, attachments: null,
+        content: '[@王宜林](mention://member/u-wangyilin) 已收到任务，先同步当前结论：\n\n> 已归并行政、IT、设备维保三类需求，并逐项核对数量、预算、交期和负责人。\n\n| 品类 | 数量 | 预算 | 当前状态 |\n| --- | --- | --- | --- |\n| 行政办公 | 12 项 | 已确认 | 待询价 |\n| IT 配件 | 8 项 | 待补批次 | 核对中 |\n| 设备维保 | 5 项 | 待补预算 | 存在缺口 |\n\n当前还缺两项信息：设备维保续约预算、行政打印机最晚到货日期。'
+      },
+      {
+        id: 'cm-supply-1-3', parent_id: null, author_type: 'member', author_id: 'u-wangyilin', author_name: '王宜林',
+        created_at: '2026-09-03T09:20:00Z', resolved_at: null, reactions: null, attachments: null,
+        content: '维保预算按 **18 万元**；打印机要求 9 月 18 日前到货。继续完成。'
+      },
+      {
+        id: 'cm-supply-1-4', parent_id: null, author_type: 'squad', author_id: 'sq-supply-procurement', author_name: '采购与招投标专家团',
+        created_at: '2026-09-03T09:28:00Z', resolved_at: null, reactions: null, attachments: null,
+        content: '信息已补齐。已完成：\n\n1. 间接采购需求汇总表\n2. 采购风险建议\n\n共归集 12 项需求，请 [@王宜林](mention://member/u-wangyilin) 验收。'
+      }
+    ]
+  };
+
   window.__EVA_SUPPLY_CHAIN_DEMO = {
     overview: {
       status: '协作中', period: {start: '2026年9月1日', end: '2026年9月30日'}, stage: '风险处置与证据复核',
@@ -220,7 +247,8 @@ window.__EVA_PEOPLE = [
       milestones: [['09月04日', '汇总保供风险', 'done'], ['09月07日', '复核整改证据与备选方案', 'active'], ['09月11日', '跟进恢复计划', 'pending']]
     },
     agents: supplyAgents, squads: supplySquads, skills: supplySkills, autopilots: [],
-    projects: supplyProjects, issues: supplyIssues, taskLabels: supplyTaskLabels, agentTasks: supplyAgentTasks
+    projects: supplyProjects, issues: supplyIssues, taskLabels: supplyTaskLabels, agentTasks: supplyAgentTasks,
+    comments: supplyComments
   };
 })();
 

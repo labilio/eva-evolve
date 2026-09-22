@@ -1,11 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import vm from 'node:vm';
 import {createPatchedRuntime} from '../tools/build-runtime.mjs';
 const source=createPatchedRuntime().source;
+const readPrototype=name=>fs.readFileSync(new URL('../prototype/'+name+'.js',import.meta.url),'utf8');
 function setup(){
  let issues=[{id:'supply-1'},{id:'new-task'},{id:'child',parent_issue_id:'supply-1'}];
- const ctx={issuesOf:()=>issues};
+ // 评论演示数据唯一来源是 009-2，运行时只按当前任务读取，不再内嵌副本。
+ const window={};
+ for(const name of ['009-0-demo-time','009-1-data-drive','009-2-data-supply'])vm.runInNewContext(readPrototype(name),{window});
+ const ctx={issuesOf:()=>issues,window};
  for(const [name,next] of [['listRuns','listRunMessages'],['listComments','addComment'],['listChildren','listComments'],['listTimeline','resolveComment']]){
   const start=source.indexOf(name+'='),end=source.indexOf(','+next+'=',start);
   assert.ok(start>=0&&end>start,name+' extraction');vm.runInNewContext(source.slice(start,end),ctx);

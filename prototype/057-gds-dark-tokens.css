@@ -584,7 +584,7 @@ body[theme-mode="dark"] {
 
 /* @提及：填充蓝 #6d98f7 在提及底上实测 4.07，略低于 AA 4.5。按 gds §3.4
    「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
-:root[data-theme="dark"] :is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-c-blue-300); }
+:root[data-theme="dark"] :is(.eva-msg, .ch-layout, .loop-md) .mention-entity { color: var(--eva-c-blue-300); }
 
 /* —— 「创建了子区」通知 ——
    2026-09-18：该通知已并入气泡模式（017 用 --eva-bubble-incoming/outgoing 提供表面），

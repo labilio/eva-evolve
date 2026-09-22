@@ -295,6 +295,22 @@
     evaLoopSuggestionEnd+=evaLoopSuggestionMarker.length;
     source=root.__evaCut(source,evaLoopMentionBlock,evaLoopMentionBlock.slice(0,evaLoopSuggestionStart)+'suggestion:window.__evaLoopMention.suggestion()'+evaLoopMentionBlock.slice(evaLoopSuggestionEnd),'任务评论提及复用统一选人');
 
+    // 任务评论与描述的 Markdown 提及复用 IM 的提及实体样式（.mention-entity）；评论正文额外挂
+    // IM 的 Markdown 版式类，避免在项目页维护第二套 .loop-md 视觉。提及令牌仍是 mention://，
+    // 由适配层解析出身份类型与 ID 供统一身份体系使用。
+    source=root.__evaCut(source,
+      'function LoopMarkdown({content:rt,workspaceSlug:ct}){return React.createElement("div",{className:"loop-md"},React.createElement(Markdown,{remarkPlugins:[remarkGfm],urlTransform:transformLinkUri,components:{a:({node:ut,href:pt,children:mt,...gt})=>pt&&pt.startsWith("mention://")?React.createElement("span",{className:"loop-mention"},mt):React.createElement("a",{href:pt,target:"_blank",rel:"noreferrer",...gt},mt),',
+      String.raw`function LoopMarkdown({content:rt,workspaceSlug:ct,variant:evaMarkdownVariant}){return React.createElement("div",{className:"loop-md"+(evaMarkdownVariant==="comment"?" wk-markdown wk-markdown-recv":"")},React.createElement(Markdown,{remarkPlugins:[remarkGfm],urlTransform:transformLinkUri,components:{a:({node:ut,href:pt,children:mt,...gt})=>{if(pt&&pt.startsWith("mention://")){const evaMentionParts=pt.slice("mention://".length).split("/"),evaMentionType=evaMentionParts[0]||"member",evaMentionId=evaMentionParts.slice(1).join("/");return React.createElement("span",{className:"mention-entity","data-eva-mention-type":evaMentionType,"data-eva-mention-id":evaMentionId},mt)}return React.createElement("a",{href:pt,target:"_blank",rel:"noreferrer",...gt},mt)},`,
+      '评论提及复用 IM 实体样式并支持 IM Markdown 版式');
+    source=root.__evaCut(source,
+      'React.createElement("div",{className:"loop-cmt__body"},React.createElement(LoopMarkdown,{content:ki.content,workspaceSlug:pt?.workspace.slug}))',
+      'React.createElement("div",{className:"loop-cmt__body"},React.createElement(LoopMarkdown,{content:ki.content,workspaceSlug:pt?.workspace.slug,variant:"comment"}))',
+      '评论正文使用 IM Markdown 版式');
+    source=root.__evaCut(source,
+      'textSerializers:{mention:({node:ct})=>mentionToToken(ct.attrs)}',
+      String.raw`textSerializers:{mention:({node:ct})=>mentionToToken(ct.attrs),hardBreak:()=>"\n"}`,
+      '评论输入保留 Shift+Enter 换行');
+
     // 来源者、创建者必选，选择器不提供“未指派”清空项；调用方可传入项目身份候选。
     source=root.__evaCut(source,
       'function AssigneePicker({value:rt,valueName:ct,onChange:ut,size:pt="default",types:mt}){',
@@ -632,7 +648,12 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     source=root.__evaCut(source,'trigger_summary:"@提及后完成间接采购需求归集"}]),listRunMessages=', 'trigger_summary:"@提及后完成间接采购需求归集"}]:[]).filter(run=>run.issue_id===rt)),listRunMessages=', '运行历史按任务隔离');
     source=root.__evaCut(source,'Promise.all([getIssue(rt),listComments(rt),listRuns()])','Promise.all([getIssue(rt),listComments(rt),listRuns(rt)])','任务详情传入运行任务ID');
     source=root.__evaCut(source,'Pa=()=>listRuns().then(mr)','Pa=()=>listRuns(rt).then(mr)','刷新运行历史传入任务ID');
-    source=root.__evaCut(source,'listComments=rt=>{const ct=', 'listComments=rt=>{if(!rt||!issuesOf().some(issue=>issue.id===rt))return Promise.resolve([]);const ct=', '评论限制当前项目任务');
+    source=root.__evaCut(source,'listComments=rt=>{const ct=', 'listComments=rt=>{if(!rt||!issuesOf().some(issue=>issue.id===rt))return Promise.resolve([]);const evaDemoComments=typeof window!=="undefined"&&window.__EVA_SUPPLY_CHAIN_DEMO&&window.__EVA_SUPPLY_CHAIN_DEMO.comments;if(evaDemoComments&&evaDemoComments[rt])return Promise.resolve(evaDemoComments[rt].map(evaComment=>Object.assign({},evaComment,{issue_id:rt})));const ct=', '评论限制当前项目任务');
+    // 供应链评论演示数据迁移到 009-2（单一数据源），运行时不再保留 vendor 内嵌副本。
+    var evaSupplyCommentsStart=source.indexOf('if(rt==="supply-1")return Promise.resolve([');
+    var evaSupplyCommentsEnd=source.indexOf(']);if(rt&&rt!=="mock-1")',evaSupplyCommentsStart);
+    if(evaSupplyCommentsStart<0||evaSupplyCommentsEnd<0)throw new Error('供应链评论演示数据边界不匹配');
+    source=root.__evaCut(source,source.slice(evaSupplyCommentsStart,evaSupplyCommentsEnd+3),'','供应链评论演示数据迁移到 009-2');
     source=root.__evaCut(source,'listChildren=rt=>Promise.resolve(issuesOf().filter(ct=>ct.parent_issue_id===rt))','listChildren=rt=>Promise.resolve(rt&&issuesOf().some(issue=>issue.id===rt)?issuesOf().filter(ct=>ct.parent_issue_id===rt):[])','子任务限制当前项目父任务');
     source=root.__evaCut(source,'listTimeline().then(no=>{Wi()&&sr(no)})','listTimeline(rt).then(no=>{Wi()&&sr(no)})','任务动态明确任务ID');
     source=root.__evaCut(source,'readView(ut,["board","grouped","list"],ct??"board")','readView(ut,ut==="collab-tasks"?["board","list","hierarchy"]:["board","grouped","list","hierarchy"],ct??"board")','项目任务层级视图持久化');

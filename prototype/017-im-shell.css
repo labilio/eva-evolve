@@ -40,8 +40,11 @@
 :is(.eva-msg,.eva-channel-surface) .wk-markdown table { font: 400 14px/22px var(--eva-font-sans); }
 :is(.eva-msg,.eva-channel-surface) .wk-markdown :is(th,td) { border-color: var(--eva-border-faint); padding: var(--eva-space-2) var(--eva-space-3); }
 :is(.eva-msg,.eva-channel-surface) .wk-markdown th { background: var(--eva-surface-subtle); }
-:is(.eva-msg, .ch-layout) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); padding:2px 6px; font-weight:500; font-size:inherit; line-height:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
-:is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover { background-color: var(--eva-mention-hover); }
+/* @提及：Eva 唯一提及外观，覆盖团队 IM 与项目页的 Loop Markdown（任务评论/描述、技能预览）。
+ * vendor 的 .mention-entity 基础规则只挂在 .wk-msg-text-content 下，因此这里直接把同一份
+ * 外观扩展到 .loop-md，避免在项目页维护第二套提及样式。 */
+:is(.eva-msg, .ch-layout, .loop-md) .mention-entity { color: var(--eva-action-primary); background: var(--eva-mention-background); border-radius: var(--eva-radius-key); padding:2px 6px; font-weight:500; font-size:inherit; line-height:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+:is(.eva-msg, .ch-layout) .wk-msg-text-content .mention-entity:hover, .loop-md .mention-entity:hover { background-color: var(--eva-mention-hover); }
 .wk-messageinput-actionitem[aria-label="发送"] { border-radius: var(--eva-radius-full); background: var(--eva-action-disabled-fill); }
 .wk-messageinput-actionitem.wk-messageinput-hasValue[aria-label="发送"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
 .wk-messageinput-actionitem:hover { background: var(--eva-overlay-hover); }
@@ -50,10 +53,11 @@
 .wk-contextmenus li { color: var(--eva-text-primary); line-height:22px; }
 .wk-contextmenus li:hover { background: var(--eva-overlay-hover); }
 
-/* Octo IM emphasis adapts to Eva blue at the shared ChannelsView root, including embedded project chats.
+/* Octo IM emphasis adapts to Eva blue at the shared ChannelsView root, including embedded project chats
+ * and the project-page Loop Markdown surfaces that reuse IM mention/markdown styling.
  * Do not recolor the purple primitives: project/status palettes and code syntax
  * have independent meanings. Navigation and neutral hover tokens are untouched. */
-:is(.eva-msg, .ch-layout) {
+:is(.eva-msg, .ch-layout, .loop-md) {
   --wk-text-accent: var(--eva-im-accent);
   --wk-text-mention-entity: var(--eva-im-accent);
   --wk-accent-tint-06: var(--eva-im-tint-06);
