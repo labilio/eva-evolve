@@ -1973,38 +1973,6 @@ function EvaAITeamPage() {
     source=root.__evaCut(source,'za=ci=>ci.threads.filter(Zi=>Zi.status===1)','evaThreadPrefs=thread=>evaMemberStore.chatPreferences(thread.id,evaActorId),evaSortThreads=items=>[...items].sort((a,b)=>Number(!!evaThreadPrefs(b).top)-Number(!!evaThreadPrefs(a).top)),za=ci=>evaSortThreads(ci.threads.filter(Zi=>Zi.status===1&&!evaThreadPrefs(Zi).hidden))','子区个人置顶与隐藏列表');
     source=root.__evaCut(source,'return ci.filter(Fi=>!Zi||Fi.name.includes(Zi)||(Fi.crumb??"").includes(Zi))','return ci.filter(Fi=>!(ut&&!ct?.conversationOnly&&Cn==="recent"&&!Zi&&evaMemberStore.recentConversationHidden(Fi.th?.id||Fi.ch.id,evaActorId))&&(!Zi||Fi.name.includes(Zi)||(Fi.crumb??"").includes(Zi)))','不显示仅移出最近列表，保留搜索与关注入口');
     source=root.__evaCut(source,'Fi.threads.filter(Ki=>Ki.status===1).forEach','evaSortThreads(Fi.threads.filter(Ki=>Ki.status===1&&!evaThreadPrefs(Ki).hidden)).forEach','最近列表过滤隐藏子区');
-    // 最近列表子区折叠（对照 Kimi Code「折叠全部工作区」）：折叠是把子区行从平铺列表中
-    // 隐藏，不改排序、不改数据、不引入项目/分组层级，与「关注」的项目归类正交。
-    // 折叠态唯一所有者是 ChannelsView 组件状态（按账号 key 重置），折叠后子区消息的
-    // 未读与内容不受影响，仍可在该群会话或关注列表中查看；V1 不做未读聚合徽标。
-    source=root.__evaCut(source,
-      'EMPTY_CHANNEL={id:"",name:"",color:"#8a8f99",members:0,category:"",threads:[]},ChannelsView=({',
-      'EMPTY_CHANNEL={id:"",name:"",color:"#8a8f99",members:0,category:"",threads:[]},EvaRecentFoldIcon=createLucideIcon("chevrons-down-up",[["path",{d:"m7 20 5-5 5-5",key:"cd-a"}],["path",{d:"m7 4 5 5 5-5",key:"cd-b"}]]),EvaRecentUnfoldIcon=createLucideIcon("chevrons-up-down",[["path",{d:"m7 15 5 5 5 5",key:"cu-a"}],["path",{d:"m7 9 5-5 5-5",key:"cu-b"}]]),ChannelsView=({',
-      '最近折叠全部按钮复用 Lucide 节点');
-    source=root.__evaCut(source,
-      'Number(b.evaPinned)-Number(a.evaPinned)),gt=',
-      'Number(b.evaPinned)-Number(a.evaPinned)),[evaCollapsedGroups,setEvaCollapsedGroups]=reactExports.useState(()=>new Set()),evaVisibleRecentThreads=ci=>(ci.threads||[]).filter(ro=>ro.status===1&&!evaMemberStore.chatPreferences(ro.id,evaActorId).hidden),evaFoldableGroupIds=pt.filter(ci=>evaVisibleRecentThreads(ci).length>0).map(ci=>ci.id),evaGroupsAllCollapsed=evaFoldableGroupIds.length>0&&evaFoldableGroupIds.every(ci=>evaCollapsedGroups.has(ci)),evaToggleGroupFold=ci=>setEvaCollapsedGroups(previous=>{const next=new Set(previous);if(next.has(ci))next.delete(ci);else next.add(ci);return next;}),evaToggleAllGroupFold=()=>setEvaCollapsedGroups(previous=>{if(evaFoldableGroupIds.length>0&&evaFoldableGroupIds.every(ci=>previous.has(ci)))return new Set();const next=new Set(previous);evaFoldableGroupIds.forEach(ci=>next.add(ci));return next;}),gt=',
-      '最近子区折叠态与折叠全部状态');
-    source=root.__evaCut(source,
-      'evaSortThreads(Fi.threads.filter(Ki=>Ki.status===1&&!evaThreadPrefs(Ki).hidden)).forEach(Ki=>{',
-      'evaSortThreads(Fi.threads.filter(Ki=>Ki.status===1&&!evaThreadPrefs(Ki).hidden&&!(!Va.trim()&&ut&&!ct?.conversationOnly&&Cn==="recent"&&evaCollapsedGroups.has(Fi.id)))).forEach(Ki=>{',
-      '折叠群聊的子区行退出最近列表');
-    source=root.__evaCut(source,
-      '},[pt,Va,oa,ct,evaMemberRevision,evaActorId]).map(ci=>',
-      '},[pt,Va,oa,ct,evaMemberRevision,evaActorId,evaCollapsedGroups]).map(ci=>',
-      '最近折叠态参与列表重算');
-    source=root.__evaCut(source,
-      'const Zi=ci.isThread?Pt===ci.th.id:ci.ch.id===Ct&&!Pt,Fi=!ci.isThread&&ci.ch.threads.some(Ki=>Ki.status===1);',
-      'const Zi=ci.isThread?Pt===ci.th.id:ci.ch.id===Ct&&!Pt,Fi=!ci.isThread&&ci.ch.threads.some(Ki=>Ki.status===1),evaFoldThreads=!ci.isThread?evaVisibleRecentThreads(ci.ch):[],evaFoldToggle=!ci.isThread&&ut&&!ct?.conversationOnly&&Cn==="recent"&&!Va.trim()&&evaFoldThreads.length>0,evaGroupFolded=evaFoldToggle&&evaCollapsedGroups.has(ci.ch.id);',
-      '最近群聊行折叠开关数据');
-    source=root.__evaCut(source,
-      '"aria-hidden":true}))),React.createElement("div",{className:"wk-conversationlist-item-right-second-line"}',
-      '"aria-hidden":true})),evaFoldToggle&&React.createElement("button",{type:"button",className:"eva-recent-fold-toggle",title:evaGroupFolded?"展开子区消息":"折叠子区消息","aria-label":evaGroupFolded?"展开子区消息":"折叠子区消息","aria-pressed":!!evaGroupFolded,onClick:event=>{event.stopPropagation();evaToggleGroupFold(ci.ch.id)},onKeyDown:event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();event.stopPropagation();evaToggleGroupFold(ci.ch.id)}}},React.createElement(evaGroupFolded?ChevronRight:ChevronDown,{size:14,"aria-hidden":true}),evaGroupFolded&&React.createElement("span",{className:"eva-recent-fold-toggle__count"},evaFoldThreads.length))),React.createElement("div",{className:"wk-conversationlist-item-right-second-line"}',
-      '最近群聊行子区折叠入口');
-    source=root.__evaCut(source,
-      'mode==="follow"?"关注":"最近")))))',
-      'mode==="follow"?"关注":"最近")))),Cn==="recent"&&!Va.trim()&&evaFoldableGroupIds.length>0&&React.createElement("button",{type:"button",className:"eva-recent-fold-all",title:evaGroupsAllCollapsed?"展开全部子区":"折叠全部子区","aria-label":evaGroupsAllCollapsed?"展开全部子区消息列表":"折叠全部子区消息列表","aria-pressed":evaGroupsAllCollapsed,onClick:()=>evaToggleAllGroupFold()},React.createElement(evaGroupsAllCollapsed?EvaRecentUnfoldIcon:EvaRecentFoldIcon,{size:15,"aria-hidden":true})))',
-      '最近列表折叠全部子区入口');
     source=root.__evaCut(source,'ls=Sa.threads.filter(ci=>ci.status===2)','ls=evaSortThreads(Sa.threads.filter(ci=>ci.status===2&&!evaThreadPrefs(ci).hidden)),evaHiddenThreads=evaSortThreads(Sa.threads.filter(ci=>evaThreadPrefs(ci).hidden))','归档与隐藏分别管理');
     source=root.__evaCut(source,'React.createElement(Dropdown.Item,{onClick:()=>{Ra(Es),Ma(Es.name)}},t("base.threadPanel.editNameTitle")),','React.createElement(Dropdown.Item,{onClick:()=>{Ra(Es),Ma(Es.name)}},t("base.threadPanel.editNameTitle")),React.createElement(Dropdown.Item,{onClick:()=>evaMemberStore.setChatPreferences(Es.id,evaActorId,{top:!evaThreadPrefs(Es).top})},evaThreadPrefs(Es).top?"取消置顶":"置顶子区"),React.createElement(Dropdown.Item,{onClick:()=>evaMemberStore.setChatPreferences(Es.id,evaActorId,{hidden:!evaThreadPrefs(Es).hidden})},evaThreadPrefs(Es).hidden?"恢复显示":"隐藏子区"),','子区侧栏菜单共用个人偏好');
     source=root.__evaCut(source,'ls.map(Wi))))))','ls.map(Wi))),evaHiddenThreads.length>0&&React.createElement("div",{className:"wk-thread-panel-group"},React.createElement("div",{className:"wk-thread-panel-group-header"},React.createElement("span",null,"已隐藏子区")),React.createElement("div",{className:"wk-thread-panel-group-list"},evaHiddenThreads.map(thread=>React.createElement("div",{key:thread.id},Wi(thread),React.createElement(Button,{theme:"borderless",size:"small",onClick:()=>evaMemberStore.setChatPreferences(thread.id,evaActorId,{hidden:false})},"恢复显示"))))))))','隐藏子区恢复入口');

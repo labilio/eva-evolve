@@ -76,12 +76,6 @@ forbidText('eva-my-ai-conversation-item', 'the personal conversation rail still 
 forbidText("document.body.classList.contains('eva-my-avatar-open')", 'runtime behavior still reads the obsolete My AI body state');
 forbidText('body.eva-my-avatar-open', 'CSS still depends on the obsolete My AI body state');
 
-requireText('[evaCollapsedGroups,setEvaCollapsedGroups]=reactExports.useState', 'recent subzone fold state must stay owned by the shared ChannelsView');
-requireText('evaCollapsedGroups.has(Fi.id)', 'recent subzone fold must filter thread rows from the shared recent list');
-requireText('evaToggleAllGroupFold', 'recent subzone fold-all must share one state toggle');
-requireText('eva-recent-fold-all', 'recent subzone fold-all entry is missing from the follow/recent tabbar');
-requireText('eva-recent-fold-toggle', 'recent group rows must expose the per-group subzone fold toggle');
-
 if (failures.length) {
   failures.forEach(failure => console.error(`Message routing contract violation: ${failure}`));
   process.exit(1);
