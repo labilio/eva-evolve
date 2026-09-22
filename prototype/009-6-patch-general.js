@@ -1,6 +1,54 @@
 (function (root) {
   'use strict';
   root.__evaPatch('general', function (source) {
+    // Eva 统一 Tooltip：全站唯一实现。
+    // 合规依据：W3C WCAG 2.1 SC 1.4.13（可关闭 / 可悬停 / 持续）与 WAI-ARIA APG Tooltip Pattern、
+    // SC 2.1.1 键盘可达。气泡本体由项目设计系统 Semi 的 Tooltip 渲染，全站共用同一实例与同一组
+    // 鼠标/焦点时机；触发方式只有 DOM 声明式 data-eva-tooltip（见 062-tooltip.js），
+    // React 触发器同样写该属性，不再各自挂载独立气泡造成切换时交叉淡入与位置残留。
+    // 不再沿用脚手架 AionUI 自带的 Arco TooltipComponent：AionUI 只是当年的壳，不是 Eva 的设计系统。
+    var evaTooltipPrimitive = String.raw`var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";
+    var EvaTooltipBridge=(function(){
+      var evaState={visible:!1,content:null,position:"top",target:null,rect:null,revision:0};
+      var evaListeners=new Set();
+      var evaSubscribe=function(evaFn){evaListeners.add(evaFn);return function(){evaListeners.delete(evaFn)}};
+      var evaGet=function(){return evaState};
+      var evaEmit=function(){evaListeners.forEach(function(evaFn){try{evaFn()}catch(evaError){}})};
+      var evaRoot=null;
+      var evaEnsure=function(){
+        if(evaRoot||!document.body)return;
+        var evaHost=document.createElement("div");
+        evaHost.className="eva-tooltip-bridge";
+        evaHost.setAttribute("data-eva-tooltip-bridge","");
+        document.body.appendChild(evaHost);
+        evaRoot=clientExports.createRoot(evaHost);
+        evaRoot.render(reactExports.createElement(function(){
+          var evaNow=reactExports.useSyncExternalStore(evaSubscribe,evaGet,evaGet);
+          var evaRect=evaNow.rect;
+          // 锚点几何在 show() 时固化到 state，用 Semi Tooltip 的 rePosKey 触发重定位：
+          // 同一实例保持挂载，相邻目标之间移动时气泡不会整棵卸载/重挂，入场退场交给
+          // Semi 自己的 motion（semi-tooltip-zoomIn/zoomOut），不再出现硬切与闪烁。
+          var evaAnchorStyle=evaRect?{left:evaRect.left+"px",top:evaRect.top+"px",width:evaRect.width+"px",height:evaRect.height+"px"}:void 0;
+          return reactExports.createElement(Tooltip,{trigger:"custom",visible:evaNow.visible,content:evaNow.content,position:evaNow.position,rePosKey:evaNow.revision,className:"eva-tooltip-surface",mouseEnterDelay:0,mouseLeaveDelay:0,getPopupContainer:function(){return document.body}},reactExports.createElement("span",{id:"eva-tooltip-virtual-anchor",className:"eva-tooltip-virtual-anchor","aria-hidden":"true",style:evaAnchorStyle}));
+        }));
+      };
+      var evaSet=function(evaNext){evaState=Object.assign({},evaState,evaNext);evaEmit()};
+      return{
+        show:function(evaTarget,evaContent,evaPosition){
+          if(!evaTarget||evaContent==null||evaContent==="")return;
+          evaEnsure();
+          var evaRect=evaTarget.getBoundingClientRect();
+          evaSet({visible:!0,content:evaContent,position:evaPosition||"top",target:evaTarget,rect:{left:evaRect.left,top:evaRect.top,width:evaRect.width,height:evaRect.height},revision:evaState.revision+1});
+        },
+        hide:function(){evaSet({visible:!1})},
+        isVisible:function(){return!!evaState.visible}
+      };
+    })();
+    window.EvaTooltip=Object.freeze({show:EvaTooltipBridge.show,hide:EvaTooltipBridge.hide,isVisible:EvaTooltipBridge.isVisible});
+`;
+    source = root.__evaCut(source,
+      'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',
+      evaTooltipPrimitive, '统一 Tooltip 原语与 DOM 桥');
     // Project-scoped task list: stable columns, without repeating its project name.
     source = root.__evaCut(source,
       'React.createElement("span",{className:"loop-list__spacer"}),rn.project_name&&React.createElement("span",{className:"loop-list__project"},rn.project_name),React.createElement("span",{className:"loop-list__id"},rn.identifier)',

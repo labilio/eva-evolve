@@ -835,6 +835,22 @@
       "file": "prototype/062-loop-table-view.js",
       "bytes": 36933,
       "role": "prototype"
+    },
+    {
+      "order": 105,
+      "tag": "style",
+      "name": "tooltip",
+      "file": "prototype/062-tooltip.css",
+      "bytes": 1045,
+      "role": "prototype"
+    },
+    {
+      "order": 106,
+      "tag": "script",
+      "name": "tooltip-controller",
+      "file": "prototype/062-tooltip.js",
+      "bytes": 4982,
+      "role": "prototype"
     }
   ]
 }

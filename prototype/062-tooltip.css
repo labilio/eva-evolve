@@ -1,0 +1,32 @@
+/* Eva 声明式 Tooltip 桥的宿主样式。
+ *
+ * 气泡外观（表面、文字、箭头、暗色）由 Semi Tooltip 与 057-gds-dark-tokens.css 负责，
+ * 本文件只声明虚拟锚点与「指针可以移到气泡上」这一条合规能力，不重画工具提示。 */
+
+.eva-tooltip-bridge {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+/* 虚拟锚点：命中目标元素的实际几何，只用于给 Semi Tooltip 定位，不可见、不拦截事件。 */
+.eva-tooltip-virtual-anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* SC 1.4.13「可悬停」：指针移入气泡时气泡不能消失。
+ * 运行时提示组件会在气泡根节点上写内联 pointer-events:none（防止浮层挡住页面），
+ * 这里必须用 !important 覆盖该内联值，并覆盖到气泡子树，才能让指针落在气泡上。 */
+.eva-tooltip-surface,
+.eva-tooltip-surface * {
+  pointer-events: auto !important;
+}

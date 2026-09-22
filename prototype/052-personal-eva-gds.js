@@ -143,10 +143,10 @@
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
       return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
-        + '<button type="button" class="eva-personal-thread__main" title="' + escapeHTML(item.title) + '" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
+        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-clamp="" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
         + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
-        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" title="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
-        + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" title="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
+        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
+        + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" data-eva-tooltip="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
         + '</div>' ;
     }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
       + (!items.length ? '<div class="eva-personal-rail-empty eva-t-caption">还没有对话</div>' : '');
@@ -154,7 +154,7 @@
 
   function folderMenuHTML(folder) {
     var pinned = (personalSnapshot().folderPins || []).includes(folder.id);
-    var locked = folder.id ? '' : ' disabled title="「最近」为默认分组，固定保留"';
+    var locked = folder.id ? '' : ' disabled data-eva-tooltip="默认分组，固定保留"';
     return '<div class="eva-personal-folder-menu" role="menu" aria-label="文件夹设置">'
       + '<button type="button" role="menuitem" data-eva-rename-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('pencil',16,'eva-i') + '重命名</button>'
       + '<button type="button" role="menuitem" data-eva-delete-folder="' + escapeHTML(folder.id) + '"' + locked + '>' + icon('trash-2',16,'eva-i') + '删除</button>'
@@ -166,16 +166,16 @@
     var recentFolders = snapshot.folders.filter(function (folder) { return Number.isFinite(folder.createdAt); });
     var legacyFolders = snapshot.folders.filter(function (folder) { return !Number.isFinite(folder.createdAt); });
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 文件夹与对话">'
-      + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">分组</span><button type="button" class="eva-personal-rail-new" data-eva-create-folder aria-label="新建分组" title="新建分组">' + icon('folder-plus',16,'eva-i') + '</button></div>'
+      + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">分组</span><button type="button" class="eva-personal-rail-new" data-eva-create-folder aria-label="新建分组" data-eva-tooltip="新建分组">' + icon('folder-plus',16,'eva-i') + '</button></div>'
       + '<div class="eva-personal-sider-panel__body">'
       + railFormHTML()
       + recentFolders.concat([{id:'',name:'最近'}],legacyFolders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
         return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
-          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" title="' + escapeHTML(folder.name) + '">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
-          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" title="文件夹设置">' + icon('ellipsis',16,'eva-i') + '</button>'
-          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" title="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
+          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" data-eva-tooltip="' + escapeHTML(folder.name) + '" data-eva-tooltip-clamp="">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" data-eva-tooltip="文件夹设置">' + icon('ellipsis',16,'eva-i') + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" data-eva-tooltip="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
           + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
           + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
       }).join('')
@@ -227,7 +227,7 @@
   function folderPickerHTML() {
     var folders = [{id:'',name:'最近'}].concat(personalSnapshot().folders);
     var selected = folders.find(function (folder) { return folder.id === selectedFolderId; }) || folders[0];
-    return '<label class="eva-newchat-context eva-personal-folder-picker" title="' + escapeHTML(selected.name) + '">' + icon('folder',18,'eva-i')
+    return '<label class="eva-newchat-context eva-personal-folder-picker" data-eva-tooltip="' + escapeHTML(selected.name) + '" data-eva-tooltip-clamp="">' + icon('folder',18,'eva-i')
       + '<span class="eva-personal-folder-picker__label" aria-hidden="true">' + escapeHTML(selected.name) + '</span>'
       + '<select aria-label="选择文件夹" data-eva-composer-folder>' + folders.map(function (folder) {
         return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedFolderId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';
@@ -245,10 +245,10 @@
         + '</div>';
     }
     return '<div class="eva-composer-actions">'
-      + '<button class="eva-round eva-round-ghost" type="button" disabled title="原型暂未实现此操作" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
+      + '<button class="eva-round eva-round-ghost" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
-      + '<button class="eva-model eva-t-label" type="button" disabled title="当前原型使用 Auto">Auto' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
-      + '<button class="eva-round eva-round-plain" type="button" disabled title="原型暂未实现此操作" aria-label="语音输入">' + icon('mic', 16, 'eva-i') + '</button>'
+      + '<button class="eva-model eva-t-label" type="button" disabled data-eva-tooltip="当前原型使用 Auto">Auto' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
+      + '<button class="eva-round eva-round-plain" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="语音输入">' + icon('mic', 16, 'eva-i') + '</button>'
       + sendHTML()
       + '</div>';
   }
@@ -334,7 +334,7 @@
       + '<span class="ttl eva-t-header">' + escapeHTML(taskTitle()) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
       + '<div class="eva-topbar-icons">'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
       + '</div></header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow">'
       + userMessageHTML()
@@ -405,8 +405,8 @@
   function completedConversationHTML() {
     return '<aside class="eva-cv-col eva-personal-completed__conversation">'
       + '<header class="eva-topbar" style="gap:6px;padding:14px 12px">'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="搜索会话">' + icon('search', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="收起侧栏">' + icon('arrow-left', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="搜索会话">' + icon('search', 16, 'eva-i') + '</button>'
       + '<button class="eva-iconbtn" type="button" aria-label="新建任务" data-eva-personal-new>' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span class="eva-tool-sep"></span>'
       + '<span class="eva-personal-topbar__mark">' + icon('monitor', 18, 'eva-i-nav') + '</span>'
@@ -427,7 +427,7 @@
       + '<button type="button" aria-label="有帮助">' + icon('circle-check', 16, 'eva-i') + '</button>'
       + '<button type="button" aria-label="没帮助">' + icon('circle-slash', 16, 'eva-i') + '</button>'
       + '<button type="button" aria-label="重新生成">' + icon('rotate-ccw', 16, 'eva-i') + '</button>'
-      + '<button type="button" disabled title="原型暂未实现此操作" aria-label="更多">' + icon('ellipsis', 16, 'eva-i') + '</button>'
+      + '<button type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="更多">' + icon('ellipsis', 16, 'eva-i') + '</button>'
       + '</div><span class="eva-t-caption" role="status" data-eva-feedback>' + escapeHTML(feedback) + '</span>'
       + '</div></div>'
       + '<div class="eva-personal-completed__dock">' + composerPanelHTML('eva-composer-narrow') + '</div>'
@@ -435,7 +435,7 @@
   }
 
   function toolbarButton(label, name) {
-    return '<button class="eva-tool-btn eva-t-toolbar" type="button" aria-label="' + escapeHTML(label) + '"' + (label === '文字' ? ' data-eva-edit-text aria-pressed="false"' : ' disabled title="原型暂未实现此编辑操作"') + '>'
+    return '<button class="eva-tool-btn eva-t-toolbar" type="button" aria-label="' + escapeHTML(label) + '"' + (label === '文字' ? ' data-eva-edit-text aria-pressed="false"' : ' disabled data-eva-tooltip="原型暂未实现此操作"') + '>'
       + icon(name, 20, 'eva-i-toolbar') + '<span class="lb">' + escapeHTML(label) + '</span></button>';
   }
 
@@ -453,9 +453,9 @@
       + '</div>'
       + '<div class="eva-fileheader">'
       + '<span class="nm eva-t-body">' + (isPresentation() ? 'UI设计师发展前景.pptx' : '任务草稿.txt') + '</span>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="保存">' + icon('save', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="分享">' + icon('upload', 16, 'eva-i') + '</button>'
-      + '<button class="eva-iconbtn" type="button" disabled title="原型暂未实现此操作" aria-label="下载">' + icon('download', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="保存">' + icon('save', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="分享">' + icon('upload', 16, 'eva-i') + '</button>'
+      + '<button class="eva-iconbtn" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="下载">' + icon('download', 16, 'eva-i') + '</button>'
       + '</div>'
       + '<div class="eva-personal-completed__body">'
       + '<div class="eva-rail-slides" role="tablist" aria-label="页面">'

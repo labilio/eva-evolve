@@ -47,7 +47,7 @@ test('创建、移动、重命名在刷新后保留，重名和空名被拒绝',
 test('中栏右上角新建分组并把新分组显示在最上面，同时保留输入草稿',()=>{
  const a=setup();a.input('尚未发送的草稿');const textarea=a.q('.eva-composer-prompt');
  const trigger=a.q('[data-eva-create-folder]');
- assert.equal(trigger.getAttribute('aria-label'),'新建分组');assert.equal(trigger.getAttribute('title'),'新建分组');
+ assert.equal(trigger.getAttribute('aria-label'),'新建分组');assert.equal(trigger.getAttribute('data-eva-tooltip'),'新建分组');
  assert.equal(a.q('.eva-personal-rail-top [data-eva-new-folder-chat]'),null);
  trigger.click();assert.ok(a.dialogs.request);assert.equal(a.q('[data-eva-rail-form]'),null);
  const id=a.store.createFolder('最新会话组');a.dialogs.request.onCreated(id);

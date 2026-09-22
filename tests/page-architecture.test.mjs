@@ -152,7 +152,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   // 2026-09-21 中栏改版：标题「新对话」→「分组」，按钮图标加号 → folder-plus，
   // 去掉「文件夹」节标题（内容上移），默认分组显示名「默认」→「最近」。
   assert.match(workspace, /eva-personal-rail-title">分组</);
-  assert.match(workspace, /data-eva-create-folder aria-label="新建分组" title="新建分组">' \+ icon\('folder-plus',16,'eva-i'\)/);
+  assert.match(workspace, /data-eva-create-folder aria-label="新建分组" data-eva-tooltip="新建分组">' \+ icon\('folder-plus',16,'eva-i'\)/);
   assert.doesNotMatch(workspace, /eva-personal-rail-section/);
   assert.match(workspace, /\{id:'',name:'最近'\}/);
   assert.doesNotMatch(workspace, /type:'create-folder'|creating \? '新建分组'/);

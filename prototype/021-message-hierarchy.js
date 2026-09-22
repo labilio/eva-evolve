@@ -149,7 +149,7 @@
       var privateSection = selected && selected.closest('.eva-dm-scope');
       messageRoot.classList.toggle('eva-private-chat-selected', Boolean(privateSection));
       if (privateSection) {
-        var threadButton = messageRoot.querySelector('.ch-head .op[title="子区"]');
+        var threadButton = messageRoot.querySelector('.ch-head .op[aria-label="子区"]');
         if (threadButton && threadButton.classList.contains('is-on')) threadButton.click();
       }
     });

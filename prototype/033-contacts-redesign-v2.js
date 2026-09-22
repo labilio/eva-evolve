@@ -10,10 +10,10 @@ function create({React:R,Input,SearchIcon,store,ui}){
   return h('li',{className:'eva-contacts__person'},
    h('button',{type:'button',className:'eva-contacts__human eva-contact-identity-button','aria-label':'查看 '+person.name+' 的资料',onClick:()=>onProfile(person.id)},
     h('img',{className:'eva-contacts__avatar',src:person.avatar,alt:'',draggable:false}),
-    h('span',{className:'eva-contacts__human-copy'},h('strong',{className:'eva-contacts__person-name',title:person.name},person.name),h('span',{className:'eva-contacts__department',title:person.departmentL2},person.departmentL2))),
+    h('span',{className:'eva-contacts__human-copy'},h('strong',{className:'eva-contacts__person-name','data-eva-tooltip':person.name,'data-eva-tooltip-clamp':''},person.name),h('span',{className:'eva-contacts__department','data-eva-tooltip':person.departmentL2,'data-eva-tooltip-clamp':''},person.departmentL2))),
    h('div',{className:'eva-contacts__clone-group',role:'group','aria-label':person.name+'的 AI 分身'},
     persona?h('button',{type:'button',className:'eva-contacts__ai-row eva-contact-identity-button',onClick:()=>onProfile(persona.id),'aria-label':'查看 '+persona.name+' 的资料'},
-     h(IdentityAppearance,{profile:persona,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name',title:persona.name},persona.name),root.EvaAIIdentity.badge(h))):h('span',{className:'eva-contacts__clone-empty'},'未创建')));
+     h(IdentityAppearance,{profile:persona,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name','data-eva-tooltip':persona.name,'data-eva-tooltip-clamp':''},persona.name),root.EvaAIIdentity.badge(h))):h('span',{className:'eva-contacts__clone-empty'},'未创建')));
  }
  return function Contacts(){
   R.useSyncExternalStore(store.subscribe,store.getSnapshot);
