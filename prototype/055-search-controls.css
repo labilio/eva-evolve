@@ -1,6 +1,6 @@
 /* Shared search appearance. Semi retains input/clear behavior; native owners retain
    query state. Match the Lucide prefix, not placeholder copy or page identity. */
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search) {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -17,28 +17,28 @@
   box-shadow: none;
   outline: none;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search):hover {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search):hover {
   border-color: var(--gds-color-border-default);
   background: var(--gds-color-surface-primary);
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search):focus-within {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search):focus-within {
   border-color: var(--gds-color-border-focus);
   box-shadow: none;
   outline: none;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > .semi-input-prefix {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search) > .semi-input-prefix {
   flex: none;
   padding: 0;
   margin: 0;
   color: inherit;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) :is(.lucide-search, .eva-drive-icon),
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search) :is(.lucide-search, .eva-drive-icon),
 .eva-connection-search > svg {
   flex: none;
   width: var(--gds-icon-size-content);
   height: var(--gds-icon-size-content);
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > input {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search) > input {
   box-sizing: border-box;
   flex: 1;
   min-width: 0;
@@ -53,7 +53,7 @@
   color: var(--gds-color-text-primary);
   font: inherit;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > input::placeholder {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search, .eva-task-table__search) > input::placeholder {
   color: var(--gds-color-text-muted);
   opacity: 1;
 }

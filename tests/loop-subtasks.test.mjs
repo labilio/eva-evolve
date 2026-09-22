@@ -22,7 +22,8 @@ function setup() {
     {id:'grandchild',identifier:'SC-103',title:'孙任务',status:'done',priority:'low',parent_issue_id:'child'},
     {id:'peer',identifier:'SC-104',title:'同级任务',status:'todo',priority:'none',parent_issue_id:null},
   ];
-  const ctx = {issuesOf:()=>issues,Date};
+  // 切片内含有图标定义（EvaLinkIcon 等），裸 vm 上下文补齐其工厂依赖；仅提供桩，不断言图标行为。
+  const ctx = {issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name})};
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);

@@ -95,6 +95,49 @@ for (const [name, route, selector, prepare] of [
     assert.notEqual((await appearance(field)).color, focused.color);
   });
 }
+test('表格视图搜索：任务页第四视图的新增入口沿用公共搜索外观', async () => {
+  await page.goto(`${origin}/#/collab?evaProject=prod`);
+  await page.locator('.collab-frame').waitFor();
+  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.locator('.loop-board').waitFor();
+  await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
+  const field = page.locator('.eva-task-table__search');
+  await field.waitFor({ state: 'visible' });
+  const input = field.locator('input');
+  await input.blur();
+  const idle = await appearance(field);
+  assert.equal(idle.height, 32);
+  assert.equal(idle.radius, '8px');
+  assert.equal(idle.padding, '12px');
+  assert.equal(idle.border, '1px');
+  assert.equal(idle.inputBorder, '0px', '不能出现第二层输入框边框');
+  assert.equal(idle.color, 'rgb(219, 219, 219)');
+  assert.equal(idle.background, 'rgb(255, 255, 255)');
+  assert.equal(idle.iconWidth, 16);
+  assert.equal(idle.iconInset, 13, '1px边框 + 12px留白，不能图标贴边');
+  assert.equal(idle.gap, 8);
+  assert.equal(idle.fill, 'none', '图标不能回归为实心圆点');
+  await field.hover();
+  const hover = await appearance(field);
+  assert.equal(hover.height, idle.height);
+  assert.equal(hover.width, idle.width);
+  await input.focus();
+  const focused = await appearance(field);
+  assert.equal(focused.color, 'rgb(21, 99, 235)');
+  assert.equal(focused.height, idle.height);
+  assert.equal(focused.width, idle.width);
+  assert.equal(focused.border, idle.border);
+  assert.equal(focused.shadow, 'none');
+  assert.equal(focused.outline, 'none', '只显示一层蓝色边框');
+  await input.blur();
+  // 保留搜索行为：输入过滤行，公共清空按钮恢复
+  await input.fill('zzz-不存在-zzz');
+  await page.locator('.eva-task-table__empty', { hasText: '当前视图没有匹配的任务。' }).waitFor();
+  await field.locator('.eva-task-table__search-clear').click();
+  await page.locator('.eva-task-table__row').first().waitFor();
+  assert.equal(await input.inputValue(), '', '清空后查询应恢复为空');
+});
+
 test('转发面板搜索：沿用公共搜索外观，悬停和聚焦不改变几何', async () => {
   await page.goto(`${origin}/#/messages`);
   await page.locator('.eva-follow-channel > .wk-conv-compact-item').first().waitFor();
