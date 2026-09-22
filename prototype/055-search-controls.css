@@ -1,6 +1,6 @@
 /* Shared search appearance. Semi retains input/clear behavior; native owners retain
    query state. Match the Lucide prefix, not placeholder copy or page identity. */
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search) {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -17,28 +17,28 @@
   box-shadow: none;
   outline: none;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search):hover {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search):hover {
   border-color: var(--gds-color-border-default);
   background: var(--gds-color-surface-primary);
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search):focus-within {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search):focus-within {
   border-color: var(--gds-color-border-focus);
   box-shadow: none;
   outline: none;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > .semi-input-prefix {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search) > .semi-input-prefix {
   flex: none;
   padding: 0;
   margin: 0;
   color: inherit;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) :is(.lucide-search, .eva-drive-icon),
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search) :is(.lucide-search, .eva-drive-icon),
 .eva-connection-search > svg {
   flex: none;
   width: var(--gds-icon-size-content);
   height: var(--gds-icon-size-content);
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > input {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search) > input {
   box-sizing: border-box;
   flex: 1;
   min-width: 0;
@@ -53,10 +53,12 @@
   color: var(--gds-color-text-primary);
   font: inherit;
 }
-:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search, .eva-digital-center__domain-search) > input::placeholder {
+:is(.semi-input-wrapper:has(> .semi-input-prefix .lucide-search), .eva-drive__side-search, .eva-connection-search, .eva-forward-search) > input::placeholder {
   color: var(--gds-color-text-muted);
   opacity: 1;
 }
+/* 市场统一搜索的触发区改用 Semi Input（带 Lucide Search 前缀），自动命中上方通用搜索外观规则，
+   不再需要单独的 Select 触发框补丁。 */
 /* A trigger remains a button: no extra input, panel, or query controller. */
 button:has(> .lucide-search):not(:has(input)),
 button.eva-iconbtn[aria-label="搜索会话"] {

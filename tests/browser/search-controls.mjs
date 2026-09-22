@@ -62,6 +62,7 @@ for (const [name, route, selector, prepare] of [
   ['通讯录', '/contacts', '.eva-contacts__search'],
   ['文件库', '/drive', '.eva-drive__toolbar .eva-drive__side-search'],
   ['连接中心', '/eva-stub/技能', '.eva-connection-search'],
+  ['数字员工市场', '/eva-stub/数字员工', '.eva-digital-center__search'],
 ]) {
   test(`${name}搜索：单层边框、图标留白、悬停和聚焦不改变几何`, async () => {
     const field = await open(route, selector);
@@ -383,59 +384,94 @@ test('图标按钮样式夹具：保留按钮形态、悬停、键盘焦点和�
   }
 });
 
-test('数字员工业务域：图标入口点开、输入框无内置图标、收起恢复 chips 且不影响员工列表', async () => {
+test('数字员工市场：统一搜索二合一结果与「更多」限高面板', async () => {
   await open('/eva-stub/数字员工', '.eva-digital-center__filter-card');
-  const toggle = page.getByRole('button', { name: '搜索业务域' });
   const chips = page.locator('.eva-digital-center__domain-filters .semi-button');
   const rows = page.locator('.semi-table-tbody tr');
-  assert.equal(await page.locator('.eva-digital-center__market-search').count(), 0, '市场不再保留右上角员工搜索框');
-  assert.equal(await page.getByPlaceholder('搜索数字员工').count(), 0);
-  assert.equal(await toggle.locator('input').count(), 0, '图标按钮不得内嵌输入框');
-  assert.equal(await page.locator('.eva-digital-center__domain-search').count(), 0, '默认不显示常驻输入框');
-  const all = await chips.count();
-  const rowCount = await rows.count();
-  assert.ok(all > 2 && rowCount > 2);
-  await toggle.click();
-  const field = page.locator('.eva-digital-center__domain-search');
-  await field.waitFor();
-  assert.equal(await field.locator('input').evaluate(el => el === document.activeElement), true, '点开后焦点应进入输入框');
-  const idle = await field.evaluate(el => {
-    const input = el.querySelector('input'), s = getComputedStyle(el), r = el.getBoundingClientRect();
-    return { height: r.height, radius: s.borderRadius, padding: s.paddingLeft, border: s.borderTopWidth,
-      width: Math.round(r.width), shadow: s.boxShadow, background: s.backgroundColor,
-      inputBorder: getComputedStyle(input).borderTopWidth, icons: el.querySelectorAll('svg').length };
+  assert.equal(await page.getByRole('button', { name: '搜索业务域' }).count(), 0, '旧的图标业务域搜索入口已移除');
+  assert.equal(await page.locator('.eva-digital-center__domain-search, .eva-digital-center__market-search').count(), 0, '旧搜索类名不得复用');
+  assert.equal(await page.getByPlaceholder('搜索数字员工').count(), 0, '不重复保留独立的员工搜索框');
+  // 统一搜索复用任务身份选择面板那套 Semi Dropdown 菜单：外层统一搜索框（Semi Input）直接输入，
+  // 菜单只出结果（分组标题/分隔线/行项/「展开其余」沿用 .eva-task-assignee-*）；
+  // 弹层父容器复用页面 popup(host) 配置，点到组件外即收起并清空。
+  const searchRoot = page.locator('.eva-digital-center__search');
+  const search = searchRoot.locator('input');
+  const menu = page.locator('.eva-digital-center__search-menu');
+  const typeSearch = async text => {
+    await searchRoot.click();
+    await menu.waitFor();
+    await search.fill(text);
+    await menu.locator('.semi-dropdown-item').first().waitFor();
+  };
+  await search.waitFor();
+  assert.equal(await search.getAttribute('placeholder'), '搜索业务域或数字员工');
+  assert.equal(await searchRoot.locator('.semi-input-prefix .lucide-search').count(), 1, '触发区使用公共 Lucide Search');
+  const inlineCount = await chips.count();
+  assert.ok(inlineCount >= 3 && (await rows.count()) > 2);
+  // 点开即展示全部分组候选（业务域／数字员工）；菜单内不再出现第二个搜索框
+  await searchRoot.click();
+  await menu.waitFor();
+  assert.equal(await menu.locator('.eva-task-assignee-search, input').count(), 0, '菜单内不再出现第二个搜索框');
+  assert.deepEqual(await menu.locator('.semi-dropdown-title').allTextContents(), ['业务域', '数字员工'], '两类结果各自带分组标题');
+  assert.equal(await menu.locator('.semi-dropdown-divider').count(), 1, '两个分组之间一条分隔线');
+  assert.deepEqual(await menu.locator('.eva-task-assignee-expand').allTextContents(), ['展开其余 13 个', '展开其余 340 个'], '每组默认 5 条、其余折叠');
+  await menu.locator('.eva-task-assignee-expand').first().click();
+  assert.ok((await menu.locator('.semi-dropdown-item').count()) > 10, '「展开其余」补全该组且不收起弹层');
+  // 在外层搜索框直接输入即筛选；业务域结果点击应用筛选、低频域回显筛选行并清空
+  await search.fill('供应链');
+  await page.waitForTimeout(150);
+  await menu.locator('.semi-dropdown-item:has(.eva-digital-center__search-domain)', { hasText: '供应链' }).first().click();
+  await menu.waitFor({ state: 'hidden' });
+  assert.equal(await search.inputValue(), '', '选中结果后清空查询');
+  assert.match(await page.locator('.eva-digital-center__domain-filters .semi-button[aria-pressed="true"]').innerText(), /^供应链 /, '低频选中域回显到筛选行');
+  const filtered = await page.locator('.semi-table-tbody tr td:nth-child(3)').allTextContents();
+  assert.ok(filtered.length > 0 && filtered.every(d => d === '供应链'), '搜索结果应用业务域筛选');
+  await page.getByRole('button', { name: /^全部业务域 / }).click();
+  // 数字员工结果：公共头像与 AI 标，点击打开详情；单一结果类型不放分组标签
+  await typeSearch('AI Coding');
+  assert.equal(await menu.locator('.semi-dropdown-title').count(), 0, '只有单一结果类型时不放分组标签');
+  const singleBlank = await menu.evaluate(el => {
+    const scroll = el.querySelector('.eva-task-assignee-scroll').getBoundingClientRect();
+    const item = el.querySelector('.semi-dropdown-item').getBoundingClientRect();
+    return scroll.height - item.height;
   });
-  assert.equal(idle.height, 32);
-  assert.equal(idle.radius, '8px');
-  assert.equal(idle.padding, '12px');
-  assert.equal(idle.border, '1px');
-  assert.equal(idle.inputBorder, '0px', '不能出现第二层输入框边框');
-  assert.equal(idle.icons, 0, '图标按钮已承担入口标识，输入框内不再重复出现图标');
-  await field.hover();
-  await field.locator('input').focus();
-  const focused = await field.evaluate(el => {
-    const s = getComputedStyle(el), r = el.getBoundingClientRect();
-    return { color: s.borderTopColor, width: Math.round(r.width), shadow: s.boxShadow, border: s.borderTopWidth };
+  assert.ok(singleBlank <= 16, '单个结果不残留任务面板的最小高度留白');
+  const hit = menu.locator('.semi-dropdown-item').filter({ has: page.locator('.eva-digital-center__search-who') }).first();
+  assert.ok(await hit.locator('.eva-identity-avatar').count() === 1, '员工结果必须使用公共身份头像');
+  assert.ok(await hit.locator('.ai-badge').count() === 1, '员工结果必须显示公共 AI 标');
+  await hit.click();
+  const dialog = page.locator('.semi-modal-content[aria-modal="true"]');
+  await dialog.waitFor();
+  assert.match(await dialog.innerText(), /AI Coding专家/);
+  await page.locator('.semi-modal-close').first().click();
+  await dialog.waitFor({ state: 'hidden' });
+  await menu.waitFor({ state: 'hidden' });
+  // 无匹配 + Escape 清空收起
+  await searchRoot.click();
+  await menu.waitFor();
+  await search.fill('不存在的名字xyz');
+  await menu.locator('.eva-task-assignee-empty').waitFor();
+  assert.match(await menu.locator('.eva-task-assignee-empty').innerText(), /没有匹配的业务域或数字员工/);
+  await search.press('Escape');
+  await menu.waitFor({ state: 'hidden' });
+  assert.equal(await search.inputValue(), '', 'Escape 清空统一搜索');
+  // 「更多」面板：限高网格一次铺开全部业务域，不盖住下方表格
+  await page.getByRole('button', { name: /^更多 \d+$/ }).click();
+  const panel = page.locator('.eva-digital-center__domain-panel');
+  await panel.waitFor();
+  assert.ok((await panel.locator('.eva-digital-center__domain-panel-item').count()) > inlineCount, '面板铺开全部业务域');
+  const geo = await panel.evaluate(el => {
+    const grid = el.querySelector('.eva-digital-center__domain-panel-grid');
+    return { panelHeight: el.getBoundingClientRect().height, panelBottom: el.getBoundingClientRect().bottom,
+      gridMax: getComputedStyle(grid).maxHeight, innerScroll: grid.scrollHeight > grid.clientHeight + 1 };
   });
-  assert.equal(focused.color, 'rgb(21, 99, 235)', '聚焦只把边框变为 Eva 主蓝');
-  assert.equal(focused.shadow, 'none');
-  assert.equal(focused.border, idle.border);
-  assert.equal(focused.width, idle.width, '聚焦和悬停不改变输入框宽度');
-  assert.equal(await field.evaluate(el => getComputedStyle(el).backgroundColor), idle.background);
-  await page.locator('.eva-digital-center__domain-search input').fill('供应链');
-  await page.waitForFunction(count => document.querySelectorAll('.eva-digital-center__domain-filters .semi-button').length === count, 2);
-  assert.equal(await rows.count(), rowCount, '业务域搜索只收敛 chips，不得过滤员工列表');
-  await page.locator('.eva-digital-center__domain-search input').press('Escape');
-  await field.waitFor({ state: 'detached' });
-  assert.equal(await chips.count(), all, 'Escape 收起后恢复全部业务域 chips');
-  assert.equal(await rows.count(), rowCount);
-  await toggle.click();
-  await page.locator('.eva-digital-center__domain-search input').fill('研发');
-  assert.ok(await chips.count() < all);
-  await toggle.click();
-  await page.locator('.eva-digital-center__domain-search').waitFor({ state: 'detached' });
-  assert.equal(await chips.count(), all, '再次点击按钮收起并清空业务域查询');
-  assert.equal(await rows.count(), rowCount);
+  assert.ok(geo.panelHeight <= 300, '面板总高受限，不能盖住下方全部内容');
+  assert.equal(geo.innerScroll, false, '当前业务域数量下网格一次铺开、零内部滚动');
+  const tableBottom = await page.locator('.eva-digital-center__table').evaluate(el => el.getBoundingClientRect().bottom);
+  assert.ok(geo.panelBottom < tableBottom, '面板下方仍露出表格');
+  await panel.locator('.eva-digital-center__domain-panel-item', { hasText: '研发域' }).click();
+  await panel.waitFor({ state: 'detached' });
+  assert.match(await page.locator('.eva-digital-center__domain-filters .semi-button[aria-pressed="true"]').innerText(), /^研发域 /, '面板点击应用业务域筛选');
 });
 
 test('消息中栏使用标题与创建按钮，不再显示列表搜索框', async () => {

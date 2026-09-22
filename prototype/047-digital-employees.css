@@ -10,17 +10,7 @@
 .eva-digital-center p,.eva-digital-center__muted{color:var(--semi-color-text-2);line-height:1.7;margin:6px 0}
 .eva-digital-center__filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}.eva-digital-center__section-head{justify-content:space-between;margin-bottom:12px}
 .eva-digital-center__filter-bar{position:relative;display:flex;align-items:center;min-width:0;margin-bottom:4px}
-.eva-digital-center__filter-track{position:relative;display:flex;align-items:center;flex:1;min-width:0}
-.eva-digital-center__filter-scroll{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.eva-digital-center__filter-scroll::-webkit-scrollbar{display:none}
-.eva-digital-center__filter-bar .eva-digital-center__domain-filters{flex-wrap:nowrap;margin:8px 0;width:max-content}
-.eva-digital-center__filter-bar.has-overflow-left::before,.eva-digital-center__filter-bar.has-overflow-right::after{content:'';position:absolute;top:0;bottom:0;width:40px;pointer-events:none;z-index:1}
-.eva-digital-center__filter-bar.has-overflow-left::before{left:0;background:linear-gradient(90deg,var(--semi-color-bg-0) 20%,transparent)}
-.eva-digital-center__filter-bar.has-overflow-right::after{right:0;background:linear-gradient(270deg,var(--semi-color-bg-0) 20%,transparent)}
-.eva-digital-center__filter-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border:1px solid var(--semi-color-border);border-radius:50%;background:var(--semi-color-bg-0);color:var(--semi-color-text-1);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.eva-digital-center__filter-nav:hover{background:var(--semi-color-fill-0)}
-.eva-digital-center__filter-nav--left{left:4px}.eva-digital-center__filter-nav--right{right:4px}
-.eva-digital-center__filter-nav .semi-icon{pointer-events:none}
+.eva-digital-center__filter-bar .eva-digital-center__domain-filters{flex-wrap:nowrap;margin:8px 0}
 .eva-digital-center__section{margin-bottom:20px}.eva-digital-center__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px}
 .eva-digital-center__card{border:1px solid var(--semi-color-border);border-radius:var(--gds-radius-chip);padding:20px;background:var(--semi-color-bg-1);display:flex;flex-direction:column;gap:10px}
 .eva-digital-center__card.is-selected{border-color:var(--semi-color-primary);background:var(--semi-color-primary-light-default)}
@@ -49,7 +39,7 @@
 :root[data-theme="dark"] .eva-digital-center__table .semi-table-row:hover>.semi-table-row-cell{background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover));background-color:var(--eva-surface-primary)}
 /* 暗色 pressed 需与上面的暗色 hover 同特异度且排在其后，否则按下时被 6% hover 反超。 */
 :root[data-theme="dark"] .eva-digital-center__table .semi-table-row:active>.semi-table-row-cell{background-image:linear-gradient(0deg,var(--eva-overlay-pressed),var(--eva-overlay-pressed))}
-:root[data-theme="dark"] .eva-digital-center__filter-nav:hover{background:var(--eva-overlay-hover)}
+/* 暗色行 hover 覆盖见市场区块内 panel-item/search 行的 overlay 遮罩规则，双色通用。 */
 .eva-digital-center__table .semi-button{white-space:nowrap;font-size:12px;font-weight:400;padding:0 5px;min-width:28px;height:28px}
 .eva-digital-center__table .eva-digital-center__actions{flex-wrap:nowrap;gap:6px;min-width:288px}
 .eva-digital-center__table .eva-digital-center__identity{gap:6px;width:100%}
@@ -110,30 +100,51 @@
 .eva-market-workspace .eva-digital-center__joined-status { color: var(--eva-text-primary); font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action { background: transparent; color: var(--eva-action-primary); }
 .eva-market-workspace .semi-button.eva-digital-center__market-action:hover { background: var(--eva-action-primary-08); }
-.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: nowrap; overflow: visible; padding-bottom: 0; margin: 0; }
-.eva-market-workspace .eva-digital-center__domain-filters .semi-button { flex: none; }
+.eva-market-workspace .eva-digital-center__domain-filters { flex-wrap: nowrap; overflow: hidden; padding-bottom: 0; margin: 0; }
+/* Chips 固定 1px 边框：Semi borderless theme 的 hover 会把边框归 0（按钮跳缩 2px、
+   观感像文字伸缩）；hover 只叠加遮罩换底，几何不动；选中态边框走焦点色。 */
+.eva-market-workspace .eva-digital-center__domain-filters .semi-button { flex: none; min-height: 32px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); font: 400 14px/20px var(--eva-font-sans); }
+.eva-market-workspace .eva-digital-center__domain-filters .semi-button:hover { border: 1px solid var(--eva-border-faint); background-image: linear-gradient(0deg, var(--eva-overlay-hover), var(--eva-overlay-hover)); background-color: var(--eva-surface-primary); }
+.eva-market-workspace .eva-digital-center__domain-filters .semi-button[aria-pressed="true"]:hover { border: 1px solid var(--eva-border-focus); background: color-mix(in srgb, var(--eva-action-primary) 8%, var(--eva-surface-primary)); }
+/* Hidden measurement row: same chip geometry, used to compute how many domains fit the bar width. */
+.eva-market-workspace .eva-digital-center__measure { position: absolute; top: 0; left: 0; display: flex; gap: 8px; height: 0; overflow: hidden; visibility: hidden; white-space: nowrap; pointer-events: none; }
+.eva-market-workspace .eva-digital-center__measure .semi-button { flex: none; min-height: 32px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); font: 400 14px/20px var(--eva-font-sans); }
 
-/* Domain filter card: title + scoped search on the first line, single-line chips on the second.
-   Chips never wrap; fade masks + arrow buttons appear only on overflow. */
-.eva-market-workspace .eva-digital-center__filter-card { margin: 0 0 var(--eva-space-4); padding: var(--eva-space-3) var(--eva-space-4); border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); }
-.eva-market-workspace .eva-digital-center__filter-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+/* Domain filter card: title + unified search on the first line; one-line Top-N chips
+   plus a capped-height "more" grid popover on the second. No horizontal scrolling. */
+/* 筛选卡父容器统一管两行骨架与节奏：16px 内边距 + 头行32px(标题/搜索) + 12px 行距，
+   chips 行不再贴头行——之前 padding 12/16 + 4px 行距是拥挤感的来源。 */
+.eva-market-workspace .eva-digital-center__filter-card { margin: 0 0 var(--eva-space-4); padding: var(--eva-space-4); border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); }
+.eva-market-workspace .eva-digital-center__filter-card-head { display: flex; align-items: center; gap: var(--eva-space-3); margin-bottom: var(--eva-space-3); }
 .eva-market-workspace .eva-digital-center__filter-card-title { display: inline-flex; align-items: center; gap: 2px; color: var(--eva-text-secondary-accessible); font: 500 13px/20px var(--eva-font-sans); }
-/* Compact icon entry: appearance is owned by 055-search-controls.css, only the slot is set here. */
-.eva-market-workspace .eva-digital-center__domain-search-toggle { flex: none; }
-.eva-market-workspace .eva-digital-center__filter-empty { align-self: center; padding: 0 4px; color: var(--eva-text-secondary-accessible); font: 400 13px/20px var(--eva-font-sans); }
-.eva-market-workspace .eva-digital-center__domain-search { width: min(220px, 100%); flex: 0 1 220px; }
+/* Unified search: appearance owned by 055-search-controls.css (Semi + Lucide prefix);
+   page CSS only sets the slot width and the results popover. */
+.eva-market-workspace .eva-digital-center__search-wrap { margin-left: auto; width: min(300px, 100%); flex: none; }
+.eva-market-workspace .eva-digital-center__search { width: 100%; }
+/* 统一搜索弹层改为复用任务身份选择面板（AssigneePicker）那套 Semi Dropdown 菜单：
+   弹层/定位/收起/键盘全归 Semi；顶部搜索框、限高滚动、「展开其余」、空态直接沿用
+   .eva-task-assignee-* 同款 CSS（034-project-task-toolbar-v3.css）——只保留这一份实现；
+   分组标题与行项交给 Semi Dropdown.Title / Dropdown.Item 自带皮肤。这里只补触发区与行内容排版。 */
+.eva-digital-center__search-anchor { display: block; width: 100%; }
+.eva-digital-center__search-menu { min-width: 300px; }
+.eva-digital-center__search-menu .eva-task-assignee-scroll { min-height: 0; max-height: 320px; }
+.eva-digital-center__search-menu .eva-digital-center__search-domain { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.eva-digital-center__search-menu .eva-digital-center__search-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-digital-center__search-menu .eva-digital-center__search-count { flex: none; color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
+.eva-digital-center__search-menu .eva-digital-center__search-who { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.eva-digital-center__search-menu .eva-digital-center__search-who .eva-identity-name-row { min-width: 0; }
+.eva-digital-center__search-menu .eva-digital-center__search-who small { color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-market-workspace .eva-digital-center__filter-bar { position: relative; max-width: 100%; margin-bottom: 0; }
-.eva-market-workspace .eva-digital-center__filter-track { position: relative; }
-.eva-market-workspace .eva-digital-center__filter-scroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.eva-market-workspace .eva-digital-center__filter-scroll::-webkit-scrollbar { display: none; }
-.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-left .eva-digital-center__filter-track::before,
-.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-right .eva-digital-center__filter-track::after { content: ''; position: absolute; top: 0; bottom: 0; width: 44px; z-index: 1; pointer-events: none; }
-.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-left .eva-digital-center__filter-track::before { left: 0; background: linear-gradient(to right, var(--eva-surface-primary, #fff) 20%, transparent); }
-.eva-market-workspace .eva-digital-center__filter-bar.has-overflow-right .eva-digital-center__filter-track::after { right: 0; background: linear-gradient(to left, var(--eva-surface-primary, #fff) 20%, transparent); }
-.eva-market-workspace .semi-button.eva-digital-center__filter-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--eva-border-faint); background: var(--eva-surface-primary, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.12); color: var(--eva-text-primary); display: inline-flex; align-items: center; justify-content: center; }
-.eva-market-workspace .semi-button.eva-digital-center__filter-nav:hover { background: var(--eva-surface-subtle, #f5f5f5); }
-.eva-market-workspace .semi-button.eva-digital-center__filter-nav--left { left: 4px; }
-.eva-market-workspace .semi-button.eva-digital-center__filter-nav--right { right: 4px; }
+/* "More" popover: 4-column capped-height compact grid, all domains glanceable, no page push. */
+.eva-market-workspace .eva-digital-center__domain-panel { box-sizing: border-box; position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; width: min(640px, 100%); padding: var(--eva-space-3); border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); box-shadow: 0 8px 24px rgba(15, 23, 42, .12); }
+.eva-market-workspace .eva-digital-center__domain-panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; max-height: 280px; overflow: auto; }
+.eva-market-workspace .semi-button.eva-digital-center__domain-panel-item { width: 100%; min-width: 0; min-height: 32px; justify-content: flex-start; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); font: 400 14px/20px var(--eva-font-sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-market-workspace .semi-button.eva-digital-center__domain-panel-item > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-market-workspace .semi-button.eva-digital-center__domain-panel-item:hover { background-image: linear-gradient(0deg, var(--eva-overlay-hover), var(--eva-overlay-hover)); }
+.eva-market-workspace .eva-digital-center__domain-panel .semi-button:focus-visible, .eva-market-workspace .semi-button.eva-digital-center__more-toggle:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+.eva-market-workspace .eva-digital-center__domain-panel .semi-button[aria-pressed="true"] { color: var(--eva-action-primary); background: color-mix(in srgb, var(--eva-action-primary) 8%, var(--eva-surface-primary)); border-color: var(--eva-border-focus); }
+.eva-market-workspace .semi-button.eva-digital-center__more-toggle .lucide-chevron-down { transition: transform .15s ease; }
+.eva-market-workspace .semi-button.eva-digital-center__more-toggle[aria-expanded="true"] .lucide-chevron-down { transform: rotate(180deg); }
 .eva-market-workspace .eva-digital-center__table .semi-button { min-height: 32px; padding: 0 8px; font: 400 12px/16px var(--eva-font-sans); }
 .eva-market-workspace :is(.eva-digital-center__table,.semi-table-row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 .eva-market-workspace .eva-digital-dialog .semi-modal-body { font: 400 15px/24px var(--eva-font-sans); }
@@ -159,7 +170,7 @@
 .eva-market-workspace .eva-digital-center__table .semi-table-pagination-wrapper { margin-left: auto; }
 @media (max-width: 760px) {
   .eva-market-workspace .eva-digital-center__filter-card-head { flex-wrap: wrap; }
-  .eva-market-workspace .eva-digital-center__domain-search { width: 100%; flex-basis: 100%; }
+  .eva-market-workspace .eva-digital-center__search-wrap { width: 100%; flex-basis: 100%; }
 }
 
 /* Governance extension for the existing digital employee identity card. */

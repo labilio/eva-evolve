@@ -2,7 +2,7 @@
 'use strict';
 let Component;
 root.EvaDigitalEmployeesUI={render(props,deps){Component||=create(deps);return deps.React.createElement(Component,props);}};
-function create({React:R,Button,Input,TextArea,Select,Checkbox,Switch,Modal,Table,Tag,Toast,ChannelsView,icons,members,navigatePersonal}){
+function create({React:R,Button,Input,TextArea,Select,Checkbox,Switch,Modal,Table,Tag,Toast,Dropdown,ChannelsView,icons,members,navigatePersonal}){
 const h=R.createElement, data=root.__EVA_DIGITAL_EMPLOYEES_DATA,store=root.EvaDigitalEmployeesStore;
 const btn=(label,onClick,extra={})=>h(Button,{onClick,...extra},label);
 const identity=(a,showNo=true)=>h('span',{className:'eva-digital-center__identity'},root.EvaAIIdentity.avatar(store.appearance(a),32,h),h('span',null,h('span',{className:'eva-identity-name-row'},h('strong',{className:'eva-identity-name-text',title:a.name},a.name),root.EvaAIIdentity.badge(h)),showNo&&a.no&&h('small',null,a.no)));
@@ -16,17 +16,54 @@ return function DigitalCenter({view='market',navigate,employeeId}){
 R.useSyncExternalStore(store.subscribe,store.getSnapshot);R.useSyncExternalStore(members.subscribe,members.getSnapshot);
 const ms=members.snapshot(),actor=ms.actorId;
 const [domain,setDomain]=R.useState(null),[dialog,setDialog]=R.useState(null),[chosen,setChosen]=R.useState([]),[projectQuery,setProjectQuery]=R.useState(''),[error,setError]=R.useState('');
-const [domainQuery,setDomainQuery]=R.useState(''),[domainSearchOpen,setDomainSearchOpen]=R.useState(false);
-const searchHost=R.useRef(null);
-const toggleDomainSearch=()=>{const next=!domainSearchOpen;setDomainSearchOpen(next);if(!next){setDomainQuery('');const el=filterTrack.current;if(el)el.scrollLeft=0;}};
-R.useEffect(()=>{if(domainSearchOpen)searchHost.current?.querySelector('.eva-digital-center__domain-search input')?.focus();},[domainSearchOpen]);
-const filterTrack=R.useRef(null);const [filterEdges,setFilterEdges]=R.useState({left:false,right:false});
-const measureFilter=()=>{const el=filterTrack.current;if(!el)return setFilterEdges({left:false,right:false});const over=el.scrollWidth-el.clientWidth>1;setFilterEdges({left:over&&el.scrollLeft>1,right:over&&el.scrollLeft<el.scrollWidth-el.clientWidth-1});};
-R.useEffect(()=>{measureFilter();const el=filterTrack.current;if(!el)return;const ro=new ResizeObserver(measureFilter);ro.observe(el);return()=>ro.disconnect();},[domain,domainQuery]);
-const onDomainQuery=v=>{setDomainQuery(v);const el=filterTrack.current;if(el)el.scrollLeft=0;};
-const scrollFilter=dir=>{const el=filterTrack.current;if(!el)return;el.scrollBy({left:dir*Math.max(el.clientWidth*0.8,240),behavior:'smooth'});};
+const [panel,setPanel]=R.useState(false),[query,setQuery]=R.useState('');
+const [searchOpen,setSearchOpen]=R.useState(false),[expand,setExpand]=R.useState({}),[activeIndex,setActiveIndex]=R.useState(-1);
+const barRef=R.useRef(null),searchRowsRef=R.useRef([]),searchWrapRef=R.useRef(null);
+/* 统一搜索弹层（Semi Dropdown trigger:'custom'）由本组件控制开合：外层搜索框聚焦即开，
+   点到搜索组件与弹层之外的区域即收起并清空。 */
+const resetSearch=()=>{setSearchOpen(false);setQuery('');setExpand({});setActiveIndex(-1);};
+R.useEffect(()=>{if(!searchOpen)return;
+  const down=e=>{const t=e.target;if(searchWrapRef.current?.contains(t)||t.closest?.('.eva-digital-center__search-menu'))return;resetSearch();};
+  document.addEventListener('mousedown',down);
+  return()=>document.removeEventListener('mousedown',down);
+},[searchOpen]);
+R.useEffect(()=>{if(!panel)return;
+  const down=e=>{if(!barRef.current?.contains(e.target))setPanel(false);};
+  const key=e=>{if(e.key==='Escape')setPanel(false);};
+  document.addEventListener('mousedown',down);document.addEventListener('keydown',key);
+  return()=>{document.removeEventListener('mousedown',down);document.removeEventListener('keydown',key);};
+},[panel]);
+/* 业务域行按可用宽度自适应放满：隐藏测量行量出每个 chip 与「更多」按钮的宽度，
+   ResizeObserver 跟踪行宽；选中低频域预留其宽度顶替末位槽，重置即恢复纯高频列表。 */
+const base=store.agents().filter(a=>a.kind==='staff').map(a=>({...a,domain:a.domain?.trim()||(a.scope==='org'?'全公司':'未设置')}));
+const domains=[...new Set(base.map(a=>a.domain).filter(Boolean))].sort((a,b)=>base.filter(x=>x.domain===b).length-base.filter(x=>x.domain===a).length);
+const countOf=d=>base.filter(a=>a.domain===d).length;
+const [fit,setFit]=R.useState(null);
+const measureRef=R.useRef(null),fitW=R.useRef(null),domainRef=R.useRef(domain);
+domainRef.current=domain;
+const measureChips=()=>{const host=measureRef.current;if(!host||host.children.length<3)return null;
+  const kids=host.children,map={};
+  for(let i=1;i<kids.length-1;i++)map[kids[i].dataset.domain]=kids[i].offsetWidth;
+  return {sig:domains.join('|'),all:kids[0].offsetWidth,more:kids[kids.length-1].offsetWidth,map};};
+const refreshFit=()=>{const el=barRef.current;if(!el)return;
+  if(fitW.current&&fitW.current.sig!==domains.join('|'))fitW.current=null;
+  const w=fitW.current||measureChips();if(!w)return;fitW.current=w;
+  const list=domains,selected=domainRef.current,gap=8,cw=d=>(w.map[d]||0)+gap,total=w.all+gap+list.reduce((s,d)=>s+cw(d),0);
+  let next;
+  if(total<=el.clientWidth)next={k:list.length,plus:false};
+  else{
+    let avail=el.clientWidth-w.more-gap-w.all-gap,used=0,k=0;
+    for(;k<list.length;k++){if(used+cw(list[k])>avail)break;used+=cw(list[k]);}
+    const idx=selected?list.indexOf(selected):-1;let plus=false;
+    if(idx>=k){plus=true;const avail2=Math.max(0,avail-cw(selected));let used2=0,k2=0;
+      for(;k2<list.length;k2++){if(used2+cw(list[k2])>avail2)break;used2+=cw(list[k2]);}
+      k=k2;}
+    next={k,plus};}
+  setFit(prev=>prev&&prev.k===next.k&&prev.plus===next.plus?prev:next);};
+R.useLayoutEffect(()=>{refreshFit();});
+R.useEffect(()=>{const el=barRef.current;if(!el)return;const ro=new ResizeObserver(()=>refreshFit());ro.observe(el);return()=>ro.disconnect();},[view]);
 const host=R.useRef(null);const popup=()=>host.current;
-R.useEffect(()=>{setDialog(null);setChosen([]);setProjectQuery('');setError('');},[view,actor,employeeId]);
+R.useEffect(()=>{setDialog(null);setChosen([]);setProjectQuery('');setError('');setPanel(false);setQuery('');setSearchOpen(false);setExpand({});},[view,actor,employeeId]);
 const run=fn=>{try{fn();setError('');}catch(e){setError(e.message);}};
 const open=(kind,a)=>{setDialog({kind,a});setChosen([]);setProjectQuery('');setError('');};
 const allProjects=Object.values(ms.projects).filter(p=>members.canRead(p.id,actor));
@@ -37,27 +74,91 @@ const textarea=(key,placeholder)=>h(TextArea,{value:draft[key]||'',onChange:v=>u
 const checks=(key,items)=>h('div',{className:'eva-digital-center__filters'},items.map(value=>h(Checkbox,{key:value,checked:(draft[key]||[]).includes(value),onChange:e=>update(key,e.target.checked?[...(draft[key]||[]),value]:(draft[key]||[]).filter(x=>x!==value))},value)));
 
 function market(){
-  const base=store.agents().filter(a=>a.kind==='staff').map(a=>({...a,domain:a.domain?.trim()||(a.scope==='org'?'全公司':'未设置')}));
   const list=base.filter(a=>!domain||a.domain===domain);
-  const domains=[...new Set(base.map(a=>a.domain).filter(Boolean))].sort((a,b)=>base.filter(x=>x.domain===b).length-base.filter(x=>x.domain===a).length);
-  const dq=domainQuery.trim().toLowerCase(),visibleDomains=domains.filter(d=>!dq||d.toLowerCase().includes(dq)||d===domain);
+  const visibleTop=fit?domains.slice(0,fit.k):domains.slice(0,5);
+  const appendSel=fit&&fit.plus&&domain?domain:null;
+  const moreCount=domains.length-visibleTop.length-(appendSel?1:0);
+  const chip=(d,extra={})=>btn(d+' '+countOf(d),()=>{setDomain(d);setPanel(false);setSearchOpen(false);},{key:d,'aria-pressed':domain===d,theme:domain===d?'light':'borderless',...extra});
+  /* 统一搜索复用任务身份选择面板（AssigneePicker）那套 Semi Dropdown 菜单：
+     外层统一搜索框（Semi Input，外观归 055）直接承担输入，菜单只出结果——
+     分组标题 + 每组 5 条「展开其余」+ 限高滚动，与 .eva-task-assignee-* 同款 CSS；
+     弹层父容器复用页面统一 popup(host) 配置。 */
+  const norm=s=>String(s||'').normalize('NFKC').toLocaleLowerCase();
+  const needle=norm(query.trim());
+  const rank=n=>{const v=norm(n);return v===needle?3:v.indexOf(needle)===0?2:v.includes(needle)?1:0;};
+  const domainHits=domains.filter(d=>!needle||norm(d).includes(needle)).sort((a,b)=>rank(b)-rank(a));
+  const employeeHits=base.filter(a=>!needle||norm(a.name).includes(needle)||norm(a.no).includes(needle)).sort((a,b)=>rank(b.name)-rank(a.name));
+  const groups=[{kind:'domain',label:'业务域',items:domainHits.map(d=>({id:d,name:d}))},{kind:'employee',label:'数字员工',items:employeeHits.map(a=>({id:a.id,name:a.name,agent:a}))}].filter(g=>g.items.length);
+  /* 只有一个分组时不放分组标签；两类同时命中才用「业务域／数字员工」标题。 */
+  const showGroupLabel=groups.length>1;
+  const perGroup=5;
+  const closeSearch=resetSearch;
+  const chooseDomain=d=>{setDomain(d);closeSearch();};
+  const chooseEmployee=a=>{open('detail',a);closeSearch();};
+  /* 可见行同时登记到 searchRowsRef，供外层搜索框的 ↑↓/Enter 使用。 */
+  const searchRows=[];
+  const searchItem=(row,kind)=>{
+    const index=searchRows.length;searchRows.push({kind,item:row});
+    const active=index===activeIndex;
+    if(kind==='domain')return h(Dropdown.Item,{key:'domain:'+row.id,active,onClick:()=>chooseDomain(row.name)},
+      h('span',{className:'eva-digital-center__search-domain'},h('span',{className:'eva-digital-center__search-name'},row.name),h('span',{className:'eva-digital-center__search-count'},countOf(row.name))));
+    const a=row.agent;
+    return h(Dropdown.Item,{key:'employee:'+row.id,active,icon:root.EvaAIIdentity.avatar(store.appearance(a),28,h),onClick:()=>chooseEmployee(a)},
+      h('span',{className:'eva-digital-center__search-who'},
+        h('span',{className:'eva-identity-name-row'},h('strong',{className:'eva-identity-name-text'},a.name),root.EvaAIIdentity.badge(h)),
+        h('small',null,a.domain)));
+  };
+  const searchBody=[];
+  groups.forEach((group,index)=>{
+    if(showGroupLabel&&index>0)searchBody.push(h(Dropdown.Divider,{key:'divider:'+group.kind}));
+    if(showGroupLabel)searchBody.push(h(Dropdown.Title,{key:'title:'+group.kind},group.label));
+    const shown=expand[group.kind]?group.items:group.items.slice(0,perGroup);
+    shown.forEach(row=>searchBody.push(searchItem(row,group.kind)));
+    const rest=group.items.length-shown.length;
+    if(rest>0)searchBody.push(h('div',{key:group.kind+':more',className:'eva-task-assignee-expand',onMouseDown:e=>e.preventDefault(),onClick:e=>{e.stopPropagation();setExpand(previous=>({...previous,[group.kind]:true}));}},'展开其余 '+rest+' 个'));
+  });
+  searchRowsRef.current=searchRows;
+  /* 外层搜索框按键与任务下拉一致：↑↓ 移动、Enter 触发、Escape 清空并收起。 */
+  const onSearchKeyDown=e=>{
+    if(e.nativeEvent.isComposing||e.keyCode===229)return;
+    const rows=searchRowsRef.current||[];
+    if(e.key==='ArrowDown'){e.preventDefault();setActiveIndex(i=>Math.min(i+1,rows.length-1));}
+    else if(e.key==='ArrowUp'){e.preventDefault();setActiveIndex(i=>Math.max(i-1,0));}
+    else if(e.key==='Enter'){e.preventDefault();const row=rows[activeIndex];if(row)row.kind==='domain'?chooseDomain(row.item.name):chooseEmployee(row.item.agent);}
+    else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSearch();}
+  };
+  /* 菜单只承载结果：输入在外层统一搜索框，菜单内不再放第二个搜索框。 */
+  const searchMenu=()=>h(Dropdown.Menu,{className:'eva-digital-center__search-menu'},
+    h('div',{className:'eva-task-assignee-scroll'},searchBody.length?searchBody:h('div',{className:'eva-task-assignee-empty'},'没有匹配的业务域或数字员工')));
+  const searchTrigger=h(Dropdown,{trigger:'custom',position:'bottomLeft',clickToHide:true,visible:searchOpen,
+    onVisibleChange:visible=>{if(!visible)closeSearch();},
+    getPopupContainer:popup,render:searchMenu()},
+    h('span',{className:'eva-digital-center__search-anchor'},
+      h(Input,{className:'eva-digital-center__search',value:query,prefix:h(icons.Search,{size:16}),
+        placeholder:'搜索业务域或数字员工','aria-label':'搜索业务域或数字员工','aria-haspopup':'listbox','aria-expanded':searchOpen,
+        onFocus:()=>{setPanel(false);setSearchOpen(true);},
+        onChange:value=>{setQuery(value);setPanel(false);setSearchOpen(true);setActiveIndex(-1);},
+        onKeyDown:onSearchKeyDown})));
   const columns=[{title:'名称',dataIndex:'name',className:'eva-digital-center__name-cell',render:(_,a)=>identity(a,false)},{title:'工号',dataIndex:'no',width:'14%'},{title:'业务域',dataIndex:'domain',width:'18%'},{title:'操作',width:224,align:'right',className:'eva-digital-center__action-cell',render:(_,a)=>{const joined=store.hasInTeam(a.id);return h('div',{className:'eva-digital-center__actions'},h('span',{className:'eva-digital-center__team-action'},joined?h('span',{className:'eva-digital-center__joined-status',onClick:e=>e.stopPropagation()},'已加入'):btn('加入我的 Agent',e=>{e.stopPropagation();run(()=>{store.addToTeam(a.id);Toast.success('已加入我的 Agent');});},{size:'small',theme:'borderless',type:'primary',className:'eva-digital-center__market-action eva-digital-center__join-action'})),btn('加入项目',e=>{e.stopPropagation();open('project',a);},{size:'small',theme:'borderless',type:'primary',className:'eva-digital-center__market-action eva-digital-center__project-action'}));}}];
   return h('main',{className:'eva-digital-center__main'},
     h('header',{className:'eva-digital-center__head'},h('h1',null,'数字员工市场')),
     h('div',{className:'eva-digital-center__filter-card'},
-      h('div',{className:'eva-digital-center__filter-card-head',ref:searchHost,onKeyDown:e=>{if(e.key==='Escape'&&domainSearchOpen){e.stopPropagation();toggleDomainSearch();}}},
-        h('span',{className:'eva-digital-center__filter-card-title'},'业务域',
-          h('button',{type:'button',className:'eva-digital-center__domain-search-toggle','aria-label':'搜索业务域','aria-expanded':domainSearchOpen,onClick:toggleDomainSearch},h(icons.Search,{size:16}))),
-        domainSearchOpen&&h(Input,{className:'eva-digital-center__domain-search',showClear:true,value:domainQuery,onChange:onDomainQuery,placeholder:'搜索业务域','aria-label':'搜索业务域'})),
-      h('div',{className:'eva-digital-center__filter-bar'+(filterEdges.left?' has-overflow-left':'')+(filterEdges.right?' has-overflow-right':'')},
-        h('div',{className:'eva-digital-center__filter-track','data-testid':'domain-filter-track'},
-          filterEdges.left&&h('button',{type:'button',className:'eva-digital-center__filter-nav eva-digital-center__filter-nav--left','aria-label':'向左滚动业务域',onClick:()=>scrollFilter(-1)},h(icons.ChevronLeft,{size:14})),
-          h('div',{ref:filterTrack,className:'eva-digital-center__filter-scroll',onScroll:measureFilter},
-            h('div',{className:'eva-digital-center__filters eva-digital-center__domain-filters','aria-label':'按业务域筛选'},
-              btn('全部业务域 '+base.length,()=>setDomain(null),{'aria-pressed':!domain,theme:!domain?'light':'borderless'}),
-              visibleDomains.map(d=>btn(d+' '+base.filter(a=>a.domain===d).length,()=>setDomain(d),{key:d,'aria-pressed':domain===d,theme:domain===d?'light':'borderless'})),
-              dq&&!visibleDomains.length&&h('span',{className:'eva-digital-center__filter-empty'},'没有匹配的业务域'))),
-          filterEdges.right&&h('button',{type:'button',className:'eva-digital-center__filter-nav eva-digital-center__filter-nav--right','aria-label':'向右滚动业务域',onClick:()=>scrollFilter(1)},h(icons.ChevronRight,{size:14}))))),
+      h('div',{className:'eva-digital-center__filter-card-head'},
+        h('span',{className:'eva-digital-center__filter-card-title'},'业务域'),
+        h('div',{className:'eva-digital-center__search-wrap',ref:searchWrapRef},searchTrigger)),
+      h('div',{className:'eva-digital-center__filter-bar',ref:barRef},
+        h('div',{className:'eva-digital-center__filters eva-digital-center__domain-filters','aria-label':'按业务域筛选'},
+          btn('全部业务域 '+base.length,()=>{setDomain(null);setPanel(false);},{'aria-pressed':!domain,theme:!domain?'light':'borderless'}),
+          visibleTop.map(d=>chip(d)),
+          appendSel&&chip(appendSel),
+          moreCount>0&&btn('更多 '+moreCount,()=>{setPanel(!panel);closeSearch();},{className:'eva-digital-center__more-toggle',theme:'borderless','aria-expanded':panel,'aria-haspopup':'dialog',icon:h(icons.ChevronDown,{size:14}),iconPosition:'right'})),
+        h('div',{className:'eva-digital-center__measure',ref:measureRef,'aria-hidden':true},
+          btn('全部业务域 '+base.length,()=>{},{theme:'borderless',tabIndex:-1}),
+          domains.map(d=>btn(d+' '+countOf(d),()=>{},{key:d,theme:'borderless',tabIndex:-1,'data-domain':d})),
+          btn('更多 '+domains.length,()=>{},{theme:'borderless',tabIndex:-1})),
+        panel&&h('div',{className:'eva-digital-center__domain-panel',role:'dialog','aria-label':'全部业务域'},
+          h('div',{className:'eva-digital-center__domain-panel-grid'},
+            domains.map(d=>chip(d,{className:'eva-digital-center__domain-panel-item'})))))),
     h('div',{className:'eva-digital-center__table',tabIndex:0,'aria-label':'数字员工列表'},
       h(Table,{key:domain||'all',rowKey:'id',pagination:{pageSize:20,showSizeChanger:false},columns,dataSource:list,
         empty:'暂无数字员工',

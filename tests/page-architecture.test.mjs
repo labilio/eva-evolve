@@ -529,12 +529,36 @@ test('其他菜单只保留数字员工市场，市场身份统一展示公共 A
   assert.doesNotMatch(market, /const addIcon=|icon:addIcon\(\)/);
   assert.match(market, /eva-digital-center__domain-filters/);
   assert.match(market, /className:'eva-digital-center__filter-card'/);
-  assert.match(market, /className:'eva-digital-center__domain-search-toggle','aria-label':'搜索业务域','aria-expanded':domainSearchOpen/);
-  assert.match(market, /domainSearchOpen&&h\(Input,\{className:'eva-digital-center__domain-search',showClear:true/);
-  assert.doesNotMatch(market, /eva-digital-center__domain-search',prefix/);
-  assert.match(market, /setDomainSearchOpen\(next\);if\(!next\)\{setDomainQuery\(''\)/);
-  assert.match(market, /visibleDomains=domains\.filter\(d=>!dq\|\|d\.toLowerCase\(\)\.includes\(dq\)\|\|d===domain\)/);
-  assert.doesNotMatch(market, /eva-digital-center__market-search|搜索数字员工/, '市场右上角员工搜索框已删除，不得保留第二处搜索入口');
+  // 统一搜索框（业务域＋数字员工二合一）：复用任务身份选择面板那套 Semi Dropdown 菜单；
+  // 外层统一搜索外观的 Semi Input 直接输入，菜单只出结果（分组标题＋「展开其余」）；
+  // 弹层父容器复用页面统一 popup 配置（host），与 .eva-task-assignee-* 同款 CSS。
+  assert.match(market, /h\(Input,\{className:'eva-digital-center__search',value:query,prefix:h\(icons\.Search,\{size:16\}\)/);
+  assert.match(market, /h\(Dropdown,\{trigger:'custom',position:'bottomLeft',clickToHide:true,visible:searchOpen/);
+  assert.match(market, /onVisibleChange:visible=>\{if\(!visible\)closeSearch\(\);\}/, '组件外点击由本组件收起');
+  assert.match(market, /getPopupContainer:popup,render:searchMenu\(\)/, '弹层父容器复用页面统一 popup(host)');
+  assert.match(market, /placeholder:'搜索业务域或数字员工','aria-label':'搜索业务域或数字员工'/);
+  assert.doesNotMatch(market, /className:'eva-task-assignee-search'/, '外层已有搜索框，菜单内不再放第二个搜索框');
+  assert.match(market, /className:'eva-task-assignee-scroll'/);
+  assert.match(market, /className:'eva-task-assignee-expand'/);
+  assert.match(market, /className:'eva-task-assignee-empty'/);
+  assert.match(market, /const showGroupLabel=groups\.length>1;/, '单一结果类型不放分组标题');
+  assert.doesNotMatch(market, /foundation\?\.close|EVA_EMPTY_SELECTION|renderOptionItem|OptGroup|dropdownClassName:'eva-digital-center__search-results'/);
+  assert.doesNotMatch(market, /resultsOpen|searchRef|pickDomain/);
+  // 命中业务域点击应用筛选；命中数字员工带头像与公共 AI 标，点击打开详情。
+  assert.match(market, /base\.filter\(a=>!needle\|\|norm\(a\.name\)\.includes\(needle\)\|\|norm\(a\.no\)\.includes\(needle\)\)/);
+  assert.match(market, /root\.EvaAIIdentity\.avatar\(store\.appearance\(a\),28,h\)/);
+  // 业务域行按可用宽度自适应放满：隐藏测量行 + ResizeObserver 计算可见个数；
+  // 选中低频域预留宽度顶替末位槽（不记偏好），重置恢复纯高频列表；「更多」面板 4 列限高铺开全目录。
+  assert.match(market, /const visibleTop=fit\?domains\.slice\(0,fit\.k\):domains\.slice\(0,5\)/);
+  assert.match(market, /const appendSel=fit&&fit\.plus&&domain\?domain:null/);
+  assert.match(market, /className:'eva-digital-center__measure',ref:measureRef,'aria-hidden':true/);
+  assert.match(market, /new ResizeObserver\(\(\)=>refreshFit\(\)\)/);
+  assert.match(market, /className:'eva-digital-center__more-toggle',theme:'borderless','aria-expanded':panel,'aria-haspopup':'dialog'/);
+  assert.match(market, /eva-digital-center__domain-panel-grid/);
+  assert.doesNotMatch(market, /domain-search-toggle|domainSearchOpen|filter-scroll|filter-nav|filter-track|topDomains|market-search|搜索数字员工/);
+  assert.match(css, /\.eva-digital-center__domain-panel \{ box-sizing: border-box; position: absolute; top: calc\(100% \+ 4px\); left: 0; z-index: 20; width: min\(640px, 100%\)/);
+  assert.match(css, /\.eva-digital-center__domain-panel-grid \{ display: grid; grid-template-columns: repeat\(auto-fill, minmax\(140px, 1fr\)\); gap: 8px; max-height: 280px; overflow: auto; \}/);
+  assert.match(css, /\.eva-digital-center__measure \.semi-button \{ flex: none; min-height: 32px; border: 1px solid var\(--eva-border-faint\); border-radius: var\(--eva-radius-chip\)/);
   const listFilter = market.match(/const list=base\.filter\(([^;]*)\);/);
   assert.ok(listFilter, '数字员工列表筛选表达式缺失');
   assert.equal(listFilter[1], 'a=>!domain||a.domain===domain', '员工列表只能按业务域筛选');
