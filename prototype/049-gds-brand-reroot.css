@@ -165,10 +165,16 @@ body {
    · 面板 = surface/primary（暗 #242424：比中栏亮一档的抬升面；浅 = 白，不变）
    · 选项 hover = 白 6% 罩（暗）；浅色维持 vendor fill-0（与 6% 黑等值，不动）
    · 圆角对齐账户菜单参考实现：面板 chip、选项 key
+   · 菜单四周留白 + 选项水平内边距收窄：vendor 的 .semi-dropdown-menu 只有
+     上下 4px、左右 0，选项盒子贴到面板边——hover 高亮矩形因此顶到圆角内壁，
+     视觉「出界」。account-menu 早已手动补过（menu padding 6px + item
+     padding 0 10px），这里把同一节奏下放为全局默认，账户菜单等定制实例
+     用自己的规则覆盖，不受影响。
    特异度：body 前缀 (0,1,1) 压过 vendor (0,1,0)；vendor 在所有 prototype
    之后加载，同分必输，故不加 body 的同分规则一律无效。
    ============================================================ */
 body .semi-dropdown-wrapper { background: var(--eva-surface-primary); border-radius: var(--eva-radius-chip); }
-body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); }
+body .semi-dropdown-wrapper .semi-dropdown-menu { padding: 6px; }
+body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
 :root[data-theme="dark"] .semi-dropdown-item:not(.semi-dropdown-item-active):hover,
 :root[data-theme="dark"] .semi-dropdown-item:focus-visible { background-color: var(--eva-overlay-hover); }
