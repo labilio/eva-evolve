@@ -1,836 +1,840 @@
 {
- "blocks": [
-  {
-   "order": 0,
-   "tag": "script",
-   "name": "shell-seed",
-   "file": "prototype/000-shell-seed.js",
-   "bytes": 2095,
-   "role": "prototype"
-  },
-  {
-   "order": 1,
-   "tag": "script",
-   "name": "colleague-portrait",
-   "file": "prototype/001-colleague-portrait.js",
-   "bytes": 23869,
-   "role": "prototype"
-  },
-  {
-   "order": 2,
-   "tag": "script",
-   "name": "current-user-portrait",
-   "file": "prototype/002-current-user-portrait.js",
-   "bytes": 30405,
-   "role": "prototype"
-  },
-  {
-   "order": 3,
-   "tag": "script",
-   "name": "my-assistant-identity",
-   "file": "prototype/003-my-assistant-identity.js",
-   "bytes": 2045,
-   "role": "prototype"
-  },
-  {
-   "order": 4,
-   "tag": "style",
-   "name": "ai-identity",
-   "file": "prototype/003-ai-identity.css",
-   "bytes": 1107,
-   "role": "prototype"
-  },
-  {
-   "order": 5,
-   "tag": "script",
-   "name": "project-appearance",
-   "file": "prototype/004-project-appearance.js",
-   "bytes": 2104,
-   "role": "prototype"
-  },
-  {
-   "order": 6,
-   "tag": "script",
-   "name": "project-registry",
-   "file": "prototype/004-project-registry.js",
-   "bytes": 1537,
-   "role": "prototype"
-  },
-  {
-   "tag": "script",
-   "name": "popup-dismiss",
-   "file": "prototype/004-popup-dismiss.js",
-   "bytes": 3879,
-   "role": "prototype",
-   "order": 7
-  },
-  {
-   "order": 8,
-   "tag": "script",
-   "name": "script-5",
-   "file": "prototype/005-script-5.js",
-   "bytes": 307,
-   "role": "prototype"
-  },
-  {
-   "order": 9,
-   "tag": "style",
-   "name": "style-6",
-   "file": "prototype/006-style-6.css",
-   "bytes": 159,
-   "role": "prototype"
-  },
-  {
-   "tag": "script",
-   "name": "runtime-diagnostics",
-   "file": "prototype/007-runtime-diagnostics.js",
-   "role": "prototype",
-   "order": 10,
-   "bytes": 833
-  },
-  {
-   "order": 11,
-   "tag": "script",
-   "name": "eva-app-module-source",
-   "file": "vendor/eva-legacy-runtime.js",
-   "bytes": 18624433,
-   "role": "vendor"
-  },
-  {
-   "order": 12,
-   "tag": "style",
-   "name": "semi-card-official",
-   "file": "prototype/008-semi-card-official.css",
-   "bytes": 1499,
-   "role": "prototype"
-  },
-  {
-   "file": "prototype/008-gds-tokens.css",
-   "tag": "style",
-   "name": "gds-semantic-tokens",
-   "role": "prototype",
-   "bytes": 3218,
-   "order": 13
-  },
-  {
-   "order": 14,
-   "tag": "script",
-   "name": "demo-time",
-   "file": "prototype/009-0-demo-time.js",
-   "bytes": 207,
-   "role": "prototype"
-  },
-  {
-   "order": 15,
-   "tag": "script",
-   "name": "data-drive",
-   "file": "prototype/009-1-data-drive.js",
-   "bytes": 10765,
-   "role": "prototype"
-  },
-  {
-   "order": 16,
-   "tag": "script",
-   "name": "data-supply",
-   "file": "prototype/009-2-data-supply.js",
-   "bytes": 26027,
-   "role": "prototype"
-  },
-  {
-   "order": 17,
-   "tag": "script",
-   "name": "data-im",
-   "file": "prototype/009-3-data-im.js",
-   "bytes": 31300,
-   "role": "prototype"
-  },
-  {
-   "file": "prototype/009-3-ai-team-store.js",
-   "tag": "script",
-   "name": "ai-team-store",
-   "role": "prototype",
-   "bytes": 36508,
-   "order": 18
-  },
-  {
-   "file": "prototype/009-3-digital-employees-data.js",
-   "tag": "script",
-   "name": "digital-employees-data",
-   "role": "prototype",
-   "order": 19,
-   "bytes": 372328
-  },
-  {
-   "file": "prototype/009-3-digital-employees-store.js",
-   "tag": "script",
-   "name": "digital-employees-store",
-   "role": "prototype",
-   "order": 20,
-   "bytes": 9990
-  },
-  {
-   "file": "prototype/047-digital-employees.js",
-   "tag": "script",
-   "name": "digital-employees-page",
-   "role": "prototype",
-   "order": 21,
-   "bytes": 34083
-  },
-  {
-   "file": "prototype/048-settings-usage.js",
-   "tag": "script",
-   "name": "settings-usage",
-   "role": "prototype",
-   "order": 22,
-   "bytes": 6198
-  },
-  {
-   "file": "prototype/049-loop-task-create.js",
-   "tag": "script",
-   "name": "loop-task-create",
-   "role": "prototype",
-   "order": 23,
-   "bytes": 11835
-  },
-  {
-   "file": "prototype/047-digital-employees.css",
-   "tag": "style",
-   "name": "digital-employees-style",
-   "role": "prototype",
-   "order": 24,
-   "bytes": 15279
-  },
-  {
-   "order": 25,
-   "tag": "script",
-   "name": "membership-controller",
-   "file": "prototype/009-2-membership.js",
-   "bytes": 33327,
-   "role": "prototype"
-  },
-  {
-   "order": 26,
-   "tag": "script",
-   "name": "file-sharing-controller",
-   "file": "prototype/009-1-file-sharing.js",
-   "role": "prototype",
-   "bytes": 32072
-  },
-  {
-   "order": 27,
-   "tag": "script",
-   "name": "member-picker-preview",
-   "file": "prototype/009-2-picker-preview.js",
-   "bytes": 6361,
-   "role": "prototype"
-  },
-  {
-   "order": 28,
-   "tag": "style",
-   "name": "member-picker-preview-style",
-   "file": "prototype/009-2-picker-preview.css",
-   "bytes": 3433,
-   "role": "prototype"
-  },
-  {
-   "order": 29,
-   "tag": "script",
-   "name": "009-3-contact-identities",
-   "file": "prototype/009-3-contact-identities.js",
-   "bytes": 3881,
-   "role": "prototype"
-  },
-  {
-   "order": 30,
-   "tag": "script",
-   "name": "009-3-identity-card",
-   "file": "prototype/009-3-identity-card.js",
-   "bytes": 4431,
-   "role": "prototype"
-  },
-  {
-   "order": 31,
-   "tag": "style",
-   "name": "009-3-identity-card",
-   "file": "prototype/009-3-identity-card.css",
-   "bytes": 3265,
-   "role": "prototype"
-  },
-  {
-   "order": 32,
-   "tag": "script",
-   "name": "chat-settings",
-   "file": "prototype/009-2-chat-settings.js",
-   "bytes": 11930,
-   "role": "prototype"
-  },
-  {
-   "order": 33,
-   "tag": "style",
-   "name": "chat-settings-style",
-   "file": "prototype/009-2-chat-settings.css",
-   "bytes": 6438,
-   "role": "prototype"
-  },
-  {
-   "order": 34,
-   "tag": "script",
-   "name": "membership-components",
-   "file": "prototype/009-2-members-ui.js",
-   "bytes": 18293,
-   "role": "prototype"
-  },
-  {
-   "file": "prototype/009-2-mention-candidates.js",
-   "tag": "script",
-   "name": "mention-candidates",
-   "role": "prototype",
-   "bytes": 3488,
-   "order": 35
-  },
-  {
-   "order": 36,
-   "tag": "link",
-   "name": "membership-style",
-   "file": "prototype/009-2-members.css",
-   "bytes": 12015,
-   "role": "prototype"
-  },
-  {
-   "tag": "script",
-   "name": "native-page-registry",
-   "file": "prototype/010-native-page-registry.js",
-   "role": "prototype",
-   "order": 37,
-   "bytes": 1230
-  },
-  {
-   "order": 38,
-   "tag": "script",
-   "name": "runtime-patch-registry",
-   "file": "prototype/009-4-registry.js",
-   "bytes": 769,
-   "role": "build-input"
-  },
-  {
-   "order": 39,
-   "tag": "script",
-   "name": "runtime-patch-im",
-   "file": "prototype/009-5-patch-im.js",
-   "bytes": 89000,
-   "role": "build-input"
-  },
-  {
-   "order": 40,
-   "tag": "script",
-   "name": "runtime-patch-general",
-   "file": "prototype/009-6-patch-general.js",
-   "bytes": 72625,
-   "role": "build-input"
-  },
-  {
-   "order": 41,
-   "tag": "script",
-   "name": "runtime-patch-sider",
-   "file": "prototype/009-7-patch-sider.js",
-   "bytes": 23762,
-   "role": "build-input"
-  },
-  {
-   "order": 42,
-   "tag": "script",
-   "name": "runtime-patch-automation",
-   "file": "prototype/009-8-patch-automation.js",
-   "bytes": 12792,
-   "role": "build-input"
-  },
-  {
-   "order": 43,
-   "tag": "style",
-   "name": "style-10",
-   "file": "vendor/eva-legacy.css",
-   "bytes": 3200653,
-   "role": "vendor"
-  },
-  {
-   "order": 44,
-   "tag": "script",
-   "name": "script-11",
-   "file": "prototype/011-script-11.js",
-   "bytes": 5741,
-   "role": "prototype"
-  },
-  {
-   "order": 45,
-   "tag": "style",
-   "name": "mode-layer",
-   "file": "prototype/012-mode-layer.css",
-   "bytes": 25646,
-   "role": "prototype"
-  },
-  {
-   "order": 46,
-   "tag": "script",
-   "name": "jdenticon",
-   "file": "prototype/013-jdenticon.js",
-   "bytes": 9372,
-   "role": "prototype"
-  },
-  {
-   "order": 47,
-   "tag": "script",
-   "name": "avatar",
-   "file": "prototype/014-avatar.js",
-   "bytes": 4859,
-   "role": "prototype"
-  },
-  {
-   "order": 48,
-   "tag": "script",
-   "name": "file-message",
-   "file": "prototype/015-file-message.js",
-   "bytes": 2419,
-   "role": "prototype"
-  },
-  {
-   "order": 49,
-   "tag": "style",
-   "name": "message-hierarchy",
-   "file": "prototype/016-message-hierarchy.css",
-   "bytes": 53416,
-   "role": "prototype"
-  },
-  {
-   "order": 50,
-   "tag": "style",
-   "name": "im-shell",
-   "file": "prototype/017-im-shell.css",
-   "bytes": 13392,
-   "role": "prototype"
-  },
-  {
-   "order": 51,
-   "tag": "style",
-   "name": "eva-release-meta-style",
-   "file": "prototype/018-eva-release-meta-style.css",
-   "bytes": 136,
-   "role": "prototype"
-  },
-  {
-   "order": 52,
-   "tag": "script",
-   "name": "script-19",
-   "file": "prototype/019-script-19.js",
-   "bytes": 200,
-   "role": "prototype"
-  },
-  {
-   "order": 53,
-   "tag": "script",
-   "name": "mode-layer",
-   "file": "prototype/020-mode-layer.js",
-   "bytes": 80515,
-   "role": "prototype"
-  },
-  {
-   "order": 54,
-   "tag": "script",
-   "name": "message-hierarchy",
-   "file": "prototype/021-message-hierarchy.js",
-   "bytes": 14589,
-   "role": "prototype"
-  },
-  {
-   "order": 55,
-   "tag": "style",
-   "name": "demo-0902-v2",
-   "file": "prototype/022-demo-0902-v2.css",
-   "bytes": 285,
-   "role": "prototype"
-  },
-  {
-   "order": 56,
-   "tag": "style",
-   "name": "demo-0902-v2-pages",
-   "file": "prototype/024-demo-0902-v2-pages.css",
-   "bytes": 11771,
-   "role": "prototype"
-  },
-  {
-   "order": 57,
-   "tag": "script",
-   "name": "demo-0902-v2-pages",
-   "file": "prototype/025-demo-0902-v2-pages.js",
-   "bytes": 16652,
-   "role": "prototype"
-  },
-  {
-   "order": 58,
-   "tag": "style",
-   "name": "connection-center-v2",
-   "file": "prototype/026-connection-center-v2.css",
-   "bytes": 6623,
-   "role": "prototype"
-  },
-  {
-   "order": 59,
-   "tag": "style",
-   "name": "connection-center-functional-v2",
-   "file": "prototype/028-connection-center-functional-v2.css",
-   "bytes": 7819,
-   "role": "prototype"
-  },
-  {
-   "order": 60,
-   "tag": "script",
-   "name": "connection-center-v2-functional",
-   "file": "prototype/029-connection-center-v2-functional.js",
-   "bytes": 24427,
-   "role": "prototype"
-  },
-  {
-   "order": 61,
-   "tag": "style",
-   "name": "expert-center-v1",
-   "file": "prototype/030-expert-center-v1.css",
-   "bytes": 9763,
-   "role": "prototype"
-  },
-  {
-   "order": 62,
-   "tag": "style",
-   "name": "shared-automation-v2",
-   "file": "prototype/031-shared-automation-v2.css",
-   "bytes": 11985,
-   "role": "prototype"
-  },
-  {
-   "order": 63,
-   "tag": "style",
-   "name": "contacts-redesign-v2",
-   "file": "prototype/032-contacts-redesign-v2.css",
-   "bytes": 10595,
-   "role": "prototype"
-  },
-  {
-   "order": 64,
-   "tag": "script",
-   "name": "contacts-redesign-v2",
-   "file": "prototype/033-contacts-redesign-v2.js",
-   "bytes": 4429,
-   "role": "prototype"
-  },
-  {
-   "order": 65,
-   "tag": "style",
-   "name": "project-task-toolbar-v3",
-   "file": "prototype/034-project-task-toolbar-v3.css",
-   "bytes": 6107,
-   "role": "prototype"
-  },
-  {
-   "order": 66,
-   "tag": "style",
-   "name": "project-switcher-semi-v3",
-   "file": "prototype/035-project-switcher-semi-v3.css",
-   "bytes": 1425,
-   "role": "prototype"
-  },
-  {
-   "order": 67,
-   "tag": "style",
-   "name": "project-directory-v3",
-   "file": "prototype/036-project-directory-v3.css",
-   "bytes": 18136,
-   "role": "prototype"
-  },
-  {
-   "order": 68,
-   "tag": "style",
-   "name": "team-message-project-recent",
-   "file": "prototype/039-team-message-project-recent.css",
-   "bytes": 4843,
-   "role": "prototype"
-  },
-  {
-   "order": 69,
-   "tag": "style",
-   "name": "final-layout-convergence",
-   "file": "prototype/043-final-layout-convergence.css",
-   "bytes": 16120,
-   "role": "prototype"
-  },
-  {
-   "tag": "style",
-   "name": "native-page-layout",
-   "file": "prototype/045-native-page-layout.css",
-   "role": "prototype",
-   "order": 70,
-   "bytes": 939
-  },
-  {
-   "file": "prototype/046-ai-team.css",
-   "tag": "style",
-   "name": "ai-team",
-   "role": "prototype",
-   "bytes": 30706,
-   "order": 71
-  },
-  {
-   "file": "prototype/048-settings-usage.css",
-   "tag": "style",
-   "name": "settings-usage-style",
-   "role": "prototype",
-   "order": 72,
-   "bytes": 8599
-  },
-  {
-   "file": "prototype/049-loop-task-create.css",
-   "tag": "style",
-   "name": "loop-task-create-style",
-   "role": "prototype",
-   "order": 73,
-   "bytes": 4498
-  },
-  {
-   "order": 74,
-   "tag": "script",
-   "name": "final-layout-convergence",
-   "file": "prototype/044-final-layout-convergence.js",
-   "bytes": 5785,
-   "role": "prototype"
-  },
-  {
-   "order": 75,
-   "tag": "script",
-   "name": "personal-assistants",
-   "file": "prototype/046-personal-assistants.js",
-   "bytes": 6958,
-   "role": "prototype"
-  },
-  {
-   "order": 76,
-   "tag": "style",
-   "name": "gds-tokens",
-   "file": "prototype/047-gds-tokens.css",
-   "bytes": 8103,
-   "role": "prototype"
-  },
-  {
-   "order": 77,
-   "tag": "style",
-   "name": "gds-components",
-   "file": "prototype/048-gds-components.css",
-   "bytes": 24433,
-   "role": "prototype"
-  },
-  {
-   "order": 78,
-   "tag": "style",
-   "name": "gds-brand-reroot",
-   "file": "prototype/049-gds-brand-reroot.css",
-   "bytes": 6220,
-   "role": "prototype"
-  },
-  {
-   "order": 79,
-   "tag": "script",
-   "name": "lucide-dom",
-   "file": "prototype/050-lucide-dom.js",
-   "bytes": 10792,
-   "role": "prototype"
-  },
-  {
-   "order": 80,
-   "tag": "style",
-   "name": "personal-eva-gds",
-   "file": "prototype/051-personal-eva-gds.css",
-   "bytes": 15385,
-   "role": "prototype"
-  },
-  {
-   "order": 81,
-   "tag": "script",
-   "name": "personal-eva-gds",
-   "file": "prototype/052-personal-eva-gds.js",
-   "bytes": 42749,
-   "role": "prototype"
-  },
-  {
-   "order": 82,
-   "tag": "style",
-   "name": "sites-page",
-   "file": "prototype/053-sites-page.css",
-   "bytes": 3241,
-   "role": "prototype"
-  },
-  {
-   "order": 83,
-   "tag": "script",
-   "name": "sites-page",
-   "file": "prototype/053-sites-page.js",
-   "bytes": 1861,
-   "role": "prototype"
-  },
-  {
-   "order": 84,
-   "tag": "style",
-   "name": "review-comments",
-   "file": "review/comments.css",
-   "bytes": 14096,
-   "role": "review"
-  },
-  {
-   "order": 85,
-   "tag": "script",
-   "name": "review-comments-store",
-   "file": "review/comments-store.mjs",
-   "bytes": 4262,
-   "role": "review-module"
-  },
-  {
-   "order": 86,
-   "tag": "script",
-   "name": "review-comments",
-   "file": "review/comments.js",
-   "bytes": 37071,
-   "role": "review-module"
-  },
-  {
-   "order": 87,
-   "tag": "style",
-   "name": "050-file-library-styles",
-   "file": "prototype/050-file-library.css",
-   "bytes": 40597,
-   "role": "prototype"
-  },
-  {
-   "order": 88,
-   "tag": "script",
-   "name": "project-files-ui",
-   "file": "prototype/009-1-project-files-ui.js",
-   "bytes": 31731,
-   "role": "prototype"
-  },
-  {
-   "order": 89,
-   "tag": "style",
-   "name": "conversation-document-preview-tokens",
-   "file": "prototype/document-preview/tokens.css",
-   "bytes": 903,
-   "role": "prototype"
-  },
-  {
-   "order": 90,
-   "tag": "style",
-   "name": "conversation-document-preview",
-   "file": "prototype/054-conversation-document-preview.css",
-   "bytes": 2091,
-   "role": "prototype"
-  },
-  {
-   "order": 91,
-   "tag": "style",
-   "name": "search-controls",
-   "file": "prototype/055-search-controls.css",
-   "bytes": 3262,
-   "role": "prototype"
-  },
-  {
-   "order": 92,
-   "tag": "style",
-   "name": "conversation-search",
-   "file": "prototype/055-conversation-search.css",
-   "bytes": 17465,
-   "role": "prototype"
-  },
-  {
-   "order": 93,
-   "tag": "style",
-   "name": "heading-system",
-   "file": "prototype/056-heading-system.css",
-   "bytes": 3779,
-   "role": "prototype"
-  },
-  {
-   "order": 94,
-   "tag": "script",
-   "name": "project-skill-create",
-   "file": "prototype/058-project-skill-create.js",
-   "bytes": 10470,
-   "role": "prototype"
-  },
-  {
-   "order": 95,
-   "tag": "script",
-   "name": "theme-controller",
-   "file": "prototype/059-theme-controller.js",
-   "bytes": 2819,
-   "role": "prototype"
-  },
-  {
-   "order": 96,
-   "tag": "script",
-   "name": "appearance-theme",
-   "file": "prototype/058-appearance-theme.js",
-   "bytes": 3535,
-   "role": "prototype"
-  },
-  {
-   "order": 97,
-   "tag": "style",
-   "name": "gds-dark-tokens",
-   "file": "prototype/057-gds-dark-tokens.css",
-   "bytes": 4282,
-   "role": "prototype"
-  },
-  {
-   "order": 98,
-   "tag": "style",
-   "name": "avatar-editor",
-   "file": "prototype/060-avatar-editor.css",
-   "bytes": 2106,
-   "role": "prototype"
-  },
-  {
-   "order": 99,
-   "tag": "style",
-   "name": "task-drawer",
-   "file": "prototype/060-task-drawer.css",
-   "bytes": 3797,
-   "role": "prototype"
-  },
-  {
-   "order": 100,
-   "tag": "script",
-   "name": "task-drawer-controller",
-   "file": "prototype/060-task-drawer.js",
-   "bytes": 3437,
-   "role": "prototype"
-  },
-  {
-   "order": 101,
-   "tag": "style",
-   "name": "forward-picker",
-   "file": "prototype/061-forward-picker.css",
-   "bytes": 14757,
-   "role": "prototype"
-  },
-  {
-   "order": 102,
-   "tag": "style",
-   "name": "loop-table-view",
-   "file": "prototype/062-loop-table-view.css",
-   "bytes": 12651,
-   "role": "prototype"
-  },
-  {
-   "order": 103,
-   "tag": "script",
-   "name": "loop-table-view",
-   "file": "prototype/062-loop-table-view.js",
-   "bytes": 36933,
-   "role": "prototype"
-  }
- ]
+  "blocks": [
+    {
+      "order": 0,
+      "tag": "script",
+      "name": "shell-seed",
+      "file": "prototype/000-shell-seed.js",
+      "bytes": 2095,
+      "role": "prototype"
+    },
+    {
+      "order": 1,
+      "tag": "script",
+      "name": "colleague-portrait",
+      "file": "prototype/001-colleague-portrait.js",
+      "bytes": 23869,
+      "role": "prototype"
+    },
+    {
+      "order": 2,
+      "tag": "script",
+      "name": "current-user-portrait",
+      "file": "prototype/002-current-user-portrait.js",
+      "bytes": 30405,
+      "role": "prototype"
+    },
+    {
+      "order": 3,
+      "tag": "script",
+      "name": "my-assistant-identity",
+      "file": "prototype/003-my-assistant-identity.js",
+      "bytes": 2045,
+      "role": "prototype"
+    },
+    {
+      "order": 4,
+      "tag": "style",
+      "name": "ai-identity",
+      "file": "prototype/003-ai-identity.css",
+      "bytes": 1107,
+      "role": "prototype"
+    },
+    {
+      "order": 5,
+      "tag": "script",
+      "name": "project-appearance",
+      "file": "prototype/004-project-appearance.js",
+      "bytes": 2104,
+      "role": "prototype"
+    },
+    {
+      "order": 6,
+      "tag": "script",
+      "name": "project-registry",
+      "file": "prototype/004-project-registry.js",
+      "bytes": 1537,
+      "role": "prototype"
+    },
+    {
+      "tag": "script",
+      "name": "popup-dismiss",
+      "file": "prototype/004-popup-dismiss.js",
+      "bytes": 3879,
+      "role": "prototype",
+      "order": 7
+    },
+    {
+      "order": 8,
+      "tag": "script",
+      "name": "script-5",
+      "file": "prototype/005-script-5.js",
+      "bytes": 307,
+      "role": "prototype"
+    },
+    {
+      "order": 9,
+      "tag": "style",
+      "name": "style-6",
+      "file": "prototype/006-style-6.css",
+      "bytes": 159,
+      "role": "prototype"
+    },
+    {
+      "tag": "script",
+      "name": "runtime-diagnostics",
+      "file": "prototype/007-runtime-diagnostics.js",
+      "role": "prototype",
+      "order": 10,
+      "bytes": 833
+    },
+    {
+      "order": 11,
+      "tag": "script",
+      "name": "eva-app-module-source",
+      "file": "vendor/eva-legacy-runtime.js",
+      "bytes": 18624433,
+      "role": "vendor"
+    },
+    {
+      "order": 12,
+      "tag": "style",
+      "name": "semi-card-official",
+      "file": "prototype/008-semi-card-official.css",
+      "bytes": 1499,
+      "role": "prototype"
+    },
+    {
+      "file": "prototype/008-gds-tokens.css",
+      "tag": "style",
+      "name": "gds-semantic-tokens",
+      "role": "prototype",
+      "bytes": 3218,
+      "order": 13
+    },
+    {
+      "order": 14,
+      "tag": "script",
+      "name": "demo-time",
+      "file": "prototype/009-0-demo-time.js",
+      "bytes": 207,
+      "role": "prototype"
+    },
+    {
+      "order": 15,
+      "tag": "script",
+      "name": "data-drive",
+      "file": "prototype/009-1-data-drive.js",
+      "bytes": 10765,
+      "role": "prototype"
+    },
+    {
+      "order": 16,
+      "tag": "script",
+      "name": "data-supply",
+      "file": "prototype/009-2-data-supply.js",
+      "bytes": 26027,
+      "role": "prototype"
+    },
+    {
+      "order": 17,
+      "tag": "script",
+      "name": "data-im",
+      "file": "prototype/009-3-data-im.js",
+      "bytes": 31300,
+      "role": "prototype"
+    },
+    {
+      "file": "prototype/009-3-ai-team-store.js",
+      "tag": "script",
+      "name": "ai-team-store",
+      "role": "prototype",
+      "bytes": 36508,
+      "order": 18
+    },
+    {
+      "file": "prototype/009-3-digital-employees-data.js",
+      "tag": "script",
+      "name": "digital-employees-data",
+      "role": "prototype",
+      "order": 19,
+      "bytes": 372328
+    },
+    {
+      "file": "prototype/009-3-digital-employees-store.js",
+      "tag": "script",
+      "name": "digital-employees-store",
+      "role": "prototype",
+      "order": 20,
+      "bytes": 9990
+    },
+    {
+      "file": "prototype/047-digital-employees.js",
+      "tag": "script",
+      "name": "digital-employees-page",
+      "role": "prototype",
+      "order": 21,
+      "bytes": 34083
+    },
+    {
+      "file": "prototype/048-settings-usage.js",
+      "tag": "script",
+      "name": "settings-usage",
+      "role": "prototype",
+      "order": 22,
+      "bytes": 6198
+    },
+    {
+      "file": "prototype/049-loop-task-create.js",
+      "tag": "script",
+      "name": "loop-task-create",
+      "role": "prototype",
+      "order": 23,
+      "bytes": 11835
+    },
+    {
+      "file": "prototype/047-digital-employees.css",
+      "tag": "style",
+      "name": "digital-employees-style",
+      "role": "prototype",
+      "order": 24,
+      "bytes": 15279
+    },
+    {
+      "order": 25,
+      "tag": "script",
+      "name": "membership-controller",
+      "file": "prototype/009-2-membership.js",
+      "bytes": 33327,
+      "role": "prototype"
+    },
+    {
+      "order": 26,
+      "tag": "script",
+      "name": "file-sharing-controller",
+      "file": "prototype/009-1-file-sharing.js",
+      "role": "prototype",
+      "bytes": 32072
+    },
+    {
+      "order": 27,
+      "tag": "script",
+      "name": "member-picker-preview",
+      "file": "prototype/009-2-picker-preview.js",
+      "bytes": 6361,
+      "role": "prototype"
+    },
+    {
+      "order": 28,
+      "tag": "style",
+      "name": "member-picker-preview-style",
+      "file": "prototype/009-2-picker-preview.css",
+      "bytes": 3433,
+      "role": "prototype"
+    },
+    {
+      "order": 29,
+      "tag": "script",
+      "name": "009-3-contact-identities",
+      "file": "prototype/009-3-contact-identities.js",
+      "bytes": 3881,
+      "role": "prototype"
+    },
+    {
+      "order": 30,
+      "tag": "script",
+      "name": "009-3-identity-card",
+      "file": "prototype/009-3-identity-card.js",
+      "bytes": 4431,
+      "role": "prototype"
+    },
+    {
+      "order": 31,
+      "tag": "style",
+      "name": "009-3-identity-card",
+      "file": "prototype/009-3-identity-card.css",
+      "bytes": 3265,
+      "role": "prototype"
+    },
+    {
+      "order": 32,
+      "tag": "script",
+      "name": "chat-settings",
+      "file": "prototype/009-2-chat-settings.js",
+      "bytes": 11930,
+      "role": "prototype"
+    },
+    {
+      "order": 33,
+      "tag": "style",
+      "name": "chat-settings-style",
+      "file": "prototype/009-2-chat-settings.css",
+      "bytes": 6438,
+      "role": "prototype"
+    },
+    {
+      "order": 34,
+      "tag": "script",
+      "name": "membership-components",
+      "file": "prototype/009-2-members-ui.js",
+      "bytes": 18293,
+      "role": "prototype"
+    },
+    {
+      "file": "prototype/009-2-mention-candidates.js",
+      "tag": "script",
+      "name": "mention-candidates",
+      "role": "prototype",
+      "bytes": 3488,
+      "order": 35
+    },
+    {
+      "order": 36,
+      "tag": "link",
+      "name": "membership-style",
+      "file": "prototype/009-2-members.css",
+      "bytes": 12015,
+      "role": "prototype"
+    },
+    {
+      "tag": "script",
+      "name": "native-page-registry",
+      "file": "prototype/010-native-page-registry.js",
+      "role": "prototype",
+      "order": 37,
+      "bytes": 1230
+    },
+    {
+      "order": 38,
+      "tag": "script",
+      "name": "runtime-patch-registry",
+      "file": "prototype/009-4-registry.js",
+      "bytes": 769,
+      "role": "build-input"
+    },
+    {
+      "order": 39,
+      "tag": "script",
+      "name": "runtime-patch-im",
+      "file": "prototype/009-5-patch-im.js",
+      "bytes": 89000,
+      "role": "build-input"
+    },
+    {
+      "order": 40,
+      "tag": "script",
+      "name": "runtime-patch-general",
+      "file": "prototype/009-6-patch-general.js",
+      "bytes": 72625,
+      "role": "build-input"
+    },
+    {
+      "order": 41,
+      "tag": "script",
+      "name": "runtime-patch-sider",
+      "file": "prototype/009-7-patch-sider.js",
+      "bytes": 23762,
+      "role": "build-input"
+    },
+    {
+      "order": 42,
+      "tag": "script",
+      "name": "runtime-patch-automation",
+      "file": "prototype/009-8-patch-automation.js",
+      "bytes": 12792,
+      "role": "build-input"
+    },
+    {
+      "order": 43,
+      "tag": "style",
+      "name": "style-10",
+      "file": "vendor/eva-legacy.css",
+      "bytes": 3200653,
+      "role": "vendor"
+    },
+    {
+      "order": 44,
+      "tag": "script",
+      "name": "script-11",
+      "file": "prototype/011-script-11.js",
+      "bytes": 5741,
+      "role": "prototype"
+    },
+    {
+      "order": 45,
+      "tag": "style",
+      "name": "mode-layer",
+      "file": "prototype/012-mode-layer.css",
+      "bytes": 25646,
+      "role": "prototype"
+    },
+    {
+      "order": 46,
+      "tag": "script",
+      "name": "jdenticon",
+      "file": "prototype/013-jdenticon.js",
+      "bytes": 9372,
+      "role": "prototype"
+    },
+    {
+      "order": 47,
+      "tag": "script",
+      "name": "avatar",
+      "file": "prototype/014-avatar.js",
+      "bytes": 4859,
+      "role": "prototype"
+    },
+    {
+      "order": 48,
+      "tag": "script",
+      "name": "file-message",
+      "file": "prototype/015-file-message.js",
+      "bytes": 2419,
+      "role": "prototype"
+    },
+    {
+      "order": 49,
+      "tag": "style",
+      "name": "message-hierarchy",
+      "file": "prototype/016-message-hierarchy.css",
+      "bytes": 53416,
+      "role": "prototype"
+    },
+    {
+      "order": 50,
+      "tag": "style",
+      "name": "im-shell",
+      "file": "prototype/017-im-shell.css",
+      "bytes": 13392,
+      "role": "prototype"
+    },
+    {
+      "order": 51,
+      "tag": "style",
+      "name": "eva-release-meta-style",
+      "file": "prototype/018-eva-release-meta-style.css",
+      "bytes": 136,
+      "role": "prototype"
+    },
+    {
+      "order": 52,
+      "tag": "script",
+      "name": "script-19",
+      "file": "prototype/019-script-19.js",
+      "bytes": 200,
+      "role": "prototype"
+    },
+    {
+      "order": 53,
+      "tag": "script",
+      "name": "mode-layer",
+      "file": "prototype/020-mode-layer.js",
+      "bytes": 80515,
+      "role": "prototype"
+    },
+    {
+      "order": 54,
+      "tag": "script",
+      "name": "message-hierarchy",
+      "file": "prototype/021-message-hierarchy.js",
+      "bytes": 14589,
+      "role": "prototype"
+    },
+    {
+      "order": 55,
+      "tag": "style",
+      "name": "demo-0902-v2",
+      "file": "prototype/022-demo-0902-v2.css",
+      "bytes": 285,
+      "role": "prototype"
+    },
+    {
+      "order": 56,
+      "tag": "style",
+      "name": "demo-0902-v2-pages",
+      "file": "prototype/024-demo-0902-v2-pages.css",
+      "bytes": 11771,
+      "role": "prototype"
+    },
+    {
+      "order": 57,
+      "tag": "script",
+      "name": "demo-0902-v2-pages",
+      "file": "prototype/025-demo-0902-v2-pages.js",
+      "bytes": 16652,
+      "role": "prototype"
+    },
+    {
+      "order": 58,
+      "tag": "style",
+      "name": "connection-center-v2",
+      "file": "prototype/026-connection-center-v2.css",
+      "bytes": 6623,
+      "role": "prototype"
+    },
+    {
+      "order": 59,
+      "tag": "style",
+      "name": "connection-center-functional-v2",
+      "file": "prototype/028-connection-center-functional-v2.css",
+      "bytes": 7819,
+      "role": "prototype"
+    },
+    {
+      "order": 60,
+      "tag": "script",
+      "name": "connection-center-v2-functional",
+      "file": "prototype/029-connection-center-v2-functional.js",
+      "bytes": 24427,
+      "role": "prototype"
+    },
+    {
+      "order": 61,
+      "tag": "style",
+      "name": "expert-center-v1",
+      "file": "prototype/030-expert-center-v1.css",
+      "bytes": 9763,
+      "role": "prototype"
+    },
+    {
+      "order": 62,
+      "tag": "style",
+      "name": "shared-automation-v2",
+      "file": "prototype/031-shared-automation-v2.css",
+      "bytes": 11985,
+      "role": "prototype"
+    },
+    {
+      "order": 63,
+      "tag": "style",
+      "name": "contacts-redesign-v2",
+      "file": "prototype/032-contacts-redesign-v2.css",
+      "bytes": 10595,
+      "role": "prototype"
+    },
+    {
+      "order": 64,
+      "tag": "script",
+      "name": "contacts-redesign-v2",
+      "file": "prototype/033-contacts-redesign-v2.js",
+      "bytes": 4429,
+      "role": "prototype"
+    },
+    {
+      "order": 65,
+      "tag": "style",
+      "name": "project-task-toolbar-v3",
+      "file": "prototype/034-project-task-toolbar-v3.css",
+      "bytes": 6107,
+      "role": "prototype"
+    },
+    {
+      "order": 66,
+      "tag": "style",
+      "name": "project-switcher-semi-v3",
+      "file": "prototype/035-project-switcher-semi-v3.css",
+      "bytes": 1425,
+      "role": "prototype"
+    },
+    {
+      "order": 67,
+      "tag": "style",
+      "name": "project-directory-v3",
+      "file": "prototype/036-project-directory-v3.css",
+      "bytes": 18136,
+      "role": "prototype"
+    },
+    {
+      "order": 68,
+      "tag": "style",
+      "name": "team-message-project-recent",
+      "file": "prototype/039-team-message-project-recent.css",
+      "bytes": 4843,
+      "role": "prototype"
+    },
+    {
+      "order": 69,
+      "tag": "style",
+      "name": "final-layout-convergence",
+      "file": "prototype/043-final-layout-convergence.css",
+      "bytes": 16120,
+      "role": "prototype"
+    },
+    {
+      "tag": "style",
+      "name": "native-page-layout",
+      "file": "prototype/045-native-page-layout.css",
+      "role": "prototype",
+      "order": 70,
+      "bytes": 939
+    },
+    {
+      "file": "prototype/046-ai-team.css",
+      "tag": "style",
+      "name": "ai-team",
+      "role": "prototype",
+      "bytes": 30706,
+      "order": 71
+    },
+    {
+      "file": "prototype/048-settings-usage.css",
+      "tag": "style",
+      "name": "settings-usage-style",
+      "role": "prototype",
+      "order": 72,
+      "bytes": 8599
+    },
+    {
+      "file": "prototype/049-loop-task-create.css",
+      "tag": "style",
+      "name": "loop-task-create-style",
+      "role": "prototype",
+      "order": 73,
+      "bytes": 4498
+    },
+    {
+      "order": 74,
+      "tag": "script",
+      "name": "final-layout-convergence",
+      "file": "prototype/044-final-layout-convergence.js",
+      "bytes": 5785,
+      "role": "prototype"
+    },
+    {
+      "order": 75,
+      "tag": "script",
+      "name": "personal-assistants",
+      "file": "prototype/046-personal-assistants.js",
+      "bytes": 6958,
+      "role": "prototype"
+    },
+    {
+      "order": 76,
+      "tag": "style",
+      "name": "gds-tokens",
+      "file": "prototype/047-gds-tokens.css",
+      "bytes": 8103,
+      "role": "prototype"
+    },
+    {
+      "order": 77,
+      "tag": "style",
+      "name": "gds-components",
+      "file": "prototype/048-gds-components.css",
+      "bytes": 24433,
+      "role": "prototype"
+    },
+    {
+      "order": 78,
+      "tag": "style",
+      "name": "gds-brand-reroot",
+      "file": "prototype/049-gds-brand-reroot.css",
+      "bytes": 6220,
+      "role": "prototype"
+    },
+    {
+      "order": 79,
+      "tag": "script",
+      "name": "lucide-dom",
+      "file": "prototype/050-lucide-dom.js",
+      "bytes": 10792,
+      "role": "prototype"
+    },
+    {
+      "order": 80,
+      "tag": "style",
+      "name": "personal-eva-gds",
+      "file": "prototype/051-personal-eva-gds.css",
+      "bytes": 15385,
+      "role": "prototype"
+    },
+    {
+      "order": 81,
+      "tag": "script",
+      "name": "personal-eva-gds",
+      "file": "prototype/052-personal-eva-gds.js",
+      "bytes": 42749,
+      "role": "prototype"
+    },
+    {
+      "order": 82,
+      "tag": "style",
+      "name": "sites-page",
+      "file": "prototype/053-sites-page.css",
+      "bytes": 3241,
+      "role": "prototype"
+    },
+    {
+      "order": 83,
+      "tag": "script",
+      "name": "sites-page",
+      "file": "prototype/053-sites-page.js",
+      "bytes": 1861,
+      "role": "prototype"
+    },
+    {
+      "order": 84,
+      "tag": "style",
+      "name": "review-comments",
+      "file": "review/comments.css",
+      "bytes": 14096,
+      "role": "review"
+    },
+    {
+      "order": 85,
+      "tag": "script",
+      "name": "review-comments-store",
+      "file": "review/comments-store.mjs",
+      "bytes": 4262,
+      "role": "review-module"
+    },
+    {
+      "order": 86,
+      "tag": "script",
+      "name": "review-comments",
+      "file": "review/comments.js",
+      "bytes": 37071,
+      "role": "review-module"
+    },
+    {
+      "order": 87,
+      "tag": "style",
+      "name": "050-file-library-styles",
+      "file": "prototype/050-file-library.css",
+      "bytes": 40597,
+      "role": "prototype"
+    },
+    {
+      "order": 88,
+      "tag": "script",
+      "name": "project-files-ui",
+      "file": "prototype/009-1-project-files-ui.js",
+      "bytes": 31731,
+      "role": "prototype"
+    },
+    {
+      "order": 89,
+      "tag": "style",
+      "name": "conversation-document-preview-tokens",
+      "file": "prototype/document-preview/tokens.css",
+      "bytes": 903,
+      "role": "prototype"
+    },
+    {
+      "order": 90,
+      "tag": "style",
+      "name": "conversation-document-preview",
+      "file": "prototype/054-conversation-document-preview.css",
+      "bytes": 2091,
+      "role": "prototype"
+    },
+    {
+      "order": 91,
+      "tag": "style",
+      "name": "search-controls",
+      "file": "prototype/055-search-controls.css",
+      "bytes": 3262,
+      "role": "prototype"
+    },
+    {
+      "order": 92,
+      "tag": "style",
+      "name": "conversation-search",
+      "file": "prototype/055-conversation-search.css",
+      "bytes": 17465,
+      "role": "prototype"
+    },
+    {
+      "order": 93,
+      "tag": "style",
+      "name": "heading-system",
+      "file": "prototype/056-heading-system.css",
+      "bytes": 3779,
+      "role": "prototype"
+    },
+    {
+      "order": 94,
+      "tag": "script",
+      "name": "project-skill-create",
+      "file": "prototype/058-project-skill-create.js",
+      "bytes": 10470,
+      "role": "prototype"
+    },
+    {
+      "order": 95,
+      "tag": "script",
+      "name": "theme-controller",
+      "file": "prototype/059-theme-controller.js",
+      "bytes": 2819,
+      "role": "prototype"
+    },
+    {
+      "order": 96,
+      "tag": "script",
+      "name": "appearance-theme",
+      "file": "prototype/058-appearance-theme.js",
+      "bytes": 3535,
+      "role": "prototype"
+    },
+    {
+      "order": 97,
+      "tag": "style",
+      "name": "gds-dark-tokens",
+      "file": "prototype/057-gds-dark-tokens.css",
+      "bytes": 4282,
+      "role": "prototype"
+    },
+    {
+      "order": 98,
+      "tag": "style",
+      "name": "avatar-editor",
+      "file": "prototype/060-avatar-editor.css",
+      "bytes": 2106,
+      "role": "prototype"
+    },
+    {
+      "order": 99,
+      "tag": "style",
+      "name": "task-drawer",
+      "file": "prototype/060-task-drawer.css",
+      "bytes": 3797,
+      "role": "prototype"
+    },
+    {
+      "order": 100,
+      "tag": "script",
+      "name": "task-drawer-controller",
+      "file": "prototype/060-task-drawer.js",
+      "bytes": 3437,
+      "role": "prototype"
+    },
+    {
+      "order": 101,
+      "tag": "style",
+      "name": "forward-picker",
+      "file": "prototype/061-forward-picker.css",
+      "bytes": 14757,
+      "role": "prototype"
+    },
+    {
+      "file": "prototype/062-drawer-contract.css",
+      "order": 102
+    },
+    {
+      "order": 103,
+      "tag": "style",
+      "name": "loop-table-view",
+      "file": "prototype/062-loop-table-view.css",
+      "bytes": 12651,
+      "role": "prototype"
+    },
+    {
+      "order": 104,
+      "tag": "script",
+      "name": "loop-table-view",
+      "file": "prototype/062-loop-table-view.js",
+      "bytes": 36933,
+      "role": "prototype"
+    }
+  ]
 }
