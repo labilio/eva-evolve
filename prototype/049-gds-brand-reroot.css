@@ -178,3 +178,15 @@ body .semi-dropdown-wrapper .semi-dropdown-menu { padding: 6px; }
 body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
 :root[data-theme="dark"] .semi-dropdown-item:not(.semi-dropdown-item-active):hover,
 :root[data-theme="dark"] .semi-dropdown-item:focus-visible { background-color: var(--eva-overlay-hover); }
+
+/* —— 浮层契约第二族：wk-contextmenus 右键菜单（组件独立，视觉同节奏）——
+ * .wk-contextmenus 是自研右键菜单（009-5 EvaSharedContextMenus：右键坐标
+ * 定位/键盘导航/子菜单，Semi Dropdown 为锚点定位组件给不了），不并入 Semi。
+ * 视觉契约与 Dropdown 族一致：6px 四周留白、key 圆角、白 6% hover。
+ * vendor 原值：menu padding 0（hover 矩形贴边出界）、li padding 0 16px、
+ * li:hover #f2f3f5（野值）。浅色 #f2f3f5 与 6% 黑近乎等值，属收编非改观感。 */
+.wk-contextmenus { padding: 6px; border-radius: var(--eva-radius-chip); }
+.wk-contextmenus ul { border-radius: var(--eva-radius-key); }
+.wk-contextmenus li { padding: 0 10px; border-radius: var(--eva-radius-key); }
+.wk-contextmenus li:hover, .wk-contextmenus li:focus-visible { background-color: var(--eva-overlay-hover); }
+.wk-contextmenus .wk-ctx-sep { margin: 4px 6px; }

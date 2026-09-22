@@ -229,6 +229,14 @@
   --eva-shadow-popover: 0 4px 12px -2px rgba(0, 0, 0, 0.10);
   --eva-shadow-hairline: 0 0 0 0.5px rgba(20, 20, 20, 0.15);
   --eva-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.04), 0 3px 6px 0 rgba(0, 0, 0, 0.04);
+  /* 抽屉族（任务详情/聊天任务/查找聊天内容等右滑面板）的唯一分层写法：
+     方向性投影表达「浮于底层之上」+ 左缘 0.5px hairline 表达边缘锐度，
+     不再用实色 border-left（那在暗色下要么刺眼要么消失）。抽屉右锚定，
+     故投影与 hairline 都只取左侧方向。 */
+  --eva-shadow-drawer:
+    -18px 0 48px -12px rgba(15, 18, 24, 0.30),
+    -2px 0 12px -2px rgba(15, 18, 24, 0.16),
+    -1px 0 0 var(--eva-border-hairline);
 
   /* ---- blur ---------------------------------------------- */
   --eva-blur-glass: 200px;   /* sidebar only */

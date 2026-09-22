@@ -1,0 +1,60 @@
+/* ============================================================
+   062 · 抽屉族收敛层（Drawer contract）
+   ------------------------------------------------------------
+   背景：会话右侧滑出面板存在三套分层写法——
+     · .wk-thread-panel（vendor）：border-left 实色线 + --wk-shadow-md
+     · .ch-right-panel--overlay（聊天任务/查找）：硬编码 -10px 0 32px #1f23291a
+     · 任务详情抽屉（060）：方向性投影 + 0.5px 边缘线（已定稿）
+   三种表达同一概念，暗色下实色线要么刺眼要么消失、硬编码投影几乎不可见。
+   本层把「投影 + hairline、52px 头部、token 表面」定为抽屉族唯一写法，
+   各面板经 CSS 覆盖向它收敛（vendor DOM 不动）。
+   尺寸：头部 52px / 水平边距 24px（= 任务详情抽屉 .loop-idp__topbar 标准，
+   上一轮文件预览头已对齐它）；关闭按钮 32×32 圆角 8 hover 填充。
+   宽度：标准抽屉 380px（现状已一致，此处不重复声明）。
+   ============================================================ */
+
+/* ---- 1. 分层：投影 + hairline 统一走 --eva-shadow-drawer ---- */
+.wk-thread-panel,
+.ch-right-panel--overlay,
+.ch-right-panel--search {
+  border-left: 0;
+  box-shadow: var(--eva-shadow-drawer);
+  background: var(--eva-surface-primary, #fff);
+}
+
+/* wk-thread-panel vendor 的 --wk-shadow-md 重复声明在同文件后段，
+   用同特异度后加载覆盖（本文件在 index.html 中最后加载）。 */
+.wk-thread-panel {
+  box-shadow: var(--eva-shadow-drawer) !important;
+}
+
+/* ---- 2. 头部：52px / 24px，对齐任务详情抽屉顶栏 ----
+   009-2 的共享 chrome 规则定的是 56px/20px，且只声明了一次 :is() 组；
+   这里用同特异度后加载覆盖为 52px/24px。 */
+.ch-layout :is(.eva-chat-settings-head,.wk-thread-panel-header,.wk-file-preview-header,.loop-idp--panel > .loop-idp__topbar) {
+  height: 52px;
+  min-height: 52px;
+  padding: 0 24px;
+}
+
+/* 头部关闭/动作按钮：32×32、圆角 8、hover 填充（Eva 图标按钮规范）。
+   查找面板的关闭按钮原样式是裸图标，收进来统一。 */
+.ch-layout :is(.eva-conversation-search__close,.eva-chat-settings-head button[aria-label^="关闭"],.wk-thread-panel-header > button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--eva-text-secondary);
+  border-radius: 8px;
+  transition: background-color 120ms ease;
+}
+.ch-layout :is(.eva-conversation-search__close,.eva-chat-settings-head button[aria-label^="关闭"],.wk-thread-panel-header > button):hover {
+  color: var(--eva-text-secondary);
+  background: var(--eva-overlay-hover);
+}
+.ch-layout :is(.eva-conversation-search__close,.eva-chat-settings-head button[aria-label^="关闭"],.wk-thread-panel-header > button):focus-visible {
+  outline: var(--eva-border-focus-w, 2px) solid var(--eva-border-focus);
+  outline-offset: 2px;
+}
