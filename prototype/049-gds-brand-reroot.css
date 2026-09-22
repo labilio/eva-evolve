@@ -153,3 +153,22 @@ body {
  * 这里不分模式：别名本身随 057 的暗色重指自动跟随，一处声明两模式生效。
  * 特异度与 vendor 的 .ch-head 相同，靠后加载取胜。 */
 .ch-head { border-bottom-color: var(--eva-rail-divider); }
+
+/* ============================================================
+   浮层契约：Semi Dropdown 全局对齐 Eva 阶梯（暗色抬升、hover 变亮）
+   ------------------------------------------------------------
+   之前各实例各自打补丁（.eva-account-menu 有完整令牌化，IM 中栏 + 菜单等
+   裸实例走 Semi 默认），暗色下裸实例面板 = --semi-color-bg-3 → #4a4a4a，
+   比其悬浮的中栏 #222 亮两档、比自家 item hover 底 #1a1a1a 还亮——浮层
+   层级语言错乱（同族问题见 057 遮罩翻转注释）。
+   这里立全局契约，一次覆盖现有与将来的所有 Dropdown：
+   · 面板 = surface/primary（暗 #242424：比中栏亮一档的抬升面；浅 = 白，不变）
+   · 选项 hover = 白 6% 罩（暗）；浅色维持 vendor fill-0（与 6% 黑等值，不动）
+   · 圆角对齐账户菜单参考实现：面板 chip、选项 key
+   特异度：body 前缀 (0,1,1) 压过 vendor (0,1,0)；vendor 在所有 prototype
+   之后加载，同分必输，故不加 body 的同分规则一律无效。
+   ============================================================ */
+body .semi-dropdown-wrapper { background: var(--eva-surface-primary); border-radius: var(--eva-radius-chip); }
+body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); }
+:root[data-theme="dark"] .semi-dropdown-item:not(.semi-dropdown-item-active):hover,
+:root[data-theme="dark"] .semi-dropdown-item:focus-visible { background-color: var(--eva-overlay-hover); }
