@@ -28,6 +28,8 @@
   `npm test` 与 `npm run check:project`，通过后再 push，然后再合下一个。
 - 同步他人的工作区要在**那个工作区里**执行 `git pull`；禁止从外部用 `update-ref`、`reset --hard`
   等方式移动别的会话正在使用的分支指针，那会让对方工作区出现"文件被删"的假象。
+- 共享 worktree 中不要为合并而检出 `main`（会让其他 worktree 无法切换该分支）：直接
+  `git push origin HEAD:main`；确需检出时须在同一条命令内以 `git switch --detach` 释放。
 - 合并后必须重跑门禁，而不只是看 diff：Git 只合并文本、不合并意图，`maskClosable` 这类一行之差的
   产品取舍会在没有任何冲突提示的情况下被带回旧值。此类关键取舍应固化为断言
   （参见 `docs/弹窗失焦关闭规范.md` 的回归护栏一节），让它变成红灯而不是等到验收才被发现。
