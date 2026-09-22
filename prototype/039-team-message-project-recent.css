@@ -251,3 +251,74 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-content:has(.eva-rece
 body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__scroll {
   padding-top: 0;
 }
+
+/* 最近列表子区折叠（对照 Kimi Code「折叠全部工作区」）：
+ * 折叠只是把子区行从平铺列表中隐藏，最近列表的排序、置顶规律与「关注」分组完全不变。
+ * Tab 容器让出右侧 32px 给「折叠全部/展开全部」图标按钮，与标题栏按钮同节奏。 */
+body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] > .wk-sidebar-tabbar__container {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] > .eva-recent-fold-all {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 0 0 var(--gds-space-1);
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--semi-color-text-2);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] > .eva-recent-fold-all:hover {
+  background: var(--semi-color-fill-1);
+  color: var(--semi-color-text-0);
+}
+body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] > .eva-recent-fold-all:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.eva-message-hierarchy-ready .eva-msg .wk-sidebar-tabbar[data-eva-project-recent-switcher="true"] > .eva-recent-fold-all { transition: none; }
+}
+
+/* 群聊行的子区折叠开关：一线行尾、时间之后；折叠后显示收起的子区数。 */
+.eva-msg .wk-conversationlist-item-right-first-line > .eva-recent-fold-toggle {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--semi-color-text-2);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.eva-msg .wk-conversationlist-item-right-first-line > .eva-recent-fold-toggle:hover {
+  background: var(--semi-color-fill-1);
+  color: var(--semi-color-text-0);
+}
+.eva-msg .wk-conversationlist-item-right-first-line > .eva-recent-fold-toggle:focus-visible {
+  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
+  outline-offset: -2px;
+}
+.eva-msg .eva-recent-fold-toggle__count {
+  font-size: 11px;
+  line-height: 20px;
+  color: var(--semi-color-text-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .eva-msg .wk-conversationlist-item-right-first-line > .eva-recent-fold-toggle { transition: none; }
+}
