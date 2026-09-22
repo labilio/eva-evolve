@@ -26,7 +26,9 @@
 }
 
 /* 面板：右锚定 + 宽度模型 + 滑入。
-   左缘投影强化，作为与底层的唯一分层信号（替代原压暗蒙层）。
+   左缘投影 + hairline 是抽屉族的唯一分层写法，由 --eva-shadow-drawer
+   统一表达（047 浅色 / 057 暗色），聊天任务 / 查找聊天内容等右滑面板
+   （见 062）消费同一 token，不再各自定义。
    用 transition + @starting-style 而非 animation：animation 的 forwards
    会把静止态 transform 冻结为单位矩阵（仍是 position:fixed 的包含块，会困住
    任务内附件全屏预览）；transition 结束后计算值就是声明的 transform:none，
@@ -39,10 +41,7 @@
   left: auto;
   width: clamp(640px, 70%, 900px);
   background: var(--eva-surface-primary, #fff);
-  box-shadow:
-    -18px 0 48px -12px rgba(15, 18, 24, 0.30),
-    -2px 0 12px -2px rgba(15, 18, 24, 0.16),
-    -1px 0 0 var(--eva-border-subtle, #e8e8e8);
+  box-shadow: var(--eva-shadow-drawer);
   overflow-y: auto;
   transform: none;
   transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);

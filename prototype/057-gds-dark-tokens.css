@@ -107,6 +107,13 @@
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);
   --eva-shadow-hairline: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
   --eva-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.4);
+  /* 抽屉族暗色：环境光弱，纯投影在深底上不够可读，故比浅色档加深一档
+     （.30/.16→.45/.28）；hairline 复用 --eva-border-hairline（已是白 12%），
+     无需在此重复定值。 */
+  --eva-shadow-drawer:
+    -18px 0 48px -12px rgba(0, 0, 0, 0.45),
+    -2px 0 12px -2px rgba(0, 0, 0, 0.28),
+    -1px 0 0 var(--eva-border-hairline);
 
   /* 说明：--eva-rail-backdrop / --eva-mention-* / --eva-im-tint-*
      均以 var() 引用上述基色，使用时惰性求值，自动随暗色重算，无需在此重列。 */
@@ -424,7 +431,10 @@ body[theme-mode="dark"] {
 /* —— IM 外壳主面：列表(subtle) < 聊天主区(primary)，保持浅色的明度关系 —— */
 :root[data-theme="dark"] .eva-msg,
 :root[data-theme="dark"] .ch-main { background: var(--eva-surface-primary); }
-:root[data-theme="dark"] .ch-right-panel { background: var(--eva-surface-subtle); }
+/* ch-right-panel 家族含滑出抽屉（overlay/search/wkthread），062 抽屉契约
+   统一表面为 surface-primary（抬升面，与任务详情抽屉一致）；此处随之改指
+   primary——原 subtle 值会让抽屉比工作区更暗，Z 轴语义颠倒。 */
+:root[data-theme="dark"] .ch-right-panel { background: var(--eva-surface-primary); }
 :root[data-theme="dark"] .ch-item.is-active { background: var(--eva-surface-subtle); }
 :root[data-theme="dark"] .ch-thread-item:hover { background: var(--eva-overlay-hover); }
 :root[data-theme="dark"] .ch-sink-btn,
