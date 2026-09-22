@@ -634,6 +634,10 @@
 }
 .eva-task-view-switcher:has(.loop-seg__btn:nth-child(2).is-active)::before { transform: translateX(100%); }
 .eva-task-view-switcher:has(.loop-seg__btn:nth-child(3).is-active)::before { transform: translateX(200%); }
+/* 协作项目多一个「表格」视图：仅在第四个按钮存在时按 4 列几何计算。 */
+.eva-task-view-switcher:has(> .loop-seg__btn:nth-child(4)) { grid-template-columns: repeat(4, 1fr); }
+.eva-task-view-switcher:has(> .loop-seg__btn:nth-child(4))::before { width: calc((100% - 6px) / 4); }
+.eva-task-view-switcher:has(.loop-seg__btn:nth-child(4).is-active)::before { transform: translateX(300%); }
 .eva-task-view-switcher .loop-seg__btn {
   position: relative;
   z-index: 1;

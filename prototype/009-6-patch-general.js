@@ -291,7 +291,8 @@
       '批量更新保留子任务状态边界');
     source=root.__evaCut(source,
       'batchDeleteIssues=rt=>(rt.forEach(ct=>{const ut=issuesOf().findIndex(pt=>pt.id===ct);ut>=0&&issuesOf().splice(ut,1)}),Promise.resolve({deleted:rt.length}))',
-      String.raw`batchDeleteIssues=rt=>{const ct=rt.map(ut=>issuesOf().find(pt=>pt.id===ut)).filter(Boolean).find(ut=>evaIssueChildrenOf(ut.id).length);if(ct)return Promise.reject(new Error("请先转移或删除子任务，再删除父任务"));rt.forEach(ut=>{const pt=issuesOf().findIndex(mt=>mt.id===ut);pt>=0&&issuesOf().splice(pt,1)});return Promise.resolve({deleted:rt.length})}`,
+      String.raw`batchDeleteIssues=rt=>{const ct=rt.map(ut=>issuesOf().find(pt=>pt.id===ut)).filter(Boolean).find(ut=>evaIssueChildrenOf(ut.id).length);if(ct)return Promise.reject(new Error("请先转移或删除子任务，再删除父任务"));rt.forEach(ut=>{const pt=issuesOf().findIndex(mt=>mt.id===ut);pt>=0&&issuesOf().splice(pt,1)});return Promise.resolve({deleted:rt.length})},
+      restoreIssues=rt=>{const ct=issuesOf();rt.forEach(ut=>{ut&&ut.issue&&!ct.some(pt=>pt.id===ut.issue.id)&&ct.splice(Math.min(ut.index,ct.length),0,ut.issue)});return Promise.resolve({restored:rt.length})}`,
       '批量删除阻止遗留孤儿任务');
     source=root.__evaCut(source,
       'deleteIssue=rt=>{const ct=issuesOf().findIndex(ut=>ut.id===rt);return ct>=0&&issuesOf().splice(ct,1),Promise.resolve()}',
@@ -818,6 +819,33 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     source=root.__evaCut(source,'function statusMightTrigger(rt,ct){return isAgentAssignee(rt.assignee_type,rt.assignee_id)&&rt.status==="backlog"&&ct!=="backlog"&&ct!=="done"&&ct!=="cancelled"}','function statusMightTrigger(){return false}','任务状态不触发执行');
     // Compatibility labels remain for historical activity/snapshots only; no new backlog option.
     for(let index=0;index<3;index++)source=root.__evaCut(source,'backlog:"待规划"','backlog:"待办"','历史任务状态文案 '+index);
+    // 「表格」视图（对齐 Multica Issues Table）：注入桥接组件依赖。
+    source=root.__evaCut(source,'function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){',
+      String.raw`const EvaTable2Icon=createLucideIcon("table-2",[["path",{d:"M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18",key:"t2-1"}]]);
+const EvaColumns3Icon=createLucideIcon("columns-3",[["rect",{width:"18",height:"18",x:"3",y:"3",rx:"2",key:"c3-1"}],["path",{d:"M9 3v18",key:"c3-2"}],["path",{d:"M15 3v18",key:"c3-3"}]]);
+const EvaRows3Icon=createLucideIcon("rows-3",[["rect",{width:"18",height:"18",x:"3",y:"3",rx:"2",key:"r3-1"}],["path",{d:"M21 9H3",key:"r3-2"}],["path",{d:"M21 15H3",key:"r3-3"}]]);
+const EvaGripVerticalIcon=createLucideIcon("grip-vertical",[["circle",{cx:"9",cy:"12",r:"1",key:"gv-1"}],["circle",{cx:"9",cy:"5",r:"1",key:"gv-2"}],["circle",{cx:"9",cy:"19",r:"1",key:"gv-3"}],["circle",{cx:"15",cy:"12",r:"1",key:"gv-4"}],["circle",{cx:"15",cy:"5",r:"1",key:"gv-5"}],["circle",{cx:"15",cy:"19",r:"1",key:"gv-6"}]]);
+const EvaEyeOffIcon=createLucideIcon("eye-off",[["path",{d:"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49",key:"eo-1"}],["path",{d:"M14.084 14.158a3 3 0 0 1-4.242-4.242",key:"eo-2"}],["path",{d:"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143",key:"eo-3"}],["path",{d:"m2 2 20 20",key:"eo-4"}]]);
+const EvaDownloadIcon=createLucideIcon("download",[["path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",key:"dl-1"}],["polyline",{points:"7 10 12 15 17 10",key:"dl-2"}],["line",{x1:"12",x2:"12",y1:"15",y2:"3",key:"dl-3"}]]);
+const EvaCheckIcon=createLucideIcon("check",[["path",{d:"M20 6 9 17l-5-5",key:"ck-1"}]]);
+const EvaCalendarDaysIcon=createLucideIcon("calendar-days",[["path",{d:"M8 2v4",key:"cd-1"}],["path",{d:"M16 2v4",key:"cd-2"}],["rect",{width:"18",height:"18",x:"3",y:"4",rx:"2",key:"cd-3"}],["path",{d:"M3 10h18",key:"cd-4"}],["path",{d:"M8 14h.01",key:"cd-5"}],["path",{d:"M12 14h.01",key:"cd-6"}],["path",{d:"M16 14h.01",key:"cd-7"}],["path",{d:"M8 18h.01",key:"cd-8"}],["path",{d:"M12 18h.01",key:"cd-9"}],["path",{d:"M16 18h.01",key:"cd-10"}]]);
+function EvaIssueTableView(props){return window.EvaLoopTableView.render(props,{React:reactExports,useI18n:useI18n$1,Popover,Checkbox,Switch,Toast,DatePicker,Input:ForwardInput,AssigneePicker,LabelChips,RunningChip,useRunConfirm,EvaLoopIdentityAvatar,EvaLoopIdentityName,updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,evaCurrentTaskProject,evaTaskProjectId,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,ISSUE_STATUS_ORDER,ISSUE_STATUS_HEX,PRIORITY_ORDER,PRIORITY_HEX,DndContext,SortableContext,useSortable,useDndContext,useSensors:useSensors$1,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,icons:{Search:Search$1,ChevronDown,ChevronRight,ChevronLeft:EvaChevronLeftIcon,Plus:Plus$c,X,Pencil,ArrowUp,ArrowDown,Download:EvaDownloadIcon,Trash2,Check:EvaCheckIcon,Table2:EvaTable2Icon,Columns3:EvaColumns3Icon,Rows3:EvaRows3Icon,GripVertical:EvaGripVerticalIcon,EyeOff:EvaEyeOffIcon,CalendarDays:EvaCalendarDaysIcon,CalendarClock}});}
+function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视图桥接组件依赖注入');
+    // 切换器加入「表格」，位于层级之后（第四种视图）。
+    source=root.__evaCut(source,
+      '["board","list","hierarchy"].map($a=>React.createElement("button",{key:$a,type:"button",role:"tab","aria-selected":Kt===$a,className:`loop-seg__btn${Kt===$a?" is-active":""}`,onClick:()=>Da($a)},$a==="board"?React.createElement(Workbench,{theme:"outline",size:"14",fill:"currentColor"}):$a==="grouped"?React.createElement(Users,{size:14}):$a==="list"?React.createElement(List$1,{size:14}):React.createElement(EvaHierarchyIcon,{size:14}),$a==="hierarchy"?"层级":pt(`loop.view.${$a}`)))',
+      '["board","list","hierarchy","table"].map($a=>React.createElement("button",{key:$a,type:"button",role:"tab","aria-selected":Kt===$a,className:`loop-seg__btn${Kt===$a?" is-active":""}`,onClick:()=>Da($a)},$a==="board"?React.createElement(Workbench,{theme:"outline",size:"14",fill:"currentColor"}):$a==="grouped"?React.createElement(Users,{size:14}):$a==="list"?React.createElement(List$1,{size:14}):$a==="hierarchy"?React.createElement(EvaHierarchyIcon,{size:14}):React.createElement(EvaTable2Icon,{size:14}),$a==="hierarchy"?"层级":$a==="table"?"表格":pt(`loop.view.${$a}`)))',
+      '项目任务切换器加入表格视图');
+    // 视图持久化白名单加入 table（仅项目任务页）。
+    source=root.__evaCut(source,
+      'readView(ut,ut==="collab-tasks"?["board","list","hierarchy"]:["board","grouped","list","hierarchy"],ct??"board")',
+      'readView(ut,ut==="collab-tasks"?["board","list","hierarchy","table"]:["board","grouped","list","hierarchy"],ct??"board")',
+      '项目任务表格视图持久化');
+    // 渲染分发加入表格分支。
+    source=root.__evaCut(source,
+      'running:Ft,resetKey:currentSpaceId()+"|"+rn}):React.createElement(React.Fragment,null,React.createElement(IssueList,',
+      'running:Ft,resetKey:currentSpaceId()+"|"+rn}):Kt==="table"?React.createElement(EvaIssueTableView,{issues:Pt,allIssues:issuesOf(),onOpen:xa,onChanged:Oa,running:Ft,viewKey:ut,projectId:St,onCreateSubIssue:evaCreateChild}):React.createElement(React.Fragment,null,React.createElement(IssueList,',
+      '项目任务表格视图渲染');
     return source;
   });
 })(window);

@@ -15,6 +15,7 @@
     "comments": "node tools/comments-cli.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:search": "node --test tests/browser/search-controls.mjs",
+    "test:task-table": "node --test tests/browser/loop-table-view.mjs",
     "test:buttons": "node --test tests/browser/button-states.mjs",
     "test:headings": "node --test tests/browser/heading-system.mjs",
     "test:my-ai": "node --test tests/browser/my-ai-hierarchy-unread.mjs",
