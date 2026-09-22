@@ -44,14 +44,12 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
     assert.ok(await menu.getByText('间接采购专家', { exact: true }).count() > 0, '专家候选缺失');
     assert.ok((await menu.locator('.eva-identity-avatar').count()) > 0, 'AI 候选缺少统一头像');
     assert.ok((await menu.locator('.ai-badge').count()) > 0, 'AI 候选缺少公共 AI 标');
-    assert.equal(await menu.getByRole('button', { name: /所有 AI 成员/ }).locator('.ai-badge').count(), 1, '「所有 AI 成员」广播项缺少公共 AI 标');
+    assert.equal(await menu.locator('.eva-im-mention-broadcast-copy').count(), 0, '任务评论 @ 面板不允许 @所有人 / @所有 AI 成员');
+    assert.equal(await menu.getByText('所有人', { exact: true }).count(), 0, '任务评论 @ 面板不应出现「所有人」广播项');
+    assert.equal(await menu.getByText('所有 AI 成员', { exact: true }).count(), 0, '任务评论 @ 面板不应出现「所有 AI 成员」广播项');
 
     assert.equal(await menu.getByText('王宜林', { exact: true }).count(), 0, '提及候选不应出现本人真人');
     assert.equal(await menu.getByText('供应链运营协同 · 项目管家', { exact: true }).count(), 0, '提及候选不应出现项目管家');
-    const humanBroadcast = menu.locator('.eva-im-mention-broadcast-copy').filter({ hasText: '所有人' }).first();
-    assert.match(await humanBroadcast.innerText(), /所有人[\s\S]*提及所有联系人/, '人类广播行文案不正确');
-    const aiBroadcast = menu.locator('.eva-im-mention-broadcast-copy').filter({ hasText: '所有 AI 成员' }).first();
-    assert.match(await aiBroadcast.innerText(), /所有 AI 成员[\s\S]*提及所有 AI 分身与数字员工/, 'AI 广播行文案不正确');
 
     const humanMore = menu.locator('[data-eva-mention-more="human"]');
     assert.equal(await humanMore.count(), 1, '联系人超过上限应显示展开入口');
