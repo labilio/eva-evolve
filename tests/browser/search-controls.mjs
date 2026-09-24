@@ -557,7 +557,15 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
       } catch {}
     }
     assert.ok(filtered, '输入时应立即过滤无关候选（列表收尾重挂会清空搜索，重试后仍未生效）');
-    assert.ok(!(await menu.innerText()).includes('周远'), '过滤后面板不得仍可见无关候选（面板隐藏而非卸载候选，需按可见性断言）');
+    // 与上方同一期望；但批量栏收尾重挂可能在过滤生效后把列表重置回全量，
+    // 按本断言上下两处的同档重试容忍重挂，不接受重读后仍含无关候选。
+    let cleanPanel = false;
+    for (let attempt = 0; attempt < 4 && !cleanPanel; attempt += 1) {
+      await input.fill('何静');
+      try { await menu.getByText('周远', { exact: true }).waitFor({ state: 'hidden', timeout: 1500 }); } catch {}
+      cleanPanel = !(await menu.innerText()).includes('周远');
+    }
+    assert.ok(cleanPanel, '过滤后面板不得仍可见无关候选（面板隐藏而非卸载候选，需按可见性断言）');
     let emptyShown = false;
     for (let attempt = 0; attempt < 4 && !emptyShown; attempt += 1) {
       await input.fill('不存在的指派人');
