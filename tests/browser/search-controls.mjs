@@ -540,7 +540,7 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
   // 2026-09-21 指派选择统一为 AssigneePicker：semi-dropdown 面板内含搜索框、
   // 「联系人」分组与限高滚动，空态为「未找到匹配的联系人或 AI」；
   // 列表内联新建行已随选人重构移除，创建入口统一为「新建任务」弹窗。
-  const verifyAssigneeSearch = async trigger => {
+  const verifyAssigneeSearch = async (trigger, { checkEnter = true } = {}) => {
     await trigger.click();
     const menu = page.locator('.semi-dropdown-menu:visible:has(.eva-task-assignee-search)');
     const input = menu.locator('.eva-task-assignee-search input');
@@ -593,8 +593,30 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
       } catch {}
     }
     assert.ok(emptyShown, '检索无结果应显示空提示（批量栏等收尾重挂会清空已填查询，重试后仍未生效）');
-    await page.keyboard.press('Escape');
-    await menu.waitFor({ state: 'hidden' });
+    // 回车选中当前高亮候选的行为必须与点击一致：更新值并自动收起面板，
+    // 避免出现「点选会收起、回车不收」的分叉。批量栏选中会落库并收起操作栏，跳过该入口。
+    if (checkEnter) {
+      let enterClosed = false;
+      for (let attempt = 0; attempt < 4 && !enterClosed; attempt += 1) {
+        await input.fill('何静');
+        try {
+          await menu.getByText('何静', { exact: true }).waitFor({ timeout: 1500 });
+        } catch { continue; }
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Enter');
+        try {
+          await menu.waitFor({ state: 'hidden', timeout: 1500 });
+          enterClosed = true;
+        } catch {}
+      }
+      assert.ok(enterClosed, '回车选中候选后应自动收起面板');
+    }
+    // 回车路径已收起面板；仅当面板仍打开（如批量栏跳过回车校验）时才用 Escape 收尾，
+    // 避免在新建弹窗里多按一次 Escape 连同 Semi 弹窗一起关闭。
+    if (await menu.isVisible().catch(() => false)) {
+      await page.keyboard.press('Escape');
+      await menu.waitFor({ state: 'hidden' });
+    }
   };
 
   await verifyAssigneeSearch(page.locator('.loop-list__assignee .loop-assignee-trigger').first());
@@ -602,7 +624,7 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
   await page.locator('.loop-list__row').first().hover();
   await page.locator('.loop-list__check').first().click();
   await page.locator('.loop-batchbar').waitFor();
-  await verifyAssigneeSearch(page.locator('.loop-batchbar .loop-assignee-trigger'));
+  await verifyAssigneeSearch(page.locator('.loop-batchbar .loop-assignee-trigger'), { checkEnter: false });
   await page.locator('.loop-batchbar').getByRole('button', { name: '取消', exact: true }).click();
 
   await page.locator('.loop-list__title').first().click();
