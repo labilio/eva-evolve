@@ -586,6 +586,17 @@ body[theme-mode="dark"] {
    「链接/图标提亮到 #93B5FF」取链接档蓝，兼顾语义与对比度。 */
 :root[data-theme="dark"] :is(.eva-msg, .ch-layout, .loop-md) .mention-entity { color: var(--eva-c-blue-300); }
 
+/* —— wk-contextmenus 右键菜单补遗（2026-09-24）——
+   面板底色/文字/hover 已由 049 浮层契约经 token 两模式闭环；017 移植基线里
+   仍有两处写死的浅色值，此处补齐暗色，避免暗色面板上出现亮分隔线
+   （IM 暗色适配规范 §2.2：表面、图标必须一次补齐）：
+   · 分隔线 #f2f3f5（浅色发丝线）→ --eva-border-faint（白 6%，即本文件 4.1
+     裁决的「菜单边框」档）
+   · 菜单图标 stroke #4e5969 → --eva-text-secondary-accessible，与账户菜单
+     图标同档；危险项图标继续由 .wk-ctx-danger 的 error 色负责，故排除。 */
+:root[data-theme="dark"] .wk-contextmenus .wk-ctx-sep { background: var(--eva-border-faint); }
+:root[data-theme="dark"] .wk-contextmenus li:not(.wk-ctx-danger) .ctx-icon { stroke: var(--eva-text-secondary-accessible); }
+
 /* —— 「创建了子区」通知 ——
    2026-09-18：该通知已并入气泡模式（017 用 --eva-bubble-incoming/outgoing 提供表面），
    不再使用 Octo 的左侧竖线卡片；气泡底色在暗色下由 IM 气泡 token 接管，此处不再重复。 */

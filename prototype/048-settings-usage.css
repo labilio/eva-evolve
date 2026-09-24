@@ -112,12 +112,12 @@
 .eva-sider-footer.is-collapsed .eva-sider-account__name,
 .eva-sider-footer.is-collapsed .eva-sider-account__chevron { display:none; }
 
-/* 账户悬浮菜单：升起面 + 覆盖层 hover，遵循 GDS 2.0 / EvaMate 0.3.0 令牌。 */
-.eva-account-menu.semi-dropdown { border-radius:var(--eva-radius-chip);background:var(--eva-surface-primary);box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); }
-.eva-account-menu .semi-dropdown-menu { min-width:180px;padding:6px; }
-.eva-account-menu__item.semi-dropdown-item { display:flex;align-items:center;gap:10px;min-height:36px;padding:0 10px;border-radius:var(--eva-radius-key);color:var(--gds-color-text-primary);font:400 14px/22px var(--gds-font-family-sans); }
-.eva-account-menu__item.semi-dropdown-item:hover { background:var(--eva-nav-hover); }
-.eva-account-menu__item.semi-dropdown-item:active { background:var(--eva-nav-pressed); }
+/* 账户悬浮菜单：皮肤（面板底色/圆角、菜单留白、选项内边距/圆角与交互态）
+ * 统一走 049 全局浮层契约，本处不再平行声明；只保留契约之外的投影、
+ * 最小宽度、行内密度与 danger 色。 */
+.eva-account-menu.semi-dropdown { box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); }
+.eva-account-menu .semi-dropdown-menu { min-width:180px; }
+.eva-account-menu__item.semi-dropdown-item { display:flex;align-items:center;gap:10px;color:var(--gds-color-text-primary);font:400 14px/22px var(--gds-font-family-sans); }
 .eva-account-menu__icon { flex:none;width:16px;height:16px;color:var(--gds-color-text-secondary-accessible); }
 .eva-account-menu__item--danger,
 .eva-account-menu__item--danger .eva-account-menu__icon { color:var(--semi-color-danger,#e63f3f); }

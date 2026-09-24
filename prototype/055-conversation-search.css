@@ -593,16 +593,14 @@
   background: var(--wk-bg-selected, #e8e9eb);
 }
 
+/* 皮肤（面板留白/圆角、选项内边距与圆角、hover）统一由 049 全局浮层契约
+   提供，特异度更高必然生效；此处只保留契约之外的布局密度。 */
 .semi-dropdown-menu.eva-conversation-search__file-dropdown {
   min-width: 200px;
-  padding: 4px;
-  border-radius: var(--wk-r-input, 6px);
 }
 
 .eva-conversation-search__file-dropdown .semi-dropdown-item {
   min-height: 36px;
-  padding: 0 12px;
-  border-radius: var(--wk-r-input, 6px);
   font-size: 14px;
 }
 

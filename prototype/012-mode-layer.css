@@ -1196,7 +1196,7 @@
   text-align: center;
 }
 
-/* 二级浮层：复用账户菜单的卡片（圆角／底色／投影由 .eva-account-menu 提供），
+/* 二级浮层：圆角/底色走 049 全局浮层契约，投影由 .eva-account-menu 提供；
    内部直接承载导航项本体，保留分组标题以维持上下文。 */
 .eva-nav-more-pop .semi-dropdown-content { padding: 0; }
 .eva-nav-more-menu {
