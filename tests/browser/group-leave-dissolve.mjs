@@ -24,7 +24,8 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     let panel=page.locator('.eva-chat-settings');
     await panel.getByRole('heading',{name:/^聊天信息（\d+）$/}).waitFor();
     await panel.getByRole('button',{name:/查看全部/}).click();
-    await panel.getByRole('button',{name:'移除',exact:true}).first().click();
+    await panel.locator('.eva-chat-member-list-row').filter({has:panel.getByRole('button',{name:/^移出群聊 /})}).first().hover();
+    await panel.getByRole('button',{name:/^移出群聊 /}).first().click();
     const removeModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
     await removeModal.getByText('其分身及项目内群聊关系将一并移除。',{exact:false}).waitFor();
     await removeModal.getByRole('button',{name:'cancel'}).click();
@@ -93,7 +94,8 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await page.getByRole('button',{name:'打开聊天信息'}).first().click();
     const removePanel=page.locator('.eva-chat-settings');
     await removePanel.getByRole('button',{name:/查看全部/}).click();
-    await removePanel.getByRole('button',{name:'移除',exact:true}).first().click();
+    await removePanel.locator('.eva-chat-member-list-row').filter({has:removePanel.getByRole('button',{name:/^移出群聊 /})}).first().hover();
+    await removePanel.getByRole('button',{name:/^移出群聊 /}).first().click();
     const removeGroupModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
     await removeGroupModal.getByText('其分身也会离开本群。',{exact:false}).waitFor();
     await removeGroupModal.getByRole('button',{name:'cancel'}).click();
