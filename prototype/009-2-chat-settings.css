@@ -16,22 +16,29 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-setting-edit textarea { box-sizing:border-box; width:100%; resize:vertical; min-height:100px; max-height:360px; background:var(--wk-bg-base,#fff); color:inherit; border:1px solid var(--wk-border-subtle,#ddd); border-radius:8px; padding:12px; font:inherit; }
 .eva-chat-setting-edit-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:10px 0 0; }
 .eva-chat-setting-edit-actions small { margin-right:auto; color:var(--wk-text-secondary,#767a80); }
-.eva-chat-member-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px 8px; padding:16px; }
-.eva-chat-member-tile { position:relative; min-width:0; padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; }
+.eva-chat-member-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px 8px; padding:16px; }
+.eva-chat-member-tile { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; min-width:0; padding:0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; }
 .eva-chat-member-tile .eva-members-human-identity,.eva-chat-member-tile .eva-members-ai-identity { display:flex; flex-direction:column; gap:8px; width:100%; }
 .eva-chat-member-tile .eva-members-human-avatar { width:48px; height:48px; }
-.eva-chat-member-tile .eva-members-human-copy { max-width:100%; }
-.eva-chat-member-tile .eva-members-human-name,.eva-chat-member-tile .eva-members-ai-identity>span:not(.eva-ai-avatar):not(.ai-badge) { display:block; max-width:100%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:12px; font-weight:400; }
+.eva-chat-member-tile .eva-members-human-copy { max-width:100%; height:16px; line-height:16px; }
+.eva-chat-member-tile .eva-members-human-name,.eva-chat-member-tile .eva-members-ai-identity>span:not(.eva-ai-avatar):not(.ai-badge) { display:block; max-width:100%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:12px; line-height:16px; font-weight:400; }
 .eva-chat-member-tile .eva-members-ai-identity { flex-wrap:nowrap; }
-.eva-chat-member-role { position:absolute; top:35px; left:50%; transform:translateX(-50%); font-size:10px; line-height:16px; padding:0 4px; color:var(--wk-text-inverse,#fff); background:var(--wk-text-primary,#202127); border-radius:3px; white-space:nowrap; }
-.eva-chat-member-role.is-owner { background:var(--semi-color-warning); }
 .eva-chat-member-add { border:1px solid var(--wk-border-subtle,#ddd); background:var(--wk-bg-base,#fff); color:var(--wk-text-secondary,#767a80); width:48px; height:48px; border-radius:50%; display:grid; place-items:center; justify-self:center; cursor:pointer; }
 .eva-chat-member-list-row { display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--wk-border-subtle,#ddd); }
-.eva-chat-member-list-row>button:first-child { border:0; padding:0; background:none; font:inherit; text-align:left; cursor:pointer; flex:1; }
+.eva-chat-member-profile { display:flex; align-items:center; gap:8px; min-width:0; border:0; padding:0; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; flex:1; }
+.eva-chat-member-list-row .eva-chat-member-profile>.eva-members-human-identity,.eva-chat-member-list-row .eva-chat-member-profile>.eva-members-ai-identity { flex:0 1 auto; }
+.eva-chat-member-profile .eva-members-human-copy { min-width:0; }
+.eva-chat-member-profile .eva-members-human-name { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eva-chat-member-actions { display:flex; flex:none; align-items:center; gap:4px; opacity:0; pointer-events:none; }
+.eva-chat-member-actions:empty { display:none; }
+.eva-chat-member-list-row:hover,.eva-chat-member-list-row:has(:focus-visible) { background:var(--eva-overlay-hover); }
+.eva-chat-member-list-row:hover .eva-chat-member-actions,.eva-chat-member-list-row:has(:focus-visible) .eva-chat-member-actions { opacity:1; pointer-events:auto; }
+.eva-chat-member-action.semi-button { flex:none; width:32px; height:32px; min-width:32px; padding:0; border-radius:8px; }
+@media (hover:none) { .eva-chat-member-actions { opacity:1; pointer-events:auto; } }
 .eva-chat-member-list-row .eva-members-human-identity,.eva-chat-member-list-row .eva-members-ai-identity { flex:1; min-width:0; }
-.eva-chat-member-search-block { margin-bottom:12px; }
+.eva-chat-member-search-block { margin-bottom:16px; }
 .eva-chat-member-search { width:100%; }
-.eva-chat-member-page-note { margin:8px 0 0; }
+.eva-chat-member-search-block .eva-chat-member-page-note { margin:8px 0 0; font-size:12px; font-weight:400; line-height:18px; color:var(--eva-text-secondary-accessible); overflow-wrap:break-word; }
 .eva-chat-person-card { width:100%; border:0; padding:20px; background:none; font:inherit; color:inherit; text-align:left; cursor:pointer; }
 .eva-chat-person-card>img { width:48px; height:48px; border-radius:50%; vertical-align:middle; margin-right:12px; }
 .eva-chat-group-avatar { width:28px; height:28px; border-radius:50%; object-fit:cover; }
@@ -40,7 +47,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-settings button:focus-visible { outline:2px solid var(--semi-color-primary); outline-offset:-2px; }
 
 .eva-chat-member-tile>.eva-ai-avatar { margin:0 auto; }
-.eva-chat-tile-caption { display:flex; justify-content:center; align-items:center; gap:3px; margin-top:8px; font-size:12px; line-height:16px; }
+.eva-chat-tile-caption { display:flex; justify-content:center; align-items:center; gap:3px; width:100%; height:16px; margin-top:8px; font-size:12px; line-height:16px; }
 .eva-chat-tile-caption>span:first-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 
 .eva-chat-settings-note { color:var(--wk-text-secondary,#767a80); font-size:12px; line-height:1.6; }
@@ -51,11 +58,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-management-setting { box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:72px; padding:12px 16px; }
 .eva-chat-management-setting>.semi-switch { flex:none; }
 .eva-chat-management-setting-copy>span { font-size:14px; }
-.eva-chat-management-member-main { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
-.eva-chat-management-member-main>.eva-members-human-identity,.eva-chat-management-member-main>.eva-members-ai-identity { flex:0 1 auto; min-width:0; }
 .eva-chat-management-role-tag.semi-tag { flex:none; height:20px; padding:0 6px; border-radius:6px; font-size:12px; line-height:20px; font-weight:500; }
-.eva-chat-management-remove.semi-button { box-sizing:border-box; flex:0 0 24px; width:24px; max-width:24px; height:24px; min-width:24px; min-height:24px; max-height:24px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--gds-color-text-secondary-accessible,#6b7280); }
-.eva-chat-management-remove.semi-button:hover { background:var(--wk-bg-hover,#e9eaec); color:var(--wk-text-primary,#202127); }
 .eva-chat-terminal-actions { display:flex;justify-content:center;align-items:center;gap:8px;padding:8px 0 16px; }
 .eva-chat-terminal-actions .semi-button { min-width:96px;height:36px;border-radius:8px;font-weight:400; }
 .eva-chat-terminal-actions .eva-chat-exit-button { border:1px solid var(--semi-color-danger);background:transparent;color:var(--semi-color-danger); }
@@ -71,7 +74,6 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-setting-edit textarea:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
 .eva-chat-settings-note { color:var(--gds-color-text-secondary-accessible);line-height:16px; }
 .eva-chat-member-tile { border-radius:8px; }
-.eva-chat-member-grid { grid-template-columns:repeat(auto-fit,minmax(56px,1fr)); }
 
 .eva-chat-member-tile .eva-members-ai-identity { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 4px;align-items:center; }
 .eva-chat-member-tile .eva-members-ai-identity > .eva-ai-avatar { grid-column:1 / -1;justify-self:center; }
@@ -125,3 +127,9 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-thread-settings{position:relative}
 .eva-thread-members-page{position:absolute;inset:0;z-index:1}
 .eva-thread-settings .eva-thread-members-page .eva-chat-settings-body{background:var(--wk-bg-base,#fff);padding-bottom:16px}
+
+/* Compact sidebar variant of the market chips; wrap whole chips without horizontal scrolling. */
+.eva-chat-member-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+.eva-chat-member-chips .semi-button { flex:none; height:28px; min-height:28px; padding:0 8px; border:1px solid var(--eva-border-faint); border-radius:8px; font:400 12px/18px var(--eva-font-sans); color:var(--eva-text-secondary-accessible); background:var(--eva-surface-primary); }
+.eva-chat-member-chips .semi-button.semi-button-borderless:not(.semi-button-disabled):is(:hover,:active) { border:1px solid var(--eva-border-faint); background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover)); }
+.eva-chat-member-chips .semi-button[aria-pressed="true"],.eva-chat-member-chips .semi-button[aria-pressed="true"]:hover { border:1px solid var(--eva-border-focus); color:var(--eva-action-primary); background:color-mix(in srgb,var(--eva-action-primary) 8%,var(--eva-surface-primary)); }
