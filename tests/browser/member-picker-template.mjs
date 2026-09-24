@@ -56,7 +56,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
 
     await page.goto(origin+'/#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'供应链运营协同'}).first().click();
-    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    await page.locator('.op[aria-label="打开聊天信息"]').click();
     let chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
     assert.equal(await chatSettings.getByText('项目中的成员自动加入全员群，无法退出。',{exact:true}).count(),0,'全员群设置首页不重复成员规则说明');
     await chatSettings.getByRole('button',{name:/^查看全部 \d+ 名成员$/}).click();
@@ -78,7 +78,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await chatSettings.getByRole('button',{name:'关闭聊天信息',exact:true}).click();
 
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
-    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    await page.locator('.op[aria-label="打开聊天信息"]').click();
     chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
     assert.equal(await chatSettings.getByRole('button',{name:'添加群聊成员',exact:true}).count(),1,'聊天信息预览保留加号拉人入口');
     await chatSettings.getByRole('button',{name:/^查看全部 \d+ 名成员$/}).click();
