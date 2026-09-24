@@ -13,6 +13,21 @@ test('项目负责人退出前仍须转让负责人',()=>{const s=setup();s.crea
 test('群主直接退出时自动转让给稳定顺序中的其他联系人',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.addClone('p','b','bb');s.createGroup('g','小群','p','a',['aa']);s.addMember('g','a','b');s.addClone('g','b','bb');s.createThread('t','g',{name:'子区'},'a');const result=s.leaveGroup('g','a');assert.equal(result.type,'left');assert.equal(result.successorId,'b');assert.equal(s.snapshot().groups.g.ownerId,'b');assert.equal(s.canRead('g','a'),false);assert.equal(s.canRead('t','aa'),false);assert.equal(s.canRead('t','b'),true);assert.equal(s.canRead('t','bb'),true);});
 test('群主没有其他可接任联系人时退出并解散父群及全部子区',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.createGroup('g','单人群','p','a',['aa']);s.createThread('t','g',{name:'子区'},'a');const result=s.leaveGroup('g','a');assert.equal(result.type,'dissolved');assert.equal(s.snapshot().groups.g,undefined);assert.equal(s.snapshot().threads.t,undefined);assert.equal(s.canRead('g','a'),false);assert.equal(s.canRead('t','a'),false);});
 test('普通成员退出群聊不改变群主并同步退出全部子区',()=>{const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.addClone('p','b','bb');s.createGroup('g','小群','p','a',[]);s.addMember('g','a','b');s.addClone('g','b','bb');s.createThread('t','g',{name:'子区'},'a');const result=s.leaveGroup('g','b');assert.equal(result.type,'left');assert.equal(result.successorId,undefined);assert.equal(s.snapshot().groups.g.ownerId,'a');assert.equal(s.canRead('t','b'),false);assert.equal(s.canRead('t','bb'),false);assert.equal(s.canRead('t','a'),true);});
+test('解散普通群清除所有成员的消息、偏好与关注记录，不留下可进入的痕迹',()=>{
+  const window={};loadIdentityEnvironment(window);
+  vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});
+  const s=window.EvaMembership.create({people:[{id:'a',name:'甲',active:true},{id:'b',name:'乙',active:true}],groups:{g:{id:'g',name:'群',projectId:null,ownerId:'a',humans:[{id:'a',role:'member'},{id:'b',role:'member'}],cloneIds:[]}},threads:{t:'g'},threadDetails:{t:{id:'t',name:'子区'}},messages:{g:[{kind:'text',text:'hi'}],t:[{kind:'text',text:'yo'}]},chatSettings:{g:{notice:'公告'}},chatPreferences:{a:{g:{mute:true},t:{mute:true}},b:{t:{mute:true}}},followedConversations:{a:{g:true,t:true}},conversationCategoryAssignments:{a:{g:'scope:custom-1',t:'scope:custom-1'}},followOrders:{a:{'scope:default':['t','g','other']}}});
+  s.dissolveGroup('g','a');
+  const after=s.snapshot();
+  assert.equal(after.groups.g,undefined);assert.equal(after.threads.t,undefined);assert.equal(after.threadDetails.t,undefined);
+  assert.equal(after.chatSettings.g,undefined);
+  assert.equal(after.messages.g,undefined);assert.equal(after.messages.t,undefined);
+  assert.equal(after.chatPreferences.a?.g,undefined);assert.equal(after.chatPreferences.a?.t,undefined);assert.equal(after.chatPreferences.b?.t,undefined);
+  assert.equal(after.followedConversations.a?.g,undefined);assert.equal(after.followedConversations.a?.t,undefined);
+  assert.equal(after.conversationCategoryAssignments.a?.g,undefined);assert.equal(after.conversationCategoryAssignments.a?.t,undefined);
+  assert.deepEqual(Array.from(after.followOrders.a['scope:default']),['other']);
+  assert.equal(s.canRead('g','a'),false);assert.equal(s.canRead('t','a'),false);
+});
 test('演示身份只允许已激活联系人；重新添加不恢复分身与角色',()=>{const s=setup();s.setActor('b');assert.equal(s.snapshot().actorId,'b');assert.throws(()=>s.setActor('bb'));s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.addClone('p','b','bb');s.setAdmin('p','a','b',true);s.remove('p','a','b');assert.equal(s.canRead('p','b'),false);s.addMember('p','a','b');assert.equal(s.canRead('p','bb'),false);assert.equal(s.manager('p','b'),false);});
 
 test('现有通讯录的 AI 条目不进入联系人候选人或演示身份',()=>{const window={__EVA_MEMBERSHIP_CLONES:[],localStorage:{getItem:()=>null,setItem:()=>{}}};loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});const s=window.EvaMembership.bootstrap([{uid:'u-wangyilin',name:'王宜林'},{uid:'u-b',name:'乙'},{uid:'b-b',name:'分身',ai:true},{uid:'x-b',name:'专家',ai:true}],[{id:'p',name:'项目',members:[]}],{});assert.equal(s.snapshot().people.length,2);assert.equal(s.candidates('p','u-wangyilin').length,1);assert.throws(()=>s.setActor('b-b'));});

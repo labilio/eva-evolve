@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   // Components receive the runtime's existing React and Semi instances.
-  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ProjectIcon,useNavigate},store,files){
+  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ProjectIcon,useNavigate,Toast},store,files){
     const h=R.createElement;
     function HumanIdentity({id,detail,compact=false}){const person=store.person(id);return h('span',{className:'eva-members-human-identity'+(compact?' is-compact':'')},h('img',{className:'eva-members-human-avatar',alt:'',src:root.EvaAvatar.personUri(id),draggable:false}),h('span',{className:'eva-members-human-copy'},h('span',{className:'eva-members-human-name'},person?.name||id),detail&&h('span',{className:'eva-members-human-role'},detail)));}
     function CloneIdentity({clone}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(root.EvaAIIdentity.cloneAppearance(store.person(clone.ownerId)),32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},clone.name),root.EvaAIIdentity.badge(h))));}
@@ -109,7 +109,7 @@
       const confirm=()=>{if(run(()=>{
         if(action.type==='removeEmployee')store.removeEmployee(sid,actor,action.id);
         if(action.type==='remove')store.remove(sid,actor,action.id,successors);
-        if(action.type==='dissolve')store.dissolveGroup(sid,actor);
+        if(action.type==='dissolve'){store.dissolveGroup(sid,actor);Toast&&Toast.success('群聊已解散');}
       }))setAction(null);};
       const columns=[{title:h('span',null,'成员'),width:'26%',dataIndex:'name',render:(v,row)=>h(Button,{className:'eva-members-identity-button',theme:'borderless',type:'tertiary',onClick:()=>setIdentityProfile(row.id)},['project-agent','employee'].includes(row.kind)?h(ProjectAgentIdentity,{agent:row}):h(HumanIdentity,{id:row.id,detail:isProject?roleNames[row.projectRole||row.role]:scope.ownerId===row.id?'群主':store.manager(sid,row.id)?'管理员':'成员'}))},
         {title:h('span',null,'AI 分身'),render:(_,row)=>{if(row.kind==='employee')return h('span',{className:'eva-members-muted'},row.role||'数字员工');if(row.kind==='project-agent')return h('span',{className:'eva-members-muted'},'项目分身 · 云端运行 · 不可移除');const cs=rowClones(row.id);return h('div',{className:'eva-members-clones'},...cs.slice(0,2).map(c=>h(Button,{key:c.id,className:'eva-members-identity-button',theme:'borderless',type:'tertiary',onClick:()=>setIdentityProfile(c.id)},h(CloneIdentity,{clone:c}))),cs.length>2&&h(Button,{size:'small',theme:'light',type:'tertiary',onClick:()=>setDetails(row.id)},'+'+(cs.length-2)),!cs.length&&h('span',{className:'eva-members-muted'},'未带入'));}},
@@ -239,7 +239,7 @@
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIcon,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
     return {...cards,HumanIdentity,ChatSettings,Members,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker,projectCreateCandidates};
   }};
 })(window);

@@ -70,7 +70,26 @@
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
     const drop=(id,uid)=>{const s=scope(id),removedCloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];removedCloneIds.forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>!removedCloneIds.includes(cid));const record=state.groupGovernance?.[state.projects[id]?'all:'+id:id];if(record){record.managerIds=(record.managerIds||[]).filter(item=>item!==uid);record.botAdminIds=(record.botAdminIds||[]).filter(item=>!removedCloneIds.includes(item));}};
-    const dissolve=id=>{delete state.groups[id];delete state.groupGovernance?.[id];Object.keys(state.threads).filter(t=>state.threads[t]===id).forEach(t=>delete state.threads[t]);};
+    // Dissolve is the terminal state: the group and its child threads, plus every
+    // per-user trace (messages, settings, unread/pin/mute/hide/draft preferences,
+    // follow, category and ordering) are removed so no entry can reappear in
+    // 最近/关注 or via search. Member state is a single shared store, so cleanup
+    // covers every user, not just the operator.
+    const dissolve=id=>{
+      const childThreads=Object.keys(state.threads).filter(t=>state.threads[t]===id);
+      const keys=[id,...childThreads];
+      delete state.groups[id];
+      if(state.groupGovernance)delete state.groupGovernance[id];
+      childThreads.forEach(t=>{delete state.threads[t];delete state.threadDetails[t];});
+      keys.forEach(key=>{
+        delete state.messages[key];
+        delete state.chatSettings[key];
+        Object.values(state.chatPreferences||{}).forEach(prefs=>{if(prefs)delete prefs[key];});
+        Object.values(state.followedConversations||{}).forEach(followed=>{if(followed)delete followed[key];});
+        Object.values(state.conversationCategoryAssignments||{}).forEach(assignments=>{if(assignments)delete assignments[key];});
+        Object.values(state.followOrders||{}).forEach(orders=>{if(!orders)return;for(const bucket of Object.keys(orders)){if(Array.isArray(orders[bucket]))orders[bucket]=orders[bucket].filter(item=>item!==key);}});
+      });
+    };
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
     const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:root.EvaAIIdentity.projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:false,ownership:'project',identityAppearance:root.EvaAIIdentity.projectAgentAppearance(projectInfo(pid))}:null;
