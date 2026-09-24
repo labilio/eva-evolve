@@ -20,9 +20,12 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     const groupRow=page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first();
     await groupRow.click();
     await page.getByRole('textbox',{name:'发送给 采购与招投标'}).waitFor();
-    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    await page.getByRole('button',{name:'打开聊天信息'}).first().click();
     let panel=page.locator('.eva-chat-settings');
     await panel.getByRole('heading',{name:/^聊天信息（\d+）$/}).waitFor();
+    await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
+    assert.equal(await panel.getByRole('button',{name:'转让群主',exact:true}).count(),1,'有可接任联系人时保留转让群主入口');
+    await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     assert.equal(await panel.getByRole('button',{name:'删除并退出',exact:true}).count(),0);
 
@@ -59,14 +62,20 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
       state.groups['e2e-solo-group']={id:'e2e-solo-group',name:'单人退出测试群',projectId:null,ownerId:actor,humans:[{id:actor,role:'member'}],cloneIds:[]};
       state.threads['e2e-solo-thread']='e2e-solo-group';
       state.threadDetails['e2e-solo-thread']={id:'e2e-solo-thread',name:'单人群子区',status:1,created_at:'2026-09-15T10:00:00+08:00'};
+      state.followedConversations=state.followedConversations||{};
+      state.followedConversations[actor]=state.followedConversations[actor]||{};
+      state.followedConversations[actor]['e2e-solo-group']=true;
       localStorage.setItem(key,JSON.stringify(state));
     });
     await page.reload();
     const soloRow=page.locator('.wk-conv-compact-item').filter({hasText:'单人退出测试群'}).first();
     await soloRow.click();
     await page.getByRole('textbox',{name:'发送给 单人退出测试群'}).waitFor();
-    await page.getByRole('button',{name:'聊天信息',exact:true}).click();
+    await page.getByRole('button',{name:'打开聊天信息'}).first().click();
     panel=page.locator('.eva-chat-settings');
+    await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
+    assert.equal(await panel.getByRole('button',{name:'转让群主',exact:true}).count(),0,'无其他联系人时不显示转让群主死入口');
+    await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});
     await modal.getByText('退出群聊将解散本群及全部子区',{exact:false}).waitFor();
