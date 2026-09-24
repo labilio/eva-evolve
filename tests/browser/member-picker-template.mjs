@@ -63,7 +63,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await chatSettings.getByRole('heading',{name:/^群聊成员（\d+）$/}).waitFor();
     const allMemberSearch=chatSettings.getByRole('textbox',{name:'搜索群聊成员'});
     await allMemberSearch.waitFor();
-    const allMemberNote=chatSettings.getByText('全员群成员与项目成员同步，不能在群内单独增删或退出。',{exact:true});
+    const allMemberNote=chatSettings.getByText('成员与项目同步，请在项目中管理；全员群不支持单独退出。',{exact:true});
     await allMemberNote.waitFor();
     const allMemberSearchAndNote=await chatSettings.evaluate(node=>{
       const search=node.querySelector('.eva-chat-member-search').getBoundingClientRect();
@@ -86,7 +86,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     const memberSearch=chatSettings.getByRole('textbox',{name:'搜索群聊成员'});
     await memberSearch.waitFor();
     assert.equal(await chatSettings.getByRole('button',{name:'添加成员',exact:true}).count(),0,'完整成员页不提供第二个拉人入口');
-    assert.ok(await chatSettings.getByRole('button',{name:'移除',exact:true}).count()>0,'完整成员页保留已发布的有权限成员移除入口');
+    assert.ok(await chatSettings.getByRole('button',{name:/^移出群聊 /}).count()>0,'完整成员页保留已发布的有权限成员移除入口');
     const memberRows=chatSettings.locator('.eva-chat-member-list-row');
     const memberCount=await memberRows.count();
     assert.ok(memberCount>1,'完整成员页应展示多名成员');
@@ -106,7 +106,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await groupAdd.getByText('同事',{exact:true}).count(),0,'联系人候选分组不使用“同事”称呼');
     const humanGroup=groupAdd.locator('.eva-member-picker__candidate-group').filter({hasText:/联系人/});
     assert.ok(await humanGroup.locator('.eva-member-picker__candidate').count()>0,'普通群应保留可拉入的项目联系人');
-    await humanGroup.getByText('HR',{exact:true}).waitFor();
+    assert.equal(await humanGroup.locator('.eva-members-human-role').count(),0,'群聊候选不展示项目角色');
     const unassignedHuman=humanGroup.locator('.eva-member-picker__candidate').filter({hasText:'惠玲'});
     assert.equal(await unassignedHuman.locator('.eva-members-human-role').count(),0,'未配置项目角色的联系人第二行留空');
     assert.equal(await groupAdd.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'不显示冗长的权限说明');
