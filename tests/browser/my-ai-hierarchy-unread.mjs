@@ -19,16 +19,23 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await page.goto(`${origin}/#/messages?evaIM=my-ai`);
     await page.locator('.eva-ai-team').waitFor();
 
-    assert.equal(await page.locator('.eva-ai-team__section-title').count(), 0, '不再显示 AI 小队与 AI 助理顶层标题');
+    assert.equal(await page.locator('.eva-ai-team__section-title').count(), 0, '不再显示旧的顶层标题');
     assert.equal(await page.getByRole('button', { name: 'AI 小队', exact: true }).count(), 0);
     assert.equal(await page.getByRole('button', { name: 'AI 助理', exact: true }).count(), 0);
-    assert.equal(await page.locator('.eva-ai-team__list-divider').count(), 1, 'AI 小队与单聊之间只有一条分隔线');
+    const sectionHeadings = page.locator('.eva-ai-team__section-heading');
+    assert.equal(await sectionHeadings.count(), 4, '原生列表显示 AI 小队 / 云端分身 / 个人助理 / 数字员工四个分组标题');
+    assert.deepEqual((await page.locator('.eva-ai-team__section-label').allInnerTexts()).map(text => text.trim()),
+      ['AI 小队', '云端分身', '个人助理', '数字员工']);
+    assert.equal(await sectionHeadings.nth(0).locator('.eva-ai-team__section-rule').isVisible(), false, '第一组不拖尾线');
+    for (let index = 1; index < 4; index += 1) {
+      assert.equal(await sectionHeadings.nth(index).locator('.eva-ai-team__section-rule').isVisible(), true, '后续分组标题带拖尾线');
+    }
     assert.equal(await page.evaluate(() => {
       const teams=document.querySelector('.eva-ai-team__teams')?.getBoundingClientRect();
-      const divider=document.querySelector('.eva-ai-team__list-divider')?.getBoundingClientRect();
       const direct=document.querySelector('.eva-ai-team__direct-groups')?.getBoundingClientRect();
-      return !!teams&&!!divider&&!!direct&&teams.bottom<=divider.top&&divider.bottom<=direct.top;
-    }), true, '分隔线位于 AI 小队列表和单聊列表之间');
+      const aiHeading=document.querySelector('.eva-ai-team__section-heading')?.getBoundingClientRect();
+      return !!teams&&!!direct&&!!aiHeading&&aiHeading.bottom<=teams.top&&teams.bottom<=direct.top;
+    }), true, 'AI 小队分组标题位于小队列表上方，小队列表位于单聊列表上方');
     const titlebarBox = await page.locator('.app-titlebar').boundingBox();
     const pageBox = await page.locator('.eva-ai-team').boundingBox();
     assert.ok(titlebarBox && pageBox && pageBox.y >= titlebarBox.y + titlebarBox.height, '我的 AI 页面保持在系统标题栏下方');
@@ -56,7 +63,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
         teamName:start('.eva-ai-team__team-name'),
         identityAvatar:start('.eva-ai-team__identity-button .eva-identity-avatar'),
         identityName:start('.eva-ai-team__identity-name'),
-        roleName:start('.eva-ai-team__group-title'),
+        roleName:start('.eva-ai-team__role-group[aria-label="云端分身"] .eva-ai-team__section-label'),
         childIcon:start('.eva-ai-team__team-thread-row .wk-conv-compact-icon'),
         childName:start('.eva-ai-team__team-thread-row .wk-conv-compact-name'),
       };
@@ -73,7 +80,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.ok(teamButtonBox && teamButtonBox.height >= 32, 'AI 小队父行仍是完整键盘操作目标');
     for (const label of ['云端分身', '个人助理', '数字员工']) {
       const roleGroup = page.locator(`.eva-ai-team__role-group[aria-label="${label}"]`);
-      const titleBox = await roleGroup.locator('.eva-ai-team__group-title').boundingBox();
+      const titleBox = await roleGroup.locator('.eva-ai-team__section-label').boundingBox();
       const chevronBox = await roleGroup.locator('.eva-ai-team__group-chevron').boundingBox();
       assert.ok(titleBox && chevronBox && chevronBox.x >= titleBox.x + titleBox.width,
         `${label}的展开箭头位于标题右侧`);

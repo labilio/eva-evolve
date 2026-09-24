@@ -110,8 +110,7 @@
   color: var(--gds-color-surface-primary);
   flex-shrink: 0;
 }
-.eva-ai-team__roles { flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
-.eva-ai-team__list-divider { height: 0; margin: var(--gds-space-3) var(--gds-space-2) var(--gds-space-2); border: 0; border-top: var(--gds-border-standard) solid var(--gds-color-border-subtle); }
+.eva-ai-team__roles { --eva-ai-team-group-margin: var(--gds-space-2); flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
 .eva-ai-team__unread-dot {
   width: 6px;
   height: 6px;
@@ -187,11 +186,10 @@
 .eva-ai-team__team-threads-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 .eva-ai-team__team-threads-more-chevron { flex: 0 0 12px; transition: transform 120ms ease; }
 .eva-ai-team__team-threads-more-chevron.is-expanded { transform: rotate(180deg); }
-.eva-ai-team__direct-groups { margin-top: 0; }
+.eva-ai-team__direct-groups { margin-top: var(--eva-ai-team-group-margin); }
 .eva-ai-team__role-group + .eva-ai-team__role-group {
-  /* Match adjacent project groups: whitespace separates sections; a divider
-     would make the AI rail look more segmented than the message rail. */
-  margin-top: 6px;
+  /* 组间只由父容器的一份间距变量分隔；分割线在标题行内，不额外占间距（同拉人模板 §5.0.1）。 */
+  margin-top: var(--eva-ai-team-group-margin);
 }
 .eva-ai-team__group-toggle {
   display: flex;
@@ -210,19 +208,19 @@
 }
 .eva-ai-team__group-toggle:hover { background: var(--eva-rail-group-hover); color: var(--eva-rail-primary); }
 .eva-ai-team__group-toggle:focus-visible { outline: 2px solid var(--gds-color-action-primary); outline-offset: -2px; }
-/* 分组标题（云端分身 / 个人助理 / 数字员工）：与关注列分类标题同档。
-   GDS §4.2 caption 12/16/400；原 13/semibold 既非列表档、600 又属
-   「未读/Hero」语义，不用于分组标题。 */
-.eva-ai-team__group-title {
-  min-width: 0;
-  flex: 1;
-  margin: 0;
-  font-size: var(--gds-type-caption-font-size);
-  line-height: var(--gds-type-caption-line-height);
-  font-weight: var(--gds-font-weight-regular);
-  /* 组头字色与关注列分组名统一：secondaryAccessible，见 039 同款注释 */
-  color: var(--eva-text-secondary-accessible);
-}
+/* 分组标题：原生列表与搜索结果共用「标题 + 右侧拖尾细线」。
+   组内（标题→内容）沿用各自原间距：AI 小队/搜索标题行 8px/4px、可折叠角色组由 32px 行垂直居中给 8px；
+   本次仅调整组间——由父容器 --eva-ai-team-group-margin 一份变量分隔（同拉人模板 §5.0.1）。
+   字档与关注列分类标题同档（GDS §4.2 caption 12/16/400），字色 secondaryAccessible。 */
+.eva-ai-team__section-heading { display: flex; width: 100%; min-width: 0; align-items: center; gap: var(--gds-space-2); padding: var(--gds-space-2) 0 var(--gds-space-1); color: var(--eva-text-secondary-accessible); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); font-weight: var(--gds-font-weight-regular); }
+.eva-ai-team__section-label { flex: 0 0 auto; }
+.eva-ai-team__section-rule { flex: 1 1 auto; height: 1px; background: var(--eva-rail-divider); }
+/* 细线只作组间区分：是否省略首组由父容器按 :first-child 判定，组件本身不持有“第一组”状态（同拉人模板 §5.1）。 */
+.eva-ai-team__roles > .eva-ai-team__team-group:first-child .eva-ai-team__section-rule,
+.eva-ai-team__roles > .eva-ai-team__role-group:first-child .eva-ai-team__section-rule,
+.eva-ai-team__search-results > .eva-ai-team__section-heading:first-child .eva-ai-team__section-rule { display: none; }
+/* 可折叠分组的标题挂在既有 toggle 内，沿用 toggle 自身的高度与留白。 */
+.eva-ai-team__group-toggle .eva-ai-team__section-heading { flex: 1; padding: 0; }
 .eva-ai-team__group-chevron { width: 12px; height: 12px; flex: 0 0 12px; margin-left: auto; transition: transform 120ms ease; }
 .eva-ai-team__group-chevron.is-expanded { transform: rotate(90deg); }
 .eva-ai-team__group-content { margin-top: 0; }
@@ -320,7 +318,6 @@
 .eva-ai-team__session.is-selected,
 .eva-ai-team__digital-button.is-selected { background: var(--eva-rail-selected); }
 .eva-ai-team__digital-button { display: flex; align-items: center; width: 100%; gap: var(--gds-space-2); padding: var(--gds-space-2); border-radius: var(--eva-rail-primary-row-radius); }
-.eva-ai-team__digital-button .eva-ai-team__group-title { padding: 0; }
 .eva-ai-team__digital-button > .eva-ai-team__role-label { margin-left: auto; }
 .eva-ai-team__main {
   position: relative;
@@ -627,3 +624,47 @@ body.eva-message-hierarchy-ready .eva-ai-team__team-thread-row.is-selected .wk-c
 body.eva-message-hierarchy-ready .eva-ai-team__team-thread-row.is-selected .wk-conv-compact-item--thread:hover {
   background: var(--eva-rail-selected);
 }
+/* 「我的 Agent」搜索：标题行图标入口 + 按 AI 分类分组的结果（会话标题或 AI 名称）。
+   输入框由搜索图标按钮打开，按《搜索控件规范》不重复显示搜索图标，通过语义类
+   .eva-ai-team__search-input 复用 055 的公共外观；结果行直接复用中栏原生列表的
+   team/identity/session 行 markup，按「分类 → AI 身份 → 会话」三级：身份作父行、
+   命中会话缩进挂在父行下，分组标题为「标题 + 右侧拖尾细线」（第一组不拖线），
+   这里只补分组标题、键盘定位行与「展开其余」，不另造行样式。 */
+.eva-ai-team__search-toggle {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--gds-radius-control);
+  background: transparent;
+  color: var(--gds-color-text-secondary);
+  cursor: pointer;
+}
+.eva-ai-team__search-toggle svg { width: 16px; height: 16px; }
+.eva-ai-team__search-toggle:hover { background: var(--eva-rail-hover); color: var(--gds-color-text-primary); }
+.eva-ai-team__search-toggle:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: 2px; }
+.eva-ai-team__sidebar-header .eva-ai-team__search-toggle.is-active { background: var(--eva-rail-selected); color: var(--gds-color-text-primary); }
+.eva-ai-team__search { flex: 0 0 auto; padding: var(--gds-space-2) var(--gds-space-2-5) 0; }
+.eva-ai-team__search-input { width: 100%; }
+/* 搜索结果直接复用中栏原生列表的行 markup（team/identity/session 行），外观与列表完全一致；
+   这里只补分组标题、键盘定位行与「展开其余」，不另造一套行样式。 */
+.eva-ai-team__search-results { display: flex; flex-direction: column; }
+/* 搜索结果的分组标题是扁平子节点：非首组由父容器补组间间距，首组紧贴列表顶。 */
+.eva-ai-team__search-results > .eva-ai-team__section-heading:not(:first-child) { margin-top: var(--eva-ai-team-group-margin); }
+.eva-ai-team__identity-heading.is-search-active,
+.eva-ai-team__team-heading.is-search-active,
+.eva-ai-team__session-row.is-search-active,
+.eva-ai-team__team-thread-row.is-search-active { background: var(--eva-rail-hover); }
+/* 「展开其余 N 条」沿用原生 more 行的外观，缩进对齐会话标题。 */
+.eva-ai-team__search-more { display: flex; width: 100%; min-height: var(--eva-rail-session-height); align-items: center; gap: var(--gds-space-1); border: 0; border-radius: var(--eva-rail-nested-row-radius); background: transparent; color: var(--eva-rail-time); font: inherit; font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); cursor: pointer; padding: 0 var(--gds-space-2) 0 var(--eva-rail-session-indent); }
+.eva-ai-team__search-more:hover { background: var(--eva-rail-hover); color: var(--eva-rail-primary); }
+.eva-ai-team__search-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
+/* 命中词着色高亮：与仓库既有的会话内搜索命中同源（琥珀底），继承所在行文字色。 */
+.eva-ai-team__search-hit { padding: 0 1px; border-radius: 2px; color: inherit; background: var(--semi-color-warning-light-default); }
