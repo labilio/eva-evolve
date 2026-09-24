@@ -547,6 +547,24 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
     await input.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
     await menu.getByText('联系人', { exact: true }).waitFor();
+    // 弹层必须落在系统标题栏下方，且高度受上限约束（长列表在限高内滚动）。
+    // Semi 首次定位前 boundingBox 仍为隐藏测量态，先轮询到可见坐标再断言。
+    let menuBox = await menu.boundingBox();
+    for (let settle = 0; settle < 20 && (!menuBox || menuBox.y <= 0); settle += 1) {
+      await page.waitForTimeout(50);
+      menuBox = await menu.boundingBox();
+    }
+    const titlebarBottom = await page.locator('.app-titlebar').evaluate(el => el.getBoundingClientRect().bottom);
+    assert.ok(menuBox && menuBox.y >= titlebarBottom - 0.5, '选人弹层不得覆盖系统标题栏');
+    const scrollMaxHeight = await menu.locator('.eva-task-assignee-scroll').evaluate(el => parseFloat(getComputedStyle(el).maxHeight));
+    assert.ok(scrollMaxHeight > 0 && scrollMaxHeight <= 480, '菜单高度有上限（≤480px）');
+    // 联系人分组内自己（当前操作人）恒排在第一位；分组顺序与其余分组顺序不变。
+    const selfName = await page.evaluate(() => {
+      const store = window.__evaGetFileContext().store;
+      return store.person(store.snapshot().actorId)?.name;
+    });
+    const contactNames = await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').allTextContents();
+    assert.equal(contactNames[0], selfName, '联系人分组第一位应为自己');
     // 列表收尾挂载可能重挂选择器并清空已填查询，过滤生效前允许重填。
     let filtered = false;
     for (let attempt = 0; attempt < 4 && !filtered; attempt += 1) {

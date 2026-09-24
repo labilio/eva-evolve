@@ -19,6 +19,7 @@ test('任务身份公共选择器面板支持搜索、分组上限与滚动', ()
   assert.match(picker, /ArrowDown/, '支持 ↑↓/Enter 键盘选择');
   assert.match(picker, /isComposing\|\|229===evaEvent\.keyCode/, '输入法组词期间不过滤不重排');
   assert.match(picker, /candidates:evaTaskCandidateOverride/, '支持父容器传入候选覆盖');
+  assert.match(picker, /evaKey==="member"[\s\S]*evaSelfIndex=evaRows\.findIndex\(evaP=>evaP\.id===evaActorId\)/, '联系人分组把自己（当前操作人）恒排第一');
 });
 
 test('任务列表与详情均复用公共选择器，旧 Loop 项目页死代码已移除', () => {
