@@ -130,6 +130,10 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 
 /* Compact sidebar variant of the market chips; wrap whole chips without horizontal scrolling. */
 .eva-chat-member-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+.eva-chat-member-chip-all,.eva-chat-member-chip-item { display:inline-flex; align-items:center; flex:none; }
+.eva-chat-member-chip-divider { width:1px; height:14px; margin:0 3px 0 9px; background:var(--eva-border-default); }
+.eva-chat-member-chip-count { margin-left:4px; color:var(--eva-text-secondary-accessible); font-variant-numeric:tabular-nums; opacity:.75; }
+.eva-chat-member-chips .semi-button[aria-pressed="true"] .eva-chat-member-chip-count { margin-left:4px; color:inherit; }
 .eva-chat-member-chips .semi-button { flex:none; height:28px; min-height:28px; padding:0 8px; border:1px solid var(--eva-border-faint); border-radius:8px; font:400 12px/18px var(--eva-font-sans); color:var(--eva-text-secondary-accessible); background:var(--eva-surface-primary); }
 .eva-chat-member-chips .semi-button.semi-button-borderless:not(.semi-button-disabled):is(:hover,:active) { border:1px solid var(--eva-border-faint); background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover)); }
 .eva-chat-member-chips .semi-button[aria-pressed="true"],.eva-chat-member-chips .semi-button[aria-pressed="true"]:hover { border:1px solid var(--eva-border-focus); color:var(--eva-action-primary); background:color-mix(in srgb,var(--eva-action-primary) 8%,var(--eva-surface-primary)); }
