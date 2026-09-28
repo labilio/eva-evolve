@@ -66,6 +66,14 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
       els=>els.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
     assert.deepEqual(clippedDates,[],'日期单元格不应截断: '+clippedDates.join(','));
 
+    // 表格自有弹层沿用 Eva Dropdown 的面板留白和选项节奏；优先级选项保留语义色。
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();
+    const priorityMenu=page.locator('.eva-task-table__menu:visible');
+    assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el).paddingTop),'6px','表格弹层应使用 Eva 下拉菜单的 6px 外留白');
+    assert.equal(await priorityMenu.locator('.eva-task-table__menu-item').first().evaluate(el=>getComputedStyle(el).paddingLeft),'10px','选项应使用 Eva 下拉菜单的水平内边距');
+    assert.equal(await priorityMenu.locator('.eva-task-table__priority-badge').count(),5,'优先级选项应统一使用语义色标记');
+    await page.keyboard.press('Escape');
+
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
     const search=table.locator('.eva-task-table__search input');
     await search.fill('收集下一季度供应商协同需求');
@@ -139,6 +147,15 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await page.locator('.eva-task-table__menu:visible').count(),0,'选日后面板应关闭');
     const overdueColor=await dateCell.locator('.eva-task-table__cell-label').evaluate(el=>getComputedStyle(el).color);
     assert.match(overdueColor,/249, 57, 32|245, 34, 45/,'逾期日期应标红: '+overdueColor);
+    await statusTrigger.click();
+    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'已完成'}).click();
+    assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已完成任务的历史截止日期不应标红');
+    await statusTrigger.click();
+    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'已取消'}).click();
+    assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已取消任务的历史截止日期不应标红');
+    await statusTrigger.click();
+    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:target,exact:true}).click();
+    assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),true,'未完成任务的逾期提示应恢复');
     await dateCell.click();
     const dateMenu2=page.locator('.eva-task-table__menu:visible');
     await dateMenu2.locator('.eva-task-table__cal').waitFor();
