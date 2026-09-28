@@ -6,7 +6,8 @@ const source=createPatchedRuntime().source;
 const plain=value=>JSON.parse(JSON.stringify(value));
 function setup(){
  const issues=[{id:'a',status:'backlog',identifier:'SC-1',workspace_id:'prod'},{id:'b',status:'todo'},{id:'c',status:'done'}];
- const ctx={scoped:()=>issues,ISSUES_BY_SPACE:{prod:issues},issues};
+ const ctx={scoped:()=>issues,ISSUES_BY_SPACE:{prod:issues},issues,
+   evaMembers:()=>({store:{snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
  const start=source.indexOf('issuesOf='),end=source.indexOf('function groupIssuesByAssignee',start);
  vm.runInNewContext(source.slice(start,end),ctx);
  return ctx;
@@ -19,6 +20,8 @@ test('旧待规划任务进入待办且保留对象、编号、项目和任务�
 });
 test('旧状态写入和批量修改均落到待办，不触及其他任务',async()=>{
  const ctx=setup();ctx.issuesOf();
+ const activityStart=source.indexOf('evaTaskActivityActor='),activityEnd=source.indexOf(',updateIssue=',activityStart);
+ vm.runInNewContext(source.slice(activityStart,activityEnd),ctx);
  for(const [name,next] of [['updateIssue','previewIssueTrigger'],['batchUpdateIssues','batchDeleteIssues']]){
   const start=source.indexOf(name+'='),end=source.indexOf(','+next+'=',start);
   vm.runInNewContext(source.slice(start,end),ctx);

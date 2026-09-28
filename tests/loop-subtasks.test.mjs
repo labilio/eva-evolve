@@ -23,7 +23,8 @@ function setup() {
     {id:'peer',identifier:'SC-104',title:'同级任务',status:'todo',priority:'none',parent_issue_id:null},
   ];
   // 切片内含有图标定义（EvaLinkIcon 等），裸 vm 上下文补齐其工厂依赖；仅提供桩，不断言图标行为。
-  const ctx = {issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name})};
+  const ctx = {issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name}),
+    evaMembers:()=>({store:{snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
@@ -32,6 +33,7 @@ function setup() {
   const statusHelperEnd = runtime.indexOf('function evaNormalizeTaskList', statusHelperStart);
   assert.ok(statusHelperStart >= 0 && statusHelperEnd > statusHelperStart);
   vm.runInNewContext(runtime.slice(statusHelperStart, statusHelperEnd), ctx);
+  vm.runInNewContext(assignment('evaTaskActivityActor', ',updateIssue='), ctx);
   vm.runInNewContext(assignment('updateIssue', ',previewIssueTrigger='), ctx);
   vm.runInNewContext(assignment('batchUpdateIssues', ',batchDeleteIssues='), ctx);
   vm.runInNewContext(assignment('batchDeleteIssues', ',listChildren='), ctx);

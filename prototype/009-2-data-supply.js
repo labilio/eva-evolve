@@ -170,6 +170,11 @@ window.__EVA_PEOPLE = [
     supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'member', 'u-hejing', '何静', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
     supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'member', 'u-wangyilin', '王宜林', '2026-09-10', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
   ];
+  // 供应链任务动态示例只描述与当前任务字段一致的演示变更。
+  supplyIssues[2].activity_log = [
+    {type:'activity',id:'supply-3-activity-created',issue_id:'supply-3',actor_type:'member',actor_id:'u-wangyilin',actor_name:'王宜林',action:'created',details:{},created_at:T0},
+    {type:'activity',id:'supply-3-activity-status',issue_id:'supply-3',actor_type:'member',actor_id:'u-zhouyuan',actor_name:'周远',action:'status_changed',details:{from:'todo',to:'in_progress'},created_at:T1}
+  ];
   supplyIssues[2].attachments = [{
     id: 'task-file-a2409-checklist',
     name: 'A-2409现场复核清单.md',
