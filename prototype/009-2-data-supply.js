@@ -678,7 +678,7 @@ window.__EVA_OFFICIAL_TASKS.push(
 );
 window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。',updated_at:window.__EVA_DEMO_TIME.TASK_TODAY},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-12',number:12,identifier:'SC-112',position:12,parent_issue_id:'supply-11',title:'补齐维保预算与到期清单',status:'todo',priority:'medium',due_date:'2026-09-18',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'逐项补齐设备维保预算、合同到期日和业务负责人，供续约计划复核。'},
@@ -731,7 +731,9 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
     }
     var previous='todo';
     (progress[issue.status]||[]).forEach(function(status){
-      var at=status==='in_progress'?time('08-30','09',minute):status==='in_review'?time('09-01','10',minute):status==='done'?time('09-02','15',minute):status==='blocked'?time('09-02','16',minute):time('09-01','11',minute);
+      var at=issue.identifier==='SC-109'&&status==='in_review'?window.__EVA_DEMO_TIME.TASK_YESTERDAY
+        :issue.identifier==='SC-109'&&status==='done'?window.__EVA_DEMO_TIME.TASK_TODAY
+        :status==='in_progress'?time('08-30','09',minute):status==='in_review'?time('09-01','10',minute):status==='done'?time('09-02','15',minute):status==='blocked'?time('09-02','16',minute):time('09-01','11',minute);
       var actor=status==='done'?(issue.assignee_id==='u-hejing'?'u-wangyilin':'u-hejing'):status==='cancelled'?issue.creator_id:issue.assignee_id||issue.creator_id;
       add('status_changed',actor,{from:previous,to:status},at);
       previous=status;

@@ -47,6 +47,15 @@ test('supply task activity tells consistent stories with real project identities
   for (const identifier of ['SC-102', 'SC-103', 'SC-107', 'SC-121', 'SC-131']) {
     assert.ok(seeded.find(issue => issue.identifier === identifier).activity_log.length >= 2);
   }
+  const reviewTask = seeded.find(issue => issue.identifier === 'SC-109');
+  const statusChanges = reviewTask.activity_log.filter(entry => entry.action === 'status_changed');
+  const localDay = value => new Date(value).toDateString();
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  assert.equal(localDay(statusChanges.at(-2).created_at), localDay(yesterday), 'review sample should show 昨天');
+  assert.equal(localDay(statusChanges.at(-1).created_at), localDay(now), 'review sample should show 今天');
+  assert.equal(reviewTask.updated_at, statusChanges.at(-1).created_at);
   for (const project of [window.__EVA_DRIVE_DEMO.issues, window.__EVA_OFFICIAL_TASKS, window.__EVA_CLIENT_TASKS]) {
     assert.ok(project.every(issue => !issue.activity_log?.length));
   }
