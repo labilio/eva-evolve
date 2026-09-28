@@ -4,7 +4,7 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
-test('群成员行支持悬停、键盘任免管理员和移除确认，角色保存且不展示项目分工',async()=>{
+test('群聊管理任免管理员与成员行移除确认，角色保存且不展示项目分工',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const origin=`http://127.0.0.1:${server.address().port}`;
@@ -14,16 +14,14 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(5000);
   await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   await page.goto(origin+'/#/messages');
-  const open=async()=>{
+  const openMembers=async()=>{
    await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
    await page.getByRole('button',{name:'打开聊天信息',exact:true}).last().click();
    await page.locator('.eva-chat-settings').getByRole('button',{name:/^查看全部/}).click();
   };
-  await open();
+  await openMembers();
   const panel=page.locator('.eva-chat-settings');
   const row=panel.locator('.eva-chat-member-list-row').filter({hasText:'林晓'});
-  const grant=row.getByRole('button',{name:'设为群管理员 林晓',exact:true});
-  await grant.waitFor();
   await page.mouse.move(10,10);
   assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'0');
   const names=()=>panel.locator('.eva-chat-member-profile').allTextContents();
@@ -31,43 +29,42 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   const before=await row.boundingBox();await row.hover();
   assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'1');
   assert.deepEqual(await row.boundingBox(),before,'悬停不改变行几何');
-  assert.equal(await row.locator('.eva-members-human-role').count(),0);
-  await grant.hover();
-  await page.getByRole('tooltip').filter({hasText:'设为群管理员'}).waitFor();
-  await grant.click();
-  await row.locator('.semi-tag').getByText('群管理员',{exact:true}).waitFor();
-  assert.deepEqual((await names()).map(x=>x.replace('群管理员','')),originalOrder,'任命成功不移动当前行');
-  const nextRow=panel.locator('.eva-chat-member-list-row').filter({hasText:'严博'});
-  await nextRow.hover();
-  assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'0','鼠标点击任命后离开，旧行必须退出操作态');
-  assert.equal(await nextRow.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'1');
-  assert.equal(await row.evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','旧行不能保留鼠标点击造成的高亮');
-  await page.getByRole('tooltip').waitFor({state:'hidden'});
-  await page.mouse.move(10,10);
-  assert.equal(await nextRow.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'0');
-  await row.hover();
-  await row.getByRole('button',{name:'取消群管理员 林晓',exact:true}).hover();
-  await page.getByRole('tooltip').filter({hasText:'取消群管理员'}).waitFor();
-  await nextRow.hover();
-  await page.getByRole('tooltip').waitFor({state:'hidden'});
-  assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'0','提示退出后旧行不能残留');
+  assert.equal(await row.locator('.eva-members-human-role').count(),0,'成员行不展示项目分工');
+  assert.equal(await row.locator('.eva-chat-member-actions').getByRole('button').count(),1,'成员行任免统一收口到群聊管理，行内只保留移出群聊');
+  // 任免入口在群聊管理：添加管理员走拉人模板。
+  await panel.getByRole('button',{name:'返回聊天信息'}).click();
+  await panel.getByText('群聊管理',{exact:true}).click();
+  await panel.getByRole('button',{name:'添加管理员',exact:true}).click();
+  const picker=page.locator('.eva-member-picker-modal');
+  await picker.getByText('林晓',{exact:true}).click();
+  await picker.getByRole('button',{name:'确认添加',exact:true}).click();
+  await panel.locator('.eva-chat-management-member-main').filter({hasText:'林晓'}).getByText('群管理员',{exact:true}).waitFor();
   await panel.getByRole('button',{name:'返回聊天信息'}).click();
   await panel.getByRole('button',{name:/^查看全部/}).click();
   const promotedOrder=await names();
-  assert.match(promotedOrder[0],/群主/);assert.match(promotedOrder[1],/林晓/);
-  await row.locator('.semi-tag').getByText('群管理员',{exact:true}).waitFor();
-  const revoke=row.getByRole('button',{name:'取消群管理员 林晓',exact:true});
-  await page.mouse.move(10,10);await panel.getByRole('textbox',{name:'搜索群聊成员'}).focus();await page.keyboard.press('Tab');await revoke.focus();
-  assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'1');
+  assert.match(promotedOrder[0],/群主/);
+  assert.ok(promotedOrder.some(t=>t==='林晓群管理员'),'新任管理员行紧跟身份显示群管理员');
+  const firstPlain=promotedOrder.findIndex(t=>!t.includes('群主')&&!t.includes('群管理员'));
+  assert.ok(firstPlain>0,'存在普通成员行');
+  assert.ok(promotedOrder.slice(0,firstPlain).every(t=>t.includes('群主')||t.includes('群管理员')),'群主与群管理员整体排在普通成员之前');
+  await panel.locator('.eva-chat-member-list-row').filter({hasText:'林晓'}).locator('.semi-tag').getByText('群管理员',{exact:true}).waitFor();
+  // 键盘撤销：群聊管理里的移除按钮可聚焦、回车生效。
+  await panel.getByRole('button',{name:'返回聊天信息'}).click();
+  await panel.getByText('群聊管理',{exact:true}).click();
+  const revoke=panel.getByRole('button',{name:'移除管理员 林晓',exact:true});
+  await page.mouse.move(10,10);
+  await revoke.focus();
+  assert.equal(await revoke.evaluate(el=>document.activeElement===el),true);
   await page.keyboard.press('Enter');
-  await grant.waitFor();assert.equal(await row.locator('.semi-tag').count(),0);
-  assert.deepEqual((await names()).map(x=>x.replace('群管理员','')),promotedOrder.map(x=>x.replace('群管理员','')),'取消管理员后当前行不移动');
-  await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('林晓');
-  await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('');
-  assert.match((await names())[1],/林晓/,'清空搜索仍保持本次顺序');
+  await revoke.waitFor({state:'detached'});
   await panel.getByRole('button',{name:'返回聊天信息'}).click();
   await panel.getByRole('button',{name:/^查看全部/}).click();
-  assert.deepEqual(await names(),originalOrder,'重新打开后恢复普通成员的原有顺序');
+  assert.deepEqual(await names(),originalOrder,'取消管理员后恢复普通成员的原有顺序');
+  await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('林晓');
+  assert.equal(await panel.locator('.eva-chat-member-list-row').filter({hasText:'林晓'}).count(),1);
+  await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('');
+  assert.equal(await panel.locator('.eva-chat-member-list-row').count(),originalOrder.length,'清空搜索后列表完整');
+  // 移除确认：取消不变更，确认后刷新仍生效。
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
   const modal=page.getByRole('dialog').filter({hasText:'确认移除成员'});
   await modal.getByRole('button',{name:'cancel',exact:true}).click();
@@ -75,7 +72,7 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
   await modal.getByRole('button',{name:'confirm',exact:true}).click();
   await row.waitFor({state:'detached'});
-  await page.reload();await open();assert.equal(await row.count(),0);
+  await page.reload();await openMembers();assert.equal(await row.count(),0);
   // Opening settings must preserve the underlying composer and its draft.
   await panel.getByRole('button',{name:'返回聊天信息'}).click();
   await panel.getByRole('button',{name:'关闭聊天信息'}).click();
@@ -87,7 +84,7 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   await panel.getByRole('button',{name:'关闭聊天信息'}).click();
   assert.equal(await composer.innerText(),'保留草稿');
   await page.locator('.wk-conv-compact-item').filter({hasText:'质量与排产'}).first().click();
-  await open();assert.equal(await row.count(),0,'往返会话仍读取真实成员状态');
+  await openMembers();assert.equal(await row.count(),0,'往返会话仍读取真实成员状态');
   await page.evaluate(()=>window.EvaTheme.apply('dark'));
   const remaining=panel.locator('.eva-chat-member-list-row').filter({hasText:'严博'});
   await remaining.hover();

@@ -42,43 +42,60 @@ test('分身空选不阻止创建项目、建群及直接添加',()=>{const s=se
 
 test('批量添加整体校验，失败不创建群或留下部分成员',()=>{const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');const before=JSON.stringify(s.snapshot());assert.throws(()=>s.transaction(t=>{t.createGroup('g','群','p','a',[]);t.addMember('g','a','b');t.addMember('g','a','c');}));assert.equal(JSON.stringify(s.snapshot()),before);s.transaction(t=>{t.createGroup('g','群','p','a',[]);t.addMember('g','a','b');});assert.equal(s.canRead('g','b'),true);assert.equal(s.snapshot().memberAdditions.filter(i=>i.scopeId==='g').length,1);});
 
-test('群设置只允许已加入的群主或有效管理员修改，分身不能治理',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.setAdmin('p','a','b',true);s.createGroup('g','群','p','a',[]);assert.throws(()=>s.setChatSettings('g','b',{notice:'不应写入'}));assert.throws(()=>s.setChatSettings('g','aa',{notice:'不应写入'}));s.addMember('g','a','b');assert.throws(()=>s.setChatSettings('g','b',{notice:'仍未获群授权'}));s.setGroupManager('g','a','b',true);s.setChatSettings('g','b',{name:'整改群',notice:'新公告'});assert.equal(s.snapshot().groups.g.name,'整改群');assert.equal(s.chatSettings('g').notice,'新公告');assert.throws(()=>s.setChatSettings('g','a',{name:' '}));assert.throws(()=>s.setChatSettings('g','a',{notice:'字'.repeat(401)}));});
-test('项目权限不授予群管理，群内任免不改变项目权限',()=>{
+test('群设置只允许已加入的群主或有效管理员修改，分身不能治理',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.setAdmin('p','a','b',true);s.createGroup('g','群','p','a',[]);assert.throws(()=>s.setChatSettings('g','b',{notice:'不应写入'}));assert.throws(()=>s.setChatSettings('g','aa',{notice:'不应写入'}));s.addMember('g','a','b');s.setChatSettings('g','b',{name:'整改群',notice:'新公告'});assert.equal(s.snapshot().groups.g.name,'整改群');assert.equal(s.chatSettings('g').notice,'新公告');assert.throws(()=>s.setChatSettings('g','a',{name:' '}));assert.throws(()=>s.setChatSettings('g','a',{notice:'字'.repeat(401)}));});
+test('项目权限自动继承为群管理，群内任免不改变项目权限',()=>{
  const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.addMember('p','a','c');s.setAdmin('p','a','b',true);s.createGroup('g','群','p','c',[]);s.addMember('g','c','a');s.addMember('g','c','b');
- assert.deepEqual(Array.from(s.groupGovernance('g').managerIds),['c']);
- for(const uid of ['a','b']){assert.equal(s.manager('g',uid),false);assert.throws(()=>s.setChatSettings('g',uid,{notice:'越权'}));assert.throws(()=>s.remove('g',uid,'c'));}
- assert.equal(s.snapshot().groupGovernance?.g,undefined,'读取不会将旧继承权限转为手动授权');
+ assert.deepEqual(Array.from(s.groupGovernance('g').managerIds),['c','a','b']);
+ assert.equal(s.manager('g','b'),true);
+ assert.equal(s.snapshot().groupGovernance?.g,undefined,'继承权限实时推导，不写入手动授权');
  s.setGroupManager('g','c','b',true);assert.equal(s.manager('g','b'),true);
- s.setAdmin('p','a','b',false);assert.equal(s.manager('g','b'),true);
- s.setAdmin('p','a','b',true);s.setGroupManager('g','c','b',false);assert.equal(s.manager('g','b'),false);assert.equal(s.manager('p','b'),true);
- assert.throws(()=>s.setGroupMd('g','b','越权'));assert.throws(()=>s.setGroupAllowNoMention('g','b',false));
+ s.setAdmin('p','a','b',false);assert.equal(s.manager('g','b'),true,'失去项目角色不撤销仍有效的手动授权');
+ s.setAdmin('p','a','b',true);s.setGroupManager('g','c','b',false);assert.equal(s.manager('g','b'),true,'项目角色继承不受手动撤销影响');assert.equal(s.manager('p','b'),true,'群内任免不改变项目权限');
 });
-test('子区与刷新继承群授权，项目提权不恢复已取消的群管理员',()=>{
+test('子区与刷新继承群授权，项目角色实时推导且手动授予互不覆盖',()=>{
  const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.addMember('p','a','c');s.setAdmin('p','a','b',true);s.createGroup('g','群','p','c',[]);s.createThread('t','g');
  assert.equal(s.canRead('g','b'),false);assert.equal(s.manager('g','b'),false);assert.equal(s.manager('g','a'),false);
- s.addMember('g','c','b');assert.equal(s.manager('t','b'),false);
- s.setGroupManager('g','c','b',true);assert.equal(s.manager('t','b'),true);
- assert.throws(()=>s.transfer('g','b','c'));assert.throws(()=>s.dissolveGroup('g','b'));assert.throws(()=>s.setGroupManager('g','b','b',true));
+ s.addMember('g','c','b');assert.equal(s.manager('t','b'),true,'项目管理员入群即继承群管理');
+ s.setAdmin('p','a','b',false);assert.equal(s.manager('t','b'),false,'失去项目角色继承即时失效');
+ s.setAdmin('p','a','b',true);assert.equal(s.manager('t','b'),true,'项目提权后继承随之恢复');
+ s.setGroupManager('g','c','b',true);s.setAdmin('p','a','b',false);assert.equal(s.manager('t','b'),true,'手动授予与项目角色继承互不覆盖');
+ assert.throws(()=>s.transfer('g','b','c'));assert.throws(()=>s.dissolveGroup('g','b'));
  const restored=windowlessRestore(s.snapshot());assert.equal(restored.manager('t','b'),true);
  restored.setGroupManager('g','c','b',false);assert.equal(restored.manager('t','b'),false);
- const again=windowlessRestore(restored.snapshot());assert.equal(again.manager('t','b'),false);assert.equal(again.manager('p','b'),true);
- again.setGroupManager('g','c','b',true);again.leaveGroup('g','b');again.addMember('g','c','b');assert.equal(again.manager('t','b'),false,'重新入群不恢复授权');
- again.createGroup('other','非项目群',null,'c',[]);again.addMember('other','c','b');assert.equal(again.manager('other','b'),false);
+ restored.setAdmin('p','a','b',true);assert.equal(restored.manager('t','b'),true);
+ const again=windowlessRestore(restored.snapshot());assert.equal(again.manager('t','b'),true);assert.equal(again.manager('p','b'),true);
+ again.createGroup('other','非项目群',null,'c',[]);again.addMember('other','c','b');assert.equal(again.manager('other','b'),false,'非项目群不继承项目角色');
 });
-test('群主设置群管理员，群管理员可维护 Bot 管理员、回复规则和 GROUP.md',()=>{
+test('群主设置群管理员，群管理员可维护 AI 管理员和 GROUP.md',()=>{
  const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.addClone('p','b','bb');s.createGroup('g','群','p','a',['aa']);s.addMember('g','a','b');s.addClone('g','b','bb');
  assert.throws(()=>s.setGroupManager('g','b','b',true));s.setGroupManager('g','a','b',true);
- s.setGroupBotAdmin('g','b','bb',true);s.setGroupAllowNoMention('g','b',false);s.setGroupMd('g','b','# 协作约定');
- const governance=s.groupGovernance('g');assert.deepEqual(Array.from(governance.botAdminIds),['bb']);assert.equal(governance.allowNoMention,false);assert.equal(governance.groupMd,'# 协作约定');
+ s.setGroupBotAdmin('g','b','bb',true);s.setGroupMd('g','b','# 协作约定');
+ const governance=s.groupGovernance('g');assert.deepEqual(Array.from(governance.botAdminIds),['bb']);assert.equal(governance.groupMd,'# 协作约定');
  assert.throws(()=>s.setGroupBotAdmin('g','c','aa',true));assert.throws(()=>s.setGroupBotAdmin('g','b','c',true));
  const restored=windowlessRestore(s.snapshot());assert.equal(restored.manager('g','b'),true);assert.equal(restored.groupGovernance('g').groupMd,'# 协作约定');
  restored.remove('g','a','b');assert.equal(restored.manager('g','b'),false);assert.equal(restored.groupGovernance('g').botAdminIds.includes('bb'),false);
 });
-test('全员群同步成员但不继承项目管理员，群授权可以独立撤销',()=>{
+test('全员群继承项目管理员且撤销后管理操作立即拒绝',()=>{
  const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.setAdmin('p','a','b',true);
- assert.deepEqual(Array.from(s.groupGovernance('all:p').managerIds),['a']);assert.throws(()=>s.setGroupBotAdmin('all:p','b','aa',true));
- s.setGroupManager('all:p','a','b',true);s.setGroupBotAdmin('all:p','b','aa',true);s.setGroupAllowNoMention('all:p','b',false);s.setGroupMd('all:p','b','全员群约定');
- const governance=s.groupGovernance('all:p');assert.deepEqual(Array.from(governance.botAdminIds),['aa']);assert.equal(governance.allowNoMention,false);assert.equal(governance.groupMd,'全员群约定');s.setGroupManager('all:p','a','b',false);assert.throws(()=>s.setGroupBotAdmin('all:p','b','aa',false));assert.equal(s.manager('p','b'),true);assert.equal(s.canRead('all:p','b'),true);assert.throws(()=>s.remove('all:p','a','b'));
+ assert.deepEqual(Array.from(s.groupGovernance('all:p').managerIds),['a','b']);s.setGroupBotAdmin('all:p','b','aa',true);
+ s.setAdmin('p','a','b',false);assert.throws(()=>s.setGroupBotAdmin('all:p','b','aa',false));
+ s.setGroupManager('all:p','a','b',true);s.setGroupBotAdmin('all:p','b','aa',true);s.setGroupMd('all:p','b','全员群约定');
+ const governance=s.groupGovernance('all:p');assert.deepEqual(Array.from(governance.botAdminIds),['aa']);assert.equal(governance.groupMd,'全员群约定');
+});
+test('免 @ 回答按本人分身逐群开启，非主人不可改且刷新保留',()=>{
+ const s=setup();s.setActor('a');s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.createGroup('g','群','p','a',['aa']);
+ assert.deepEqual(Array.from(s.cloneMentionFreeGroups('a').map(item=>item.groupId)).sort(),['all:p','g']);
+ assert.equal(s.cloneMentionFreeGroups('a').every(item=>item.noMention===false),true);
+ s.setCloneMentionFree('a','a','all:p',true);
+ const enabled=s.cloneMentionFreeGroups('a');
+ assert.equal(enabled[0].groupId,'all:p');assert.equal(enabled[0].noMention,true);
+ assert.equal(enabled.find(item=>item.groupId==='g').noMention,false);
+ assert.throws(()=>s.setCloneMentionFree('a','b','all:p',true));
+ assert.throws(()=>s.setCloneMentionFree('b','a','all:p',true));
+ const restored=windowlessRestore(s.snapshot());
+ assert.equal(restored.cloneMentionFreeGroups('a').find(item=>item.groupId==='all:p').noMention,true);
+ s.setCloneMentionFree('a','a','all:p',false);
+ assert.equal(s.snapshot().cloneMentionFree?.aa,undefined);
 });
 test('私聊设置与清空记录按联系人和会话隔离，不删除其他人的消息',()=>{const s=setup();s.setChatPreferences('dm-b','a',{mute:true,top:true,clearedCount:2});assert.equal(s.chatPreferences('dm-b','a').mute,true);assert.equal(s.chatPreferences('dm-b','b').mute,undefined);assert.equal(s.chatPreferences('dm-c','a').mute,undefined);assert.equal(s.visibleMessages('dm-b','a',[1,2,3]).join(','),'3');assert.equal(s.visibleMessages('dm-b','b',[1,2,3]).length,3);const restored=windowlessRestore(s.snapshot());assert.equal(restored.chatPreferences('dm-b','a').top,true);});
 function windowlessRestore(seed){const window={};loadIdentityEnvironment(window);vm.runInNewContext(fs.readFileSync(new URL('../prototype/009-2-membership.js',import.meta.url),'utf8'),{window});return window.EvaMembership.create(seed);}

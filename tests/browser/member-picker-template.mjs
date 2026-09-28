@@ -106,7 +106,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await groupAdd.getByText('同事',{exact:true}).count(),0,'联系人候选分组不使用“同事”称呼');
     const humanGroup=groupAdd.locator('.eva-member-picker__candidate-group').filter({hasText:/联系人/});
     assert.ok(await humanGroup.locator('.eva-member-picker__candidate').count()>0,'普通群应保留可拉入的项目联系人');
-    assert.equal(await humanGroup.locator('.eva-members-human-role').count(),0,'群聊候选不展示项目角色');
+    assert.ok(await humanGroup.locator('.eva-members-human-role').count()>0,'群聊候选按身份展示规范以第二行呈现项目角色');
     const unassignedHuman=humanGroup.locator('.eva-member-picker__candidate').filter({hasText:'惠玲'});
     assert.equal(await unassignedHuman.locator('.eva-members-human-role').count(),0,'未配置项目角色的联系人第二行留空');
     assert.equal(await groupAdd.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'不显示冗长的权限说明');

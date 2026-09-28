@@ -38,10 +38,10 @@ window.__EVA_PEOPLE = [
   {"uid":"u-qianmu","name":"钱牧","color":"#e8590c","dept":"财务","title":"财务负责人","id":"u-qianmu","active":true,"internal":true,"activated":true},
   {"uid":"u-huiling","name":"惠玲","color":"#1d5bd6","dept":"财务","title":"成本分析","online":true,"id":"u-huiling","active":true,"internal":true,"activated":true},
   {"uid":"u-zhangkuo","name":"张阔","color":"#f59f00","dept":"财务","title":"结算","id":"u-zhangkuo","active":true,"internal":true,"activated":true},
-  {"id":"u-kangzhixi","uid":"u-kangzhixi","name":"康执玺","color":"#4c83a5","active":true,"internal":true,"activated":true},
-  {"id":"u-haozong","uid":"u-haozong","name":"昊总","color":"#6f75a8","active":true,"internal":true,"activated":true},
-  {"id":"u-chenbo","uid":"u-chenbo","name":"陈博","color":"#8c658f","active":true,"internal":true,"activated":true},
-  {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true}
+  {"id":"u-kangzhixi","uid":"u-kangzhixi","name":"康执玺","color":"#4c83a5","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/数智化中心/AI 中台/AI 产品共创"},
+  {"id":"u-haozong","uid":"u-haozong","name":"昊总","color":"#6f75a8","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/总裁办"},
+  {"id":"u-chenbo","uid":"u-chenbo","name":"陈博","color":"#8c658f","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/市场中心/品牌市场部"},
+  {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/研发中心/软件研发部"}
 ];
 
 // Isolated permission fixture: Zhou can share this task link in a non-project group;
@@ -52,6 +52,19 @@ window.__EVA_TASK_LINK_PERMISSION_DEMO = {
   issue: {id:'zhou-private-review-1',workspace_id:'zhou-private-review',number:1,identifier:'ZY-101',title:'复核交互方案中的任务跳转边界',description:'核对跨群分享任务链接时的可见性和访问权限。',status:'in_progress',priority:'medium',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',creator_id:'u-zhouyuan',creator_name:'周远',due_date:null,position:1,created_at:window.__EVA_DEMO_TIME.T0,updated_at:window.__EVA_DEMO_TIME.T1}
 };
 if(window.__EVA_PROJECTS&&!window.__EVA_PROJECTS.some(project=>project.id===window.__EVA_TASK_LINK_PERMISSION_DEMO.projectId))window.__EVA_PROJECTS.push(window.EvaProjectAppearance.view(window.__EVA_TASK_LINK_PERMISSION_DEMO.project));
+
+// 演示用组织架构：正式版由 HR 组织架构服务下发「集团/中心/中台/组」全路径，原型按部门给出稳定 mock。
+// 通讯录列表继续用 __EVA_CONTACT_L2_DEPARTMENTS 展示部门；资料卡展示这里的完整路径。
+window.__EVA_ORG_UNITS = {
+  '总经办': '吉利汽车集团/总裁办',
+  'AI 产品共创': '吉利汽车集团/数智化中心/AI 中台/AI 产品共创',
+  '研发中心': '吉利汽车集团/研发中心/软件研发部',
+  '数据与算法': '吉利汽车集团/数智化中心/数据与算法部',
+  '市场部': '吉利汽车集团/市场中心/品牌市场部',
+  '销售部': '吉利汽车集团/销售中心/销售部',
+  '人力资源': '吉利汽车集团/人力资源中心/人力资源部',
+  '财务': '吉利汽车集团/财务中心/财务部'
+};
 
 (function () {
   'use strict';
