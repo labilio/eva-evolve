@@ -62,7 +62,7 @@ test('Edge：描述和评论中的任务引用在同一抽屉打开并可返回'
     await page.getByText('你不是该任务所属项目的成员，无法查看任务').waitFor();
     assert.equal(await title.inputValue(),'处理关键供应商来料质量异常','无权限时留在 SC-103');
     await permittedLink.click();
-    await page.waitForURL(/evaProject=official.*evaTask=EVA-102/);
+    await page.waitForURL(/evaProject=official.*evaTask=official-102/);
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('.loop-idp__title')).some(el=>el.getClientRects().length&&el.value==='验证分享链接与来源群权限隔离'));
     assert.equal(await title.inputValue(),'验证分享链接与来源群权限隔离');
     assert.deepEqual(errors,[]);

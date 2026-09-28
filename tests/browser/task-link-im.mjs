@@ -54,9 +54,9 @@ test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转'
     const page=await browser.newPage(),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
-    const denied=page.locator('.loop-idp [data-eva-task-link="ZY-101"]');
-    const allowed=page.locator('.loop-idp [data-eva-task-link="CLIENT-103"]');
-    const deleted=page.locator('.loop-idp a[href*="evaProject=deleted-project"]');
+    const denied=page.locator('.loop-idp__desc [data-eva-task-link="ZY-101"]');
+    const allowed=page.locator('.loop-idp__desc [data-eva-task-link="CLIENT-103"]');
+    const deleted=page.locator('.loop-idp__desc a[href*="evaProject=deleted-project"]');
     await denied.waitFor();
     await allowed.waitFor();
     await deleted.waitFor();
