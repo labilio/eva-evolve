@@ -790,13 +790,6 @@
   align-items: center;
   justify-content: center;
 }
-.loop-acts__item .eva-task-activity-action-icon {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: -2px;
-  margin-right: 3px;
-  color: var(--semi-color-text-2);
-}
 .loop-acts__older {
   align-self: flex-start;
   padding: 2px 0;
