@@ -78,11 +78,12 @@ test('项目管家按任务事实回复问题，旧链接演示升级且保留�
  const request=state.messages[id].find(m=>m.fixtureId==='supply-chat-v4:all:prod:task-link-request');
  const reply=state.messages[id].find(m=>m.fixtureId==='supply-chat-v4:all:prod:task-link-response');
  assert.match(request.text,/采购问 A-2409/);
- assert.match(reply.text,/负责人是\*\*周远\*\*/);
+ assert.match(reply.text,/负责人 \*\*周远\*\*/);
+ assert.match(reply.text,/\n\n\[查看任务\]/);
  assert.match(reply.text,/隔离措施、8D 根因分析和长期整改证据/);
  assert.match(reply.text,/evaTask=SC-103/);
  request.text='@Eva 项目管理专员 请把 SC-103 的任务链接发到群里，方便大家进入任务核对进展。';
- reply.text='SC-103 任务链接：[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)';
+ reply.text='查到 SC-103 当前**进行中**，负责人是**周远**。任务要求复核 A-2409 的隔离措施、8D 根因分析和长期整改证据；群里还没有质量放行结论，暂不能向供应商承诺恢复时间。可从这里查看任务并继续跟进：[SC-103](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)';
  const restored=window.EvaMembership.create(state);
  restored.sendMessage(id,'u-wangyilin','我的手动补充');
  restored.seedSupplyChatContent();

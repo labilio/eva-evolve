@@ -778,12 +778,21 @@ function EvaArchivePreviewRenderer({file}) {
   );
 }
 
-function EvaInlineProjectPanel({projectId}) {
+function EvaInlineProjectPanel({projectId,taskRequest}) {
   const h=React.createElement;
   const navigate=useNavigate();
   const [spaces,setSpaces]=reactExports.useState(()=>loadSpaces());
   const [activeProjectId,setActiveProjectId]=reactExports.useState(projectId);
   reactExports.useEffect(()=>setActiveProjectId(projectId),[projectId]);
+  reactExports.useEffect(()=>()=>WKApp$1.routeRight.popAll(),[]);
+  reactExports.useEffect(()=>{
+    if(!taskRequest||taskRequest.projectId!==activeProjectId)return;
+    const store=evaMembers().store,actor=store.snapshot().actorId;
+    if(!store.canRead(activeProjectId,actor)){Toast.error('你没有该项目的访问权限，无法查看任务');return;}
+    const issue=evaTaskLinkIssue(taskRequest);
+    if(!issue){Toast.error('任务不存在或已失效');return;}
+    WKApp$1.routeRight.push(h(IssueDetailPage,{key:issue.id,issueId:issue.id,onChanged:()=>setSpaces(loadSpaces()),onClose:()=>WKApp$1.routeRight.pop()}));
+  },[activeProjectId,taskRequest]);
   const space=spaces.find(item=>item.id===activeProjectId);
   if(!space)return null;
   setCurrentSpace(space.id,space.name);
@@ -1823,11 +1832,11 @@ function EvaAITeamPage() {
 
     source=root.__evaCut(source,
       '[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),[evaTransferFile,setEvaTransferFile]=reactExports.useState(null);',
-      '[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),[evaTransferFile,setEvaTransferFile]=reactExports.useState(null),[evaInlineProjectId,setEvaInlineProjectId]=reactExports.useState(null);',
+      '[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),[evaTransferFile,setEvaTransferFile]=reactExports.useState(null),[evaInlineProjectId,setEvaInlineProjectId]=reactExports.useState(null),[evaInlineTaskRequest,setEvaInlineTaskRequest]=reactExports.useState(null);',
       '消息内联项目状态');
     source=root.__evaCut(source,
       'evaMemberReset=reactExports.useEffect(()=>{Nt(null);Dt("none");Qt(null);Ht(null);setEvaGroupCreateOpen(false);},[evaMembershipProjectId,evaActorId]),evaSelectedChannel=',
-      'evaMemberReset=reactExports.useEffect(()=>{Nt(null);Dt("none");Qt(null);Ht(null);setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);},[evaMembershipProjectId,evaActorId]),evaInlineProjectEffect=reactExports.useEffect(()=>{const evaOpenInlineProject=evaEvent=>{const evaProjectId=evaEvent.detail?.projectId;if(evaProjectId)setEvaInlineProjectId(evaProjectId)};window.addEventListener("eva:open-inline-project",evaOpenInlineProject);return()=>window.removeEventListener("eva:open-inline-project",evaOpenInlineProject)},[]),evaSelectedChannel=',
+      'evaMemberReset=reactExports.useEffect(()=>{Nt(null);Dt("none");Qt(null);Ht(null);setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);setEvaInlineTaskRequest(null);},[evaMembershipProjectId,evaActorId]),evaInlineProjectEffect=reactExports.useEffect(()=>{const evaOpenInlineProject=evaEvent=>{const evaProjectId=evaEvent.detail?.projectId;if(evaProjectId){WKApp$1.routeRight.popAll();setEvaInlineProjectId(evaProjectId);setEvaInlineTaskRequest(evaEvent.detail?.taskIdentifier?{projectId:evaProjectId,identifier:evaEvent.detail.taskIdentifier}:null)}};window.addEventListener("eva:open-inline-project",evaOpenInlineProject);return()=>window.removeEventListener("eva:open-inline-project",evaOpenInlineProject)},[]),evaSelectedChannel=',
       '消息内联项目事件');
     source=root.__evaCut(source,
       'onClick:ns=>{ns.stopPropagation(),window.__evaOpenWorkspaceFromTree?.(ci.id.slice(6),"tasks")}',
@@ -1835,7 +1844,7 @@ function EvaAITeamPage() {
       '项目入口内联打开');
     source=root.__evaCut(source,
       '!ui&&Vs)),ki,Ss)',
-      '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId})),ki,Ss)',
+      '!ui&&Vs),evaInlineProjectId&&React.createElement(EvaInlineProjectPanel,{projectId:evaInlineProjectId,taskRequest:evaInlineTaskRequest})),ki,Ss)',
       '消息内容区内联项目面板');
 
     // Normalize at the shared IM tokenizer: the @ prefix is part of the mention entity.
@@ -1890,7 +1899,7 @@ function EvaAITeamPage() {
     'React.createElement(TextContent,{content:ci.text??"",mentions:ci.mentions??[],onMentionClick:uid=>{if(uid&&uid!=="all"&&uid!=="channel")setEvaIdentityProfile(uid)}})', '消息正文提及复用统一身份资料卡');
   for(const continuation of ['!1','ro'])cut('...rowProps(ci,'+continuation+'),onContextMenu:', '...rowProps(ci,'+continuation+'),onAvatarClick:()=>setEvaIdentityProfile(ci.sender),onSenderNameClick:()=>setEvaIdentityProfile(ci.sender),onContextMenu:', '消息身份点击 '+continuation);
     cut('initialDraft:ct?.initialDraft,onDraftChange:ct?.onDraftChange', 'initialDraft:Sa.personId?evaMemberStore.directDraft(Sa.id,evaActorId):ct?.initialDraft,onDraftChange:Sa.personId?text=>evaMemberStore.setDirectDraft(evaMemberStore.openDirect(evaActorId,Sa.personId),evaActorId,text):ct?.onDraftChange', '私聊草稿业务隔离');
-    cut('setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);},[evaMembershipProjectId,evaActorId])', 'setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', '身份切换关闭资料卡');
+    cut('setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);setEvaInlineTaskRequest(null);},[evaMembershipProjectId,evaActorId])', 'setEvaGroupCreateOpen(false);setEvaInlineProjectId(null);setEvaInlineTaskRequest(null);setEvaIdentityProfile(null);},[evaMembershipProjectId,evaActorId])', '身份切换关闭资料卡');
     cut(':ct?[...ct.channels,...evaChannelDrafts.filter(evaC=>evaC.id.startsWith("dm-")&&!ct.channels.some(evaKnown=>evaKnown.id===evaC.id))]:evaChannelDrafts', ':ct?ct.channels:evaChannelDrafts', '私聊仅使用当前账号业务来源');
     cut('ChannelsView,{key:evaMessageMode,source:rt', 'ChannelsView,{key:evaMessageMode+":"+evaLiveMemberStore.snapshot().actorId,source:rt', '切换账号重置内部会话身份');
     cut('className:"ch-cat-gear",title:"新建"', 'className:"ch-cat-gear eva-message-invite",title:"新建群聊","aria-label":"新建群聊"', '恢复顶部拉人图标语义');

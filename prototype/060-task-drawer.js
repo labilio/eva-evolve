@@ -22,10 +22,11 @@
   }
 
   function updateFull(host) {
-    // 熔断：卡片宽 < 1000px 时漏出 < 300px，抽屉铺满为整屏。
-    // （clamp(640, 卡片×0.7, 900) 下，卡片<1000 恒有 漏出<300）
+    // 消息页右侧项目面板本身较窄，保留至少 120px 项目内容作抽屉上下文；
+    // 独立项目页仍按原来的 300px 可见宽度熔断。
     var card = host.clientWidth || 0;
-    host.classList.toggle("eva-drawer-full", card > 0 && card < 1000);
+    var minimum = host.closest(".eva-inline-project-panel") ? 760 : 1000;
+    host.classList.toggle("eva-drawer-full", card > 0 && card < minimum);
   }
 
   function scan() {

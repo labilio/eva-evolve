@@ -408,7 +408,7 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
   {
     fixtureId: 'supply-chat-v4:all:prod:task-link-response',
     kind: 'text', senderId: 'project-agent:prod', time: '11:24',
-    text: '查到 SC-103 当前**进行中**，负责人是**周远**。任务要求复核 A-2409 的隔离措施、8D 根因分析和长期整改证据；群里还没有质量放行结论，暂不能向供应商承诺恢复时间。可从这里查看任务并继续跟进：[SC-103](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
+    text: '查到 SC-103：**进行中**，负责人 **周远**。\n待复核：A-2409 的隔离措施、8D 根因分析和长期整改证据。\n群里尚无质量放行结论，暂不能向供应商承诺恢复时间。\n\n[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
   }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由负责人确认。',messages:[
