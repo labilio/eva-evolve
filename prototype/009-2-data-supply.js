@@ -399,6 +399,16 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
     fixtureId: 'supply-chat-v3:all:prod:human-decision-gate',
     kind: 'text', senderId: 'u-wangyilin', time: '11:22',
     text: '收到。大家先按这个顺序看，质量复核和排产影响没有同时确认前，不对外承诺恢复时间，也不下发新的排产指令。'
+  },
+  {
+    fixtureId: 'supply-chat-v4:all:prod:task-link-request',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:23',
+    text: '@Eva 项目管理专员 请把 SC-103 的任务链接发到群里，方便大家进入任务核对进展。'
+  },
+  {
+    fixtureId: 'supply-chat-v4:all:prod:task-link-response',
+    kind: 'text', senderId: 'project-agent:prod', time: '11:24',
+    text: 'SC-103 任务链接：[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
   }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由负责人确认。',messages:[
