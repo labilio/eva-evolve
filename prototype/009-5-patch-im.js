@@ -140,7 +140,7 @@ function evaConversationRailMenus({store,actorId,channel,thread,recent,onEditCat
 }
 function evaCategoryRailMenus({category,onCreateGroup,onRename,onDelete}){
  const menus=[{title:'在此分组新建群聊',icon:evaRailIcon('MessageCirclePlus'),onClick:()=>onCreateGroup(category.id)},
-  {title:'重命名',icon:evaRailIcon('Pencil'),onClick:()=>onRename(category)}];
+  {title:'编辑分组',icon:evaRailIcon('Pencil'),onClick:()=>onRename(category)}];
  if(category.id!=='scope:other')menus.push({separator:true},{title:'删除分组',icon:React.createElement(Trash2,{size:16,strokeWidth:1.7,className:'ctx-icon','aria-hidden':true}),danger:true,onClick:()=>onDelete(category)});
  return menus;
 }
