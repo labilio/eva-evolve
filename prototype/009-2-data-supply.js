@@ -162,13 +162,13 @@ window.__EVA_PEOPLE = [
   }
 
   var supplyIssues = [
-    supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'squad', 'sq-supply-procurement', '采购与招投标专家团', '2026-09-18', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
-    supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'agent', 'ag-supply-tender', '招投标管理专家', '2026-09-19', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
-    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'agent', 'ag-supply-sqe', 'SQE运营专家', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。'),
-    supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'agent', 'ag-supply-cost', '供应链成本运营专家', '2026-09-21', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
-    supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'agent', 'ag-supply-kd', '供应链KD排产专家', '2026-09-17', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
-    supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'squad', 'sq-supply-risk', '履约与风险专家团', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
-    supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'agent', 'ag-supply-contract', '供应链合同管理专家', '2026-09-10', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
+    supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'member', 'u-wangyilin', '王宜林', '2026-09-18', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
+    supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'member', 'u-linxiao', '林晓', '2026-09-19', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
+    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'member', 'u-zhouyuan', '周远', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。'),
+    supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'member', 'u-suhang', '苏航', '2026-09-21', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
+    supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'member', 'u-suhang', '苏航', '2026-09-17', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
+    supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'member', 'u-hejing', '何静', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
+    supplyTask(7, '完成到期采购合同续签检查', 'done', 'medium', 'member', 'u-wangyilin', '王宜林', '2026-09-10', '核对三份到期合同的履约情况、价格调整、续签期限和终止条件。')
   ];
   supplyIssues[2].attachments = [{
     id: 'task-file-a2409-checklist',
@@ -193,10 +193,16 @@ window.__EVA_PEOPLE = [
   }];
 
   var supplyTaskLabels = [
-    {id: 'task-label-procurement', project_id: 'p-supply', name: '采购'},
-    {id: 'task-label-quality', project_id: 'p-supply', name: '质量'},
-    {id: 'task-label-supply-risk', project_id: 'p-supply', name: '供应风险'},
-    {id: 'task-label-compliance', project_id: 'p-supply', name: '合规'}
+    {id: 'task-label-procurement', project_id: 'p-supply', name: '采购', color: '#64748b'},
+    {id: 'task-label-tender', project_id: 'p-supply', name: '招投标', color: '#64748b'},
+    {id: 'task-label-quality', project_id: 'p-supply', name: '质量', color: '#64748b'},
+    {id: 'task-label-supplier', project_id: 'p-supply', name: '供应商', color: '#64748b'},
+    {id: 'task-label-compliance', project_id: 'p-supply', name: '合规', color: '#64748b'},
+    {id: 'task-label-contract', project_id: 'p-supply', name: '合同', color: '#64748b'},
+    {id: 'task-label-cost', project_id: 'p-supply', name: '成本', color: '#64748b'},
+    {id: 'task-label-schedule', project_id: 'p-supply', name: '排产', color: '#64748b'},
+    {id: 'task-label-delivery', project_id: 'p-supply', name: '交付', color: '#64748b'},
+    {id: 'task-label-supply-risk', project_id: 'p-supply', name: '供应风险', color: '#64748b'}
   ];
 
   var supplyAgentTasks = {};
@@ -604,13 +610,82 @@ window.__EVA_OFFICIAL_TASKS.push(
 window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'agent',assignee_id:'ag-supply-procurement',assignee_name:'间接采购专家',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'agent',assignee_id:'ag-supply-contract',assignee_name:'供应链合同管理专家',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-12',number:12,identifier:'SC-112',position:12,parent_issue_id:'supply-11',title:'补齐维保预算与到期清单',status:'todo',priority:'medium',due_date:'2026-09-18',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'逐项补齐设备维保预算、合同到期日和业务负责人，供续约计划复核。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-13',number:13,identifier:'SC-113',position:13,parent_issue_id:'supply-12',title:'核对维保供应商报价明细',status:'todo',priority:'medium',due_date:'2026-09-19',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'逐项核对维保服务范围、报价口径和税费条件，标记需要再次澄清的差异。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-14',number:14,identifier:'SC-114',position:14,parent_issue_id:'supply-13',title:'补充关键设备服务级别条款',status:'todo',priority:'high',due_date:'2026-09-20',assignee_type:'agent',assignee_id:'ag-supply-contract',assignee_name:'供应链合同管理专家',description:'补充关键设备响应时限、恢复目标和违约责任，形成可供法务复核的条款版本。'}
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-14',number:14,identifier:'SC-114',position:14,parent_issue_id:'supply-13',title:'补充关键设备服务级别条款',status:'todo',priority:'high',due_date:'2026-09-20',assignee_type:'member',assignee_id:'u-hejing',assignee_name:'何静',description:'补充关键设备响应时限、恢复目标和违约责任，形成可供法务复核的条款版本。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-15',number:15,identifier:'SC-115',position:15,title:'确认间接采购需求变更范围',status:'in_progress',priority:'urgent',due_date:'2026-09-19',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'核对新增品类、数量调整和交期变化的影响范围，明确是否需要重新询价。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-16',number:16,identifier:'SC-116',position:16,title:'跟进供应商整改验证数据',status:'in_review',priority:'high',due_date:'2026-09-23',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'核对连续生产验证记录、量具校准状态与复核人信息，判断能否进入放行评审。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-17',number:17,identifier:'SC-117',position:17,title:'梳理采购合同价格调整条款',status:'todo',priority:'medium',due_date:'2026-09-24',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'汇总本轮续签合同中的价格联动、汇率与调价条件，标出需要商务确认的差异。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-18',number:18,identifier:'SC-118',position:18,title:'输出本季度供应链风险简报',status:'in_progress',priority:'high',due_date:'2026-09-26',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购交期、供应商质量与排产风险，形成供管理层决策的风险简报初稿。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-19',number:19,identifier:'SC-119',position:19,title:'复核 KD 排产备选方案产能影响',status:'todo',priority:'low',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'对比维持原顺序与提前换型两种方案的产能占用和换型损失，给出推荐场景。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-20',number:20,identifier:'SC-120',position:20,title:'归档供应商准入合规材料',status:'done',priority:'medium',due_date:'2026-09-15',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'整理资质证明、关联关系声明与关键条款复核记录，按供应商建立归档索引。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-21',number:21,identifier:'SC-121',position:21,title:'评估新增品类询价策略',status:'blocked',priority:'urgent',due_date:'2026-09-17',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'等待业务补全需求量与交付批次后再确定询价方式，当前缺口未补齐，暂不能发起询价。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-22',number:22,identifier:'SC-122',position:22,title:'整理跨部门协同待决事项清单',status:'in_progress',priority:'medium',due_date:'2026-09-22',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'汇总采购、质量、排产与合规条线尚未拍板的事项，明确责任人和最晚确认时间。'},
+  /* 以下为截止日期分组演示补齐：覆盖 本周 / 下周 / 更晚 / 无截止日期，
+     以及已取消、无优先级、未分配等状态类别，保证各分组桶都有内容。 */
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-23',number:23,identifier:'SC-123',position:23,title:'准备下周供应商交期对齐会材料',status:'todo',priority:'medium',due_date:'2026-09-27',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'汇总下周到货计划、延期风险和待确认事项，形成交期对齐会材料。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-24',number:24,identifier:'SC-124',position:24,title:'跟进下周到货批次齐套情况',status:'in_progress',priority:'high',due_date:'2026-09-28',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'逐批核对物料到货时间与排产需求，标记可能缺料的批次。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-25',number:25,identifier:'SC-125',position:25,title:'确认下周供应商产能承诺',status:'todo',priority:'low',due_date:'2026-09-30',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'收集关键供应商下周产能承诺与瓶颈说明，整理为待确认清单。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-26',number:26,identifier:'SC-126',position:26,title:'整理下周质量例会问题清单',status:'in_review',priority:'medium',due_date:'2026-10-02',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'归集来料异常、整改验证与待关闭问题，形成下周质量例会清单。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-27',number:27,identifier:'SC-127',position:27,title:'编制第四季度采购预算草案',status:'todo',priority:'low',due_date:'2026-10-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'按品类归集预算需求与历史价格，形成第四季度采购预算草案。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-28',number:28,identifier:'SC-128',position:28,title:'更新年度框架协议价格台账',status:'todo',priority:'medium',due_date:'2026-11-06',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'同步框架协议价格、调价条款与生效日期，更新年度价格台账。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-29',number:29,identifier:'SC-129',position:29,title:'整理供应商走访会议纪要',status:'todo',priority:'none',due_date:null,assignee_type:null,assignee_id:null,assignee_name:null,description:'归集近期供应商走访记录与待跟进事项，纪要未设截止日期，待排期确认。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-30',number:30,identifier:'SC-130',position:30,title:'评估数字化采购工具试点范围',status:'in_review',priority:'medium',due_date:null,assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'对比试点品类与流程覆盖范围，输出试点方案初稿，暂无截止日期。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-31',number:31,identifier:'SC-131',position:31,title:'取消原定供应商现场审核排期',status:'cancelled',priority:'low',due_date:'2026-09-29',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'因供应商行程调整，原定现场审核取消，保留记录待重新排期。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-32',number:32,identifier:'SC-132',position:32,title:'取消重复的合同条款复核项',status:'cancelled',priority:'none',due_date:'2026-10-16',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'与既有条款复核任务重复，经确认取消，避免重复跟踪。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-33',number:33,identifier:'SC-133',position:33,title:'协调本周到货异常收货安排',status:'blocked',priority:'urgent',due_date:'2026-09-23',assignee_type:'member',assignee_id:'u-hejing',assignee_name:'何静',description:'到货批次与仓库收货窗口冲突，等待仓储确认临时收货安排。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-34',number:34,identifier:'SC-134',position:34,title:'归档历史询价比价记录',status:'done',priority:'medium',due_date:'2026-09-24',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'按品类整理历史询价与比价记录，形成可检索的归档索引。'}
 );
 window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});
+
+// 标签与任务为横切多对多关系（对齐 Multica LabelPicker）：标签不从状态/优先级/项目派生，
+// 仅作为跨维度标记挂到相关任务上。每个任务挂载后即出现在表格「标签」列与详情标签选择器。
+(function attachSupplyTaskLabels(){
+  var canvas=window.__EVA_SUPPLY_CHAIN_DEMO;
+  var byId=new Map(canvas.taskLabels.map(function(label){return [label.id,label];}));
+  var assignments={
+    'supply-1':['task-label-procurement','task-label-supplier'],
+    'supply-2':['task-label-tender','task-label-compliance'],
+    'supply-3':['task-label-quality','task-label-supplier'],
+    'supply-4':['task-label-cost','task-label-procurement'],
+    'supply-5':['task-label-schedule','task-label-delivery','task-label-supply-risk'],
+    'supply-6':['task-label-compliance','task-label-supplier'],
+    'supply-7':['task-label-contract','task-label-compliance'],
+    'supply-8':['task-label-procurement'],
+    'supply-9':['task-label-procurement'],
+    'supply-10':['task-label-procurement','task-label-cost','task-label-delivery'],
+    'supply-11':['task-label-contract'],
+    'supply-12':['task-label-contract','task-label-cost'],
+    'supply-13':['task-label-supplier','task-label-cost'],
+    'supply-14':['task-label-contract'],
+    'supply-15':['task-label-procurement','task-label-cost'],
+    'supply-16':['task-label-quality','task-label-supplier'],
+    'supply-17':['task-label-contract','task-label-cost'],
+    'supply-18':['task-label-supply-risk'],
+    'supply-19':['task-label-schedule','task-label-delivery'],
+    'supply-20':['task-label-compliance','task-label-supplier'],
+    'supply-21':['task-label-procurement','task-label-tender'],
+    'supply-22':['task-label-supply-risk','task-label-compliance'],
+    'supply-23':['task-label-delivery','task-label-supplier'],
+    'supply-24':['task-label-procurement','task-label-schedule'],
+    'supply-25':['task-label-supplier','task-label-delivery'],
+    'supply-26':['task-label-quality','task-label-supplier'],
+    'supply-27':['task-label-cost','task-label-procurement'],
+    'supply-28':['task-label-contract','task-label-cost'],
+    'supply-29':['task-label-supplier'],
+    'supply-30':['task-label-procurement','task-label-cost'],
+    'supply-31':['task-label-compliance'],
+    'supply-32':['task-label-contract'],
+    'supply-33':['task-label-delivery','task-label-supply-risk'],
+    'supply-34':['task-label-procurement','task-label-cost']
+  };
+  canvas.issues.forEach(function(issue){
+    var ids=assignments[issue.id];
+    if(ids)issue.labels=ids.map(function(id){return byId.get(id);}).filter(Boolean).map(function(label){return Object.assign({},label);});
+  });
+})();
 
 window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
   {id:'supply-role-product',name:'产品',description:'梳理协作需求与验收标准'},

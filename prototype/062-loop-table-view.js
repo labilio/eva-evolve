@@ -10,10 +10,10 @@
   function create(deps){
     const {
       React,useI18n,Popover,Checkbox,Switch,Toast,Input,
-      AssigneePicker,LabelChips,RunningChip,useRunConfirm,
+      AssigneePicker,Tag,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
-      evaCurrentTaskProject,evaTaskProjectId,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
+      evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
       ISSUE_STATUS_ORDER,ISSUE_STATUS_HEX,
       PRIORITY_ORDER,PRIORITY_HEX,
       DndContext,SortableContext,useSortable,useDndContext,
@@ -56,19 +56,19 @@
     /* ---------- Multica 表格列模型 ---------- */
     const COLUMN_LABELS={
       title:'任务',identifier:'编号',status:'状态',priority:'优先级',assignee:'负责人',
-      labels:'标签',project:'项目',start_date:'开始日期',due_date:'截止日期',
+      labels:'标签',start_date:'开始日期',due_date:'截止日期',
       created_at:'创建时间',updated_at:'更新时间',child_progress:'子任务进度',creator:'创建者'
     };
     const SYSTEM_COLUMNS=Object.keys(COLUMN_LABELS);
     const DEFAULT_COLUMNS=[
       {key:'title',width:360},{key:'status',width:150},{key:'priority',width:130},
-      {key:'assignee',width:180},{key:'due_date',width:140},{key:'labels',width:220}
+      {key:'assignee',width:180},{key:'due_date',width:140},{key:'labels',width:180}
     ];
     /* 与 Multica SORTABLE_COLUMNS 一致：title 可经菜单排序，但不可拖拽重排。 */
     const SORTABLE_COLUMNS={title:'title',status:'status',priority:'priority',start_date:'start_date',due_date:'due_date',created_at:'created_at',updated_at:'updated_at'};
     const GROUP_OPTIONS=[
       {value:'none',label:'不分组'},{value:'status',label:'状态'},
-      {value:'assignee',label:'负责人'},{value:'project',label:'项目'}
+      {value:'assignee',label:'负责人'},{value:'due_date',label:'截止日期'}
     ];
 
     /* ---------- 视图状态持久化（本地约定同 readView/writeView） ---------- */
@@ -204,7 +204,7 @@
       return String(issue.title||'').toLowerCase().includes(needle)||String(issue.identifier||'').toLowerCase().includes(needle);
     }
     function buildRows(options){
-      const {issues,allIssues,grouping,hierarchy,sortBy,direction,search,collapsedGroups,collapsedParents,projectName,t}=options;
+      const {issues,allIssues,grouping,hierarchy,sortBy,direction,search,collapsedGroups,collapsedParents,t}=options;
       const filtered=issues.filter(issue=>matchKeyword(issue,search));
       const sorted=[...filtered].sort((a,b)=>compareIssues(a,b,sortBy,direction));
       const childMap=new Map();
@@ -258,8 +258,34 @@
           return a.label.localeCompare(b.label,'zh-CN');
         });
         groups.push(...list);
-      }else if(grouping==='project'){
-        if(visible.length)groups.push({key:'project:current',label:projectName||'项目',rows:visible});
+      }else if(grouping==='due_date'){
+        /* 截止日期按自然周分组（对齐 Linear 的 Due date 分组，中文文案）：
+           已逾期 / 今天 / 本周 / 下周 / 更晚 / 无截止日期，周一为周起点。
+           日期比较与截止日单元格一致：纯日期、固定 UTC、不看状态；空桶不渲染。
+           用真实系统时间，不锚定演示时间。 */
+        const DAY=86400000;
+        const todayUtc=dateOnlyToUTC(todayDateOnly());
+        const todayDow=(new Date(todayUtc).getUTCDay()+6)%7; /* 0=周一 … 6=周日 */
+        const weekEndUtc=todayUtc-todayDow*DAY+6*DAY;
+        const nextWeekEndUtc=weekEndUtc+7*DAY;
+        const buckets=[
+          {key:'due_date:overdue',label:'已逾期'},
+          {key:'due_date:today',label:'今天'},
+          {key:'due_date:week',label:'本周'},
+          {key:'due_date:next',label:'下周'},
+          {key:'due_date:later',label:'更晚'},
+          {key:'due_date:none',label:'无截止日期'}
+        ];
+        const map=new Map(buckets.map(bucket=>[bucket.key,[]]));
+        for(const issue of visible){
+          const utc=dateOnlyToUTC(issue.due_date);
+          const key=utc==null?'due_date:none':utc<todayUtc?'due_date:overdue':utc===todayUtc?'due_date:today':utc<=weekEndUtc?'due_date:week':utc<=nextWeekEndUtc?'due_date:next':'due_date:later';
+          map.get(key).push(issue);
+        }
+        for(const bucket of buckets){
+          const rows=map.get(bucket.key);
+          if(rows.length)groups.push({key:bucket.key,label:bucket.label,rows});
+        }
       }else{
         if(visible.length)groups.push({key:null,label:null,rows:visible});
       }
@@ -302,14 +328,34 @@
       },[isDragging,dragging]);
       const startResize=event=>{
         event.preventDefault();event.stopPropagation();
-        const startX=event.clientX,startWidth=clampWidth(columnKey,state.columns.find(item=>item.key===columnKey)?.width);
+        /* 表格末尾的 --add 占位列是唯一弹性列（colgroup 不设宽度），固定布局
+           把所有剩余空间都给它，数据列一律保留各自的显式宽度。因此拖动某列只
+           改这一列的宽度：不会像多列摊派那样把剩余空间重新按比例分给邻列。
+           阈值内不提交，单击不会把列钉住。 */
+        const cell=host.current&&host.current.closest('th');
+        const startX=event.clientX;
+        const startWidth=(cell?cell.getBoundingClientRect().width:0)||clampWidth(columnKey,state.columns.find(item=>item.key===columnKey)?.width);
+        let committed=false;
         const onMove=moveEvent=>{
-          state.setColumns(list=>list.map(item=>item.key===columnKey?{...item,width:clampWidth(columnKey,startWidth+moveEvent.clientX-startX)}:item));
+          const delta=moveEvent.clientX-startX;
+          if(!committed&&Math.abs(delta)<4)return;
+          committed=true;
+          state.setColumns(list=>list.map(item=>item.key===columnKey
+            ?{...item,width:clampWidth(columnKey,startWidth+delta)}
+            :item));
         };
-        const onUp=()=>{window.removeEventListener('pointermove',onMove);window.removeEventListener('pointerup',onUp);state.persist();};
-        window.addEventListener('pointermove',onMove);window.addEventListener('pointerup',onUp);
+        const onUp=()=>{
+          window.removeEventListener('pointermove',onMove);
+          window.removeEventListener('pointerup',onUp);
+          window.removeEventListener('pointercancel',onUp);
+          if(committed)state.persist();
+        };
+        window.addEventListener('pointermove',onMove);
+        window.addEventListener('pointerup',onUp);
+        window.addEventListener('pointercancel',onUp);
       };
       return h('th',{ref:node=>{host.current=node;setNodeRef(node);},
+        'data-column-id':columnKey,
         className:'eva-task-table__th'+(columnKey==='title'?' is-pinned-title':'')},
         h('div',{className:'eva-task-table__th-inner'+(isDragging?' is-dragging':''),
           style:{transform:transform?`translate3d(${transform.x}px,0,0)`:undefined,transition}},
@@ -331,16 +377,16 @@
           h('span',{className:'eva-task-table__resizer',onPointerDown:startResize,role:'separator','aria-orientation':'vertical','aria-label':'调整 '+label+' 列宽'})));
     }
 
-    /* ---------- 列选择器（工具栏与表头共用） ---------- */
+    /* ---------- 列选择器（仅工具栏入口，表头不再重复） ---------- */
     function ColumnPicker(props){
-      const {state,iconOnly}=props;
+      const {state}=props;
       const [open,setOpen]=React.useState(false);
       const [query,setQuery]=React.useState('');
       const needle=query.trim().toLowerCase();
       const list=SYSTEM_COLUMNS.filter(key=>!needle||COLUMN_LABELS[key].toLowerCase().includes(needle));
       return h(PopMenu,{open,setOpen,position:'bottomRight',role:'listbox','aria-label':'配置列',trigger:
         h('button',{type:'button',className:'eva-task-table__toolbtn','aria-label':'配置列','aria-haspopup':'listbox','aria-expanded':open,title:'列',...menuTrigger(setOpen)},
-          h(icons.Columns3,{size:14}),iconOnly?null:h('span',null,'列'))},
+          h(icons.Columns3,{size:14}),h('span',null,'列'))},
         h(Input,{value:query,onChange:setQuery,placeholder:'搜索列…','aria-label':'搜索列',
           prefix:h(icons.Search,{size:16}),showClear:true}),
         h('div',{className:'eva-task-table__menu-title'},'任务属性'),
@@ -348,6 +394,53 @@
           list.length?list.map(key=>h(MenuItem,{key,role:'option',selected:state.columns.some(item=>item.key===key),
             disabled:key==='title',label:COLUMN_LABELS[key],onClick:()=>state.toggleColumn(key)}))
           :h('div',{className:'eva-task-table__menu-empty'},'没有匹配的列')));
+    }
+
+    /* 标签展示用标准 SemiUI Tag（与数字员工详情能力标签同一组件）。
+       按单元格实际可用宽度测量：能放下的标签全部显示，放不下的折成 +N；列宽变化实时重算。
+       （Multica 原实现写死前 2 个 + +N，这里按用户要求改为按宽度自适应。） */
+    const LABEL_TAG_GAP=4;
+    function LabelTagList({labels}){
+      const rootRef=React.useRef(null);
+      const measureRef=React.useRef(null);
+      const total=labels?labels.length:0;
+      const [count,setCount]=React.useState(total);
+      React.useLayoutEffect(()=>{
+        if(!total){setCount(0);return;}
+        const measure=()=>{
+          const root=rootRef.current,box=measureRef.current;
+          if(!root||!box){return;}
+          const editor=root.closest('.eva-task-table__cell-editor');
+          const host=editor||root.parentElement;
+          const available=Math.max(0,(host?host.clientWidth:0)-8-2);
+          const widths=Array.from(box.children).slice(0,total).map(el=>el.offsetWidth);
+          const probe=box.children[total]?box.children[total].offsetWidth:0;
+          const prefix=[];
+          let acc=0;
+          for(let i=0;i<widths.length;i++){acc+=widths[i]+(i>0?LABEL_TAG_GAP:0);prefix[i]=acc;}
+          if(prefix[total-1]<=available){setCount(total);return;}
+          let fit=0;
+          for(let i=1;i<=total;i++){
+            if(prefix[i-1]+LABEL_TAG_GAP+probe<=available)fit=i;else break;
+          }
+          setCount(fit);
+        };
+        measure();
+        const host=rootRef.current&&(rootRef.current.closest('.eva-task-table__cell-editor')||rootRef.current.parentElement);
+        if(host&&typeof ResizeObserver!=='undefined'){
+          const observer=new ResizeObserver(measure);
+          observer.observe(host);
+          return ()=>observer.disconnect();
+        }
+      },[labels]);
+      if(!labels||!labels.length)return null;
+      const shown=labels.slice(0,count),rest=labels.length-shown.length;
+      return h('span',{className:'eva-task-table__label-tags',ref:rootRef},
+        h('span',{className:'eva-task-table__label-tags-measure','aria-hidden':'true',ref:measureRef},
+          labels.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
+          h(Tag,{key:'__probe',size:'small',className:'eva-task-table__label-tag'},'+'+Math.max(1,labels.length-1))),
+        shown.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
+        rest>0?h(Tag,{key:'__rest',size:'small',className:'eva-task-table__label-tag'},'+'+rest):null);
     }
 
     /* ---------- 标签单元格：展示 + 编辑（对齐 Multica LabelPicker） ---------- */
@@ -377,7 +470,7 @@
       };
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
         h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',trigger:
-          attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelChips,{labels:attached,max:2}))
+          attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
           h('div',{className:'eva-task-table__menu-list'},
@@ -392,42 +485,17 @@
             h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create,disabled:!creating.trim()},'新建'))));
     }
 
-    /* ---------- 标题单元格：层级缩进、子任务折叠、重命名、新建子任务 ---------- */
-    function TitleCell({row,state,onOpen,onCreateSubIssue}){
+    /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */
+    function TitleCell({row,state,onOpen}){
       const {issue,depth,hasChildren,collapsed}=row;
-      const [draft,setDraft]=React.useState(issue.title);
-      const editing=state.editing===issue.id;
-      React.useEffect(()=>{if(!editing)setDraft(issue.title);},[issue.title,editing]);
-      const commit=()=>{
-        state.setEditing(null);
-        const title=draft.trim();
-        if(title&&title!==issue.title)state.applyUpdate(issue,{title});
-        else setDraft(issue.title);
-      };
-      return h('div',{className:'eva-task-table__title',style:{paddingLeft:depth*18},
-        onClickCapture:event=>{if(state.editing)event.stopPropagation();}},
+      return h('div',{className:'eva-task-table__title',style:{paddingLeft:depth*18}},
         hasChildren?h('button',{type:'button','aria-label':'展开或折叠子任务',className:'eva-task-table__toggle',
           onClick:event=>{event.stopPropagation();state.toggleParent(issue.id);}},
           h(collapsed?icons.ChevronRight:icons.ChevronDown,{size:14})):h('span',{className:'eva-task-table__toggle-spacer'}),
         h('span',{className:'eva-task-table__title-id'},issue.identifier),
         state.running&&state.running.has&&state.running.has(issue.id)?h(RunningChip,null):null,
-        editing?h('input',{autoFocus:true,value:draft,className:'eva-task-table__rename',
-          'aria-label':'重命名任务',
-          onChange:event=>setDraft(event.target.value),
-          onBlur:commit,
-          onKeyDown:event=>{
-            if(event.key==='Enter')commit();
-            if(event.key==='Escape'){setDraft(issue.title);state.setEditing(null);}
-            event.stopPropagation();
-          }}):
-        h(React.Fragment,null,
-          h('button',{type:'button',className:'eva-task-table__title-btn',title:issue.title,
-            onClick:event=>{event.stopPropagation();onOpen&&onOpen(issue.id);}},issue.title),
-          h('span',{className:'eva-task-table__title-actions'},
-            h('button',{type:'button','aria-label':'新建子任务',title:'新建子任务',
-              onClick:event=>{event.stopPropagation();onCreateSubIssue&&onCreateSubIssue(issue);}},h(icons.Plus,{size:13})),
-            h('button',{type:'button','aria-label':'重命名任务',title:'重命名任务',
-              onClick:event=>{event.stopPropagation();setDraft(issue.title);state.setEditing(issue.id);}},h(icons.Pencil,{size:13})))));
+        h('button',{type:'button',className:'eva-task-table__title-btn',title:issue.title,
+          onClick:event=>{event.stopPropagation();onOpen&&onOpen(issue.id);}},issue.title));
     }
 
     /* ---------- 日历日工具（一比一移植 Multica @multica/core/issues/date） ----------
@@ -481,8 +549,8 @@
       const inMonth=(day)=>cursor.year===today[0]&&cursor.month===today[1]&&day===today[2];
       const isSelected=(day)=>!!selected&&cursor.year===selected[0]&&cursor.month===selected[1]&&day===selected[2];
       const shift=step=>setCursor(current=>{
-        const month=current.month-1+step;
-        return {year:current.year+Math.floor(month/12),month:month-((month%12)+12)%12+1};
+        const index=current.month-1+step;
+        return {year:current.year+Math.floor(index/12),month:((index%12)+12)%12+1};
       });
       const cells=[];
       for(let i=0;i<leading;i++)cells.push(h('span',{key:'lead-'+i,className:'eva-task-table__cal-blank'}));
@@ -534,7 +602,7 @@
 
     /* ---------- 主组件 ---------- */
     function EvaIssueTable(props){
-      const {issues,allIssues,onOpen,onChanged,running,viewKey,projectId,onCreateSubIssue}=props;
+      const {issues,allIssues,onOpen,onChanged,running,viewKey,projectId}=props;
       const {t}=useI18n();
       const {requestStatus,requestAssign,runConfirmModal}=useRunConfirm();
       const saved=React.useMemo(()=>loadState(viewKey),[]);
@@ -548,10 +616,10 @@
       const [direction,setDirection]=React.useState((saved&&saved.direction)||'desc');
       const [search,setSearch]=React.useState('');
       const [selection,setSelection]=React.useState([]);
-      const [editing,setEditing]=React.useState(null);
       const anchorRef=React.useRef(null);
       const project=React.useMemo(()=>evaCurrentTaskProject(),[]);
-      const projectName=(project&&project.title)||'';
+      /* 负责人只能是本项目联系人（对齐详情/列表/新建规则）：候选收敛到 member，不再回退到含 AI 的全局候选。 */
+      const assigneeCandidates=React.useMemo(()=>evaTaskProjectIdentities(evaTaskProjectId(project),'member'),[projectId,project]);
       React.useEffect(()=>{setSelection([]);setCollapsedParents([]);setCollapsedGroups([]);},[projectId]);
       React.useEffect(()=>{if(selection.length===0)anchorRef.current=null;},[selection.length]);
       const persist=React.useCallback(()=>{
@@ -561,8 +629,8 @@
 
       const built=React.useMemo(()=>buildRows({
         issues,allIssues,grouping,hierarchy,sortBy,direction,search,
-        collapsedGroups,collapsedParents,projectName,t
-      }),[issues,allIssues,grouping,hierarchy,sortBy,direction,search,collapsedGroups,collapsedParents,projectName]);
+        collapsedGroups,collapsedParents,t
+      }),[issues,allIssues,grouping,hierarchy,sortBy,direction,search,collapsedGroups,collapsedParents]);
       const visibleIssueIds=built.visibleIssueIds;
       const selectedSet=React.useMemo(()=>new Set(selection),[selection]);
       const selectedIssues=React.useMemo(()=>issues.filter(issue=>selectedSet.has(issue.id)),[issues,selection]);
@@ -726,7 +794,6 @@
               case 'priority':return t('loop.priority.'+issue.priority)||String(issue.priority||'');
               case 'assignee':return issue.assignee_name||'';
               case 'labels':return (issue.labels||[]).map(label=>label.name).join(', ');
-              case 'project':return projectName;
               case 'start_date':return issue.start_date||'';
               case 'due_date':return issue.due_date||'';
               case 'created_at':return formatAbsoluteDate(issue.created_at);
@@ -753,7 +820,7 @@
       const renderCell=(row,columnKey)=>{
         const issue=row.issue;
         switch(columnKey){
-          case 'title':return h(TitleCell,{row,state:{editing,setEditing,applyUpdate,toggleParent,running},onOpen,onCreateSubIssue});
+          case 'title':return h(TitleCell,{row,state:{toggleParent,running},onOpen});
           case 'identifier':return h('span',{className:'eva-task-table__mono'},issue.identifier);
           case 'status':return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
             h(CellMenu,{ariaLabel:'状态',options:statusOptions,current:issue.status,
@@ -770,10 +837,9 @@
                 h('span',{key:'label',className:'eva-task-table__priority-label'},t('loop.priority.'+(issue.priority||'none')))
               ]}));
           case 'assignee':return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-            h(AssigneePicker,{value:issue.assignee_id||null,valueName:issue.assignee_name||null,
+            h(AssigneePicker,{value:issue.assignee_id||null,valueName:issue.assignee_name||null,candidates:assigneeCandidates,
               onChange:(assigneeId,assigneeType,assigneeName)=>changeAssignee(issue,assigneeId,assigneeType,assigneeName)}));
           case 'labels':return h(LabelsCell,{issue,project,onChanged});
-          case 'project':return h('span',{className:'eva-task-table__plain',title:projectName},projectName);
           case 'start_date':return h(DateCell,{issue,field:'start_date',label:'开始日期',applyUpdate});
           case 'due_date':return h(DateCell,{issue,field:'due_date',label:'截止日期',applyUpdate});
           case 'created_at':case 'updated_at':
@@ -840,7 +906,7 @@
             priorityOptions.map(option=>h(MenuItem,{key:option.value,role:'option',selected:commonPriority===option.value,
               icon:option.icon,label:option.label,
               onClick:()=>{setBatchPriorityOpen(false);batchApply({priority:option.value});}}))),
-          h(AssigneePicker,{size:'small',value:commonAssigneeId,valueName:commonAssigneeName,
+          h(AssigneePicker,{size:'small',value:commonAssigneeId,valueName:commonAssigneeName,candidates:assigneeCandidates,
             onChange:(assigneeId,assigneeType)=>batchApply({assignee_id:assigneeId,assignee_type:assigneeType})}),
           h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,
             'aria-label':'导出已选择的任务',onClick:()=>handleExport('selected')},
@@ -856,7 +922,9 @@
       const colgroup=h('colgroup',null,
         h('col',{key:'select',style:{width:44}}),
         columns.map(item=>h('col',{key:item.key,style:{width:clampWidth(item.key,item.width)}})),
-        h('col',{key:'add',style:{width:48}}));
+        /* 末尾占位列不设宽度：固定布局下它是唯一弹性列，吸收全部剩余空间，
+           数据列因此互不影响。 */
+        h('col',{key:'add'}));
       const headerRow=h('tr',null,
         h('th',{key:'select',className:'eva-task-table__th eva-task-table__th--select'},
           h('span',{className:'eva-task-table__check',onClick:event=>event.stopPropagation()},
@@ -866,8 +934,7 @@
           active:sortBy===item.key&&!!SORTABLE_COLUMNS[item.key],
           direction,onSort,onHide:item.key==='title'?null:()=>toggleColumn(item.key),
           state:{columns,setColumns,persist}})),
-        h('th',{key:'add',className:'eva-task-table__th eva-task-table__th--add'},
-          h(ColumnPicker,{state:{columns,toggleColumn},iconOnly:true})));
+        h('th',{key:'add',className:'eva-task-table__th eva-task-table__th--add'}));
       const bodyRows=built.rows.map(row=>{
         if(row.kind==='group'){
           return h('tr',{key:'group:'+row.key,className:'eva-task-table__group-row',onClick:()=>toggleGroup(row.key)},
@@ -888,7 +955,10 @@
           cells,
           h('td',{key:'add',className:'eva-task-table__td eva-task-table__td--add'}));
       });
-      const grid=h('table',{className:'eva-task-table__grid'},colgroup,
+      /* min-width = 选择列 + 数据列 + 末尾占位列的下限；列宽之和超过容器时由
+         它触发横向滚动，不足时剩余空间全部给末尾弹性占位列。 */
+      const totalWidth=44+48+columns.reduce((sum,item)=>sum+clampWidth(item.key,item.width),0);
+      const grid=h('table',{className:'eva-task-table__grid',style:{minWidth:totalWidth+'px'}},colgroup,
         h('thead',null,headerRow),
         h('tbody',null,bodyRows));
       const content=built.rows.length===0

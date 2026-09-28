@@ -24,10 +24,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.getByRole('button',{name:'供应链运营协同 协同推进间接采购、供应商质量与合规风控工作',exact:true}).click();
     await page.locator('.loop-board').waitFor();
 
-    // 第四种视图：切换器含「表格」，位于层级之后
+    // 三视图切换器，从左到右：看板、表格、层级
     const switcher=page.locator('.eva-task-view-switcher');
-    await switcher.locator('button',{hasText:'表格'}).waitFor();
-    assert.equal(await switcher.locator('button').count(),4);
+    assert.deepEqual(await switcher.getByRole('tab').allTextContents(),['看板','表格','层级']);
     await switcher.locator('button',{hasText:'表格'}).click();
     const table=page.locator('.eva-task-table');
     await table.locator('.eva-task-table__grid').waitFor();

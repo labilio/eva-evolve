@@ -30,13 +30,21 @@
 
 /* ---------- 表格滚动区 ---------- */
 .eva-task-table__scroll{flex:1;min-height:0;overflow:auto}
-.eva-task-table__grid{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+/* 对齐 Multica data-table：固定布局 + width:100%，列宽由 colgroup 决定。
+   数据列全部显式宽度，只有末尾 --add 占位列不设宽度、作为唯一弹性列吸收
+   剩余空间；列宽之和超过容器时由行内 min-width 触发横向滚动。
+   单一弹性列保证拖动某列只改这一列，不会把剩余空间按比例重新摊给邻列。
+   固定布局忽略内容尺寸，单元格靠自身 overflow/ellipsis 截断，列宽才可预期。 */
+.eva-task-table__grid{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
 
 /* ---------- 表头（对齐 Multica data-table：32px 高、12px 字距加宽、muted、mild 底色、末列外竖线） ---------- */
 .eva-task-table__th{position:sticky;top:0;z-index:1;height:32px;padding:0;background:var(--semi-color-fill-0,rgba(46,50,56,.05));border-bottom:1px solid var(--semi-color-border,#e8eaed);text-align:left;font-weight:500;vertical-align:middle}
-.eva-task-table__th.is-pinned-title{position:sticky;left:44px;z-index:2;background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
-.eva-task-table__th--select{left:0;z-index:3;width:44px;min-width:44px;max-width:44px;background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
-.eva-task-table__th--add{width:48px;min-width:48px}
+/* 冻结表头的层叠必须高于所有表体单元格：表体冻结列同为 z-index:2 且位于 DOM 之后，
+   同值时会把冻结的「任务」表头盖住（滚动时表头被行内容遮住）。表头冻结列抬到 3/4，
+   选择列再高于标题列；普通表头列保持 1，让横向滚动时冻结表体列仍能盖住其后的普通表头。 */
+.eva-task-table__th.is-pinned-title{position:sticky;left:44px;z-index:3;background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
+.eva-task-table__th--select{left:0;z-index:4;width:44px;min-width:44px;max-width:44px;background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
+.eva-task-table__th--add{width:auto;min-width:0}
 .eva-task-table__th-inner{position:relative;display:flex;align-items:center;gap:var(--wk-sp-0-5);height:32px;padding:0 16px;min-width:0;background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
 .eva-task-table__th--select .eva-task-table__check{justify-content:center}
 .eva-task-table__th-btn{display:inline-flex;align-items:center;gap:var(--wk-sp-0-5);border:none;background:transparent;padding:0;color:var(--semi-color-text-2,#646a73);font-size:12px;letter-spacing:.05em;cursor:pointer;min-width:0}
@@ -56,9 +64,17 @@
 .eva-task-table__td{height:36px;padding:0 16px;border-bottom:1px solid var(--semi-color-border,#e8eaed);background-color:var(--semi-color-bg-0,#fff);font-size:14px;color:var(--semi-color-text-0,#1c1f23);vertical-align:middle;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .eva-task-table__td--select{position:sticky;left:0;z-index:2;width:44px;min-width:44px;max-width:44px;padding:0}
 .eva-task-table__td.is-pinned-title{position:sticky;left:44px;z-index:2}
-.eva-task-table__td--add{width:48px;min-width:48px}
-.eva-task-table__row:hover .eva-task-table__td{background-image:linear-gradient(var(--semi-color-fill-0,rgba(46,50,56,.05)),var(--semi-color-fill-0,rgba(46,50,56,.05)))}
-.eva-task-table__row.is-selected .eva-task-table__td{background-image:linear-gradient(var(--semi-color-fill-1,rgba(46,50,56,.09)),var(--semi-color-fill-1,rgba(46,50,56,.09)))}
+.eva-task-table__td--add{width:auto;min-width:0}
+.eva-task-table__row:hover .eva-task-table__td:not(.eva-task-table__td--add){background-image:linear-gradient(var(--semi-color-fill-0,rgba(46,50,56,.05)),var(--semi-color-fill-0,rgba(46,50,56,.05)))}
+.eva-task-table__row.is-selected .eva-task-table__td:not(.eva-task-table__td--add){background-image:linear-gradient(var(--semi-color-fill-1,rgba(46,50,56,.09)),var(--semi-color-fill-1,rgba(46,50,56,.09)))}
+/* 复选框 hover：Semi 的 `.semi-checkbox-inner-display:hover{background:transparent}` 会盖掉选中态的
+   主色填充、未选中态同时丢掉边框环（未选中 hover 填充又与行悬停底色同为 --semi-color-fill-0），
+   导致悬停时复选框"消失"。在表格作用域内用更高优先级保住可见形态：未选中保留边框环并加深，
+   选中保留主色填充。 */
+.eva-task-table__td--select .semi-checkbox-unChecked:hover .semi-checkbox-inner-display,
+.eva-task-table__th--select .semi-checkbox-unChecked:hover .semi-checkbox-inner-display{background-color:transparent;box-shadow:inset 0 0 0 1px var(--semi-color-text-2,#6b6f76)}
+.eva-task-table__td--select .semi-checkbox-checked:hover .semi-checkbox-inner-display,
+.eva-task-table__th--select .semi-checkbox-checked:hover .semi-checkbox-inner-display{background-color:var(--semi-color-primary,#1563eb);box-shadow:inset 0 0 0 1px var(--semi-color-primary,#1563eb)}
 .eva-task-table__row{cursor:pointer}
 .eva-task-table__check{display:flex;align-items:center;justify-content:center;height:100%;padding:0}
 
@@ -67,13 +83,11 @@
 .eva-task-table__toggle,.eva-task-table__toggle-spacer{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;border:none;border-radius:var(--wk-sp-0-5);background:transparent;color:var(--semi-color-text-2,#646a73);cursor:pointer;padding:0}
 .eva-task-table__toggle:hover{background:var(--semi-color-fill-0,rgba(28,31,35,.05));color:var(--semi-color-text-0,#1c1f23)}
 .eva-task-table__title-id{font-size:12px;color:var(--semi-color-text-2,#646a73);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;flex-shrink:0}
-.eva-task-table__title-btn{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:transparent;padding:0;font-size:14px;color:var(--semi-color-text-0,#1c1f23);cursor:pointer;text-align:left}
+/* 标题即重命名目标：占满剩余宽度（整格可双击），不再常驻预留两个 hover 按钮。 */
+.eva-task-table__title-btn{flex:1 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:transparent;padding:0;font-size:14px;color:var(--semi-color-text-0,#1c1f23);cursor:pointer;text-align:left}
 .eva-task-table__title-btn:hover{color:var(--semi-color-primary,#1563eb)}
-.eva-task-table__title-actions{display:inline-flex;align-items:center;gap:var(--wk-sp-0-5);flex-shrink:0;opacity:0;transition:opacity .15s}
-.eva-task-table__row:hover .eva-task-table__title-actions{opacity:1}
-.eva-task-table__title-actions button{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:none;border-radius:var(--wk-sp-0-5);background:transparent;color:var(--semi-color-text-2,#646a73);cursor:pointer;padding:0}
-.eva-task-table__title-actions button:hover{background:var(--semi-color-fill-0,rgba(28,31,35,.05));color:var(--semi-color-text-0,#1c1f23)}
-.eva-task-table__rename{flex:1;min-width:60px;height:24px;padding:0 var(--wk-sp-1);border:1px solid var(--semi-color-primary,#1563eb);border-radius:var(--wk-sp-0-5);background:var(--semi-color-bg-0,#fff);color:var(--semi-color-text-0,#1c1f23);font-size:13px;outline:none}
+.eva-task-table__title-btn:focus-visible{outline:2px solid var(--semi-color-primary,#1563eb);outline-offset:1px;border-radius:var(--wk-sp-0-5)}
+
 
 /* ---------- 通用单元格内容 ---------- */
 /* 幽灵触发器（对齐 Multica PICKER_TRIGGER_CLASS）：关闭态无边框无箭头，仅图标+文字，悬停浅灰底 */
@@ -111,7 +125,9 @@
 .eva-task-table__plain{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--semi-color-text-1,#33383c)}
 .eva-task-table__muted{color:var(--semi-color-text-2,#646a73);font-size:12px}
 .eva-task-table__labels{overflow:hidden}
-.eva-task-table__labels .loop-label-chips{overflow:hidden;flex-wrap:nowrap}
+.eva-task-table__label-tags{display:inline-flex;align-items:center;gap:var(--wk-sp-1);min-width:0;overflow:hidden;flex-wrap:nowrap}
+.eva-task-table__label-tags .semi-tag{flex:none;max-width:100%}
+.eva-task-table__label-tags-measure{position:absolute;left:-9999px;top:0;display:inline-flex;align-items:center;gap:var(--wk-sp-1);white-space:nowrap;visibility:hidden;pointer-events:none}
 .eva-task-table__person{display:inline-flex;align-items:center;gap:var(--wk-sp-1);min-width:0}
 .eva-task-table__person .eva-loop-identity-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eva-task-table__progress{display:inline-flex;align-items:center;gap:var(--wk-sp-1);font-size:12px;color:var(--semi-color-text-1,#33383c)}
@@ -129,10 +145,12 @@
 .eva-task-table__td .loop-assignee-empty{flex:1 1 auto;min-width:0;color:var(--semi-color-text-2,#646a73)}
 .eva-task-table__td .loop-assignee-empty>svg{display:none}
 
-/* ---------- 分组行（Multica：bg-muted/40、36px、12px medium、计数为浅色文字而非胶囊） ---------- */
-.eva-task-table__group-row .eva-task-table__group-cell{position:sticky;left:0;padding:0;border-bottom:1px solid var(--semi-color-border,#e8eaed);background:var(--semi-color-fill-0,rgba(46,50,56,.05));cursor:pointer}
+/* ---------- 分组行（Multica：bg-muted/40、36px、12px medium、计数为浅色文字而非胶囊） ----------
+   冻结按 Multica IssueTableGroupRow：外层 td 是普通全宽单元格，只有内部 fit-width 的
+   按钮 sticky left（全宽 td 在其自身包含块内没有可移动余量，贴在 td 上不会生效）。 */
+.eva-task-table__group-row .eva-task-table__group-cell{padding:0;border-bottom:1px solid var(--semi-color-border,#e8eaed);background:var(--semi-color-fill-0,rgba(46,50,56,.05));cursor:pointer}
 .eva-task-table__group-row:hover .eva-task-table__group-cell{background:var(--semi-color-fill-1,rgba(46,50,56,.09))}
-.eva-task-table__group-head{display:inline-flex;align-items:center;gap:var(--wk-sp-1);height:36px;padding:0 16px;border:none;background:transparent;color:var(--semi-color-text-0,#1c1f23);font-size:12px;font-weight:500;cursor:pointer}
+.eva-task-table__group-head{position:sticky;left:0;display:flex;width:fit-content;align-items:center;gap:var(--wk-sp-1);height:36px;padding:0 16px;border:none;background:transparent;color:var(--semi-color-text-0,#1c1f23);font-size:12px;font-weight:500;cursor:pointer}
 .eva-task-table__group-label{color:var(--semi-color-text-0,#1c1f23)}
 .eva-task-table__group-count{color:var(--semi-color-text-2,#646a73);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums}
 

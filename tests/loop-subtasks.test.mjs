@@ -83,7 +83,7 @@ test('供应链演示数据提供超过默认展示深度的四级子任务链�
   assert.equal(byIdentifier('SC-113').parent_issue_id,byIdentifier('SC-112').id);
   assert.equal(byIdentifier('SC-114').parent_issue_id,byIdentifier('SC-113').id);
   for(const id of ['SC-109','SC-110','SC-111','SC-112','SC-113','SC-114'])assert.equal(byIdentifier(id).project_id,'p-supply');
-  for(const issue of issues)assert.match(issue.due_date,/^2026-09-\d{2}$/);
+  for(const issue of issues)assert.ok(issue.due_date===null||/^2026-\d{2}-\d{2}$/.test(issue.due_date),issue.identifier+': 截止日期格式');
 });
 
 test('任务详情默认展示前三层，并只折叠仍有后代的第三层节点',()=>{

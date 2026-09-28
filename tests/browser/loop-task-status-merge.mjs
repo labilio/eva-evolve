@@ -58,7 +58,8 @@ test('Edge：合并状态后看板、详情、创建、旧筛选与跨项目往�
   await page.reload();await todo.getByText('收集下一季度供应商协同需求',{exact:true}).waitFor();await page.getByText('完成本季度间接采购需求归集',{exact:true}).waitFor();
   assert.equal(await page.locator('.loop-board__col [draggable="true"]').count(),5,'旧筛选显示四个待办顶层任务，并保留一个匹配子任务的父级上下文');
   assert.equal(await page.getByText('待规划',{exact:true}).count(),0);
-  await page.getByText('列表',{exact:true}).click();
+  await page.getByText('表格',{exact:true}).click();
+  await page.locator('.eva-task-table').waitFor();
   await page.getByText('收集下一季度供应商协同需求',{exact:true}).waitFor();
   assert.equal(await page.getByText('待规划',{exact:true}).count(),0);
   assert.equal(await page.locator('.app-titlebar:visible').count(),1);
