@@ -79,6 +79,8 @@
 .eva-loop-task-create .loop-ci__toolbar { padding: 16px 24px 12px; gap: 8px; }
 .eva-loop-task-create .loop-ci__labels { padding: 0 24px 16px; }
 .eva-loop-task-create .loop-ci__footer { padding: 16px 24px; }
+.eva-loop-task-create .loop-ci__attach { padding: 0; border: 0; background: transparent; }
+.eva-loop-task-create .loop-ci__attach:hover { background: var(--semi-color-fill-0); }
 .eva-loop-task-create .loop-ci__close { width: 32px; height: 32px; border-radius: var(--eva-radius-control); }
 .eva-loop-task-create .loop-ci__crumb-ws,
 .eva-loop-task-create .loop-ci__crumb-parent,
