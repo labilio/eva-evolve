@@ -142,6 +142,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.waitForTimeout(120);
     assert.notEqual(((await statusLabel.textContent())||'').trim(),beforeText,'状态内联编辑应更新单元格文案');
 
+    // 负责人使用 Semi Dropdown；外壳投影须与表格自有菜单及日期 Popover 一致。
+    await table.locator('.eva-task-table__row').first().locator('.loop-assignee-trigger').click();
+    const assigneeWrapper=page.locator('.semi-dropdown-wrapper:visible').filter({has:page.locator('.eva-task-assignee-search')});
+    const assigneeSkin=await assigneeWrapper.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+    assert.deepEqual(assigneeSkin,menuSkin,'负责人菜单应沿用王岩的统一浮层背景、圆角和投影');
+    await page.keyboard.press('Escape');
+
     // 截止日期内联编辑：共用 Semi 紧凑面板，翻上月选 1 日必逾期标红，再用「无截止日期」行清空
     const dateCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="截止日期"]');
     await dateCell.click();
