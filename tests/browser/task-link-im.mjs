@@ -60,8 +60,19 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     }));
     assert.deepEqual(taskText[0],taskText[1],'任务编号与中文标题的字形框对齐');
 
+    const headerActions=await page.locator('.loop-idp__topbar').evaluate(header=>
+      [...header.querySelectorAll('.loop-idp__morebtn,.loop-idp__copybtn,.loop-idp__fsbtn,.loop-idp__closebtn')]
+        .map(button=>({className:button.className,tooltip:button.getAttribute('data-eva-tooltip')})));
+    assert.deepEqual(headerActions.map(action=>action.className.split(' ').find(name=>name.startsWith('loop-idp__'))),
+      ['loop-idp__morebtn','loop-idp__copybtn','loop-idp__fsbtn','loop-idp__closebtn']);
+    assert.deepEqual(headerActions.map(action=>action.tooltip),['更多操作','复制任务链接','切换全屏','关闭']);
+    await page.locator('.loop-idp__copybtn').hover();
+    await page.getByRole('tooltip').getByText('复制任务链接').waitFor();
     await page.getByRole('button',{name:'更多操作'}).click();
-    await page.getByText('复制任务链接').click();
+    await page.getByText('关联父任务',{exact:true}).waitFor();
+    assert.equal(await page.locator('.semi-dropdown-menu').getByText('复制任务链接').count(),0,'复制入口只保留在标题栏');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button',{name:'复制任务链接'}).click();
     const copied=await page.evaluate(()=>navigator.clipboard.readText());
     assert.equal(copied,origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
 
