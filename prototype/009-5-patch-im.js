@@ -788,7 +788,7 @@ function EvaInlineProjectPanel({projectId,taskRequest}) {
   reactExports.useEffect(()=>{
     if(!taskRequest||taskRequest.projectId!==activeProjectId)return;
     const store=evaMembers().store,actor=store.snapshot().actorId;
-    if(!store.canRead(activeProjectId,actor)){Toast.error('你不是该任务所属项目的成员，无法查看任务。');return;}
+    if(!store.canRead(activeProjectId,actor)){Toast.error('你不是该任务所属项目的成员，无法查看任务');return;}
     const issue=evaTaskLinkIssue(taskRequest);
     if(!issue){Toast.error('任务不存在或已失效');return;}
     WKApp$1.routeRight.push(h(IssueDetailPage,{key:issue.id,issueId:issue.id,onChanged:()=>setSpaces(loadSpaces()),onClose:()=>WKApp$1.routeRight.pop()}));

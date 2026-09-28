@@ -94,7 +94,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     await page.locator('[data-eva-task-link]').first().click();
     assert.equal(page.url(),origin+'/#/messages','无项目权限时留在当前会话');
     assert.equal(await page.locator('.eva-inline-project-panel').count(),0,'无权限不打开项目面板');
-    await page.getByText('你不是该任务所属项目的成员，无法查看任务。').first().waitFor();
+    await page.getByText('你不是该任务所属项目的成员，无法查看任务').first().waitFor();
     const permission=await page.evaluate(()=>{
       const state=window.__taskLinkTestStore.snapshot();
       return {group:state.groups['community-product-co-creation'],project:state.projects['zhou-private-review'],actor:state.actorId};
@@ -110,7 +110,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     const privateLink=page.locator('[data-eva-task-link="ZY-101"]');
     assert.equal(await privateLink.textContent(),'ZY-101  复核交互方案中的任务跳转边界');
     await privateLink.click();
-    await page.getByText('你不是该任务所属项目的成员，无法查看任务。').last().waitFor();
+    await page.getByText('你不是该任务所属项目的成员，无法查看任务').last().waitFor();
     assert.equal(await page.locator('.eva-inline-project-panel').count(),0,'王宜林点击周远另一个项目的任务后不打开详情');
     assert.deepEqual(errors,[]);
   }finally{
