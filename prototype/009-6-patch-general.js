@@ -78,6 +78,21 @@
       'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva 同学")',
       'React.createElement("img",{className:"eva-tb-portrait",src:window.__EVA_COLLEAGUE_PORTRAIT,alt:""}),"Eva智能办公系统",React.createElement("span",{className:"eva-edition-badge eva-t-caption"},"原型 Evolve 版"))',
       'shared titlebar edition badge');
+    source = root.__evaCut(source,
+      'React.createElement("span",{className:"eva-tb-item"},"帮助中心")',
+      'React.createElement("a",{className:"eva-tb-item",href:"https://eva-ai-docs.pages.dev/",target:"_blank",rel:"noopener noreferrer"},"产品文档")',
+      '共享标题栏产品文档入口');
+    source = root.__evaCut(source,
+      'const{openFeedback:Nt}=useFeedback(),Mt=useLocation()',
+      'const Mt=useLocation()',
+      '共享标题栏移除反馈处理');
+    source = root.__evaCut(source,
+      'ct("conversation.welcome.quickActionFeedback",{defaultValue:"Report Issue"});',
+      '', '共享标题栏移除反馈文案读取');
+    source = root.__evaCut(source,
+      'React.createElement("span",{className:"eva-tb-item",role:"button",onClick:()=>void Nt({autoScreenshot:!0,module:resolveFeedbackModule(Mt.pathname)})},"反馈问题")',
+      'React.createElement("span",{className:"eva-tb-item"},"反馈问题")',
+      '共享标题栏反馈文字不可操作');
     // Settings > About shows the product name; the assistant identity keeps "Eva 同学".
     source = root.__evaCut(source,
       'React.createElement(Row,{label:"Eva 同学"},React.createElement(TagComponent,{size:"small"},"1.4.0"))',

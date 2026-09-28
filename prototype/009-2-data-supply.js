@@ -186,7 +186,7 @@ window.__EVA_ORG_UNITS = {
   var supplyIssues = [
     supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'member', 'u-wangyilin', '王宜林', '2026-09-18', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
     supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'member', 'u-linxiao', '林晓', '2026-09-19', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
-    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'member', 'u-zhouyuan', '周远', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。\n\n排产与齐套影响由 [SC-105](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-105) 跟进。\n\n跨项目协作参考：\n- [客户联合交付的联调任务 CLIENT-103](#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103)\n- [周远方案评审的任务 ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)（仅该项目成员可查看）\n- [已删除项目的任务 SC-103（模拟）](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)（用于检查失效链接提示）'),
+    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'member', 'u-zhouyuan', '周远', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。\n\n排产与齐套影响由 [SC-105](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-105) 跟进。\n\n跨项目协作参考：\n- [客户联合交付的联调任务 CLIENT-103](#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103)\n- [周远方案评审的任务 ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)（仅该项目成员可查看）\n- [SC-103 复核物料替代方案](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)（原项目已删除）'),
     supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'member', 'u-suhang', '苏航', '2026-09-21', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
     supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'member', 'u-suhang', '苏航', '2026-09-17', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
     supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'member', 'u-hejing', '何静', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
@@ -462,12 +462,16 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
   {
     fixtureId: 'supply-chat-v5:all:prod:deleted-project-task-link',
     kind: 'text', senderId: 'u-wangyilin', time: '11:27',
-    text: '这里放一条项目已删除后的模拟失效链接，用来检查提示与原会话是否保留。编号与供应链项目里的任务相同，也不能误打开那个任务：\\n\\n[已删除项目的 SC-103（模拟）](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)'
+    text: `之前在采购专项项目里跟进过物料替代方案，任务链接现在打不开了。麻烦帮我确认一下那个项目是不是已经删除：
+
+[SC-103 复核物料替代方案](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)`
   },
   {
     fixtureId: 'supply-chat-v5:all:prod:cross-project-accessible',
     kind: 'text', senderId: 'u-wangyilin', time: '11:28',
-    text: '顺便在这里核对一下跨项目任务链接：Official 项目里那条分享权限验证任务，我也参与，大家可以点开看它的验收口径。\\n\\n[EVA-102](#/collab?evaProject=official&evaTab=tasks&evaTask=EVA-102)'
+    text: `顺便在这里核对一下跨项目任务链接：Official 项目里那条分享权限验证任务，我也参与，大家可以点开看它的验收口径。
+
+[EVA-102](#/collab?evaProject=official&evaTab=tasks&evaTask=EVA-102)`
   }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由负责人确认。',messages:[

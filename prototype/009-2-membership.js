@@ -463,6 +463,20 @@
           const fixture=allHandsFixtures.find(m=>m.fixtureId===fixtureId);
           if(oldTexts.includes(message?.text)&&fixture?.text){message.text=fixture.text;changed=true;}
         }
+        for(const fixtureId of [
+          'supply-chat-v5:all:prod:deleted-project-task-link',
+          'supply-chat-v5:all:prod:cross-project-accessible'
+        ]){
+          const message=(state.messages['all:prod']||[]).find(m=>m.fixtureId===fixtureId);
+          const fixture=allHandsFixtures.find(m=>m.fixtureId===fixtureId);
+          const oldDeletedProjectText=`这里放一条项目已删除后的模拟失效链接，用来检查提示与原会话是否保留。编号与供应链项目里的任务相同，也不能误打开那个任务：
+
+[已删除项目的 SC-103（模拟）](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)`;
+          const normalizedText=message?.text?.replaceAll('\\n\\n','\n\n');
+          if(message?.text&&fixture?.text&&message.text!==fixture.text&&(normalizedText===fixture.text||fixtureId==='supply-chat-v5:all:prod:deleted-project-task-link'&&normalizedText===oldDeletedProjectText)){
+            message.text=fixture.text;changed=true;
+          }
+        }
         if(changed)notify();
       },
       loadSupplyDemo(){

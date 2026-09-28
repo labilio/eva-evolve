@@ -92,3 +92,57 @@ test('项目管家按任务事实回复问题，旧链接演示升级且保留�
  assert.equal(messages.find(m=>m.fixtureId===reply.fixtureId).text,window.__EVA_SUPPLY_CHAT_CONTENT[0].messages.find(m=>m.fixtureId===reply.fixtureId).text);
  assert.ok(messages.some(m=>m.text==='我的手动补充'));
 });
+
+test('跨项目任务链接预置消息用真实换行分隔正文与链接',()=>{
+ const {s}=setup();s.loadSupplyDemo();
+ const messages=s.messagesFor('all:prod','u-wangyilin');
+ for(const fixtureId of [
+  'supply-chat-v5:all:prod:deleted-project-task-link',
+  'supply-chat-v5:all:prod:cross-project-accessible',
+ ]){
+  const message=messages.find(item=>item.fixtureId===fixtureId);
+  assert.ok(message,fixtureId+' 应存在');
+  assert.match(message.text,/\n\n\[/,fixtureId+' 的链接应另起一段');
+  assert.equal(message.text.includes('\\n'),false,fixtureId+' 不应显示转义字符');
+ }
+});
+
+test('旧预置消息的可见转义字符只升级一次并保留用户改写',()=>{
+ const {s,window}=setup();s.loadSupplyDemo();
+ const fixtureIds=[
+  'supply-chat-v5:all:prod:deleted-project-task-link',
+  'supply-chat-v5:all:prod:cross-project-accessible',
+ ];
+ const state=s.snapshot();
+ for(const id of fixtureIds){
+  const message=state.messages['all:prod'].find(item=>item.fixtureId===id);
+  message.text=message.text.replace('\n\n','\\n\\n');
+ }
+ const restored=window.EvaMembership.create(state);
+ restored.seedSupplyChatContent();
+ for(const id of fixtureIds){
+  const message=restored.snapshot().messages['all:prod'].find(item=>item.fixtureId===id);
+  assert.match(message.text,/\n\n\[/);
+  assert.equal(message.text.includes('\\n'),false);
+ }
+ const editedState=s.snapshot();
+ const edited=editedState.messages['all:prod'].find(item=>item.fixtureId===fixtureIds[0]);
+ edited.text='我自行补充的说明\\n\\n不要覆盖';
+ const preserved=window.EvaMembership.create(editedState);
+ preserved.seedSupplyChatContent();
+ assert.equal(preserved.snapshot().messages['all:prod'].find(item=>item.fixtureId===fixtureIds[0]).text,edited.text);
+});
+
+test('旧失效任务演示文案升级为正常任务标题，保留链接目标',()=>{
+ const {s,window}=setup();s.loadSupplyDemo();
+ const fixtureId='supply-chat-v5:all:prod:deleted-project-task-link';
+ const state=s.snapshot();
+ const message=state.messages['all:prod'].find(item=>item.fixtureId===fixtureId);
+ message.text='这里放一条项目已删除后的模拟失效链接，用来检查提示与原会话是否保留。编号与供应链项目里的任务相同，也不能误打开那个任务：\\n\\n[已删除项目的 SC-103（模拟）](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)';
+ const restored=window.EvaMembership.create(state);
+ restored.seedSupplyChatContent();
+ const upgraded=restored.snapshot().messages['all:prod'].find(item=>item.fixtureId===fixtureId).text;
+ assert.match(upgraded,/\[SC-103 复核物料替代方案\]/);
+ assert.match(upgraded,/evaProject=deleted-project&evaTab=tasks&evaTask=SC-103/);
+ assert.doesNotMatch(upgraded,/模拟|用于检查/);
+});
