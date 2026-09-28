@@ -63,7 +63,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     await page.getByRole('button',{name:'更多操作'}).click();
     await page.getByText('复制任务链接').click();
     const copied=await page.evaluate(()=>navigator.clipboard.readText());
-    assert.equal(copied,origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
+    assert.equal(copied,origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=supply-3');
 
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
