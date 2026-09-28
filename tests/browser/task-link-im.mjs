@@ -4,6 +4,47 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
+test('Edge：直接打开无权限或不存在项目的任务链接时提示且不泄露任务',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    for(const [route,message] of [
+      ['#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101','你不是该任务所属项目的成员，无法查看任务'],
+      ['#/collab?evaProject=missing&evaTab=tasks&evaTask=SC-103','任务所属项目不存在或已删除'],
+      ['#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-999','任务不存在或已失效'],
+    ]){
+      const page=await browser.newPage();
+      await page.goto(origin+'/'+route);
+      await page.getByText(message).waitFor({timeout:3000});
+      assert.equal(await page.locator('.loop-idp__title').count(),0);
+      await page.close();
+    }
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
+
+test('Edge：消息里的失效任务链接点击后提示并保留会话',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    const page=await browser.newPage();
+    await page.goto(origin+'/#/messages');
+    const composer=page.locator('[contenteditable=true][role=textbox]');
+    await composer.waitFor();
+    await composer.fill(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-999');
+    await composer.press('Enter');
+    const link=page.locator('[data-eva-task-link="SC-999"]');
+    await link.waitFor();
+    await link.click();
+    await page.getByText('任务不存在或已失效').waitFor();
+    assert.equal(page.url(),origin+'/#/messages');
+    assert.equal(await page.locator('.eva-inline-project-panel').count(),0);
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
