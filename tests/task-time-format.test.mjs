@@ -42,3 +42,25 @@ test('a due date is overdue only before the viewer\'s current calendar day', () 
   assert.equal(time.isPastDate('2026-09-29', lateToday), false);
   assert.equal(time.isPastDate('invalid', lateToday), false);
 });
+
+test('prototype task dates use a fixed local demo day by default', () => {
+  const demoSource = readFileSync(new URL('../prototype/009-0-demo-time.js', import.meta.url), 'utf8');
+  vm.runInNewContext(demoSource, context);
+  const demo = context.__EVA_DEMO_TIME;
+  const reference = new Date(demo.TASK_VIEW_NOW);
+  const yesterday = new Date(demo.TASK_YESTERDAY);
+  assert.deepEqual([reference.getFullYear(), reference.getMonth(), reference.getDate(), reference.getHours(), reference.getMinutes()], [2026, 8, 28, 18, 30]);
+  assert.deepEqual([yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), yesterday.getHours(), yesterday.getMinutes()], [2026, 8, 27, 15, 19]);
+  class LaterDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [2026, 9, 2, 12, 0])); }
+  }
+  context.Date = LaterDate;
+  try {
+    assert.equal(time.activity(demo.TASK_TODAY), '今天 18:30');
+    assert.equal(time.activity(demo.TASK_YESTERDAY), '昨天 15:19');
+    assert.equal(time.compactTimestamp(demo.TASK_TODAY), '18:30');
+    assert.equal(time.compactDate('2025-12-31'), '2025-12-31');
+  } finally {
+    context.Date = Date;
+  }
+});

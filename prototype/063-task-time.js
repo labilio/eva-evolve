@@ -11,6 +11,7 @@
     const date = value instanceof Date ? value : new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
   };
+  const referenceNow = () => parseInstant(root.__EVA_DEMO_TIME?.TASK_VIEW_NOW) || new Date();
   const parseDateOnly = value => {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
     if (!match) return null;
@@ -33,7 +34,7 @@
       const date = parseInstant(value);
       return date ? `${dateText(date)} ${clock(date)}` : '';
     },
-    activity(value, now = new Date()) {
+    activity(value, now = referenceNow()) {
       const date = parseInstant(value);
       if (!date) return '';
       const relation = todayOrYesterday(date, now);
@@ -41,7 +42,7 @@
         : date.getFullYear() === now.getFullYear() ? monthDay(date) : dateText(date);
       return `${label} ${clock(date)}`;
     },
-    compactTimestamp(value, now = new Date()) {
+    compactTimestamp(value, now = referenceNow()) {
       const date = parseInstant(value);
       if (!date) return '';
       const relation = todayOrYesterday(date, now);
@@ -52,11 +53,11 @@
       const parts = parseDateOnly(value);
       return parts ? dateOnlyText(parts, true) : '';
     },
-    compactDate(value, now = new Date()) {
+    compactDate(value, now = referenceNow()) {
       const parts = parseDateOnly(value);
       return parts ? dateOnlyText(parts, parts.year !== now.getFullYear()) : '';
     },
-    isPastDate(value, now = new Date()) {
+    isPastDate(value, now = referenceNow()) {
       const parts = parseDateOnly(value);
       if (!parts) return false;
       const dateNumber = parts.year * 10000 + parts.month * 100 + parts.day;
