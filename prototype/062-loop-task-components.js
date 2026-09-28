@@ -18,10 +18,8 @@
   }
 
   function labelChip(React,label,{className='',suffix=null}={}){
-    const color=/^#[0-9a-fA-F]{6}$/.test(label?.color||'')?label.color:null;
     return React.createElement('span',{
-      className:['loop-label-chip','eva-task-label-chip',className].filter(Boolean).join(' '),
-      style:color?{'--loop-chip-color':color}:undefined
+      className:['loop-label-chip','eva-task-label-chip',className].filter(Boolean).join(' ')
     },label?.name||'',suffix);
   }
   function labelChips(React,labels,max){
