@@ -66,7 +66,7 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     await menu.getByText('创建标签“详情验收标签”').click();
     await labels.locator('.loop-label-chip').filter({hasText:'详情验收标签'}).waitFor();
     await labels.locator('button').first().click();
-    await page.locator('.semi-dropdown-menu:visible').getByText('管理标签…').click();
+    await page.locator('.semi-dropdown-menu:visible').getByText('管理标签',{exact:true}).click();
     const manager=page.locator('.loop-label-mgr');
     await manager.waitFor();
     assert.equal(await manager.locator('.loop-label-color,[role="radiogroup"]').count(),0,'标签管理不再提供配色入口');

@@ -151,6 +151,7 @@ body .semi-popover-wrapper:has(.eva-task-table__menu){background:transparent;bor
 .eva-task-table__menu-item{display:flex;align-items:center;gap:6px;width:100%;min-height:36px;padding:8px 10px;border:none;border-radius:var(--eva-radius-key);background:transparent;color:var(--eva-text-primary);font:400 14px/20px var(--eva-font-sans);text-align:left;cursor:pointer}
 .eva-task-table__menu-item:hover,.eva-task-table__menu-item:focus-visible{background:var(--eva-overlay-hover)}
 .eva-task-table__menu-item.is-selected{color:var(--semi-color-primary,#1563eb)}
+.eva-task-table__menu-item.is-muted{color:var(--eva-text-secondary-accessible)}
 .eva-task-table__menu-item:disabled{color:var(--eva-text-secondary-accessible);cursor:not-allowed}
 .eva-task-table__menu-item:disabled:hover{background:transparent}
 .eva-task-table__menu-check{display:inline-flex;align-items:center;justify-content:center;width:16px;flex:none;color:var(--semi-color-primary,#1563eb)}
