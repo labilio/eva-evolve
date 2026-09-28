@@ -53,6 +53,14 @@ test('supply task activity tells consistent stories with real project identities
   const reference = new Date(window.__EVA_DEMO_TIME.TASK_VIEW_NOW);
   const yesterday = new Date(reference);
   yesterday.setDate(yesterday.getDate() - 1);
+  const primaryTask = seeded.find(issue => issue.identifier === 'SC-103');
+  const recentPrimary = primaryTask.activity_log.slice(-2);
+  assert.equal(recentPrimary.map(entry => entry.action).join(','), 'description_updated,description_updated');
+  assert.equal(localDay(recentPrimary[0].created_at), localDay(yesterday), 'SC-103 should show 昨天');
+  assert.equal(localDay(recentPrimary[1].created_at), localDay(reference), 'SC-103 should show 今天');
+  assert.equal(primaryTask.updated_at, recentPrimary[1].created_at);
+  assert.equal(primaryTask.status, 'in_progress');
+  assert.equal(primaryTask.due_date, '2026-09-15');
   assert.equal(localDay(statusChanges.at(-2).created_at), localDay(yesterday), 'review sample should show 昨天');
   assert.equal(localDay(statusChanges.at(-1).created_at), localDay(reference), 'review sample should show 今天');
   assert.equal(reviewTask.updated_at, statusChanges.at(-1).created_at);

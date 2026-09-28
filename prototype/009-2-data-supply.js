@@ -738,6 +738,11 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
       add('status_changed',actor,{from:previous,to:status},at);
       previous=status;
     });
+    if(issue.identifier==='SC-103'){
+      add('description_updated','u-zhouyuan',{},window.__EVA_DEMO_TIME.TASK_YESTERDAY);
+      add('description_updated','u-wangyilin',{},window.__EVA_DEMO_TIME.TASK_TODAY);
+      issue.updated_at=window.__EVA_DEMO_TIME.TASK_TODAY;
+    }
     issue.activity_log=entries;
   });
 })();
