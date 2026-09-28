@@ -257,6 +257,11 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await createDate.locator('.eva-loop-task-create__due-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'创建胶囊应使用同一紧凑日期面板');
     await page.keyboard.press('Escape');
+    await page.getByRole('textbox',{name:'添加或编辑任务标签'}).click();
+    const tagMenu=page.locator('.eva-loop-task-create__tag-menu:visible');
+    const tagSkin=await tagMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+    assert.deepEqual(tagSkin,menuSkin,'任务标签菜单应沿用同一表面、圆角和投影');
+    assert.equal(await tagMenu.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),'none','标签菜单不应重复叠加外层投影');
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留

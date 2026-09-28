@@ -50,16 +50,17 @@
 .eva-loop-task-create__tag-selected { display: flex; flex-wrap: wrap; gap: 6px; }
 .eva-loop-task-create__tag-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 2px 6px 2px 8px; border: 0; border-radius: var(--gds-radius-control); background: var(--semi-color-fill-0); color: var(--semi-color-text-0); font: inherit; line-height: 20px; cursor: pointer; }
 .eva-loop-task-create__tag-chip:hover { background: var(--semi-color-fill-1); }
-.eva-loop-task-create__tag-menu { width: min(568px, calc(100vw - 64px)); max-height: 200px; overflow-y: auto; border: 1px solid var(--semi-color-border); border-radius: var(--gds-radius-control); background: var(--semi-color-bg-0); box-shadow: var(--semi-shadow-elevated); }
+.eva-loop-task-create__tag-menu { width: min(568px, calc(100vw - 64px)); max-height: 200px; overflow-y: auto; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
 .eva-loop-task-create__tag-menu button,
 .eva-loop-task-create__tag-menu p { display: block; box-sizing: border-box; width: 100%; min-height: 32px; margin: 0; padding: 6px 10px; border: 0; background: transparent; color: var(--semi-color-text-0); font: inherit; line-height: 20px; text-align: left; }
 .eva-loop-task-create__tag-menu button { cursor: pointer; }
-.eva-loop-task-create__tag-menu button:hover { background: var(--semi-color-fill-0); }
+.eva-loop-task-create__tag-menu button:hover { background: var(--eva-overlay-hover); }
 .eva-loop-task-create__tag-menu .eva-loop-task-create__tag-create-option { color: var(--semi-color-primary); }
 .eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
 
 /* Child popups share the modal stacking context, outside its scroll clipping. */
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
+body .semi-popover-wrapper:has(.eva-loop-task-create__tag-menu) { background: transparent; border-radius: 0; box-shadow: none; backdrop-filter: none; }
 
 /* 创建弹窗选项区（父容器）统一四类胶囊：同一高度/圆角/边框/底色/内距/间距/字号/文字色/悬停；
    每个胶囊 = 前置图标 + 文案 + 尾部下拉箭头，子组件只提供图标与文案，外观由本区统一。 */
@@ -85,5 +86,4 @@
 .eva-loop-task-create .loop-ci__crumb-cur { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-loop-task-create .loop-ci__crumb-parent { color: var(--eva-text-secondary-accessible); }
 .eva-loop-task-create .loop-ci__toolbar button { min-height: 32px; }
-.eva-loop-task-create__tag-menu { border-radius: var(--eva-radius-panel); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
 .eva-loop-task-create__tag-menu button { font: 400 14px/22px var(--eva-font-sans); min-height: 36px; padding: 6px 12px; }
