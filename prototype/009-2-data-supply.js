@@ -431,6 +431,16 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
     fixtureId: 'supply-chat-v4:all:prod:task-link-response',
     kind: 'text', senderId: 'project-agent:prod', time: '11:24',
     text: '查到 SC-103：**进行中**，负责人 **周远**。\n待复核：A-2409 的隔离措施、8D 根因分析和长期整改证据。\n群里尚无质量放行结论，暂不能向供应商承诺恢复时间。\n\n[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:cross-project-task-link',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:25',
+    text: '客户联合交付项目的联调任务也需要对齐。加入了该项目的同事可以从这里查看：\n\n[CLIENT-103](#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103)'
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:restricted-task-link',
+    kind: 'text', senderId: 'u-zhouyuan', time: '11:26',
+    text: '我在自己的方案评审项目里复核任务跳转边界。这条链接只有该项目成员能打开：\n\n[ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)'
   }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由负责人确认。',messages:[
