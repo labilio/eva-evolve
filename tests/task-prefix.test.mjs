@@ -13,11 +13,12 @@ test('拼音、英文和混合名称生成四位默认值，撞名依次延长',
  assert.equal(prefix.suggest('供应链运营协同',[{id:'a',issue_prefix:'GYLY'}]),'GYLYY');
  assert.equal(prefix.suggest('项目',[{id:'a',issue_prefix:'XM'}]),'');
 });
-test('只允许一到十位字母，历史前缀保持占用',()=>{
+test('只允许一到十位字母，仅其他项目当前前缀占用',()=>{
  const rows=[{id:'a',issue_prefix:'SC',issue_prefix_history:['OLD']}];
  assert.equal(prefix.validate(' ab ',rows),'AB');
  for(const value of ['','1','A1','A-B','ABCDEFGHIJK']) assert.throws(()=>prefix.validate(value,rows),/1–10/);
- assert.throws(()=>prefix.validate('old',rows),/已被其他项目/);
+ assert.equal(prefix.validate('old',rows),'OLD');
+ assert.throws(()=>prefix.validate('sc',[...rows,{id:'b',issue_prefix:'NEXT'}],'b'),/已被其他项目/);
 });
 test('改前缀更新已有编号但保留内部 ID、序号及旧编号解析',()=>{
  let rows=[{id:'a',issue_prefix:'SC',issue_prefix_history:[]}],issues={a:[{id:'task-a',number:3,identifier:'SC-103',parent_issue_id:'task-parent'}]};
@@ -30,7 +31,18 @@ test('改前缀更新已有编号但保留内部 ID、序号及旧编号解析',
  assert.equal(prefix.resolve(rows[0],issues,'SC-103')?.id,'task-a');
  assert.equal(prefix.resolve(rows[0],issues,'NEW-103')?.id,'task-a');
  assert.equal(prefix.resolve(rows[0],issues,'task-a')?.identifier,'NEXT-103');
- assert.throws(()=>prefix.validate('SC',[...rows,{id:'b',issue_prefix:'OTHER'}],'b'),/历史前缀/);
+ assert.equal(prefix.validate('SC',[...rows,{id:'b',issue_prefix:'OTHER'}],'b'),'SC');
+});
+test('其他项目可复用曾用前缀，旧编号按项目上下文解析',()=>{
+ let rows=[{id:'a',name:'原项目',issue_prefix:'OLD',issue_prefix_history:[]}];
+ const issues={a:[{id:'task-a',identifier:'OLD-7'}],b:[{id:'task-b',identifier:'OLD-7'}]};
+ rows=prefix.change(rows,issues,'a','NEW',next=>{rows=next});
+ assert.equal(prefix.suggest('Old',[...rows]),'OLD');
+ assert.equal(prefix.validate('OLD',rows),'OLD');
+ rows.push({id:'b',name:'Old',issue_prefix:'OLD',issue_prefix_history:[]});
+ assert.equal(prefix.resolve(rows[0],issues,'OLD-7')?.id,'task-a');
+ assert.equal(prefix.resolve(rows[1],issues,'OLD-7')?.id,'task-b');
+ assert.throws(()=>prefix.validate('OLD',rows,'a'),/已被其他项目/);
 });
 test('旧本地前缀迁移为字母并保留旧编号',()=>{
  let persisted;

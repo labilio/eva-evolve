@@ -3,7 +3,7 @@
   const valid = /^[A-Z]{1,10}$/;
   const upper = value => String(value || '').trim().toUpperCase();
   const history = project => Array.isArray(project.issue_prefix_history) ? project.issue_prefix_history : [];
-  const claims = (projects, exceptId) => new Set(projects.filter(project => project.id !== exceptId).flatMap(project => [project.issue_prefix, ...history(project)].map(upper).filter(Boolean)));
+  const claims = (projects, exceptId) => new Set(projects.filter(project => project.id !== exceptId).map(project => upper(project.issue_prefix)).filter(Boolean));
   const initials = name => {
     if (!root.pinyinPro?.pinyin) return '';
     return root.pinyinPro.pinyin(String(name || ''), { pattern: 'first', toneType: 'none', type: 'array' })
@@ -20,7 +20,7 @@
   function validate(prefix, projects, exceptId) {
     const normalized = upper(prefix);
     if (!valid.test(normalized)) throw new Error('任务前缀须为 1–10 个英文字母');
-    if (claims(projects, exceptId).has(normalized)) throw new Error('该任务前缀已被其他项目使用或为历史前缀');
+    if (claims(projects, exceptId).has(normalized)) throw new Error('该任务前缀已被其他项目使用');
     return normalized;
   }
   const number = issue => {
@@ -39,13 +39,13 @@
       }
       const replacement = suggest(project.name, next, project.id);
       if (!replacement) continue;
-      if (old && old !== replacement && !claims(next, project.id).has(old)) project.issue_prefix_history.push(old);
+      if (old && old !== replacement) project.issue_prefix_history.push(old);
       project.issue_prefix = replacement;
       changed = true;
     }
     for (const project of next) for (const issue of issues[project.id] || []) {
       const previous = String(issue.identifier || '').match(/^([A-Za-z0-9]+)-\d+$/)?.[1]?.toUpperCase();
-      if (previous && previous !== project.issue_prefix && !history(project).includes(previous) && !claims(next, project.id).has(previous)) {
+      if (previous && previous !== project.issue_prefix && !history(project).includes(previous)) {
         project.issue_prefix_history.push(previous);
         changed = true;
       }
