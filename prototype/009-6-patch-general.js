@@ -885,7 +885,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     source=root.__evaCut(source,'deleteSkill=rt=>{const ct=SKILLS.findIndex(ut=>ut.id===rt);return ct>=0&&SKILLS.splice(ct,1),Promise.resolve()}','deleteSkill=rt=>{const list=skillsOf(),index=list.findIndex(s=>s.id===rt);if(index>=0)list.splice(index,1);return Promise.resolve()}','技能删除作用于当前项目');
     source=root.__evaCut(source,'map(ct=>({path:ct.path,content:ct.content}))','map(ct=>({...ct}))','技能附件保留二进制元数据');
     source=root.__evaCut(source,'React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','Qt.find(f=>f.path===Ht)?.encoding==="base64"?window.EvaProjectSkillCreate.binaryPreview(React,Qt.find(f=>f.path===Ht)):React.createElement(SkillFileViewer,{key:Ht,path:Ht,content:ur,onChange:qr})','二进制附件只读下载');
-    // Loop task status compatibility belongs to the shared data adapter, not a view.
+    // Loop task status belongs to the shared data adapter, not a view.
     // 负责人只能是本项目联系人，候选不再回落到旧 Loop 全局列表（专家团、其他项目 AI）。
     source=root.__evaCut(source,
       'React.createElement(AssigneePicker,{size:"small",value:xt.assignee_id,valueName:xt.assignee_name??null,onChange:(ki,Wi,no)=>oa(xt,Wi,ki,no,ls=>Ta({assignee_id:ki,assignee_type:Wi,...ls}))})',
@@ -900,7 +900,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(currentSpaceId(),"member"),value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       '批量指派候选人只限本项目联系人');
     source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
-    function evaNormalizeTaskStatus(status){return status==='backlog'?'todo':status}
+    function evaNormalizeTaskStatus(status){return status}
     // 任务身份解析：联系人不限项目；AI 分身与数字员工必须已加入所在项目（传入 scope 时校验）。
     function evaResolveTaskIdentity(id,scope){
       const store=evaMembers().store,snapshot=store.snapshot();
@@ -943,14 +943,35 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     function groupIssuesByAssignee`,'旧任务状态兼容');
     source=root.__evaCut(source,'ISSUES_BY_SPACE={prod:window.__EVA_SUPPLY_CHAIN_DEMO.issues,"drive-design":window.__EVA_DRIVE_DEMO.issues,official:window.__EVA_OFFICIAL_TASKS,lab:window.__EVA_CLIENT_TASKS,"zhou-private-review":[window.__EVA_TASK_LINK_PERMISSION_DEMO.issue]}',
       'ISSUES_BY_SPACE={prod:evaNormalizeTaskList(window.__EVA_SUPPLY_CHAIN_DEMO.issues),"drive-design":evaNormalizeTaskList(window.__EVA_DRIVE_DEMO.issues),official:evaNormalizeTaskList(window.__EVA_OFFICIAL_TASKS),lab:evaNormalizeTaskList(window.__EVA_CLIENT_TASKS),"zhou-private-review":evaNormalizeTaskList([window.__EVA_TASK_LINK_PERMISSION_DEMO.issue])}','所有项目初始任务状态兼容');
-    for(const name of ['ISSUE_STATUS_ORDER','STATUSES'])source=root.__evaCut(source,`${name}=["backlog","todo","in_progress","in_review","done","blocked","cancelled"]`,`${name}=["todo","in_progress","in_review","done","blocked","cancelled"]`,'合并任务状态枚举 '+name);
-    source=root.__evaCut(source,'status:rt.status||"todo"','status:evaNormalizeTaskStatus(rt.status)||"todo"','创建任务旧状态兼容');
-    source=root.__evaCut(source,'statuses:enumList(rt.statuses,STATUSES)','statuses:enumList(Array.isArray(rt.statuses)?rt.statuses.map(evaNormalizeTaskStatus):rt.statuses,STATUSES)','保存筛选状态兼容');
-    source=root.__evaCut(source,'ct.statuses.includes(pt.status)','ct.statuses.map(evaNormalizeTaskStatus).includes(evaNormalizeTaskStatus(pt.status))','查询旧状态兼容');
+    source=root.__evaCut(source,'status:rt.status||"todo"','status:evaNormalizeTaskStatus(rt.status)||"todo"','创建任务状态保留');
+    source=root.__evaCut(source,'statuses:enumList(rt.statuses,STATUSES)','statuses:enumList(Array.isArray(rt.statuses)?rt.statuses.map(evaNormalizeTaskStatus):rt.statuses,STATUSES)','保存筛选状态保留');
+    source=root.__evaCut(source,'ct.statuses.includes(pt.status)','ct.statuses.map(evaNormalizeTaskStatus).includes(evaNormalizeTaskStatus(pt.status))','查询状态保留');
     source=root.__evaCut(source,'function needsConfirm(rt){return isAgentAssignee(rt.assigneeType,rt.assigneeId)&&rt.status!=="backlog"}','function needsConfirm(){return false}','指派AI不等于启动执行');
     source=root.__evaCut(source,'function statusMightTrigger(rt,ct){return isAgentAssignee(rt.assignee_type,rt.assignee_id)&&rt.status==="backlog"&&ct!=="backlog"&&ct!=="done"&&ct!=="cancelled"}','function statusMightTrigger(){return false}','任务状态不触发执行');
-    // Compatibility labels remain for historical activity/snapshots only; no new backlog option.
-    for(let index=0;index<3;index++)source=root.__evaCut(source,'backlog:"待规划"','backlog:"待办"','历史任务状态文案 '+index);
+    // 待规划保留原有文案与独立状态；是否执行 AI 仍由上面的禁止触发规则控制。
+    source=root.__evaCut(source,
+      'const ISSUE_STATUS_ORDER=["backlog","todo","in_progress","in_review","done","blocked","cancelled"]',
+      String.raw`const {StatusIcon:EvaLoopStatusIcon,PriorityIcon:EvaLoopPriorityIcon}=window.EvaLoopTaskComponents.create(React,{CircleDashed,Circle,CircleCheck});
+const evaTaskStatusIcon=status=>props=>React.createElement(EvaLoopStatusIcon,{...props,status});
+const evaTaskPriorityIcon=priority=>props=>React.createElement(EvaLoopPriorityIcon,{...props,priority});
+const ISSUE_STATUS_ORDER=["backlog","todo","in_progress","in_review","done","blocked","cancelled"]`,
+      '项目任务公共组件接入');
+    source=root.__evaCut(source,
+      'ISSUE_STATUS_ICON={backlog:CircleDashed,todo:Circle,in_progress:CircleDot,in_review:CircleDotDashed,done:CircleCheck,blocked:CircleAlert,cancelled:CircleX}',
+      'ISSUE_STATUS_ICON={backlog:evaTaskStatusIcon("backlog"),todo:evaTaskStatusIcon("todo"),in_progress:evaTaskStatusIcon("in_progress"),in_review:evaTaskStatusIcon("in_review"),done:evaTaskStatusIcon("done"),blocked:evaTaskStatusIcon("blocked"),cancelled:evaTaskStatusIcon("cancelled")}',
+      '任务状态图形共用');
+    source=root.__evaCut(source,
+      'PRIORITY_ICON={urgent:TriangleAlert,high:SignalHigh,medium:SignalMedium,low:SignalLow,none:Minus$2}',
+      'PRIORITY_ICON={urgent:evaTaskPriorityIcon("urgent"),high:evaTaskPriorityIcon("high"),medium:evaTaskPriorityIcon("medium"),low:evaTaskPriorityIcon("low"),none:evaTaskPriorityIcon("none")}',
+      '任务优先级图形共用');
+    source=root.__evaCut(source,
+      'ISSUE_STATUS_HEX={backlog:"#8a8f99",todo:"#6b7280",in_progress:"var(--semi-color-warning, #f5a623)",in_review:"#7f3bf5",done:"var(--semi-color-success, #23a55a)",blocked:"var(--semi-color-danger, #f5222d)",cancelled:"#b8bcc8"}',
+      'ISSUE_STATUS_HEX=window.EvaLoopTaskComponents.statusColors',
+      '任务状态颜色共用');
+    source=root.__evaCut(source,
+      'PRIORITY_HEX={urgent:"var(--semi-color-danger, #f5222d)",high:"#fc8800",medium:"#f5a623",low:"#6b93ff",none:"#c9cdd4"}',
+      'PRIORITY_HEX=window.EvaLoopTaskComponents.priorityColors',
+      '任务优先级颜色共用');
     // 「表格」视图（对齐 Multica Issues Table）：注入桥接组件依赖。
     source=root.__evaCut(source,'function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){',
       String.raw`const EvaTable2Icon=createLucideIcon("table-2",[["path",{d:"M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18",key:"t2-1"}]]);
@@ -962,7 +983,7 @@ const EvaDownloadIcon=createLucideIcon("download",[["path",{d:"M21 15v4a2 2 0 0 
 const EvaCheckIcon=createLucideIcon("check",[["path",{d:"M20 6 9 17l-5-5",key:"ck-1"}]]);
 const EvaCalendarDaysIcon=createLucideIcon("calendar-days",[["path",{d:"M8 2v4",key:"cd-1"}],["path",{d:"M16 2v4",key:"cd-2"}],["rect",{width:"18",height:"18",x:"3",y:"4",rx:"2",key:"cd-3"}],["path",{d:"M3 10h18",key:"cd-4"}],["path",{d:"M8 14h.01",key:"cd-5"}],["path",{d:"M12 14h.01",key:"cd-6"}],["path",{d:"M16 14h.01",key:"cd-7"}],["path",{d:"M8 18h.01",key:"cd-8"}],["path",{d:"M12 18h.01",key:"cd-9"}],["path",{d:"M16 18h.01",key:"cd-10"}]]);
 const EvaChevronLeftIcon=createLucideIcon("chevron-left",[["path",{d:"m15 18-6-6 6-6",key:"cl-1"}]]);
-function EvaIssueTableView(props){return window.EvaLoopTableView.render(props,{React:reactExports,useI18n:useI18n$1,Popover,Checkbox,Switch,Toast,DatePicker,Input:ForwardInput,AssigneePicker,Tag,RunningChip,useRunConfirm,EvaLoopIdentityAvatar,EvaLoopIdentityName,updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,ISSUE_STATUS_ORDER,ISSUE_STATUS_HEX,PRIORITY_ORDER,PRIORITY_HEX,DndContext,SortableContext,useSortable,useDndContext,useSensors:useSensors$1,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,icons:{Search:Search$1,ChevronDown,ChevronRight,ChevronLeft:EvaChevronLeftIcon,Plus:Plus$c,X,Pencil,ArrowUp,ArrowDown,Download:EvaDownloadIcon,Trash2,Check:EvaCheckIcon,Table2:EvaTable2Icon,Columns3:EvaColumns3Icon,Rows3:EvaRows3Icon,GripVertical:EvaGripVerticalIcon,EyeOff:EvaEyeOffIcon,CalendarDays:EvaCalendarDaysIcon,CalendarClock}});}
+function EvaIssueTableView(props){return window.EvaLoopTableView.render(props,{React:reactExports,useI18n:useI18n$1,Popover,Checkbox,Switch,Toast,DatePicker,Input:ForwardInput,AssigneePicker,Tag,RunningChip,useRunConfirm,EvaLoopIdentityAvatar,EvaLoopIdentityName,updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,ISSUE_STATUS_ORDER,ISSUE_STATUS_ICON,ISSUE_STATUS_HEX,PRIORITY_ORDER,PRIORITY_ICON,PRIORITY_HEX,DndContext,SortableContext,useSortable,useDndContext,useSensors:useSensors$1,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,icons:{Search:Search$1,ChevronDown,ChevronRight,ChevronLeft:EvaChevronLeftIcon,Plus:Plus$c,X,Pencil,ArrowUp,ArrowDown,Download:EvaDownloadIcon,Trash2,Check:EvaCheckIcon,Table2:EvaTable2Icon,Columns3:EvaColumns3Icon,Rows3:EvaRows3Icon,GripVertical:EvaGripVerticalIcon,EyeOff:EvaEyeOffIcon,CalendarDays:EvaCalendarDaysIcon,CalendarClock}});}
 function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视图桥接组件依赖注入');
     // 项目任务切换器只保留三视图，从左到右：看板、表格、层级。
     source=root.__evaCut(source,

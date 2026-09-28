@@ -14,8 +14,8 @@
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
-      ISSUE_STATUS_ORDER,ISSUE_STATUS_HEX,
-      PRIORITY_ORDER,PRIORITY_HEX,
+      ISSUE_STATUS_ORDER,ISSUE_STATUS_ICON,ISSUE_STATUS_HEX,
+      PRIORITY_ORDER,PRIORITY_ICON,PRIORITY_HEX,
       DndContext,SortableContext,useSortable,useDndContext,
       useSensors,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,
       closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,
@@ -124,45 +124,14 @@
       return issueIds.slice(Math.min(start,end),Math.max(start,end)+1);
     }
 
-    /* ---------- 单元格矢量标记（一比一移植 Multica status-icon / priority-icon 几何） ----------
-       viewBox 14×14 / 16×16，颜色沿用 Eva 唯一色源 ISSUE_STATUS_HEX / PRIORITY_HEX。 */
-    function piePath(cx,cy,r,progress){
-      const angle=2*Math.PI*progress;
-      const x=cx+r*Math.sin(angle),y=cy-r*Math.cos(angle);
-      return 'M'+cx+','+cy+' L'+cx+','+(cy-r)+' A'+r+','+r+' 0 '+(progress>0.5?1:0)+',1 '+x+','+y+' Z';
-    }
+    /* 表格仅适配尺寸与类名，任务属性图形和颜色由公共组件决定。 */
     function StatusGlyph({status,size=14}){
-      const color=ISSUE_STATUS_HEX[status];
-      const parts=[h('circle',{key:'ring',cx:7,cy:7,r:6,fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeDasharray:'3.14 0',strokeDashoffset:-0.7})];
-      if(status==='in_progress')parts.push(h('path',{key:'fill',d:piePath(7,7,3.5,0.5),fill:'currentColor'}));
-      else if(status==='in_review')parts.push(h('path',{key:'fill',d:piePath(7,7,3.5,0.75),fill:'currentColor'}));
-      else if(status==='done')parts.push(
-        h('circle',{key:'fill',cx:7,cy:7,r:6,fill:'currentColor'}),
-        h('path',{key:'check',d:'M10.951 4.24896C11.283 4.58091 11.283 5.11909 10.951 5.45104L5.95104 10.451C5.61909 10.783 5.0809 10.783 4.74896 10.451L2.74896 8.45104C2.41701 8.11909 2.41701 7.5809 2.74896 7.24896C3.0809 6.91701 3.61909 6.91701 3.95104 7.24896L5.35 8.64792L9.74896 4.24896C10.0809 3.91701 10.6191 3.91701 10.951 4.24896Z',fill:'var(--semi-color-bg-0,#fff)',stroke:'none'}));
-      else if(status==='blocked')parts.push(h('line',{key:'fill',
-        x1:7+3.5*Math.cos(Math.PI*0.75),y1:7-3.5*Math.sin(Math.PI*0.75),
-        x2:7+3.5*Math.cos(-Math.PI*0.25),y2:7-3.5*Math.sin(-Math.PI*0.25),
-        stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'}));
-      else if(status==='cancelled')parts.push(h('path',{key:'fill',d:'M5 5 L9 9 M9 5 L5 9',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'}));
-      return h('svg',{viewBox:'0 0 14 14',width:size,height:size,'aria-hidden':true,focusable:false,
-        className:'eva-task-table__glyph',style:{color}},parts);
+      const Icon=ISSUE_STATUS_ICON[status]||ISSUE_STATUS_ICON.todo;
+      return h(Icon,{size,'aria-hidden':true,className:'eva-task-table__glyph'});
     }
     function PriorityGlyph({priority,size=14}){
-      const color=PRIORITY_HEX[priority];
-      if(!priority||priority==='none')
-        return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-          className:'eva-task-table__glyph',style:{color},fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'},
-          h('line',{x1:3,y1:8,x2:13,y2:8}));
-      if(priority==='urgent')
-        return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-          className:'eva-task-table__glyph',style:{color},fill:'none'},
-          h('rect',{x:2,y:2,width:12,height:12,rx:3,fill:'currentColor'}),
-          h('line',{x1:8,y1:5,x2:8,y2:8.6,stroke:'var(--semi-color-bg-0,#fff)',strokeWidth:1.7,strokeLinecap:'round'}),
-          h('circle',{cx:8,cy:11,r:0.95,fill:'var(--semi-color-bg-0,#fff)'}));
-      const filled={low:1,medium:2,high:3}[priority]||0;
-      return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-        className:'eva-task-table__glyph',style:{color},fill:'currentColor'},
-        [6,9,12].map((height,i)=>h('rect',{key:i,x:2+i*4.25,y:14-height,width:3.5,height,rx:1,opacity:i<filled?1:0.35})));
+      const Icon=PRIORITY_ICON[priority]||PRIORITY_ICON.none;
+      return h(Icon,{size,'aria-hidden':true,className:'eva-task-table__glyph'});
     }
     /* Multica PRIORITY_DISPLAY_ORDER：菜单里空值（无优先级）置顶，与排序权重分开。 */
     const PRIORITY_DISPLAY_ORDER=['none','urgent','high','medium','low'];
