@@ -545,9 +545,11 @@
 .eva-context-menu li { position:relative; }
 .eva-context-menu li > span { flex:1; white-space:nowrap; }
 .eva-context-menu .ctx-icon { stroke-width:1.7; }
+.eva-context-menu li.wk-ctx-danger .ctx-icon { width:16px; height:16px; background-image:none; stroke:currentColor; }
+.eva-context-menu li.wk-ctx-danger .ctx-icon > * { display:initial; }
 .eva-context-menu li:focus-visible { background:var(--eva-overlay-hover); outline:none; }
 .eva-context-menu:focus,.eva-context-menu:focus-visible { outline:none; }
-.eva-context-submenu { position:absolute; min-width:160px; max-height:60vh; overflow-y:auto; background:var(--eva-surface-primary); border:1px solid var(--eva-border-faint); border-radius:var(--eva-radius-control); box-shadow:var(--eva-shadow-floating); }
+.eva-context-menu .eva-context-submenu { position:absolute; min-width:160px; max-height:60vh; overflow-y:auto; padding:6px; background:var(--eva-surface-primary); border:1px solid var(--eva-border-faint); border-radius:var(--eva-radius-chip); box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); }
 
 /* Keep the two-space gap between a linked task ID and its title. */
 .eva-task-message-link { white-space:pre-wrap; }

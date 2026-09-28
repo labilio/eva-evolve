@@ -228,6 +228,26 @@
         state.followedConversations||={};state.followedConversations[uid]||={};channelIds.forEach(cid=>state.followedConversations[uid][cid]=true);
         notify();return id;
       },
+      deleteConversationCategory(uid,id){
+        requireHuman(uid);
+        if(!id||id==='scope:other')fail('默认分组不可删除');
+        if(!api.conversationCategories(uid).some(c=>c.id===id))fail('分组不存在');
+        const assignments=state.conversationCategoryAssignments?.[uid]||{};
+        const followed=state.followedConversations?.[uid]||{};
+        for(const [channelId,categoryId] of Object.entries(assignments)){
+          if(categoryId!==id)continue;
+          delete followed[channelId];
+          delete assignments[channelId];
+          for(const threadId of Object.keys(state.threads||{}))if(state.threads[threadId]===channelId)delete followed[threadId];
+          for(const thread of root.__EVA_IM_DEMO?.channels?.find(channel=>channel.id===channelId)?.threads||[])delete followed[thread.id];
+        }
+        state.conversationCategories[uid]=state.conversationCategories[uid].filter(c=>c.id!==id);
+        if(state.followOrders?.[uid]){
+          delete state.followOrders[uid]['channels:'+id];
+          state.followOrders[uid].categories=(state.followOrders[uid].categories||[]).filter(categoryId=>categoryId!==id);
+        }
+        notify();
+      },
       moveConversationCategory(uid,channel,categoryId){
         requireHuman(uid);
         if(!api.conversationCategories(uid).some(c=>c.id===categoryId))fail('分组不存在');
