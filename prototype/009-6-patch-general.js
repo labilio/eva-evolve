@@ -467,6 +467,20 @@ function IssueCard(`,'任务父子关系组件与层级视图');
       'React.createElement(AssigneePicker,{size:"small",value:rn.assignee_id,valueName:rn.assignee_name??null,onChange:(cn,Cn,ir)=>St(rn,Cn,cn,ir,sr=>Qt(rn.id,{...sr}))})',
       '任务列表负责人选择器开启搜索');
 
+    // 标签管理只维护名称和任务关联。既有标签颜色留在数据中兼容旧记录，
+    // 新建使用默认中性色；管理弹窗不再暴露未使用的配色能力。
+    source=root.__evaCut(source,
+      'LABEL_PALETTE=["#6B7280","#7E6F8F","#8A6F78","#8B7A5E","#6F846B","#5E8078","#657C9A","#8D7467","#77806B","#7A778A"],DEFAULT_LABEL_COLOR=LABEL_PALETTE[0];function normalizeLabelColor(rt){return/^#[0-9a-fA-F]{6}$/.test(rt??"")?rt:DEFAULT_LABEL_COLOR}function LabelColorPicker({value:rt,onChange:ct,ariaLabel:ut}){const pt=normalizeLabelColor(rt);return React.createElement("div",{className:"loop-label-color",role:"radiogroup","aria-label":ut},LABEL_PALETTE.map(mt=>{const gt=pt.toLowerCase()===mt.toLowerCase();return React.createElement("button",{key:mt,type:"button",role:"radio","aria-checked":gt,className:`loop-label-color__swatch${gt?" is-active":""}`,style:{"--loop-chip-color":mt},onClick:()=>ct(mt),title:mt},gt&&React.createElement(Check$4,{size:12,strokeWidth:2.5}))}))}',
+      'DEFAULT_LABEL_COLOR="#6B7280";','移除标签颜色选择器');
+    source=root.__evaCut(source,'[Qt,Vt]=reactExports.useState(DEFAULT_LABEL_COLOR),','', '移除新标签颜色状态');
+    source=root.__evaCut(source,'[nn,rn]=reactExports.useState(DEFAULT_LABEL_COLOR),','', '移除编辑标签颜色状态');
+    source=root.__evaCut(source,'Ft(""),Vt(DEFAULT_LABEL_COLOR),jt(null)','Ft(""),jt(null)','标签弹窗重置');
+    source=root.__evaCut(source,'createLabel(ur,Qt),Ft(""),Vt(DEFAULT_LABEL_COLOR)','createLabel(ur,DEFAULT_LABEL_COLOR),Ft("")','新标签使用默认中性色');
+    source=root.__evaCut(source,'jt(ur.id),Kt(ur.name),rn(normalizeLabelColor(ur.color))','jt(ur.id),Kt(ur.name)','编辑标签只读取名称');
+    source=root.__evaCut(source,'updateLabel(Ht,{name:tn.trim(),color:nn})','updateLabel(Ht,{name:tn.trim()})','改名保留已有颜色数据');
+    source=root.__evaCut(source,'React.createElement(LabelColorPicker,{value:Qt,onChange:Vt,ariaLabel:gt("loop.label.color")})','null','移除新建配色选项');
+    source=root.__evaCut(source,'React.createElement(LabelColorPicker,{value:nn,onChange:rn,ariaLabel:gt("loop.label.color")})','null','移除编辑配色选项');
+
     // 关联父任务选择器（命令式弹窗 + Semi Select 下拉搜索）。候选 = 同项目、
     // 非自身、非自身后代的任务；选定后交给详情的 Ta（其内部走 updateIssue 的
     // parent_issue_id 环路/跨项目校验并自带保存/失败 Toast）。

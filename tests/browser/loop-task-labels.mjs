@@ -54,6 +54,24 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     await menu.getByText('质量',{exact:true}).click();
     assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'质量'}).count(),0);
 
+    await labels.locator('button').first().click();
+    await page.locator('.semi-dropdown-menu:visible').getByText('管理标签...').click();
+    const manager=page.locator('.loop-label-mgr');
+    await manager.waitFor();
+    assert.equal(await manager.locator('.loop-label-color,[role="radiogroup"]').count(),0,'标签管理不再提供配色入口');
+    await manager.getByPlaceholder('新标签名').fill('验收标签');
+    await manager.getByRole('button',{name:'创建标签'}).click();
+    await manager.getByText('验收标签',{exact:true}).waitFor();
+    assert.equal(await manager.locator('.loop-label-color,[role="radiogroup"]').count(),0);
+    const createdRow=manager.locator('.loop-label-mgr__row').last();
+    await createdRow.getByRole('button',{name:'编辑标签'}).click();
+    assert.equal(await createdRow.locator('.loop-label-color,[role="radiogroup"]').count(),0,'改名状态也不提供配色');
+    await createdRow.locator('input').fill('验收标签已改名');
+    await createdRow.getByRole('button',{name:'保存'}).click();
+    await manager.getByText('验收标签已改名',{exact:true}).waitFor();
+    await page.screenshot({path:'/tmp/eva-task-label-manager-no-colors.png'});
+    await page.locator('.semi-modal-close').click();
+
     await closeTask();
     await openTask();
     assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'质量'}).count(),0);
