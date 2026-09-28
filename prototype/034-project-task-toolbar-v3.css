@@ -285,7 +285,13 @@
 .loop-idp .loop-idp__main { padding: 24px 24px 48px; }
 .loop-idp .loop-idp__main > * { max-width: var(--eva-main-col-w); }
 .loop-idp .loop-idp__title { display: block; box-sizing: border-box; width: 100%; min-height: 40px; overflow: hidden; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 16px/24px var(--eva-font-sans); }
-.loop-idp :is(.loop-idp__desc,.loop-md,.loop-cmt__body,.loop-composer__editor) { font: 400 15px/24px var(--eva-font-sans); overflow-wrap: anywhere; }
+.loop-idp :is(.loop-idp__desc,.loop-cmt__body),
+.loop-idp .loop-idp__desc .loop-md,
+.loop-idp .loop-composer .ProseMirror {
+  font: 400 15px/24px var(--eva-font-sans);
+  overflow-wrap: anywhere;
+}
+.loop-idp .eva-task-detail-link { text-decoration: underline; text-underline-offset: 2px; }
 .loop-idp .loop-field-textarea--lg.loop-field-textarea--auto {
   min-height: 48px;
   padding: 4px 9px;
@@ -293,7 +299,8 @@
   background: transparent;
   font: 400 15px/24px var(--eva-font-sans);
 }
-.loop-idp :is(.loop-idp__title,.loop-field-textarea--lg.loop-field-textarea--auto):focus {
+.loop-idp :is(.loop-idp__title,.loop-field-textarea--lg.loop-field-textarea--auto):focus,
+.loop-idp .loop-composer:focus-within {
   border-color: var(--eva-border-focus);
   background: var(--eva-surface-primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--eva-border-focus) 18%, transparent);

@@ -155,7 +155,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     });
     page.on('pageerror',error=>errors.push(error.message));
     await page.goto(origin+'/#/messages');
-    const link=page.locator('[data-eva-task-link]').first();
+    const link=page.locator('[data-eva-task-link="SC-103"]').first();
     await link.waitFor();
     await page.getByText(/采购问 A-2409 什么时候能给供应商答复/).waitFor();
     await page.getByText(/待复核：A-2409 的隔离措施/).waitFor();
@@ -245,6 +245,34 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     await page.getByText('你不是该任务所属项目的成员，无法查看任务').last().waitFor();
     assert.equal(await page.locator('.eva-inline-project-panel').count(),0,'王宜林点击周远另一个项目的任务后不打开详情');
     assert.deepEqual(errors,[]);
+  }finally{
+    await browser.close();
+    await new Promise(resolve=>server.close(resolve));
+  }
+});
+
+test('Edge：同一项目群里的跨项目任务链接分别按成员权限打开或拒绝',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    const page=await browser.newPage({viewport:{width:1280,height:800}});
+    await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);
+    const allowed=page.locator('[data-eva-task-link="EVA-102"]');
+    const denied=page.locator('[data-eva-task-link="ZY-101"]');
+    await allowed.waitFor();
+    await denied.waitFor();
+    assert.equal(await allowed.textContent(),'EVA-102  验证分享链接与来源群权限隔离');
+    assert.equal(await denied.textContent(),'ZY-101  复核交互方案中的任务跳转边界');
+    await allowed.click();
+    await page.locator('.loop-idp__title').waitFor();
+    assert.equal(await page.locator('.loop-idp__title').inputValue(),'验证分享链接与来源群权限隔离');
+    assert.equal(new URL(page.url()).hash,'#/messages','跨项目打开任务时保留原群聊');
+    await page.locator('.collab-route-right .loop-idp__closebtn').click();
+    await page.locator('.ch-list').getByText('供应链运营协同',{exact:true}).last().click();
+    await denied.click();
+    await page.getByText('你不是该任务所属项目的成员，无法查看任务').last().waitFor();
+    assert.equal(await page.locator('.eva-inline-project-panel').count(),0,'无权限时不打开项目面板');
   }finally{
     await browser.close();
     await new Promise(resolve=>server.close(resolve));

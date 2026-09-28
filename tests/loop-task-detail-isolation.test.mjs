@@ -10,7 +10,10 @@ function setup(){
  // 评论演示数据唯一来源是 009-2，运行时只按当前任务读取，不再内嵌副本。
  const window={};
  for(const name of ['009-0-demo-time','009-1-data-drive','009-2-data-supply'])vm.runInNewContext(readPrototype(name),{window});
- const ctx={issuesOf:()=>issues,window};
+ const ctx={issuesOf:()=>issues,window,evaLoopCommentsByTask:new Map()};
+ const baseCommentsStart=source.indexOf('evaBaseListComments='),baseCommentsEnd=source.indexOf(',listComments=',baseCommentsStart);
+ assert.ok(baseCommentsStart>=0&&baseCommentsEnd>baseCommentsStart,'base comment fixture extraction');
+ vm.runInNewContext(source.slice(baseCommentsStart,baseCommentsEnd),ctx);
  for(const [name,next] of [['listRuns','listRunMessages'],['listComments','addComment'],['listChildren','listComments'],['listTimeline','resolveComment']]){
   const start=source.indexOf(name+'='),end=source.indexOf(','+next+'=',start);
   assert.ok(start>=0&&end>start,name+' extraction');vm.runInNewContext(source.slice(start,end),ctx);
