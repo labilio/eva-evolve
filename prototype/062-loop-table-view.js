@@ -445,7 +445,6 @@
       };
       const needle=creating.trim().toLowerCase();
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
-      const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
         h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
@@ -457,9 +456,9 @@
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
             :h('div',{className:'eva-task-table__menu-empty'},needle?'没有匹配的标签':'暂无任务标签')),
           h('div',{className:'eva-task-table__label-create'},
-            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索或新建标签',maxLength:20,'aria-label':'搜索或新建标签',
+            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
               className:'eva-task-table__create-input',onKeyDown:event=>{if(event.key==='Enter')create();}}),
-            needle&&!exact?h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create},'新建'):null)));
+            needle&&!filtered.length?h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create},'新建'):null)));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */

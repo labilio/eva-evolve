@@ -59,9 +59,10 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     const search=menu.getByRole('textbox',{name:'搜索或新建标签'});
     await search.fill('供应风');
     assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['供应风险'],'任务详情标签菜单按名称筛选');
+    assert.equal(await menu.getByText('创建标签“供应风”').count(),0,'有匹配项时不重复建议新建相近标签');
     await page.screenshot({path:'/tmp/eva-task-label-picker-search.png'});
     await search.fill('详情验收标签');
-    await menu.getByText('新建“详情验收标签”').click();
+    await menu.getByText('创建标签“详情验收标签”').click();
     await labels.locator('.loop-label-chip').filter({hasText:'详情验收标签'}).waitFor();
     await labels.locator('button').first().click();
     await page.locator('.semi-dropdown-menu:visible').getByText('管理标签…').click();
