@@ -458,6 +458,8 @@ test('数字员工市场：统一搜索二合一结果与「更多」限高面�
   assert.deepEqual(await menu.locator('.semi-dropdown-title').allTextContents(), ['业务域', '数字员工'], '两类结果各自带分组标题');
   assert.equal(await menu.locator('.semi-dropdown-divider').count(), 1, '两个分组之间一条分隔线');
   assert.deepEqual(await menu.locator('.eva-task-assignee-expand').allTextContents(), ['展开其余 13 个', '展开其余 340 个'], '每组默认 5 条、其余折叠');
+  assert.equal(await menu.locator('.eva-task-assignee-expand').first().evaluate(el=>getComputedStyle(el).borderRadius),
+    await menu.locator('.semi-dropdown-item').first().evaluate(el=>getComputedStyle(el).borderRadius),'市场与任务共用 Semi 菜单展开行的圆角');
   await menu.locator('.eva-task-assignee-expand').first().click();
   assert.ok((await menu.locator('.semi-dropdown-item').count()) > 10, '「展开其余」补全该组且不收起弹层');
   // 在外层搜索框直接输入即筛选；业务域结果点击应用筛选、低频域回显筛选行并清空
@@ -547,6 +549,26 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
     await input.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
     assert.equal(await input.evaluate(el=>parseFloat(getComputedStyle(el).height)),32,'公共选人搜索框使用统一的 32px 控件高度');
+    assert.equal(await input.evaluate(el=>getComputedStyle(el).borderRadius),'8px','选人搜索框使用王岩搜索控件的 8px 圆角');
+    const menuRhythm=await menu.evaluate(el=>{
+      const search=el.querySelector('.eva-task-assignee-search').getBoundingClientRect();
+      const clear=el.querySelector('.semi-dropdown-item').getBoundingClientRect();
+      const divider=el.querySelector('.eva-task-assignee-scroll .semi-dropdown-divider').getBoundingClientRect();
+      return {above:clear.top-search.bottom,below:divider.top-clear.bottom};
+    });
+    assert.ok(Math.abs(menuRhythm.above-menuRhythm.below)<=1,'未指派行上下留白应一致');
+    const expand=menu.locator('.eva-task-assignee-expand').first();
+    if(await expand.count()){
+      const radius=await expand.evaluate(el=>getComputedStyle(el).borderRadius);
+      const optionRadius=await menu.locator('.eva-task-assignee-scroll .semi-dropdown-item').first().evaluate(el=>getComputedStyle(el).borderRadius);
+      assert.equal(radius,optionRadius,'展开其余与人员行使用相同悬停圆角');
+      const beforeCount=await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').count();
+      await expand.hover();
+      await page.screenshot({path:'/tmp/eva-task-assignee-expand.png'});
+      await expand.click();
+      assert.equal(await menu.isVisible(),true,'展开更多联系人时选人菜单保持打开');
+      assert.ok(await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').count()>beforeCount,'展开后显示更多真实候选');
+    }
     const selectedItem=menu.locator('.semi-dropdown-item-active').first();
     if(await selectedItem.count()){
       const before=await selectedItem.evaluate(el=>getComputedStyle(el).backgroundColor);
