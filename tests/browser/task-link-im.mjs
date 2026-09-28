@@ -4,6 +4,32 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
+test('Edge：跨项目任务链接按入口打开，项目名称跟随任务所属项目',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    const page=await browser.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    const link=origin+'/#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103';
+    const send=async()=>{const composer=page.locator('[contenteditable=true][role=textbox]');await composer.waitFor();await composer.fill(link);await composer.press('Enter');await page.locator('[data-eva-task-link="CLIENT-103"]').last().waitFor();await page.locator('[data-eva-task-link="CLIENT-103"]').last().click();await page.locator('.loop-idp__title').waitFor();};
+    await page.goto(origin+'/#/messages');
+    await send();
+    assert.equal(page.url(),origin+'/#/messages');
+    assert.equal(await page.locator('.eva-inline-project-panel [data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
+    assert.equal(await page.locator('.eva-inline-project-panel .collab-tabs button').nth(1).innerText(),'客户联合交付');
+    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=channels');
+    await send();
+    assert.equal(page.url(),origin+'/#/collab?evaProject=lab&evaTab=tasks&evaTask=client-103');
+    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
+    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
+    assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').innerText(),'CLIENT-103');
+    assert.deepEqual(errors,[]);
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
