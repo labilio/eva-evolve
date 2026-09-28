@@ -35,7 +35,7 @@
 .eva-loop-task-create .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; padding: 0 10px; gap: 6px; }
 .eva-loop-task-create .eva-loop-task-create__due-pill button { min-height: 0; height: 100%; }
 .eva-loop-task-create__pill-icon { color: var(--semi-color-text-2); }
-.eva-loop-task-create__due-trigger { appearance: none; border: 0; background: transparent; padding: 0; font: inherit; color: inherit; white-space: nowrap; cursor: pointer; }
+.eva-loop-task-create__due-trigger { appearance: none; border: 0; background: transparent; padding: 0; font: inherit; font-variant-numeric: tabular-nums; color: inherit; white-space: nowrap; cursor: pointer; }
 .eva-loop-task-create__due-pill.has-value .eva-loop-task-create__due-trigger { max-width: 168px; overflow: hidden; text-overflow: ellipsis; }
 .eva-loop-task-create__due-clear { appearance: none; display: inline-flex; align-items: center; border: 0; background: transparent; padding: 0; color: var(--semi-color-text-2); cursor: pointer; }
 .eva-loop-task-create__due-clear:hover { color: var(--semi-color-text-0); }

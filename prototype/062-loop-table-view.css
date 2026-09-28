@@ -96,6 +96,8 @@
 .eva-task-table__cell-trigger:focus-visible{outline:2px solid var(--semi-color-primary,#1563eb);outline-offset:-1px}
 .eva-task-table__glyph{flex-shrink:0}
 .eva-task-table__cell-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eva-task-table__cell-trigger[aria-label="截止日期"] .eva-task-table__cell-label,
+.eva-task-table__cell-trigger[aria-label="开始日期"] .eva-task-table__cell-label{font-variant-numeric:tabular-nums}
 .eva-task-table__cell-label.is-empty{color:var(--semi-color-text-2,#646a73)}
 .eva-task-table__cell-trigger.is-overdue{color:var(--semi-color-danger,#f5222d)}
 .eva-task-table__cell-trigger.is-overdue .eva-task-table__glyph{color:inherit}

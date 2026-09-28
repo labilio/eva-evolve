@@ -146,7 +146,7 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.doesNotMatch(taskStyles,/eva-board-subtask|eva-board-subtasks|eva-board-col-count|eva-loop-board--subtasks/);
   assert.match(taskStyles,/\.loop-card \.eva-issue-relation\s*\{[\s\S]*background:\s*var\(--eva-surface-subtle\)/);
   assert.match(taskStyles,/\.eva-loop-list__task\s*\{[\s\S]*flex-direction:\s*column/);
-  assert.match(taskStyles,/--eva-task-columns:\s*16px 76px minmax\(180px,1fr\) minmax\(0,120px\) 76px 210px 64px/);
+  assert.match(taskStyles,/--eva-task-columns:\s*16px 76px minmax\(180px,1fr\) minmax\(0,120px\) 140px 210px 120px/);
   assert.match(taskStyles,/\.loop-list__due\s*\{\s*grid-column:\s*5/);
   assert.match(taskStyles,/\.loop-list__assignee\s*\{\s*grid-column:\s*6/);
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);

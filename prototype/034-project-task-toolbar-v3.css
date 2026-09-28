@@ -238,7 +238,8 @@
 .loop-page .loop-groupboard__head em,
 .loop-page .loop-list__group-head em { color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
 /* One shared column geometry across every status group, including subtask metadata. */
-.loop-page .loop-list { gap: 0; --eva-task-columns: 16px 76px minmax(180px,1fr) minmax(0,120px) 76px 210px 64px; }
+.loop-page .loop-list { gap: 0; overflow-x: auto; --eva-task-columns: 16px 76px minmax(180px,1fr) minmax(0,120px) 140px 210px 120px; }
+.loop-page :is(.loop-list__row,.loop-list__group-head) { min-width: 980px; }
 .loop-page .loop-list__row {
   display: grid;
   grid-template-columns: var(--eva-task-columns);
@@ -268,6 +269,7 @@
 .loop-page .loop-list__title { max-width: 100%; overflow: hidden; font: 400 14px/22px var(--eva-font-sans); text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .loop-page :is(.loop-list__id,.loop-list__time,.loop-list__project,.loop-list__due) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
 .loop-page .loop-list__due { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.loop-page :is(.loop-list__due,.loop-list__time,.loop-card__due,.loop-card__time) { font-variant-numeric: tabular-nums; }
 .loop-page .loop-list__due.is-overdue { color: var(--semi-color-danger); }
 .loop-page .loop-list__assignee .loop-assignee-trigger { display: inline-flex; width: auto; max-width: 100%; min-width: 0; gap: 6px; }
 .loop-page .loop-list__assignee .loop-assignee-name { flex: 0 1 auto; max-width: none; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -275,8 +277,8 @@
 .loop-page .loop-list__group { margin: 0 0 16px; border: 0; }
 .loop-page .loop-list__group-head { min-height: 36px; padding: 8px; margin: 0 0 4px; border: 0; }
 @media (hover: none) { .loop-page .loop-list__check { opacity: 1; pointer-events: auto; } .loop-page .loop-list__icon { visibility: hidden; } }
-@media(max-width:1100px) { .loop-page .loop-list { --eva-task-columns: 16px 68px minmax(160px,1fr) minmax(0,80px) 72px 170px 64px; } }
-@media(max-width:880px) { .loop-page .loop-list { overflow-x: auto; } .loop-page :is(.loop-list__row,.loop-list__group-head) { min-width: 840px; } }
+@media(max-width:1100px) { .loop-page .loop-list { --eva-task-columns: 16px 68px minmax(160px,1fr) minmax(0,80px) 140px 150px 120px; } .loop-page :is(.loop-list__row,.loop-list__group-head) { min-width: 890px; } }
+@media(max-width:880px) { .loop-page .loop-list { overflow-x: auto; } .loop-page :is(.loop-list__row,.loop-list__group-head) { min-width: 890px; } }
 .loop-page :is(.loop-card,.loop-list__row):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 
 /* Task detail remains a content pane plus its existing property inspector. */
@@ -313,6 +315,7 @@
 .loop-idp .loop-idp__due-picker .semi-datepicker-input {
   height: 30px;
   border-radius: var(--eva-radius-control);
+  font-variant-numeric: tabular-nums;
 }
 .loop-idp .loop-idp__due-value {
   display: inline-flex;
@@ -322,6 +325,10 @@
   color: var(--eva-text-secondary-accessible);
   white-space: nowrap;
 }
+.loop-idp :is(.loop-idp__prop-v--muted,.loop-idp__due-value,.loop-acts__item time) { font-variant-numeric: tabular-nums; }
+.loop-idp time { font-variant-numeric: tabular-nums; }
+.loop-idp .loop-idp__prop-v--muted { white-space: nowrap; }
+.loop-idp .loop-acts__item time { text-align: right; white-space: nowrap; }
 .loop-idp .loop-idp__section { margin-top: 24px; }
 .loop-idp .loop-cmt { border-radius: var(--eva-radius-panel); border-color: var(--eva-border-faint); }
 .loop-idp .loop-cmt__row { padding: 16px; }
@@ -419,9 +426,9 @@
 
 /* Compact tree-list view: expandable hierarchy without introducing another task canvas. */
 .eva-issue-hierarchy {
-  min-width: 720px;
+  min-width: 0;
   margin: 0 16px 20px;
-  overflow: hidden;
+  overflow-x: auto;
   border: var(--eva-border-hairline-w) solid var(--eva-border-faint);
   border-radius: var(--eva-radius-panel);
   background: var(--eva-surface-primary);
@@ -429,7 +436,8 @@
 .eva-issue-hierarchy__head,
 .eva-issue-hierarchy__row {
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) 104px 96px 152px 56px 36px;
+  min-width: 900px;
+  grid-template-columns: minmax(300px, 1fr) 104px 132px 152px 56px 36px;
   align-items: center;
   column-gap: 12px;
   box-sizing: border-box;
@@ -508,6 +516,7 @@
   color: var(--eva-text-secondary-accessible);
   font: 400 12px/16px var(--eva-font-sans);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .eva-issue-hierarchy__due.is-overdue { color: var(--semi-color-danger); }
 .eva-issue-assignee {
@@ -747,7 +756,8 @@
 
 @media (max-width: 980px) {
   .eva-issue-hierarchy__head,
-  .eva-issue-hierarchy__row { grid-template-columns: minmax(300px, 1fr) 104px 92px 56px 36px; }
+  .eva-issue-hierarchy__row { grid-template-columns: minmax(300px, 1fr) 104px 132px 56px 36px; min-width: 760px; }
+  .eva-issue-hierarchy__head { min-width: 760px; }
   .eva-issue-hierarchy__head span:nth-child(4),
   .eva-issue-hierarchy__row > .eva-issue-assignee { display: none; }
   .loop-idp .loop-subissue { grid-template-columns: 16px 60px minmax(0, 1fr) 24px; }

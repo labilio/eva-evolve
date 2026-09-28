@@ -853,6 +853,13 @@
     },
     {
       "order": 107,
+      "tag": "script",
+      "name": "task-time",
+      "file": "prototype/063-task-time.js",
+      "role": "prototype"
+    },
+    {
+      "order": 108,
       "tag": "style",
       "name": "tooltip",
       "file": "prototype/062-tooltip.css",
@@ -860,7 +867,7 @@
       "role": "prototype"
     },
     {
-      "order": 108,
+      "order": 109,
       "tag": "script",
       "name": "tooltip-controller",
       "file": "prototype/062-tooltip.js",

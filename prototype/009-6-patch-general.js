@@ -1039,6 +1039,47 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视�
       'running:Ft,resetKey:currentSpaceId()+"|"+rn}):React.createElement(React.Fragment,null,React.createElement(IssueList,',
       'running:Ft,resetKey:currentSpaceId()+"|"+rn}):Kt==="table"?React.createElement(EvaIssueTableView,{issues:Pt,allIssues:issuesOf(),onOpen:xa,onChanged:Oa,running:Ft,viewKey:ut,projectId:St,}):React.createElement(React.Fragment,null,React.createElement(IssueList,',
       '项目任务表格视图渲染');
+    // One task-only formatter serves the legacy detail and the modern task views.
+    source=root.__evaCut(source,
+      'function formatShortDate(rt){if(!rt)return"";const ct=new Date(rt);return`${ct.getMonth()+1}/${ct.getDate()}`}',
+      'function formatShortDate(rt){return window.EvaTaskTime.compactDate(rt)}',
+      '任务截止日期按日历日显示');
+    source=root.__evaCut(source,
+      'function isOverdue(rt,ct){return!rt||ct==="done"||ct==="cancelled"?!1:new Date(rt).getTime()<Date.now()}',
+      'function isOverdue(rt,ct){return!!rt&&ct!=="done"&&ct!=="cancelled"&&window.EvaTaskTime.isPastDate(rt)}',
+      '任务逾期按本地日历日判断');
+    source=root.__evaCut(source,
+      'function fmt(rt){if(!rt)return"-";const ct=new Date(rt);return`${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,"0")}:${String(ct.getMinutes()).padStart(2,"0")}`}',
+      'function fmt(rt){return window.EvaTaskTime.fullTimestamp(rt)||"—"}',
+      '任务详情精确时间');
+    source=root.__evaCut(source,
+      'React.createElement("time",null,fmt(no.created_at))',
+      'React.createElement("time",{dateTime:no.created_at,tabIndex:0,"data-eva-tooltip":window.EvaTaskTime.fullTimestamp(no.created_at)},window.EvaTaskTime.activity(no.created_at))',
+      '任务动态分层时间与精确时间提示');
+    source=root.__evaCut(source,
+      'React.createElement("time",{className:"loop-card__time"},formatRelativeTime$1(rt.updated_at??rt.created_at,Pt))',
+      'React.createElement("time",{className:"loop-card__time",dateTime:rt.updated_at??rt.created_at,tabIndex:0,"data-eva-tooltip":window.EvaTaskTime.fullTimestamp(rt.updated_at??rt.created_at)},window.EvaTaskTime.compactTimestamp(rt.updated_at??rt.created_at))',
+      '任务卡更新时间分层显示');
+    source=root.__evaCut(source,
+      'React.createElement("time",{className:"loop-list__time"},formatRelativeTime$1(rn.updated_at??rn.created_at,gt))',
+      'React.createElement("time",{className:"loop-list__time",dateTime:rn.updated_at??rn.created_at,tabIndex:0,"data-eva-tooltip":window.EvaTaskTime.fullTimestamp(rn.updated_at??rn.created_at)},window.EvaTaskTime.compactTimestamp(rn.updated_at??rn.created_at))',
+      '任务列表更新时间分层显示');
+    source=root.__evaCut(source,
+      'React.createElement("time",{className:"eva-issue-hierarchy__due"+(isOverdue(sa.due_date,sa.status)?" is-overdue":""),title:sa.due_date?"截止 "+formatShortDate(sa.due_date):"未设置截止日期"},sa.due_date?formatShortDate(sa.due_date):"未设置")',
+      'React.createElement("time",{className:"eva-issue-hierarchy__due"+(isOverdue(sa.due_date,sa.status)?" is-overdue":""),dateTime:sa.due_date||void 0,tabIndex:sa.due_date?0:void 0,"data-eva-tooltip":sa.due_date?"截止 "+window.EvaTaskTime.fullDate(sa.due_date):void 0},sa.due_date?formatShortDate(sa.due_date):"未设置")',
+      '任务层级截止日期提示');
+    source=root.__evaCut(source,
+      'React.createElement("time",{className:"loop-list__due"+(isOverdue(rn.due_date,rn.status)?" is-overdue":""),title:"截止 "+formatShortDate(rn.due_date)},React.createElement(CalendarClock,{size:12}),formatShortDate(rn.due_date))',
+      'React.createElement("time",{className:"loop-list__due"+(isOverdue(rn.due_date,rn.status)?" is-overdue":""),dateTime:rn.due_date,tabIndex:0,"data-eva-tooltip":"截止 "+window.EvaTaskTime.fullDate(rn.due_date)},React.createElement(CalendarClock,{size:12}),formatShortDate(rn.due_date))',
+      '任务列表截止日期提示');
+    source=root.__evaCut(source,
+      'React.createElement("span",{className:"loop-card__due",style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date))',
+      'React.createElement("span",{className:"loop-card__due",tabIndex:0,"data-eva-tooltip":"截止 "+window.EvaTaskTime.fullDate(rt.due_date),style:{color:isOverdue(rt.due_date,rt.status)?"var(--semi-color-danger, #f5222d)":"var(--semi-color-text-2, #8590a6)"}},React.createElement(CalendarClock,{size:12}),formatShortDate(rt.due_date))',
+      '任务卡截止日期提示');
+    source=root.__evaCut(source,
+      'xt.due_date?formatShortDate(xt.due_date):"未设置"',
+      'xt.due_date?window.EvaTaskTime.fullDate(xt.due_date):"未设置"',
+      '只读任务详情截止日期显示完整年份');
     return source;
   });
 })(window);
