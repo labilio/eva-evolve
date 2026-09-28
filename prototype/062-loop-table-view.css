@@ -101,11 +101,6 @@
 .eva-task-table__cell-trigger.is-overdue .eva-task-table__glyph{color:inherit}
 .eva-task-table__date-picker.semi-datepicker{width:auto;max-width:100%;margin-left:-4px}
 .eva-task-table__date-picker .eva-task-table__cell-trigger{margin-left:0}
-/* Semi 日期面板的空值行：表格单元格保留明确的清除入口。 */
-.eva-task-table__date-clear{display:flex;align-items:center;gap:6px;width:100%;padding:8px 12px;border:none;border-bottom:1px solid var(--semi-color-border,#e8eaed);background:transparent;color:var(--semi-color-text-2,#646a73);font-size:14px;text-align:left;cursor:pointer}
-.eva-task-table__date-clear:hover{background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
-.eva-task-table__date-clear-label{flex:1;min-width:0}
-.eva-task-table__date-clear-check{flex-shrink:0;color:var(--semi-color-text-2,#646a73)}
 /* 单元格内容宿主：必须 block。inline-flex 与单元格 inline-flex 触发器形成双层内容尺寸链时，
    Chromium 对内部百分比 max-width 折算少减一次 gap，姓名单元格会被压掉约一字宽（034 列表为块宿主无此问题）。 */
 .eva-task-table__cell-editor{display:block;min-width:0;max-width:100%}
@@ -115,7 +110,7 @@
 .eva-task-table__muted{color:var(--semi-color-text-2,#646a73);font-size:12px}
 .eva-task-table__labels{overflow:hidden}
 .eva-task-table__label-tags{display:inline-flex;align-items:center;gap:var(--wk-sp-1);min-width:0;overflow:hidden;flex-wrap:nowrap}
-.eva-task-table__label-tags .semi-tag{flex:none;max-width:100%}
+.eva-task-table__label-tags .eva-task-label-chip{flex:none;max-width:100%}
 .eva-task-table__label-tags-measure{position:absolute;left:-9999px;top:0;display:inline-flex;align-items:center;gap:var(--wk-sp-1);white-space:nowrap;visibility:hidden;pointer-events:none}
 .eva-task-table__person{display:inline-flex;align-items:center;gap:var(--wk-sp-1);min-width:0}
 .eva-task-table__person .eva-loop-identity-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -161,7 +156,7 @@ body .semi-popover-wrapper:has(.eva-task-table__menu){background:transparent;bor
 .eva-task-table__menu-sep{height:1px;margin:4px 6px;background:var(--eva-border-faint)}
 .eva-task-table__menu-empty{padding:12px 10px;font:400 13px/20px var(--eva-font-sans);color:var(--eva-text-secondary-accessible);text-align:center}
 .eva-task-table__priority-badge{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:2px 6px;border-radius:var(--eva-radius-key);background:color-mix(in srgb,var(--eva-task-priority-color) 12%,transparent);color:var(--eva-task-priority-color);font:500 12px/16px var(--eva-font-sans)}
-.eva-task-table__label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.eva-task-table__menu-item[role="option"] .eva-task-label-chip{margin-right:auto}
 .eva-task-table__label-create{display:flex;align-items:center;gap:var(--wk-sp-1);margin-top:var(--wk-sp-1);padding-top:var(--wk-sp-2);border-top:1px solid var(--semi-color-border,#e8eaed)}
 .eva-task-table__create-input{flex:1;min-width:0}
 

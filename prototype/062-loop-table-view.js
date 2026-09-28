@@ -10,7 +10,7 @@
   function create(deps){
     const {
       React,useI18n,Popover,Checkbox,Switch,Toast,DatePicker,Input,
-      AssigneePicker,Tag,RunningChip,useRunConfirm,
+      AssigneePicker,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
@@ -366,7 +366,7 @@
           :h('div',{className:'eva-task-table__menu-empty'},'没有匹配的列')));
     }
 
-    /* 标签展示用标准 SemiUI Tag（与数字员工详情能力标签同一组件）。
+    /* 标签展示与详情、看板共用项目任务标签片。
        按单元格实际可用宽度测量：能放下的标签全部显示，放不下的折成 +N；列宽变化实时重算。
        （Multica 原实现写死前 2 个 + +N，这里按用户要求改为按宽度自适应。） */
     const LABEL_TAG_GAP=4;
@@ -407,10 +407,10 @@
       const shown=labels.slice(0,count),rest=labels.length-shown.length;
       return h('span',{className:'eva-task-table__label-tags',ref:rootRef},
         h('span',{className:'eva-task-table__label-tags-measure','aria-hidden':'true',ref:measureRef},
-          labels.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
-          h(Tag,{key:'__probe',size:'small',className:'eva-task-table__label-tag'},'+'+Math.max(1,labels.length-1))),
-        shown.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
-        rest>0?h(Tag,{key:'__rest',size:'small',className:'eva-task-table__label-tag'},'+'+rest):null);
+          labels.map(label=>h(React.Fragment,{key:label.id},root.EvaLoopTaskComponents.labelChip(React,label))),
+          h('span',{key:'__probe',className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+Math.max(1,labels.length-1))),
+        shown.map(label=>h(React.Fragment,{key:label.id},root.EvaLoopTaskComponents.labelChip(React,label))),
+        rest>0?h('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
     }
 
     /* ---------- 标签单元格：展示 + 编辑（对齐 Multica LabelPicker） ---------- */
@@ -444,10 +444,9 @@
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
           h('div',{className:'eva-task-table__menu-list'},
-            labels.length?labels.map(label=>h(MenuItem,{key:label.id,role:'option',
+            labels.length?labels.map(label=>h(MenuItem,{key:label.id,role:'option',variant:'action',
               selected:attached.some(item=>item.id===label.id),
-              icon:h('span',{className:'eva-task-table__label-dot',style:{background:label.color||'#64748b'}}),
-              label:label.name,onClick:()=>toggle(label.id)}))
+              content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
             :h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签')),
           h('div',{className:'eva-task-table__label-create'},
             h(Input,{value:creating,onChange:setCreating,placeholder:'新建标签',maxLength:20,'aria-label':'新建标签',
@@ -496,37 +495,20 @@
       const pad=value=>String(value).padStart(2,'0');
       return now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
     }
-    /** 本地化短格式（month:'short', day:'numeric'，无年份）：zh 下为「9月2日」。 */
-    function formatDateOnly(value){
-      const utc=dateOnlyToUTC(value);
-      if(utc==null)return '';
-      return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(utc));
-    }
     /* ---------- 日期单元格（开始/截止）：统一 Semi 日期面板 ----------
        幽灵触发器「图标 + 短格式日期 / 占位文案」，截止日期早于今天标红（纯日期比较，不看状态）。
        顶部保留「无日期」空值行；日历与创建、详情使用同一 Semi 面板配置。 */
     function DateCell({issue,field,label,applyUpdate}){
       const value=issue[field]?String(issue[field]).slice(0,10):undefined;
-      const [open,setOpen]=React.useState(false);
       const overdue=field==='due_date'&&issue.status!=='done'&&issue.status!=='cancelled'&&isPastDateOnly(value);
       const commit=next=>{
-        setOpen(false);
         if(next!==(value||null))applyUpdate(issue,{[field]:next});
       };
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        root.EvaLoopTaskComponents.datePicker(React,DatePicker,{
-          className:'eva-task-table__date-picker',value,open,onOpenChange:setOpen,
-          showClear:false,placeholder:label,'aria-label':label,
-          onChange:(_,next)=>commit(next||null),
-          topSlot:h('button',{type:'button',className:'eva-task-table__date-clear',
-            onClick:()=>commit(null)},
-            h('span',{className:'eva-task-table__date-clear-label'},'无'+label),
-            h(icons.Check,{size:14,className:'eva-task-table__date-clear-check',style:{visibility:value?'hidden':'visible'}})),
-          triggerRender:()=>h('button',{type:'button',className:'eva-task-table__cell-trigger'+(overdue?' is-overdue':''),
-            'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open},
-            h(field==='start_date'?icons.CalendarClock:icons.CalendarDays,{size:14,className:'eva-task-table__glyph'}),
-            value?h('span',{className:'eva-task-table__cell-label'+(overdue?' is-overdue':'')},formatDateOnly(value))
-              :h('span',{className:'eva-task-table__cell-label is-empty'},label))}));
+        root.EvaLoopTaskComponents.dateField(React,DatePicker,{
+          className:'eva-task-table__date-picker',value,label,onChange:commit,overdue,
+          icon:field==='start_date'?icons.CalendarClock:icons.CalendarDays,
+          triggerClassName:'eva-task-table__cell-trigger',textClassName:'eva-task-table__cell-label',iconClassName:'eva-task-table__glyph'}));
     }
 
     /* ---------- 主组件 ---------- */

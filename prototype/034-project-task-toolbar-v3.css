@@ -302,11 +302,24 @@
 .loop-idp .loop-idp__asec { padding: 16px 0; gap: 12px; }
 .loop-idp .loop-idp__prop { min-height: 32px; }
 .loop-idp .loop-idp__prop-k { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
-.loop-idp .loop-idp__due-picker { flex: none; }
-.loop-idp .loop-idp__due-picker .semi-datepicker-input {
-  height: 30px;
-  border-radius: var(--eva-radius-control);
-}
+.eva-task-label-chips { display:inline-flex; flex-wrap:wrap; align-items:center; gap:4px; min-width:0; }
+.eva-task-label-chip { flex:none; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+.eva-task-label-chip--overflow { --loop-chip-color:#8a8f99; }
+:root[data-theme="dark"] .eva-task-label-chip { background:color-mix(in srgb,var(--loop-chip-color,#8a8f99) 20%,var(--eva-surface-primary)); border-color:color-mix(in srgb,var(--loop-chip-color,#8a8f99) 32%,var(--eva-surface-primary)); color:var(--eva-text-primary); }
+/* 项目任务日期共用同一轻量触发器，浮层和清空行由公共日期组件负责。 */
+.eva-task-date-field.semi-datepicker { width:auto; min-width:0; }
+body .eva-task-date-field .semi-datepicker-input { display:inline-flex; width:auto; min-width:0; height:auto; min-height:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field .semi-datepicker-input:focus-within { border:0; background:transparent; box-shadow:none; }
+.eva-task-date-trigger { display:inline-flex; align-items:center; gap:6px; max-width:100%; min-height:28px; padding:3px 6px; border:0; border-radius:var(--eva-radius-key); background:transparent; color:var(--eva-text-primary); font:400 13px/20px var(--eva-font-sans); white-space:nowrap; cursor:pointer; }
+.eva-task-date-trigger:hover { background:var(--eva-overlay-hover); }
+.eva-task-date-trigger:focus-visible { outline:2px solid var(--eva-border-focus); outline-offset:-2px; }
+.eva-task-date-trigger.is-overdue { color:var(--semi-color-danger); }
+.eva-task-date-trigger__icon { flex:none; }
+.eva-task-date-trigger__text { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.eva-task-date-trigger__text.is-empty { color:var(--eva-text-secondary-accessible); }
+.eva-task-date-clear { display:block; width:100%; padding:8px 12px; border:0; border-bottom:1px solid var(--eva-border-faint); background:transparent; color:var(--eva-text-secondary-accessible); font:400 13px/20px var(--eva-font-sans); text-align:left; cursor:pointer; }
+.eva-task-date-clear:hover { background:var(--eva-overlay-hover); }
+.loop-idp .loop-idp__due-picker { flex:none; }
 .loop-idp .loop-idp__due-value {
   display: inline-flex;
   align-items: center;

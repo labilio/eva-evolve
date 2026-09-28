@@ -206,7 +206,8 @@ test('任务详情只保留层级树，并通过最近三级可点击面包屑�
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
   assert.ok(runtime.includes('"开始分解"'));
   assert.ok(runtime.includes('className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"'));
-  assert.ok(runtime.includes('"aria-label":"截止日期",showClear:!0'));
+  assert.ok(runtime.includes('window.EvaLoopTaskComponents.dateField(React,DatePicker,{className:"loop-idp__due-picker"'),
+    '详情截止日期应使用任务公共日期字段，保留选择与清空能力');
   for(const obsolete of [
     'function EvaIssueBreakdownCanvas(',
     '查看分解',

@@ -36,26 +36,27 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
 
     await openTask();
     const labels=page.locator('.loop-idp__prop--labels');
-    await labels.getByText('添加标签',{exact:true}).click();
+    const initialLabels=await labels.locator('.loop-label-chip').allTextContents();
+    assert.equal(initialLabels.includes('质量'),false,'测试目标标签初始不应已关联');
+    await labels.locator('button').first().click();
     let menu=page.locator('.semi-dropdown-menu:visible');
     await menu.getByText('采购',{exact:true}).waitFor();
-    assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['采购','质量','供应风险','合规']);
-    await menu.getByText('采购',{exact:true}).click();
-    await labels.locator('.loop-label-chip').filter({hasText:'采购'}).waitFor();
-    assert.equal(await labels.getByText('添加标签',{exact:true}).count(),0);
+    assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['采购','招投标','质量','供应商','合规','合同','成本','排产','交付','供应风险']);
+    await menu.getByText('质量',{exact:true}).click();
+    await labels.locator('.loop-label-chip').filter({hasText:'质量'}).waitFor();
 
     await closeTask();
     await openTask();
-    await labels.locator('.loop-label-chip').filter({hasText:'采购'}).waitFor();
+    await labels.locator('.loop-label-chip').filter({hasText:'质量'}).waitFor();
     await page.screenshot({path:'/tmp/eva-task-labels-fixed-chip.png'});
     await labels.locator('.loop-label-chipbutton').click();
     menu=page.locator('.semi-dropdown-menu:visible');
-    await menu.getByText('采购',{exact:true}).click();
-    await labels.getByText('添加标签',{exact:true}).waitFor();
+    await menu.getByText('质量',{exact:true}).click();
+    assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'质量'}).count(),0);
 
     await closeTask();
     await openTask();
-    await labels.getByText('添加标签',{exact:true}).waitFor();
+    assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'质量'}).count(),0);
     assert.equal(await page.locator('.app-titlebar:visible').count(),1);
     assert.equal(await page.locator('[data-nextjs-dialog],.vite-error-overlay,#webpack-dev-server-client-overlay').count(),0);
     assert.deepEqual(errors,[]);

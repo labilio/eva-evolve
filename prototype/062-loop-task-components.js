@@ -17,6 +17,57 @@
     });
   }
 
+  function labelChip(React,label,{className='',suffix=null}={}){
+    const color=/^#[0-9a-fA-F]{6}$/.test(label?.color||'')?label.color:null;
+    return React.createElement('span',{
+      className:['loop-label-chip','eva-task-label-chip',className].filter(Boolean).join(' '),
+      style:color?{'--loop-chip-color':color}:undefined
+    },label?.name||'',suffix);
+  }
+  function labelChips(React,labels,max){
+    if(!labels?.length)return null;
+    const shown=max?labels.slice(0,max):labels,rest=labels.length-shown.length;
+    return React.createElement('span',{className:'loop-label-chips eva-task-label-chips'},
+      ...shown.map(label=>React.createElement(React.Fragment,{key:label.id},labelChip(React,label))),
+      rest>0?React.createElement('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
+  }
+  function formatDate(value){
+    const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(value||''));
+    return match?Number(match[2])+'月'+Number(match[3])+'日':'';
+  }
+  function dateTrigger(React,{label='截止日期',value,icon,open=false,overdue=false,className='',textClassName='',iconClassName=''}){
+    return React.createElement('button',{type:'button',
+      className:['eva-task-date-trigger',className,overdue?'is-overdue':''].filter(Boolean).join(' '),
+      'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open,title:value?value:undefined},
+      icon?React.createElement(icon,{size:14,className:['eva-task-date-trigger__icon',iconClassName].filter(Boolean).join(' '),'aria-hidden':true}):null,
+      React.createElement('span',{className:['eva-task-date-trigger__text',textClassName,value?'':'is-empty',overdue?'is-overdue':''].filter(Boolean).join(' ')},value?formatDate(value):label));
+  }
+  const dateFieldCache=new WeakMap();
+  function dateField(React,DatePicker,props){
+    let Field=dateFieldCache.get(DatePicker);
+    if(!Field){
+      Field=function TaskDateField({value,label='截止日期',onChange,icon,overdue=false,className='',triggerClassName='',textClassName='',iconClassName='',...pickerProps}){
+        const [open,setOpen]=React.useState(false);
+        React.useEffect(()=>{
+          if(!open)return;
+          const dismiss=event=>{if(event.key==='Escape')setOpen(false);};
+          document.addEventListener('keydown',dismiss,true);
+          return()=>document.removeEventListener('keydown',dismiss,true);
+        },[open]);
+        const commit=next=>{setOpen(false);onChange(next);};
+        return datePicker(React,DatePicker,{
+          ...pickerProps,className:['eva-task-date-field',className].filter(Boolean).join(' '),
+          value,open,onOpenChange:setOpen,showClear:false,placeholder:label,'aria-label':label,
+          onChange:(_,next)=>commit(next||null),
+          topSlot:React.createElement('button',{type:'button',className:'eva-task-date-clear',onClick:()=>commit(null)},'无'+label),
+          triggerRender:()=>dateTrigger(React,{label,value,icon,open,overdue,className:triggerClassName,textClassName,iconClassName})
+        });
+      };
+      dateFieldCache.set(DatePicker,Field);
+    }
+    return React.createElement(Field,props);
+  }
+
   function create(React,{CircleDashed,Circle,CircleCheck}){
     const h=React.createElement;
     const visualProps=(props,color)=>({
@@ -53,5 +104,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,datePicker,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,datePicker,dateField,labelChip,labelChips,formatDate,dateTrigger,create});
 })(window);

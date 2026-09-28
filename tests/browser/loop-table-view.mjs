@@ -54,6 +54,8 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const badNames=await table.locator('.loop-assignee-trigger .eva-loop-identity-name-text').evaluateAll(
       els=>els.filter(el=>el.scrollWidth>el.clientWidth+1&&el.clientWidth<60).map(el=>el.textContent));
     assert.deepEqual(badNames,[],'姓名只能在列宽边界省略，不得退化为单字截断: '+badNames.join(','));
+    assert.equal(await table.locator('.eva-task-table__label-tags .semi-tag').count(),0,'表格标签不再使用与详情分叉的 Semi Tag');
+    await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().waitFor();
     const humanNames=await table.locator('.loop-assignee-trigger').evaluateAll(els=>els
       .filter(el=>el.querySelector('.eva-loop-identity-name-text'))
       .map(el=>el.querySelector('.eva-loop-identity-name-text'))
@@ -76,6 +78,12 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await priorityMenu.locator('.eva-task-table__priority-badge').count(),5,'优先级选项应统一使用语义色标记');
     const menuSkin=await priorityMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
     assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),'none','表格菜单不应在内外两层重复叠加投影');
+    await page.keyboard.press('Escape');
+    await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().click();
+    const labelMenu=page.locator('.eva-task-table__menu[role="listbox"]:visible');
+    assert.equal(await labelMenu.locator('.eva-task-table__label-dot').count(),0,'标签选项不再使用另一套圆点样式');
+    await labelMenu.locator('.eva-task-table__menu-item .eva-task-label-chip').first().waitFor();
+    assert.deepEqual(await labelMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,'标签选项沿用任务菜单的浮层外观');
     await page.keyboard.press('Escape');
 
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
@@ -157,7 +165,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.ok(await dateMenu.evaluate(el=>el.classList.contains('semi-datepicker-compact')),'任务日期应使用统一的 Semi 紧凑面板');
     const dateSkin=await dateMenu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-popover-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
     assert.deepEqual(dateSkin,menuSkin,'日期面板与任务菜单应使用相同的背景、圆角和投影');
-    const clearRow=dateMenu.locator('.eva-task-table__date-clear');
+    const clearRow=dateMenu.locator('.eva-task-date-clear');
     await clearRow.waitFor();
     assert.match((await clearRow.textContent())||'',/无截止日期/,'面板首行应为「无截止日期」空值行');
     await dateMenu.getByRole('button',{name:'Previous month'}).click();
@@ -179,7 +187,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await dateCell.click();
     const dateMenu2=page.locator('.eva-loop-task-date-panel:visible');
     await dateMenu2.locator('.semi-datepicker-month-grid').waitFor();
-    await dateMenu2.locator('.eva-task-table__date-clear').click();
+    await dateMenu2.locator('.eva-task-date-clear').click();
     assert.equal(((await dateCell.locator('.eva-task-table__cell-label').textContent())||'').trim(),'截止日期','清空后应回占位文案');
 
     // 批量操作：勾选行后工具栏换态为批量模式（对齐 Multica BatchActionToolbar 放到了顶部）
@@ -252,8 +260,22 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('.collab-route-right').waitFor();
     const detailDate=page.locator('.collab-route-right .loop-idp__due-picker');
     await detailDate.waitFor();
-    await detailDate.locator('.semi-datepicker-input').click();
+    assert.equal(await detailDate.locator('.semi-datepicker-input').evaluate(el=>getComputedStyle(el).borderTopWidth),'0px','详情日期不再显示独立的带框输入框');
+    assert.equal(await detailDate.locator('.eva-task-date-trigger').evaluate(el=>getComputedStyle(el).borderTopWidth),'0px','详情与表格共用轻量日期触发器');
+    await detailDate.locator('.eva-task-date-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'详情应使用同一紧凑日期面板');
+    await page.locator('.eva-loop-task-date-panel:visible .semi-datepicker-day[aria-label$="-15"]').first().click();
+    assert.match((await detailDate.locator('.eva-task-date-trigger').textContent())||'',/15日/,'详情选日应写回共享日期字段');
+    await page.locator('.eva-loop-task-date-panel:visible').waitFor({state:'detached'}).catch(()=>{});
+    await detailDate.locator('.eva-task-date-trigger').click();
+    await page.locator('.eva-loop-task-date-panel:visible .eva-task-date-clear').click();
+    assert.match((await detailDate.locator('.eva-task-date-trigger').textContent())||'',/截止日期/,'详情日期清空后应回到统一占位文案');
+    await page.locator('.eva-loop-task-date-panel:visible').waitFor({state:'detached'}).catch(()=>{});
+    assert.equal(await page.locator('.eva-loop-task-date-panel:visible').count(),0,'详情清空日期后面板应关闭');
+    const detailLabels=page.locator('.collab-route-right .loop-idp__label-editor');
+    assert.equal(await detailLabels.locator('.semi-tag').count(),0,'详情标签同样不使用 Semi Tag');
+    await detailLabels.locator('button').first().click();
+    await page.locator('.semi-dropdown-wrapper:visible .loop-label-option .eva-task-label-chip').first().waitFor();
     await page.keyboard.press('Escape');
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
@@ -269,6 +291,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const tagSkin=await tagMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
     assert.deepEqual(tagSkin,menuSkin,'任务标签菜单应沿用同一表面、圆角和投影');
     assert.equal(await tagMenu.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),'none','标签菜单不应重复叠加外层投影');
+    await tagMenu.locator('[role="option"] .eva-task-label-chip').first().waitFor();
+    await tagMenu.locator('[role="option"]').first().click();
+    await page.locator('.eva-loop-task-create__tag-selected .eva-task-label-chip').first().waitFor();
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留
@@ -276,6 +301,11 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('.loop-board').waitFor();
     await switcher.locator('button',{hasText:'表格'}).click();
     await table.locator('.eva-task-table__grid').waitFor();
+
+    await page.evaluate(()=>window.EvaTheme.apply('dark'));
+    const darkLabelColor=await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().evaluate(el=>getComputedStyle(el).color);
+    assert.equal(darkLabelColor,'rgb(247, 247, 247)','暗色任务标签须使用高对比文字，不沿用旧 Loop 的暗字');
+    await page.evaluate(()=>window.EvaTheme.apply('light'));
 
     await page.screenshot({path:'/tmp/eva-loop-table-view.png'});
     assert.deepEqual(errors,[],'不应有页面错误：'+errors.join(' | '));

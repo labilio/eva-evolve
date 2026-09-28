@@ -50,3 +50,14 @@ test('项目任务日期选择器统一使用 Semi 紧凑日期面板和日期�
   assert.equal(picker.props.className,'task-date');
   assert.equal(picker.props.value,'2026-09-28');
 });
+
+test('项目任务标签片在各视图共用名称与项目色',()=>{
+  const {api}=setup(),React={createElement:(type,props,...children)=>({type,props:props||{},children})};
+  const label={id:'purchase',name:'采购',color:'#64748b'};
+  const chip=api.labelChip(React,label);
+  assert.equal(chip.type,'span');
+  assert.match(chip.props.className,/loop-label-chip eva-task-label-chip/);
+  assert.equal(chip.props.style['--loop-chip-color'],label.color);
+  assert.equal(chip.children[0],label.name);
+  assert.equal(api.formatDate('2026-09-25'),'9月25日');
+});
