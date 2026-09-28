@@ -56,8 +56,13 @@ test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转'
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
     const denied=page.locator('.loop-idp [data-eva-task-link="ZY-101"]');
     const allowed=page.locator('.loop-idp [data-eva-task-link="CLIENT-103"]');
+    const deleted=page.locator('.loop-idp a[href*="evaProject=deleted-project"]');
     await denied.waitFor();
     await allowed.waitFor();
+    await deleted.waitFor();
+    await deleted.click();
+    await page.getByText('任务所属项目不存在或已删除').waitFor();
+    assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
     await denied.click();
     await page.getByText('你不是该任务所属项目的成员，无法查看任务').waitFor();
     assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
@@ -72,7 +77,7 @@ test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转'
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
 
-test('Edge：供应链项目群预置可访问与无权限的跨项目任务链接',async()=>{
+test('Edge：供应链项目群预置可访问、无权限与已删除项目任务链接',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin=`http://127.0.0.1:${server.address().port}`;
@@ -83,10 +88,15 @@ test('Edge：供应链项目群预置可访问与无权限的跨项目任务链�
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=channels');
     const allowed=page.locator('[data-eva-task-link="CLIENT-103"]');
     const denied=page.locator('[data-eva-task-link="ZY-101"]');
+    const deleted=page.locator('a[href*="evaProject=deleted-project"]');
     await allowed.waitFor();
     await denied.waitFor();
+    await deleted.waitFor();
     assert.equal(await allowed.innerText(),'CLIENT-103  联调客户演示环境与核心流程');
     assert.equal(await denied.innerText(),'ZY-101  复核交互方案中的任务跳转边界');
+    await deleted.click();
+    await page.getByText('任务所属项目不存在或已删除').waitFor();
+    assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=channels');
     await denied.click();
     await page.getByText('你不是该任务所属项目的成员，无法查看任务').waitFor();
     assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=channels');
@@ -203,7 +213,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     const composer=page.locator('[contenteditable=true][role=textbox]');
     await composer.fill(copied);
     await composer.press('Enter');
-    const supplyLinks=page.locator('[data-eva-task-link]').filter({hasText:'SC-103'});
+    const supplyLinks=page.locator('[data-eva-task-link]').filter({hasText:'处理关键供应商来料质量异常'});
     await supplyLinks.nth(1).waitFor();
     assert.deepEqual(await supplyLinks.allTextContents(),[
       'SC-103  处理关键供应商来料质量异常',
