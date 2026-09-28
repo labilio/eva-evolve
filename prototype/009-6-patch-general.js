@@ -49,6 +49,14 @@
     source = root.__evaCut(source,
       'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',
       evaTooltipPrimitive, '统一 Tooltip 原语与 DOM 桥');
+    source = root.__evaCut(source,
+      'execLog:"执行日志",execEmpty:"暂无执行记录"',
+      'execLog:"AI 执行记录",execEmpty:"暂无 AI 执行记录"',
+      '任务详情 AI 执行记录文案');
+    source = root.__evaCut(source,
+      'run$1={title:"执行记录",empty:"暂无执行记录"',
+      'run$1={title:"执行记录",empty:"暂无 AI 执行记录"',
+      'AI 运行列表空状态文案');
     // Project-scoped task list: stable columns, without repeating its project name.
     source = root.__evaCut(source,
       'React.createElement("span",{className:"loop-list__spacer"}),rn.project_name&&React.createElement("span",{className:"loop-list__project"},rn.project_name),React.createElement("span",{className:"loop-list__id"},rn.identifier)',

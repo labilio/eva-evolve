@@ -33,7 +33,8 @@ test('Edge：合并状态后看板、详情、创建、旧筛选与跨项目往�
   await page.locator('.loop-board__col').nth(1).locator('[draggable="true"]').filter({hasText:'SC-104'}).dragTo(todo);
   await todo.getByText('分析核心品类采购成本偏差',{exact:true}).waitFor();
   await page.getByText('收集下一季度供应商协同需求',{exact:true}).click();
-  await page.getByText('暂无执行记录',{exact:true}).waitFor();
+  await page.getByText('AI 执行记录',{exact:true}).waitFor();
+  await page.getByText('暂无 AI 执行记录',{exact:true}).waitFor();
   await page.getByRole('button',{name:'待办',exact:true}).click();
   assert.equal(await page.getByText('待规划',{exact:true}).count(),0);
   await page.getByText('进行中',{exact:true}).last().click();
