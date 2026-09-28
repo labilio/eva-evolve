@@ -51,20 +51,13 @@
     const member=(id,uid)=>humanRows(id).some(m=>m.id===uid);
     const groupKey=id=>{const target=state.threads[id]||id;if(target?.startsWith('all:')&&state.projects[target.slice(4)])return target;if(state.groups[target])return target;return null;};
     const groupScope=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.groups[key]);};
-    const groupProject=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.projects[state.groups[key]?.projectId]);};
-    const inheritedManagers=id=>{
-      const group=groupScope(id),project=groupProject(id);
-      if(!group||!project)return [];
-      const roles=new Set(project.humans.filter(item=>item.id===project.ownerId||['owner','admin'].includes(item.role)).map(item=>item.id));
-      return group.humans.filter(item=>person(item.id)&&roles.has(item.id)).map(item=>item.id);
-    };
     const governanceRecord=id=>state.groupGovernance?.[groupKey(id)]||{};
     const ensureGovernance=id=>{const key=groupKey(id)||fail('群聊不存在');state.groupGovernance||={};return state.groupGovernance[key]||={managerIds:[],botAdminIds:[],groupMd:''};};
     const manager=(id,uid)=>{
       const key=groupKey(id);
       if(!key){const s=scope(id);if(!member(id,uid))return false;if(s.ownerId===uid)return true;const p=state.projects[projectId(id)];return !!p&&p.humans.some(m=>m.id===uid&&['owner','admin'].includes(m.role));}
       const s=groupScope(key);if(!s.humans.some(m=>m.id===uid))return false;if(s.ownerId===uid)return true;
-      return (governanceRecord(key).managerIds||[]).includes(uid)||inheritedManagers(key).includes(uid);
+      return (governanceRecord(key).managerIds||[]).includes(uid);
     };
     const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids.map(canonicalId))].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
     const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
@@ -384,10 +377,9 @@
       groupGovernance(id){
         const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key),record=governanceRecord(key);
         const humanIds=new Set(s.humans.map(item=>item.id)),manualManagerIds=(record.managerIds||[]).filter(uid=>humanIds.has(uid)&&uid!==s.ownerId);
-        const inheritedManagerIds=inheritedManagers(key);
-        const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid)||inheritedManagerIds.includes(uid));
+        const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid));
         const botIds=new Set(api.groupMembers(key).filter(item=>item.kind!=='human').map(item=>item.id));
-        return {groupId:key,manualManagerIds,inheritedManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
+        return {groupId:key,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
       },
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
