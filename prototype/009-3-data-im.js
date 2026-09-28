@@ -144,8 +144,12 @@ window.__EVA_NON_PROJECT_RECENT_DEMO = {
   id: 'community-product-co-creation',
   name: '产品共创交流群',
   ownerId: 'u-wangyilin',
-  memberIds: ['u-wangyilin', 'u-linxiao', 'u-hejing'],
+  memberIds: ['u-wangyilin', 'u-linxiao', 'u-hejing', 'u-zhouyuan'],
   thread: {id: 'community-feedback-roundup', name: '近期体验反馈整理'},
+  permissionMessages: [
+    {senderId:'u-zhouyuan',time:'09:42',text:'我在另一个项目「周远的方案评审」里跟进任务 ZY-101。@周远的 AI 分身 把任务链接发到这里，方便大家知道我在处理哪件事。',mentions:[{name:'@周远的 AI 分身',uid:'clone-zhouyuan'}]},
+    {senderId:'clone-zhouyuan',time:'09:43',text:'这是周远另一个项目里的任务，点开需要该项目的访问权限：\n\n[ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)'}
+  ],
   messages: [
     {senderId: 'u-linxiao', time: '09:18', text: '我把近期收到的体验反馈按操作路径整理了，先集中看消息列表和子区切换两类。'},
     {senderId: 'u-hejing', time: '09:26', text: '权限相关的几条我会单独标注前置条件，避免把无权限和界面异常混在一起。'},

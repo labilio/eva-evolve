@@ -788,7 +788,7 @@ function EvaInlineProjectPanel({projectId,taskRequest}) {
   reactExports.useEffect(()=>{
     if(!taskRequest||taskRequest.projectId!==activeProjectId)return;
     const store=evaMembers().store,actor=store.snapshot().actorId;
-    if(!store.canRead(activeProjectId,actor)){Toast.error('你没有该项目的访问权限，无法查看任务');return;}
+    if(!store.canRead(activeProjectId,actor)){Toast.error('你不是该任务所属项目的成员，无法查看任务。');return;}
     const issue=evaTaskLinkIssue(taskRequest);
     if(!issue){Toast.error('任务不存在或已失效');return;}
     WKApp$1.routeRight.push(h(IssueDetailPage,{key:issue.id,issueId:issue.id,onChanged:()=>setSpaces(loadSpaces()),onClose:()=>WKApp$1.routeRight.pop()}));
@@ -2045,7 +2045,7 @@ function EvaAITeamPage() {
     cut('const baseComponents={a:',
       'const baseComponents={table:({node,children,...props})=>React.createElement("div",{className:"eva-markdown-table-scroll"},React.createElement("table",props,children)),a:', 'Markdown 表格独立滚动容器');
     cut('a:({href:rt,children:ct,...ut})=>{const pt=',
-      'a:({href:rt,children:ct,...ut})=>{const evaTarget=evaTaskLinkTarget(rt);if(evaTarget){const evaIssue=evaTaskLinkIssue(evaTarget);return React.createElement("a",{...ut,href:rt,className:"eva-task-message-link","data-eva-task-link":evaTarget.identifier,onClick:evaEvent=>{if(evaEvent.defaultPrevented||evaEvent.button!==0||evaEvent.metaKey||evaEvent.ctrlKey||evaEvent.shiftKey||evaEvent.altKey)return;evaEvent.preventDefault();evaTaskLinkOpen(evaTarget)}},evaIssue?evaIssue.identifier+" · "+evaIssue.title:ct)}const pt=', '统一消息正文识别任务链接并展示编号标题');
+      'a:({href:rt,children:ct,...ut})=>{const evaTarget=evaTaskLinkTarget(rt);if(evaTarget){const evaIssue=evaTaskLinkIssue(evaTarget);return React.createElement("a",{...ut,href:rt,className:"eva-task-message-link","data-eva-task-link":evaTarget.identifier,onClick:evaEvent=>{if(evaEvent.defaultPrevented||evaEvent.button!==0||evaEvent.metaKey||evaEvent.ctrlKey||evaEvent.shiftKey||evaEvent.altKey)return;evaEvent.preventDefault();evaTaskLinkOpen(evaTarget)}},evaIssue?evaIssue.identifier+"  "+evaIssue.title:ct)}const pt=', '统一消息正文识别任务链接并展示编号标题');
     // Preserve browser-created line breaks in multiline drafts and pasted Markdown.
     cut('const text=St.currentTarget.textContent??"";pt(text);evaDraftChange?.(text)',
       'const text=evaComposerPlainText(St.currentTarget);pt(text);evaDraftChange?.(text);if(evaMentionScope&&!St.nativeEvent.isComposing){const trigger=evaComposerMentionRange(mt.current);evaMentionRange.current=trigger?.range||null;setEvaMentionQuery(trigger?.query||"");setEvaMentionIndex(0);setEvaMentionOpen(!!trigger)}', '共享输入框保留可见换行');

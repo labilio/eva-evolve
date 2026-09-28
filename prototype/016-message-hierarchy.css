@@ -252,7 +252,10 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-channel-i
 }
 
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-parent-group {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
   color: var(--wk-text-tertiary, #9498a8);
   font-size: 14px;
   font-weight: 400;
@@ -269,17 +272,19 @@ body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-parent-gr
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-separator {
   display: inline-flex;
   width: 14px;
-  height: 14px;
+  height: 32px;
   align-items: center;
   justify-content: center;
   color: var(--wk-text-tertiary, #9498a8);
   flex-shrink: 0;
-  transform: translateY(1px);
   user-select: none;
 }
 
 body.eva-message-hierarchy-ready .ch-head .wk-chat-conversation-header-thread-name {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
   color: var(--wk-text-primary, #1a1c24);
   font-size: 14px;
   font-weight: 600;

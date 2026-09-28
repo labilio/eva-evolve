@@ -15,12 +15,21 @@ function harness(overrides={}){
   const find=label=>all().find(n=>n.props['aria-label']===label);
   const picker=label=>{const wrapper=find(label);return wrapper&&wrapper.children.find(x=>x&&x.type==='AssigneePicker');};
   const button=label=>all().find(n=>n.type==='Button'&&n.children.includes(label));
-  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){const node=label==='执行负责人'?picker(label):find(label);node.props.onChange(label==='任务标题'?{target:{value}}:value);render();}};
+  const fill=()=>{render();for(const [label,value]of [['任务标题','测试任务'],['任务描述','任务说明'],['执行负责人','u1']]){const node=label==='执行负责人'?picker(label):find(label);node.props.onChange(value);render();}};
   render();render();return {render,find,picker,button,fill,calls,props,deps,state,all};
 }
 test('creates project-bound task with original fields and only current project candidates',async()=>{
   const h=harness();h.fill();const candidates=Array.from(h.picker('执行负责人').props.candidates,x=>x.id);assert.deepEqual(candidates,['u1']);await h.button('创建').props.onClick();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
   assert.equal(payload.due_date,null);
+});
+test('新建任务标题自动增高时保留 200 字上限，输入中的换行归一为空格',async()=>{
+  const h=harness(),title='客户培训资料'.repeat(20);
+  assert.equal(h.find('任务标题').type,'TextArea');
+  assert.equal(h.find('任务标题').props.maxLength,200);
+  h.find('任务标题').props.onChange(title+'\n补充操作步骤');h.render();
+  assert.equal(h.find('任务标题').props.value,title+' 补充操作步骤');
+  await h.button('创建').props.onClick();
+  assert.equal(h.calls[0].title,title+' 补充操作步骤');
 });
 test('创建任务可设置和清空截止日期，并提交同一 due_date 字段',async()=>{
   const h=harness();h.fill();const picker=h.find('截止日期');assert.equal(picker.type,'DatePicker');assert.equal(picker.props.showClear,true);

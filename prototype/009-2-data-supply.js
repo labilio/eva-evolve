@@ -44,6 +44,15 @@ window.__EVA_PEOPLE = [
   {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true}
 ];
 
+// Isolated permission fixture: Zhou can share this task link in a non-project group;
+// Wang can read that group but is not a member of the task's project.
+window.__EVA_TASK_LINK_PERMISSION_DEMO = {
+  projectId: 'zhou-private-review',
+  project: {id:'zhou-private-review',name:'周远的方案评审',short:'评',colorKey:'amber',desc:'周远负责的内部方案评审',members:[{name:'周远',color:'#f59f00'}],bots:0,lastActive:'近期活跃'},
+  issue: {id:'zhou-private-review-1',workspace_id:'zhou-private-review',number:1,identifier:'ZY-101',title:'复核交互方案中的任务跳转边界',description:'核对跨群分享任务链接时的可见性和访问权限。',status:'in_progress',priority:'medium',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',creator_id:'u-zhouyuan',creator_name:'周远',due_date:null,position:1,created_at:window.__EVA_DEMO_TIME.T0,updated_at:window.__EVA_DEMO_TIME.T1}
+};
+if(window.__EVA_PROJECTS&&!window.__EVA_PROJECTS.some(project=>project.id===window.__EVA_TASK_LINK_PERMISSION_DEMO.projectId))window.__EVA_PROJECTS.push(window.EvaProjectAppearance.view(window.__EVA_TASK_LINK_PERMISSION_DEMO.project));
+
 (function () {
   'use strict';
   var T0 = window.__EVA_DEMO_TIME.T0;

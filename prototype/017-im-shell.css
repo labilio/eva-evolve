@@ -548,3 +548,6 @@
 .eva-context-menu li:focus-visible { background:var(--eva-overlay-hover); outline:none; }
 .eva-context-menu:focus,.eva-context-menu:focus-visible { outline:none; }
 .eva-context-submenu { position:absolute; min-width:160px; max-height:60vh; overflow-y:auto; background:var(--eva-surface-primary); border:1px solid var(--eva-border-faint); border-radius:var(--eva-radius-control); box-shadow:var(--eva-shadow-floating); }
+
+/* Keep the two-space gap between a linked task ID and its title. */
+.eva-task-message-link { white-space:pre-wrap; }

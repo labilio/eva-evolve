@@ -565,7 +565,7 @@
     if(!saved||saved.schema!==2){
       const seed={schema:2,actorId:'u-wangyilin',people:humans,clones:root.__EVA_MEMBERSHIP_CLONES||[],projects:{},groups:{},threads:{}};
       for(const p of projects){
-        const ids=[...new Set(['u-wangyilin',...(p.members||[]).map(m=>humans.find(h=>h.name===m.name)?.id).filter(Boolean)])];
+        const ids=[...new Set([...(p.id===root.__EVA_TASK_LINK_PERMISSION_DEMO?.projectId?[]:['u-wangyilin']),...(p.members||[]).map(m=>humans.find(h=>h.name===m.name)?.id).filter(Boolean)])];
         seed.projects[p.id]={id:p.id,name:p.name,ownerId:ids[0],humans:ids.map((id,i)=>({id,role:i===0?'owner':'member'})),cloneIds:[]};
         for(const g of channels[p.id]||[]){
           // Existing demo participants seed ordinary groups once; live relationships use the store.
@@ -577,6 +577,11 @@
       saved=seed;
     }
     const registeredProjects=new Map(projects.map(project=>[project.id,project]));
+    const permissionDemo=root.__EVA_TASK_LINK_PERMISSION_DEMO;
+    if(permissionDemo&&!saved.seededTaskLinkPermissionV1){
+      if(!saved.projects[permissionDemo.projectId])saved.projects[permissionDemo.projectId]={id:permissionDemo.projectId,name:permissionDemo.project.name,ownerId:'u-zhouyuan',humans:[{id:'u-zhouyuan',role:'owner'}],cloneIds:[]};
+      saved.seededTaskLinkPermissionV1=true;
+    }
     for(const [id,project] of Object.entries(saved.projects||{}))saved.projects[id]=root.EvaProjectAppearance.normalize({...registeredProjects.get(id),...project});
     // Add account records only: preserve local profile edits, inactive flags, membership removals and drafts.
     saved.people||=[];
@@ -601,6 +606,22 @@
         saved.messages[thread.id]=nonProjectRecentDemo.messages.filter(message=>memberIds.includes(message.senderId)).map(({senderId,...message},index)=>({...message,kind:'text',fixtureId:'non-project-recent-v1:'+index,sender:{...saved.people.find(person=>person.id===senderId),uid:senderId}}));
       }
       saved.seededNonProjectRecentV1=true;
+    }
+    if(nonProjectRecentDemo&&!saved.seededTaskLinkPermissionMessagesV1){
+      const group=saved.groups[nonProjectRecentDemo.id],threadId=nonProjectRecentDemo.thread.id;
+      if(group&&saved.threads[threadId]===group.id){
+        if(!group.humans.some(member=>member.id==='u-zhouyuan'))group.humans.push({id:'u-zhouyuan',role:'member'});
+        group.cloneIds||=[];
+        if(!group.cloneIds.includes('clone-zhouyuan'))group.cloneIds.push('clone-zhouyuan');
+        saved.messages||={};saved.messages[threadId]||=[];
+        for(const [index,{senderId,...message}] of nonProjectRecentDemo.permissionMessages.entries()){
+          const fixtureId='task-link-permission-v1:'+index;
+          if(saved.messages[threadId].some(existing=>existing.fixtureId===fixtureId))continue;
+          const sender=saved.people.find(person=>person.id===senderId)||saved.clones.find(person=>person.id===senderId);
+          if(sender)saved.messages[threadId].push({...message,kind:'text',fixtureId,sender:{...sender,uid:senderId,ai:senderId==='clone-zhouyuan'}});
+        }
+      }
+      saved.seededTaskLinkPermissionMessagesV1=true;
     }
     // One-time additive fixture migration; do not recreate removed demo groups.
     const driveDemo=root.__EVA_DRIVE_CHAT_DEMO,driveProject=saved.projects['drive-design'];

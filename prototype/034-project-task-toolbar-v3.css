@@ -284,8 +284,20 @@
 .loop-idp .loop-idp__topbar { min-height: 52px; box-sizing: border-box; padding-inline: 24px; }
 .loop-idp .loop-idp__main { padding: 24px 24px 48px; }
 .loop-idp .loop-idp__main > * { max-width: var(--eva-main-col-w); }
-.loop-idp .loop-idp__title { font: 500 16px/24px var(--eva-font-sans); }
+.loop-idp .loop-idp__title { display: block; box-sizing: border-box; width: 100%; min-height: 40px; overflow: hidden; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 16px/24px var(--eva-font-sans); }
 .loop-idp :is(.loop-idp__desc,.loop-md,.loop-cmt__body,.loop-composer__editor) { font: 400 15px/24px var(--eva-font-sans); overflow-wrap: anywhere; }
+.loop-idp .loop-field-textarea--lg.loop-field-textarea--auto {
+  min-height: 48px;
+  padding: 4px 9px;
+  border-color: transparent;
+  background: transparent;
+  font: 400 15px/24px var(--eva-font-sans);
+}
+.loop-idp :is(.loop-idp__title,.loop-field-textarea--lg.loop-field-textarea--auto):focus {
+  border-color: var(--eva-border-focus);
+  background: var(--eva-surface-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--eva-border-focus) 18%, transparent);
+}
 .loop-idp .loop-idp__aside { padding: 8px 20px 24px; }
 .loop-idp .loop-idp__asec { padding: 16px 0; gap: 12px; }
 .loop-idp .loop-idp__prop { min-height: 32px; }
@@ -638,7 +650,16 @@
   scrollbar-width: none;
 }
 .loop-idp .loop-idp__crumbs::-webkit-scrollbar { display: none; }
-.loop-idp .loop-idp__crumbs > .loop-idp__crumb { flex: none; }
+.loop-idp .loop-idp__crumbs > .loop-idp__crumb {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  gap: 6px;
+  padding: 3px 6px;
+  flex: none;
+}
+.loop-idp .loop-idp__project-icon { flex: none; }
 .loop-idp .loop-idp__crumb-task,
 .loop-idp button.loop-idp__crumb-cur {
   display: inline-flex;
@@ -660,7 +681,11 @@
   white-space: nowrap;
 }
 .loop-idp .loop-idp__crumb-task .loop-idp__crumb-id,
-.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-id { flex: none; }
+.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-id {
+  flex: none;
+  font-family: var(--eva-font-sans);
+  font-size: 13px;
+}
 .loop-idp .loop-idp__crumb-task .loop-idp__crumb-title,
 .loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-title {
   min-width: 0;
