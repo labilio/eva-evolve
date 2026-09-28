@@ -529,17 +529,17 @@ test('消息中栏使用标题与创建按钮，不再显示列表搜索框', as
   await page.keyboard.press('Escape');
 });
 
-test('任务指派：列表、批量、详情与新建弹窗均可输入即筛选负责人', async () => {
+test('任务指派：表格、批量、详情与新建弹窗均可输入即筛选负责人', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();
   await page.getByRole('tab', { name: '任务', exact: true }).click();
-  await page.getByText('列表', { exact: true }).click();
-  await page.locator('.loop-list').waitFor();
+  await page.getByRole('tab', { name: '表格', exact: true }).click();
+  await page.locator('.eva-task-table__row').first().waitFor();
   await page.waitForTimeout(400);
 
   // 2026-09-21 指派选择统一为 AssigneePicker：semi-dropdown 面板内含搜索框、
   // 「联系人」分组与限高滚动，空态为「未找到匹配的联系人或 AI」；
-  // 列表内联新建行已随选人重构移除，创建入口统一为「新建任务」弹窗。
+  // 创建入口统一为「新建任务」弹窗。
   const verifyAssigneeSearch = async (trigger, { checkEnter = true } = {}) => {
     await trigger.click();
     const menu = page.locator('.semi-dropdown-menu:visible:has(.eva-task-assignee-search)');
@@ -565,7 +565,7 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
     });
     const contactNames = await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').allTextContents();
     assert.equal(contactNames[0], selfName, '联系人分组第一位应为自己');
-    // 列表收尾挂载可能重挂选择器并清空已填查询，过滤生效前允许重填。
+    // 表格收尾挂载可能重挂选择器并清空已填查询，过滤生效前允许重填。
     let filtered = false;
     for (let attempt = 0; attempt < 4 && !filtered; attempt += 1) {
       await input.fill('何静');
@@ -619,15 +619,14 @@ test('任务指派：列表、批量、详情与新建弹窗均可输入即筛�
     }
   };
 
-  await verifyAssigneeSearch(page.locator('.loop-list__assignee .loop-assignee-trigger').first());
+  await verifyAssigneeSearch(page.locator('.eva-task-table__row .loop-assignee-trigger').first());
 
-  await page.locator('.loop-list__row').first().hover();
-  await page.locator('.loop-list__check').first().click();
-  await page.locator('.loop-batchbar').waitFor();
-  await verifyAssigneeSearch(page.locator('.loop-batchbar .loop-assignee-trigger'), { checkEnter: false });
-  await page.locator('.loop-batchbar').getByRole('button', { name: '取消', exact: true }).click();
+  await page.locator('.eva-task-table__row .eva-task-table__check').first().click();
+  await page.locator('.eva-task-table__toolbar--batch').waitFor();
+  await verifyAssigneeSearch(page.locator('.eva-task-table__toolbar--batch .loop-assignee-trigger'), { checkEnter: false });
+  await page.locator('.eva-task-table__toolbar--batch').getByRole('button', { name: '清除选择' }).click();
 
-  await page.locator('.loop-list__title').first().click();
+  await page.locator('.eva-task-table__title-btn').first().click();
   const detail = page.locator('.loop-idp').last();
   await detail.waitFor();
   await verifyAssigneeSearch(detail.locator('.loop-idp__prop:has-text("负责人") .loop-assignee-trigger'));
