@@ -807,3 +807,21 @@
    长列表不会再被顶到标题栏上方。自身不拦截指针，交互仍交给弹层内容。 */
 .eva-task-popup-host { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 1050; pointer-events: none; }
 .eva-task-popup-host > * { pointer-events: auto; }
+.loop-acts__item .eva-task-activity-avatar {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.loop-acts__older {
+  align-self: flex-start;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--semi-color-text-2);
+  font: inherit;
+  cursor: pointer;
+}
+.loop-acts__older:hover { color: var(--semi-color-text-0); }

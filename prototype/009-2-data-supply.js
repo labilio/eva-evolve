@@ -657,6 +657,38 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-33',number:33,identifier:'SC-133',position:33,title:'协调本周到货异常收货安排',status:'blocked',priority:'urgent',due_date:'2026-09-23',assignee_type:'member',assignee_id:'u-hejing',assignee_name:'何静',description:'到货批次与仓库收货窗口冲突，等待仓储确认临时收货安排。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-34',number:34,identifier:'SC-134',position:34,title:'归档历史询价比价记录',status:'done',priority:'medium',due_date:'2026-09-24',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'按品类整理历史询价与比价记录，形成可检索的归档索引。'}
 );
+// 供应链项目任务统一预置可追溯动态；在追加任务后生成，避免克隆时继承其他任务的记录。
+(function seedSupplyTaskActivity(){
+  var people=new Map(window.__EVA_PEOPLE.map(function(person){return [person.id,person.name];}));
+  var progress={todo:[],in_progress:['in_progress'],in_review:['in_progress','in_review'],done:['in_progress','in_review','done'],blocked:['in_progress','blocked'],cancelled:['cancelled']};
+  function time(day,hour,minute){return '2026-'+day+'T'+hour+':'+String(minute).padStart(2,'0')+':00+08:00';}
+  function laterDate(date,days){var value=new Date(date+'T00:00:00Z');value.setUTCDate(value.getUTCDate()+days);return value.toISOString().slice(0,10);}
+  window.__EVA_SUPPLY_CHAIN_DEMO.issues.forEach(function(issue){
+    var minute=10+issue.number%40,entries=[];
+    function add(action,actor,details,at){
+      entries.push({type:'activity',id:issue.id+'-activity-'+entries.length,issue_id:issue.id,actor_type:'member',actor_id:actor,actor_name:people.get(actor),action:action,details:details,created_at:at});
+    }
+    add('created',issue.creator_id,{},issue.created_at);
+    if(issue.assignee_id&&issue.assignee_id!==issue.creator_id){
+      add('assignee_changed',issue.creator_id,{from:null,to:issue.assignee_id,from_name:null,to_name:issue.assignee_name},time('08-28','18',minute));
+    }
+    if(issue.priority==='urgent'||issue.priority==='high'&&issue.number%3===0||issue.priority==='medium'&&issue.number%5===0){
+      var fromPriority=issue.priority==='urgent'?'high':issue.priority==='high'?'medium':'low';
+      add('priority_changed',issue.creator_id,{from:fromPriority,to:issue.priority},time('08-29','10',minute));
+    }
+    if(issue.due_date&&issue.number%4===3){
+      add('due_date_changed',issue.assignee_id||issue.creator_id,{from:laterDate(issue.due_date,3),to:issue.due_date},time('08-29','14',minute));
+    }
+    var previous='todo';
+    (progress[issue.status]||[]).forEach(function(status){
+      var at=status==='in_progress'?time('08-30','09',minute):status==='in_review'?time('09-01','10',minute):status==='done'?time('09-02','15',minute):status==='blocked'?time('09-02','16',minute):time('09-01','11',minute);
+      var actor=status==='done'?(issue.assignee_id==='u-hejing'?'u-wangyilin':'u-hejing'):status==='cancelled'?issue.creator_id:issue.assignee_id||issue.creator_id;
+      add('status_changed',actor,{from:previous,to:status},at);
+      previous=status;
+    });
+    issue.activity_log=entries;
+  });
+})();
 window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id).length;p.done_count=window.__EVA_SUPPLY_CHAIN_DEMO.issues.filter(t=>t.project_id===p.id&&t.status==='done').length;});
 
 // 标签与任务为横切多对多关系（对齐 Multica LabelPicker）：标签不从状态/优先级/项目派生，
