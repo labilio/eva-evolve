@@ -9,6 +9,14 @@
     urgent:'var(--semi-color-danger, #f5222d)',high:'#fc8800',medium:'#f5a623',low:'#6b93ff',none:'#c9cdd4'
   });
 
+  function datePicker(React,DatePicker,props){
+    const {dropdownClassName='',...rest}=props;
+    return React.createElement(DatePicker,{
+      type:'date',format:'yyyy-MM-dd',density:'compact',autoSwitchDate:false,...rest,
+      dropdownClassName:['eva-loop-task-date-panel',dropdownClassName].filter(Boolean).join(' ')
+    });
+  }
+
   function create(React,{CircleDashed,Circle,CircleCheck}){
     const h=React.createElement;
     const visualProps=(props,color)=>({
@@ -45,5 +53,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,datePicker,create});
 })(window);

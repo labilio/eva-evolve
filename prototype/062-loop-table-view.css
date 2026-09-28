@@ -99,26 +99,13 @@
 .eva-task-table__cell-label.is-empty{color:var(--semi-color-text-2,#646a73)}
 .eva-task-table__cell-trigger.is-overdue{color:var(--semi-color-danger,#f5222d)}
 .eva-task-table__cell-trigger.is-overdue .eva-task-table__glyph{color:inherit}
-/* 「无日期」空值行：Multica DateOnlyPicker 的固定首行，永远位于日历上方（可选中，空态显示勾） */
+.eva-task-table__date-picker.semi-datepicker{width:auto;max-width:100%;margin-left:-4px}
+.eva-task-table__date-picker .eva-task-table__cell-trigger{margin-left:0}
+/* Semi 日期面板的空值行：表格单元格保留明确的清除入口。 */
 .eva-task-table__date-clear{display:flex;align-items:center;gap:6px;width:100%;padding:8px 12px;border:none;border-bottom:1px solid var(--semi-color-border,#e8eaed);background:transparent;color:var(--semi-color-text-2,#646a73);font-size:14px;text-align:left;cursor:pointer}
 .eva-task-table__date-clear:hover{background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
 .eva-task-table__date-clear-label{flex:1;min-width:0}
 .eva-task-table__date-clear-check{flex-shrink:0;color:var(--semi-color-text-2,#646a73)}
-/* 单月网格日历（照搬 Multica Calendar 的月份视图：导航 + 周名 + 7 列日格） */
-.eva-task-table__cal{width:236px;padding:8px;box-sizing:border-box}
-.eva-task-table__cal-nav{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 2px 6px}
-.eva-task-table__cal-month{font-size:14px;color:var(--semi-color-text-0,#1c1f23)}
-.eva-task-table__cal-navbtn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;border-radius:var(--wk-sp-0-5);background:transparent;color:var(--semi-color-text-1,#33383c);cursor:pointer}
-.eva-task-table__cal-navbtn:hover{background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
-.eva-task-table__cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
-.eva-task-table__cal-weekday{display:flex;align-items:center;justify-content:center;height:26px;font-size:12px;color:var(--semi-color-text-2,#646a73)}
-.eva-task-table__cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.eva-task-table__cal-blank{display:block;height:30px}
-.eva-task-table__cal-day{display:flex;align-items:center;justify-content:center;height:30px;border:none;border-radius:var(--wk-sp-0-5);background:transparent;color:var(--semi-color-text-0,#1c1f23);font-size:13px;cursor:pointer}
-.eva-task-table__cal-day:hover{background:var(--semi-color-fill-0,rgba(46,50,56,.05))}
-.eva-task-table__cal-day.is-today{box-shadow:inset 0 0 0 1px var(--semi-color-primary,#1563eb)}
-.eva-task-table__cal-day.is-selected{background:var(--semi-color-primary,#1563eb);color:var(--semi-color-white,#fff)}
-.eva-task-table__cal-day:focus-visible{outline:2px solid var(--semi-color-primary,#1563eb);outline-offset:-2px}
 /* 单元格内容宿主：必须 block。inline-flex 与单元格 inline-flex 触发器形成双层内容尺寸链时，
    Chromium 对内部百分比 max-width 折算少减一次 gap，姓名单元格会被压掉约一字宽（034 列表为块宿主无此问题）。 */
 .eva-task-table__cell-editor{display:block;min-width:0;max-width:100%}
@@ -157,6 +144,8 @@
 .eva-task-table__group-count{color:var(--semi-color-text-2,#646a73);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums}
 
 /* ---------- 弹层菜单（列选择器 / 标签选择 / 分组 / 导出 / 表头菜单） ---------- */
+/* 菜单本体已有完整表面与投影，清掉 Semi Popover 外壳的第二层玻璃和阴影。 */
+body .semi-popover-wrapper:has(.eva-task-table__menu){background:transparent;border-radius:0;box-shadow:none;backdrop-filter:none}
 .eva-task-table__menu{box-sizing:border-box;width:max-content;min-width:160px;max-width:min(320px,calc(100vw - 32px));max-height:320px;overflow:auto;padding:6px;background:var(--eva-surface-primary);border:1px solid var(--eva-border-faint);border-radius:var(--eva-radius-chip);box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline);color:var(--eva-text-primary)}
 .eva-task-table__menu--wide{width:224px}
 .eva-task-table__menu .semi-input-wrapper{margin-bottom:var(--wk-sp-2);font-size:12px}

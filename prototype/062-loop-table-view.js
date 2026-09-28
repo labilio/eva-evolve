@@ -9,7 +9,7 @@
 
   function create(deps){
     const {
-      React,useI18n,Popover,Checkbox,Switch,Toast,Input,
+      React,useI18n,Popover,Checkbox,Switch,Toast,DatePicker,Input,
       AssigneePicker,Tag,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
@@ -502,72 +502,31 @@
       if(utc==null)return '';
       return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(utc));
     }
-    /** 单月网格日历（一比一移植 Multica Calendar 的月份视图几何与交互）。 */
-    function MonthCalendar({value,onSelect}){
-      const selected=parseDateParts(value),today=parseDateParts(todayDateOnly());
-      const anchor=React.useMemo(()=>{
-        if(selected)return {year:selected[0],month:selected[1]};
-        const now=new Date();
-        return {year:now.getFullYear(),month:now.getMonth()+1};
-      },[value]);
-      const [cursor,setCursor]=React.useState(anchor);
-      React.useEffect(()=>{setCursor(anchor);},[anchor.year,anchor.month]);
-      const monthLabel=new Intl.DateTimeFormat(undefined,{year:'numeric',month:'long',timeZone:'UTC'})
-        .format(new Date(Date.UTC(cursor.year,cursor.month-1,1)));
-      const daysInMonth=new Date(Date.UTC(cursor.year,cursor.month,0)).getUTCDate();
-      const leading=new Date(Date.UTC(cursor.year,cursor.month-1,1)).getUTCDay();
-      const inMonth=(day)=>cursor.year===today[0]&&cursor.month===today[1]&&day===today[2];
-      const isSelected=(day)=>!!selected&&cursor.year===selected[0]&&cursor.month===selected[1]&&day===selected[2];
-      const shift=step=>setCursor(current=>{
-        const index=current.month-1+step;
-        return {year:current.year+Math.floor(index/12),month:((index%12)+12)%12+1};
-      });
-      const cells=[];
-      for(let i=0;i<leading;i++)cells.push(h('span',{key:'lead-'+i,className:'eva-task-table__cal-blank'}));
-      for(let day=1;day<=daysInMonth;day++)cells.push(h('button',{key:'day-'+day,type:'button',
-        className:'eva-task-table__cal-day'+(isSelected(day)?' is-selected':'')+(inMonth(day)?' is-today':''),
-        'aria-label':cursor.year+'-'+String(cursor.month).padStart(2,'0')+'-'+String(day).padStart(2,'0'),
-        'aria-pressed':isSelected(day)?'true':'false',
-        onClick:()=>onSelect(cursor.year+'-'+String(cursor.month).padStart(2,'0')+'-'+String(day).padStart(2,'0'))},String(day)));
-      return h('div',{className:'eva-task-table__cal'},
-        h('div',{className:'eva-task-table__cal-nav'},
-          h('button',{type:'button',className:'eva-task-table__cal-navbtn','aria-label':'上个月',
-            onClick:()=>shift(-1)},h(icons.ChevronLeft,{size:14})),
-          h('span',{className:'eva-task-table__cal-month'},monthLabel),
-          h('button',{type:'button',className:'eva-task-table__cal-navbtn','aria-label':'下个月',
-            onClick:()=>shift(1)},h(icons.ChevronRight,{size:14}))),
-        h('div',{className:'eva-task-table__cal-weekdays'},['日','一','二','三','四','五','六']
-          .map((name,index)=>h('span',{key:index,className:'eva-task-table__cal-weekday'},name))),
-        h('div',{className:'eva-task-table__cal-grid',role:'grid'},cells));
-    }
-
-    /* ---------- 日期单元格（开始/截止）：一比一移植 Multica DateOnlyPicker ----------
+    /* ---------- 日期单元格（开始/截止）：统一 Semi 日期面板 ----------
        幽灵触发器「图标 + 短格式日期 / 占位文案」，截止日期早于今天标红（纯日期比较，不看状态）。
-       弹层结构照搬：顶部「无日期」空值行（可选中、空态显示勾）+ 单月网格日历，选日即写回并关闭。
-       日历日按 'YYYY-MM-DD' 传输，解析/格式化固定 UTC，查看者时区不会让日期漂移。 */
+       顶部保留「无日期」空值行；日历与创建、详情使用同一 Semi 面板配置。 */
     function DateCell({issue,field,label,applyUpdate}){
       const value=issue[field]?String(issue[field]).slice(0,10):undefined;
       const [open,setOpen]=React.useState(false);
-      React.useEffect(()=>{if(!open)return;
-        const onKey=event=>{if(event.key==='Escape')setOpen(false);};
-        window.addEventListener('keydown',onKey);
-        return ()=>window.removeEventListener('keydown',onKey);
-      },[open]);
       const overdue=field==='due_date'&&issue.status!=='done'&&issue.status!=='cancelled'&&isPastDateOnly(value);
-      const commit=next=>{setOpen(false);
-        if(next!==(issue[field]||null))applyUpdate(issue,{[field]:next});};
+      const commit=next=>{
+        setOpen(false);
+        if(next!==(value||null))applyUpdate(issue,{[field]:next});
+      };
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'dialog',trigger:
-          h('button',{type:'button',className:'eva-task-table__cell-trigger'+(overdue?' is-overdue':''),
-            'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open,...menuTrigger(setOpen)},
-            h(field==='start_date'?icons.CalendarClock:icons.CalendarDays,{size:14,className:'eva-task-table__glyph'}),
-            value?h('span',{className:'eva-task-table__cell-label'+(overdue?' is-overdue':'')},formatDateOnly(value))
-              :h('span',{className:'eva-task-table__cell-label is-empty'},label))},
-          h('button',{type:'button',className:'eva-task-table__date-clear',
+        root.EvaLoopTaskComponents.datePicker(React,DatePicker,{
+          className:'eva-task-table__date-picker',value,open,onOpenChange:setOpen,
+          showClear:false,placeholder:label,'aria-label':label,
+          onChange:(_,next)=>commit(next||null),
+          topSlot:h('button',{type:'button',className:'eva-task-table__date-clear',
             onClick:()=>commit(null)},
             h('span',{className:'eva-task-table__date-clear-label'},'无'+label),
             h(icons.Check,{size:14,className:'eva-task-table__date-clear-check',style:{visibility:value?'hidden':'visible'}})),
-          h(MonthCalendar,{value,onSelect:commit})));
+          triggerRender:()=>h('button',{type:'button',className:'eva-task-table__cell-trigger'+(overdue?' is-overdue':''),
+            'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open},
+            h(field==='start_date'?icons.CalendarClock:icons.CalendarDays,{size:14,className:'eva-task-table__glyph'}),
+            value?h('span',{className:'eva-task-table__cell-label'+(overdue?' is-overdue':'')},formatDateOnly(value))
+              :h('span',{className:'eva-task-table__cell-label is-empty'},label))}));
     }
 
     /* ---------- 主组件 ---------- */

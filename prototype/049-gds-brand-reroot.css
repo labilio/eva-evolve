@@ -176,6 +176,14 @@ body {
 body .semi-dropdown-wrapper { background: var(--eva-surface-primary); border-radius: var(--eva-radius-chip); }
 body .semi-dropdown-wrapper .semi-dropdown-menu { padding: 6px; }
 body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
+/* 日期选择同属操作浮层：沿用王岩确立的 Dropdown 面板表面与抬升层级。
+   Semi DatePicker 用 Popover 承载；这里仅替换外壳，不改日历内部行为。 */
+body .semi-popover-wrapper:has(.semi-datepicker) {
+  background: var(--eva-surface-primary);
+  border-radius: var(--eva-radius-chip);
+  box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
+  backdrop-filter: none;
+}
 :root[data-theme="dark"] .semi-dropdown-item:not(.semi-dropdown-item-active):hover,
 :root[data-theme="dark"] .semi-dropdown-item:focus-visible { background-color: var(--eva-overlay-hover); }
 

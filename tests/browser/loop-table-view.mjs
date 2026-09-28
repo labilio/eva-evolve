@@ -74,6 +74,8 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el).paddingTop),'6px','表格弹层应使用 Eva 下拉菜单的 6px 外留白');
     assert.equal(await priorityMenu.locator('.eva-task-table__menu-item').first().evaluate(el=>getComputedStyle(el).paddingLeft),'10px','选项应使用 Eva 下拉菜单的水平内边距');
     assert.equal(await priorityMenu.locator('.eva-task-table__priority-badge').count(),5,'优先级选项应统一使用语义色标记');
+    const menuSkin=await priorityMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+    assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),'none','表格菜单不应在内外两层重复叠加投影');
     await page.keyboard.press('Escape');
 
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
@@ -140,19 +142,22 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.waitForTimeout(120);
     assert.notEqual(((await statusLabel.textContent())||'').trim(),beforeText,'状态内联编辑应更新单元格文案');
 
-    // 截止日期内联编辑（照搬 Multica DateOnlyPicker）：翻上月选 1 日必逾期标红，再用「无截止日期」行清空
+    // 截止日期内联编辑：共用 Semi 紧凑面板，翻上月选 1 日必逾期标红，再用「无截止日期」行清空
     const dateCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="截止日期"]');
     await dateCell.click();
-    const dateMenu=page.locator('.eva-task-table__menu:visible');
-    await dateMenu.locator('.eva-task-table__cal').waitFor();
+    const dateMenu=page.locator('.eva-loop-task-date-panel:visible');
+    await dateMenu.locator('.semi-datepicker-month-grid').waitFor();
+    assert.ok(await dateMenu.evaluate(el=>el.classList.contains('semi-datepicker-compact')),'任务日期应使用统一的 Semi 紧凑面板');
+    const dateSkin=await dateMenu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-popover-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+    assert.deepEqual(dateSkin,menuSkin,'日期面板与任务菜单应使用相同的背景、圆角和投影');
     const clearRow=dateMenu.locator('.eva-task-table__date-clear');
     await clearRow.waitFor();
     assert.match((await clearRow.textContent())||'',/无截止日期/,'面板首行应为「无截止日期」空值行');
-    await dateMenu.locator('.eva-task-table__cal-navbtn[aria-label="上个月"]').click();
-    await dateMenu.locator('.eva-task-table__cal-day',{hasText:/^1$/}).first().click();
+    await dateMenu.getByRole('button',{name:'Previous month'}).click();
+    await dateMenu.locator('.semi-datepicker-day[aria-label$="-01"]').first().click();
     await page.waitForTimeout(150);
-    await page.locator('.eva-task-table__menu:visible').waitFor({state:'detached'}).catch(()=>{});
-    assert.equal(await page.locator('.eva-task-table__menu:visible').count(),0,'选日后面板应关闭');
+    await dateMenu.waitFor({state:'detached'}).catch(()=>{});
+    assert.equal(await page.locator('.eva-loop-task-date-panel:visible').count(),0,'选日后面板应关闭');
     const overdueColor=await dateCell.locator('.eva-task-table__cell-label').evaluate(el=>getComputedStyle(el).color);
     assert.match(overdueColor,/249, 57, 32|245, 34, 45/,'逾期日期应标红: '+overdueColor);
     await statusTrigger.click();
@@ -165,8 +170,8 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:target,exact:true}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),true,'未完成任务的逾期提示应恢复');
     await dateCell.click();
-    const dateMenu2=page.locator('.eva-task-table__menu:visible');
-    await dateMenu2.locator('.eva-task-table__cal').waitFor();
+    const dateMenu2=page.locator('.eva-loop-task-date-panel:visible');
+    await dateMenu2.locator('.semi-datepicker-month-grid').waitFor();
     await dateMenu2.locator('.eva-task-table__date-clear').click();
     assert.equal(((await dateCell.locator('.eva-task-table__cell-label').textContent())||'').trim(),'截止日期','清空后应回占位文案');
 
@@ -238,9 +243,21 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     // 行点击打开详情抽屉，再关闭回到表格
     await table.locator('.eva-task-table__row').first().locator('.eva-task-table__title-btn').click();
     await page.locator('.collab-route-right').waitFor();
+    const detailDate=page.locator('.collab-route-right .loop-idp__due-picker');
+    await detailDate.waitFor();
+    await detailDate.locator('.semi-datepicker-input').click();
+    assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'详情应使用同一紧凑日期面板');
+    await page.keyboard.press('Escape');
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
     await table.locator('.eva-task-table__grid').waitFor();
+
+    await page.getByRole('button',{name:'新建任务'}).click();
+    const createDate=page.locator('.eva-loop-task-create__due');
+    await createDate.locator('.eva-loop-task-create__due-trigger').click();
+    assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'创建胶囊应使用同一紧凑日期面板');
+    await page.keyboard.press('Escape');
+    await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留
     await switcher.locator('button',{hasText:'看板'}).click();

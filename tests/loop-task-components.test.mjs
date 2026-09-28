@@ -34,3 +34,19 @@ test('优先级图形与颜色共用一套阶梯标记',()=>{
   assert.equal(PriorityIcon({priority:'urgent'}).children[0].type,'rect');
   assert.equal(PriorityIcon({priority:'none'}).children[0].type,'line');
 });
+
+test('项目任务日期选择器统一使用 Semi 紧凑日期面板和日期字符串',()=>{
+  const {api}=setup();
+  const picker=api.datePicker({createElement:(type,props)=>({type,props})},'SemiDatePicker',{
+    value:'2026-09-28',onChange:()=>{},className:'task-date',dropdownClassName:'extra-panel'
+  });
+  assert.equal(picker.type,'SemiDatePicker');
+  assert.equal(picker.props.type,'date');
+  assert.equal(picker.props.format,'yyyy-MM-dd');
+  assert.equal(picker.props.density,'compact');
+  assert.equal(picker.props.autoSwitchDate,false,'翻月不能直接改写任务日期');
+  assert.match(picker.props.dropdownClassName,/eva-loop-task-date-panel/);
+  assert.match(picker.props.dropdownClassName,/extra-panel/);
+  assert.equal(picker.props.className,'task-date');
+  assert.equal(picker.props.value,'2026-09-28');
+});
