@@ -8,6 +8,7 @@
   const priorityColors=Object.freeze({
     urgent:'var(--semi-color-danger, #f5222d)',high:'#fc8800',medium:'#f5a623',low:'#6b93ff',none:'#c9cdd4'
   });
+  const priorityDisplayOrder=Object.freeze(['none','urgent','high','medium','low']);
 
   function datePicker(React,DatePicker,props){
     const {dropdownClassName='',...rest}=props;
@@ -28,6 +29,29 @@
     return React.createElement('span',{className:'loop-label-chips eva-task-label-chips'},
       ...shown.map(label=>React.createElement(React.Fragment,{key:label.id},labelChip(React,label))),
       rest>0?React.createElement('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
+  }
+  const enumDropdownCache=new WeakMap();
+  function enumMenu(React,Dropdown,{options,value,onChange}){
+    return React.createElement(Dropdown.Menu,{className:'eva-task-enum-menu',style:{minWidth:160}},
+      options.map(option=>React.createElement(Dropdown.Item,{
+        key:option.value,className:'eva-task-enum-option',active:option.value===value,
+        icon:option.icon,onClick:()=>{if(option.value!==value)onChange(option.value);}
+      },option.label)));
+  }
+  function enumDropdown(React,Dropdown,props){
+    let Field=enumDropdownCache.get(Dropdown);
+    if(!Field){
+      Field=function TaskEnumDropdown({ariaLabel,options,value,onChange,trigger,triggerClassName='',position='bottomLeft',getPopupContainer,disabled=false}){
+        const [open,setOpen]=React.useState(false);
+        return React.createElement(Dropdown,{
+          trigger:'click',position,getPopupContainer,clickToHide:true,showTick:false,onVisibleChange:setOpen,
+          render:enumMenu(React,Dropdown,{options,value,onChange})
+        },React.createElement('button',{type:'button',className:triggerClassName,
+          'aria-label':ariaLabel,'aria-haspopup':'menu','aria-expanded':open,disabled},trigger));
+      };
+      enumDropdownCache.set(Dropdown,Field);
+    }
+    return React.createElement(Field,props);
   }
   function formatDate(value){
     const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(value||''));
@@ -102,5 +126,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,datePicker,dateField,labelChip,labelChips,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,formatDate,dateTrigger,create});
 })(window);

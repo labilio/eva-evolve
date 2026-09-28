@@ -70,20 +70,42 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
       els=>els.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
     assert.deepEqual(clippedDates,[],'日期单元格不应截断: '+clippedDates.join(','));
 
-    // 表格自有弹层沿用 Eva Dropdown 的面板留白和选项节奏；优先级选项保留语义色。
+    // 单选枚举使用 Semi Dropdown 原生选中态；优先级保留公共语义色图形，不重复胶囊与对勾。
     await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();
-    const priorityMenu=page.locator('.eva-task-table__menu:visible');
+    const priorityMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
+    await priorityMenu.waitFor();
     assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el).paddingTop),'6px','表格弹层应使用 Eva 下拉菜单的 6px 外留白');
-    assert.equal(await priorityMenu.locator('.eva-task-table__menu-item').first().evaluate(el=>getComputedStyle(el).paddingLeft),'10px','选项应使用 Eva 下拉菜单的水平内边距');
-    assert.equal(await priorityMenu.locator('.eva-task-table__priority-badge').count(),5,'优先级选项应统一使用语义色标记');
-    const menuSkin=await priorityMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
-    assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),'none','表格菜单不应在内外两层重复叠加投影');
+    assert.equal(await priorityMenu.locator('.eva-task-enum-option').count(),5,'优先级选项保留五档语义色图形');
+    assert.deepEqual((await priorityMenu.getByRole('menuitem').allTextContents()).map(text=>text.trim()),['无','紧急','高','中','低'],'无优先级在任务菜单中置顶');
+    assert.equal(await priorityMenu.locator('.eva-task-table__priority-badge,.eva-task-table__menu-check').count(),0,'单选菜单不重复胶囊与对勾');
+    assert.equal(await priorityMenu.locator('.semi-dropdown-item-active').count(),1,'当前优先级由 Semi active 态标明');
+    const activePriority=priorityMenu.locator('.semi-dropdown-item-active');
+    const activeBefore=await activePriority.evaluate(el=>getComputedStyle(el).backgroundColor);
+    await activePriority.hover();
+    assert.notEqual(await activePriority.evaluate(el=>getComputedStyle(el).backgroundColor),activeBefore,'当前项也应有统一的 hover 反馈');
+    const menuSkin=await priorityMenu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-dropdown-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
     await page.keyboard.press('Escape');
+    await priorityMenu.waitFor({state:'hidden'});
+    await firstStatusCell.click();
+    const enumStatusMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
+    assert.equal(await enumStatusMenu.locator('.semi-dropdown-item-active').count(),1,'当前状态由 Semi active 态标明');
+    assert.equal(await enumStatusMenu.locator('.eva-task-table__menu-check').count(),0,'状态单选菜单不显示第二列对勾');
+    await page.keyboard.press('Escape');
+    await enumStatusMenu.waitFor({state:'hidden'});
     await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().click();
     const labelMenu=page.locator('.eva-task-table__menu[role="listbox"]:visible');
     assert.equal(await labelMenu.locator('.eva-task-table__label-dot').count(),0,'标签选项不再使用另一套圆点样式');
     await labelMenu.locator('.eva-task-table__menu-item .eva-task-label-chip').first().waitFor();
     assert.deepEqual(await labelMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,'标签选项沿用任务菜单的浮层外观');
+    const fixedLabelControls=await labelMenu.evaluate(el=>{
+      const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect().top;
+      const manage=[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect().top;
+      const list=el.querySelector('.eva-task-table__menu-list');const scrollable=list.scrollHeight>list.clientHeight;
+      list.scrollTop=list.scrollHeight;
+      return {scrollable,before:[search,manage],after:[el.querySelector('.eva-task-table__label-search').getBoundingClientRect().top,[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect().top]};
+    });
+    assert.equal(fixedLabelControls.scrollable,true,'标签结果区独立滚动');
+    assert.deepEqual(fixedLabelControls.after,fixedLabelControls.before,'标签目录滚动时顶部搜索与底部管理保持可见');
     await page.keyboard.press('Escape');
 
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
@@ -159,11 +181,11 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const beforeText=((await statusLabel.textContent())||'').trim();
     assert.ok(beforeText,'状态单元格应有文案');
     await statusTrigger.click();
-    const statusMenu=page.locator('.eva-task-table__menu:visible');
-    await statusMenu.getByRole('option').first().waitFor();
-    const optionTexts=await statusMenu.getByRole('option').allTextContents();
+    const statusMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
+    await statusMenu.getByRole('menuitem').first().waitFor();
+    const optionTexts=await statusMenu.getByRole('menuitem').allTextContents();
     const target=optionTexts.map(text=>text.trim()).find(text=>text&&text!==beforeText);
-    await statusMenu.getByRole('option',{name:target,exact:true}).click();
+    await statusMenu.getByRole('menuitem',{name:target,exact:true}).click();
     await page.waitForTimeout(120);
     assert.notEqual(((await statusLabel.textContent())||'').trim(),beforeText,'状态内联编辑应更新单元格文案');
 
@@ -193,13 +215,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const overdueColor=await dateCell.locator('.eva-task-table__cell-label').evaluate(el=>getComputedStyle(el).color);
     assert.match(overdueColor,/249, 57, 32|245, 34, 45/,'逾期日期应标红: '+overdueColor);
     await statusTrigger.click();
-    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'已完成'}).click();
+    await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:'已完成'}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已完成任务的历史截止日期不应标红');
     await statusTrigger.click();
-    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'已取消'}).click();
+    await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:'已取消'}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已取消任务的历史截止日期不应标红');
     await statusTrigger.click();
-    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:target,exact:true}).click();
+    await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:target,exact:true}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),true,'未完成任务的逾期提示应恢复');
     await dateCell.click();
     const dateMenu2=page.locator('.eva-loop-task-date-panel:visible');
@@ -275,6 +297,18 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     // 行点击打开详情抽屉，再关闭回到表格
     await table.locator('.eva-task-table__row').first().locator('.eva-task-table__title-btn').click();
     await page.locator('.collab-route-right').waitFor();
+    for(const name of ['状态','优先级']){
+      const prop=page.locator('.collab-route-right .loop-idp__prop--inline').filter({has:page.locator('.loop-idp__prop-k',{hasText:name})});
+      await prop.locator('.loop-idp__prop-edit').click();
+      const menu=page.locator('.semi-dropdown-menu:visible');
+      await menu.waitFor();
+      assert.equal(await menu.locator('.semi-dropdown-item-active').count(),1,`详情${name}只标明一个当前选项`);
+      assert.equal(await menu.locator('.loop-tag').count(),0,`详情${name}选项不用旧式彩色 Tag`);
+      assert.equal(await menu.evaluate(el=>getComputedStyle(el).minWidth),'160px',`详情${name}菜单沿用公共最小宽度`);
+      if(name==='优先级')assert.deepEqual((await menu.getByRole('menuitem').allTextContents()).map(text=>text.trim()),['无','紧急','高','中','低'],'详情优先级顺序与表格一致');
+      assert.deepEqual(await menu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-dropdown-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,`详情${name}使用统一浮层外观`);
+      await page.keyboard.press('Escape');
+    }
     const detailDate=page.locator('.collab-route-right .loop-idp__due-picker');
     await detailDate.waitFor();
     assert.equal(await detailDate.locator('.semi-datepicker-input').evaluate(el=>getComputedStyle(el).borderTopWidth),'0px','详情日期不再显示独立的带框输入框');
@@ -299,6 +333,18 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await table.locator('.eva-task-table__grid').waitFor();
 
     await page.getByRole('button',{name:'新建任务'}).click();
+    for(const name of ['状态','优先级']){
+      const pill=page.locator(`.eva-loop-task-create .loop-pill[aria-label="${name}"]`);
+      await pill.click();
+      const menu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
+      await menu.waitFor();
+      assert.equal(await menu.locator('.semi-dropdown-item-active').count(),1,`创建${name}只标明一个当前选项`);
+      assert.equal(await menu.locator('.loop-pill__opt,.loop-tag').count(),0,`创建${name}使用公共图标文字行`);
+      if(name==='优先级')assert.deepEqual((await menu.getByRole('menuitem').allTextContents()).map(text=>text.trim()),['无','紧急','高','中','低'],'创建优先级顺序与表格一致');
+      assert.deepEqual(await menu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-dropdown-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,`创建${name}使用统一浮层外观`);
+      await menu.locator('.semi-dropdown-item-active').click();
+      await menu.waitFor({state:'hidden'});
+    }
     const createDate=page.locator('.eva-loop-task-create__due');
     await createDate.locator('.eva-loop-task-create__due-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'创建胶囊应使用同一紧凑日期面板');
@@ -322,6 +368,14 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.evaluate(()=>window.EvaTheme.apply('dark'));
     const darkLabelColor=await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().evaluate(el=>getComputedStyle(el).color);
     assert.equal(darkLabelColor,'rgb(247, 247, 247)','暗色任务标签须使用高对比文字，不沿用旧 Loop 的暗字');
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();
+    const darkEnum=page.locator('.semi-dropdown-wrapper:visible:has(.eva-task-enum-menu)');
+    const darkEnumSkin=await darkEnum.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+    await page.keyboard.press('Escape');await darkEnum.waitFor({state:'hidden'});
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-editor').last().locator('.eva-task-table__cell-trigger').click();
+    const darkLabelMenu=page.locator('.eva-task-table__menu--labels:visible');
+    assert.deepEqual(await darkLabelMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),darkEnumSkin,'暗色单选和标签菜单沿用王岩同一浮层契约');
+    await page.keyboard.press('Escape');
     await page.evaluate(()=>window.EvaTheme.apply('light'));
 
     await page.screenshot({path:'/tmp/eva-loop-table-view.png'});

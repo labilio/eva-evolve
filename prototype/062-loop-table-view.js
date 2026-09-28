@@ -9,13 +9,13 @@
 
   function create(deps){
     const {
-      React,useI18n,Popover,Checkbox,Switch,Toast,DatePicker,Input,
+      React,useI18n,Popover,Dropdown,Checkbox,Switch,Toast,DatePicker,Input,
       AssigneePicker,LabelManagementModal,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
       ISSUE_STATUS_ORDER,ISSUE_STATUS_ICON,ISSUE_STATUS_HEX,
-      PRIORITY_ORDER,PRIORITY_ICON,PRIORITY_HEX,
+      PRIORITY_ORDER,PRIORITY_ICON,
       DndContext,SortableContext,useSortable,useDndContext,
       useSensors,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,
       closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,
@@ -134,18 +134,14 @@
       const Icon=PRIORITY_ICON[priority]||PRIORITY_ICON.none;
       return h(Icon,{size,'aria-hidden':true,className:'eva-task-table__glyph'});
     }
-    /* Multica PRIORITY_DISPLAY_ORDER：菜单里空值（无优先级）置顶，与排序权重分开。 */
-    const PRIORITY_DISPLAY_ORDER=['none','urgent','high','medium','low'];
+    /* 菜单展示顺序由项目任务公共组件维护，排序权重仍使用业务域配置。 */
+    const PRIORITY_DISPLAY_ORDER=root.EvaLoopTaskComponents.priorityDisplayOrder;
 
     /* ---------- 枚举单元格：幽灵触发器 + 049 菜单（对齐 Multica PropertyPicker） ---------- */
     function CellMenu({ariaLabel,options,current,trigger,onPick}){
-      const [open,setOpen]=React.useState(false);
-      return h(PopMenu,{open,setOpen,role:'listbox',trigger:
-        h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':ariaLabel,
-          'aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},trigger)},
-        options.map(option=>h(MenuItem,{key:option.value,role:'option',selected:current===option.value,
-          icon:option.icon,label:option.label,content:option.content,
-          onClick:()=>{setOpen(false);if(option.value!==current)onPick(option.value);}})));
+      return root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{
+        ariaLabel,options,value:current,onChange:onPick,trigger,triggerClassName:'eva-task-table__cell-trigger'
+      });
     }
 
     /* ---------- 排序 / 分组 / 层级行构建 ---------- */
@@ -448,7 +444,7 @@
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
       const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide',trigger:
+        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
@@ -692,11 +688,7 @@
         icon:h(StatusGlyph,{status:value,size:14})
       })),[t]);
       const priorityOptions=React.useMemo(()=>PRIORITY_DISPLAY_ORDER.map(value=>({
-        value,label:t('loop.priority.'+value),
-        content:h('span',{className:'eva-task-table__priority-badge',
-          style:{'--eva-task-priority-color':PRIORITY_HEX[value]||'var(--eva-text-secondary-accessible)'}},
-          h(PriorityGlyph,{priority:value,size:13}),
-          h('span',null,t('loop.priority.'+value)))
+        value,label:t('loop.priority.'+value),icon:h(PriorityGlyph,{priority:value,size:14})
       })),[t]);
 
       const sensors=useSensors(
