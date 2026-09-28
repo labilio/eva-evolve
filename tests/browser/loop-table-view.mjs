@@ -130,9 +130,16 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const tableLabelMenu=page.locator('.eva-task-table__menu:visible');
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('供应风');
     assert.deepEqual(await tableLabelMenu.locator('.eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
+    assert.equal(await tableLabelMenu.getByRole('menuitem',{name:'创建标签“供应风”'}).count(),1,'非精确名称在已有匹配项之后提供新建');
+    assert.ok(await tableLabelMenu.evaluate(el=>{const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect(),option=el.querySelector('[role="option"]').getBoundingClientRect(),manage=[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect();return search.bottom<=option.top&&option.bottom<=manage.top;}),'表格标签菜单依次显示搜索、标签和管理');
+    await page.screenshot({path:'/tmp/eva-task-label-table-menu.png'});
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('表格验收标签');
-    await tableLabelMenu.getByRole('button',{name:'新建'}).click();
+    await tableLabelMenu.getByRole('menuitem',{name:'创建标签“表格验收标签”'}).click();
     assert.ok(await firstLabelCell.locator('.eva-task-label-chip').filter({hasText:'表格验收标签'}).count()>0,'新标签已写入该任务，窄列可折叠为 +N');
+    if(!(await tableLabelMenu.isVisible()))await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
+    await tableLabelMenu.getByRole('menuitem',{name:'管理标签…'}).click();
+    await page.locator('.loop-label-mgr').waitFor();
+    await page.locator('.semi-modal-close').click();
     await page.keyboard.press('Escape');
 
     // 排序：任务列菜单升序（title 可经菜单排序）

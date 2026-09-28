@@ -546,6 +546,15 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
     const input = menu.locator('.eva-task-assignee-search input');
     await input.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
+    assert.equal(await input.evaluate(el=>parseFloat(getComputedStyle(el).height)),32,'公共选人搜索框使用统一的 32px 控件高度');
+    const selectedItem=menu.locator('.semi-dropdown-item-active').first();
+    if(await selectedItem.count()){
+      const before=await selectedItem.evaluate(el=>getComputedStyle(el).backgroundColor);
+      await selectedItem.hover();
+      const hovered=await selectedItem.evaluate(el=>getComputedStyle(el).backgroundColor);
+      assert.notEqual(hovered,before,'已选中的负责人悬停时也应有背景反馈');
+      await page.screenshot({path:'/tmp/eva-task-assignee-menu.png'});
+    }
     await menu.getByText('联系人', { exact: true }).waitFor();
     // 弹层必须落在系统标题栏下方，且高度受上限约束（长列表在限高内滚动）。
     // Semi 首次定位前 boundingBox 仍为隐藏测量态，先轮询到可见坐标再断言。

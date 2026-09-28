@@ -10,7 +10,7 @@
   function create(deps){
     const {
       React,useI18n,Popover,Checkbox,Switch,Toast,DatePicker,Input,
-      AssigneePicker,RunningChip,useRunConfirm,
+      AssigneePicker,LabelManagementModal,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
@@ -418,6 +418,7 @@
       const [open,setOpen]=React.useState(false);
       const [labels,setLabels]=React.useState(()=>evaTaskLabels(project));
       const [creating,setCreating]=React.useState('');
+      const [managerOpen,setManagerOpen]=React.useState(false);
       React.useEffect(()=>{if(open)setLabels(evaTaskLabels(project));},[open,project]);
       const attached=issue.labels||[];
       const toggle=async labelId=>{
@@ -445,20 +446,24 @@
       };
       const needle=creating.trim().toLowerCase();
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
+      const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
         h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
+          h('div',{className:'eva-task-picker-search eva-task-table__label-search'},
+            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
+              onKeyDown:event=>{if(event.key==='Enter'&&needle&&!exact)create();}})),
           h('div',{className:'eva-task-table__menu-list'},
             filtered.length?filtered.map(label=>h(MenuItem,{key:label.id,role:'option',variant:'action',
               selected:attached.some(item=>item.id===label.id),
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
-            :h('div',{className:'eva-task-table__menu-empty'},needle?'没有匹配的标签':'暂无任务标签')),
-          h('div',{className:'eva-task-table__label-create'},
-            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
-              className:'eva-task-table__create-input',onKeyDown:event=>{if(event.key==='Enter')create();}}),
-            needle&&!filtered.length?h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create},'新建'):null)));
+            :!needle?h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签'):null,
+            needle&&!exact?h(MenuItem,{variant:'action',icon:h(icons.Plus,{size:14}),label:'创建标签“'+creating.trim()+'”',onClick:create}):null),
+          h('div',{className:'eva-task-table__menu-sep'}),
+          h(MenuItem,{variant:'action',label:'管理标签…',onClick:()=>{setOpen(false);setManagerOpen(true);}})),
+        h(LabelManagementModal,{visible:managerOpen,onClose:()=>setManagerOpen(false),onChanged:()=>{setLabels(evaTaskLabels(project));onChanged&&onChanged();}}));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */
