@@ -4,6 +4,33 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
+test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    const page=await browser.newPage(),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
+    const denied=page.locator('.loop-idp [data-eva-task-link="ZY-101"]');
+    const allowed=page.locator('.loop-idp [data-eva-task-link="CLIENT-103"]');
+    await denied.waitFor();
+    await allowed.waitFor();
+    await denied.click();
+    await page.getByText('你不是该任务所属项目的成员，无法查看任务').waitFor();
+    assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
+    await allowed.click();
+    await page.locator('[data-eva-project-id="lab"]').waitFor();
+    await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').getByText('CLIENT-103').waitFor();
+    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
+    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
+    assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').innerText(),'CLIENT-103');
+    assert.deepEqual(errors,[]);
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('Edge：供应链项目群预置可访问与无权限的跨项目任务链接',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
