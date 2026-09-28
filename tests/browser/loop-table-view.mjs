@@ -34,6 +34,8 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     // 默认列（Multica DEFAULT_TABLE_COLUMNS）与工具栏控件
     const headerTexts=await table.locator('.eva-task-table__th-btn .eva-task-table__th-label').allTextContents();
     assert.deepEqual(headerTexts,['任务','状态','优先级','负责人','截止日期','标签']);
+    assert.equal(await table.locator('.eva-task-table__toolbtn[aria-label="分组：状态"]').count(),1,'新视图默认按状态分组');
+    assert.equal(await table.locator('.eva-task-table__hierarchy').getAttribute('aria-pressed'),'true','新视图默认打开层级');
     for(const label of ['分组','层级','列','导出'])await table.locator('.eva-task-table__toolbtn',{hasText:label}).waitFor();
     const rowCount=await table.locator('.eva-task-table__row').count();
     assert.ok(rowCount>0,'表格应渲染出任务行');

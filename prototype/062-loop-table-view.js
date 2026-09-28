@@ -577,9 +577,9 @@
       const {requestStatus,requestAssign,runConfirmModal}=useRunConfirm();
       const saved=React.useMemo(()=>loadState(viewKey),[]);
       const [columns,setColumns]=React.useState(()=>normalizeColumns(saved&&saved.columns));
-      const [grouping,setGrouping]=React.useState((saved&&saved.grouping)||'none');
-      /* Multica tableHierarchy 默认 true（显示菜单里的层级开关）；持久化里的显式选择优先。 */
-      const [hierarchy,setHierarchy]=React.useState(saved?!!saved.hierarchy:true);
+      const [grouping,setGrouping]=React.useState((saved&&saved.grouping)||'status');
+      /* 新视图默认按状态分组并展示层级；持久化里的显式选择优先。 */
+      const [hierarchy,setHierarchy]=React.useState(saved&&typeof saved.hierarchy==='boolean'?saved.hierarchy:true);
       const [collapsedGroups,setCollapsedGroups]=React.useState((saved&&saved.collapsedGroups)||[]);
       const [collapsedParents,setCollapsedParents]=React.useState((saved&&saved.collapsedParents)||[]);
       const [sortBy,setSortBy]=React.useState((saved&&saved.sortBy)||'created_at');
