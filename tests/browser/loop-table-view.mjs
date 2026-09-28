@@ -115,6 +115,12 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
 
     // 排序：任务列菜单升序（title 可经菜单排序）
     await table.locator('.eva-task-table__th-btn',{hasText:'任务'}).first().click();
+    const headerMenu=page.locator('.eva-task-table__menu:visible');
+    const headerInsets=await headerMenu.getByRole('menuitem').evaluateAll(items=>items.map(item=>{
+      const icon=item.querySelector('svg');
+      return icon.getBoundingClientRect().left-item.getBoundingClientRect().left;
+    }));
+    assert.ok(headerInsets.every(inset=>inset>=8&&inset<=16),'表头操作图标应从菜单项标准内边距开始，不留空白勾选位: '+headerInsets);
     await page.locator('.eva-task-table__menu:visible').getByRole('menuitem',{name:'升序'}).click();
     await table.locator('.eva-task-table__row').first().waitFor();
 

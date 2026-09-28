@@ -44,13 +44,14 @@
           onKeyDown:event=>{if(event.key==='Escape')setOpen(false);}},children)},trigger);
     }
     function MenuItem(props){
-      const {role='menuitem',selected,disabled,icon,label,onClick,content}=props;
+      const {role='menuitem',selected,disabled,icon,label,onClick,content,variant}=props;
       const extra=role==='option'?{'aria-selected':!!selected}:{'aria-current':selected?'true':undefined};
       return h('button',{type:'button',role,disabled,...extra,
-        className:'eva-task-table__menu-item'+(selected?' is-selected':''),
+        className:'eva-task-table__menu-item'+(selected?' is-selected':'')+(variant==='action'?' is-action':''),
         onMouseDown:event=>event.preventDefault(),onClick},
-        h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
-        content||h(React.Fragment,null,icon||null,h('span',{className:'eva-task-table__menu-label'},label)));
+        variant==='action'?null:h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
+        content||h(React.Fragment,null,icon||null,h('span',{className:'eva-task-table__menu-label'},label)),
+        variant==='action'&&selected?h('span',{className:'eva-task-table__menu-check'},h(icons.Check,{size:13})):null);
     }
 
     /* ---------- Multica 表格列模型 ---------- */
@@ -335,13 +336,13 @@
               h('span',{className:'eva-task-table__th-label'},label),
               active?h(direction==='asc'?icons.ArrowUp:icons.ArrowDown,{size:12,className:'eva-task-table__th-arrow'}):null)},
             sortable?[
-              h(MenuItem,{key:'asc',selected:active&&direction==='asc',icon:h(icons.ArrowUp,{size:13}),
+              h(MenuItem,{key:'asc',variant:'action',selected:active&&direction==='asc',icon:h(icons.ArrowUp,{size:13}),
                 label:'升序',onClick:()=>{onSort(columnKey,'asc');setHeaderOpen(false);}}),
-              h(MenuItem,{key:'desc',selected:active&&direction==='desc',icon:h(icons.ArrowDown,{size:13}),
+              h(MenuItem,{key:'desc',variant:'action',selected:active&&direction==='desc',icon:h(icons.ArrowDown,{size:13}),
                 label:'降序',onClick:()=>{onSort(columnKey,'desc');setHeaderOpen(false);}})
             ]:null,
             sortable&&onHide?h('div',{key:'sep',className:'eva-task-table__menu-sep'}):null,
-            onHide?h(MenuItem,{key:'hide',icon:h(icons.EyeOff,{size:13}),label:'隐藏列',
+            onHide?h(MenuItem,{key:'hide',variant:'action',icon:h(icons.EyeOff,{size:13}),label:'隐藏列',
               onClick:()=>{onHide();setHeaderOpen(false);}}):null),
           h('span',{className:'eva-task-table__resizer',onPointerDown:startResize,role:'separator','aria-orientation':'vertical','aria-label':'调整 '+label+' 列宽'})));
     }
