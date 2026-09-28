@@ -8,8 +8,11 @@ const updateStart = source.indexOf('evaTaskActivityActor=()=>');
 const updateEnd = source.indexOf(',previewIssueTrigger=', updateStart);
 const timelineStart = source.indexOf('listTimeline=rt=>');
 const timelineEnd = source.indexOf(',resolveComment=', timelineStart);
+const activityTextStart = source.indexOf('evaTaskActivityText=entry=>');
+const activityTextEnd = source.indexOf(',Ei=ki=>', activityTextStart);
 assert.ok(updateStart >= 0 && updateEnd > updateStart);
 assert.ok(timelineStart >= 0 && timelineEnd > timelineStart);
+assert.ok(activityTextStart >= 0 && activityTextEnd > activityTextStart);
 
 function setup() {
   const issue = {
@@ -66,4 +69,19 @@ test('timeline reads only the current project task and new tasks start empty', a
   assert.equal((await ctx.listTimeline(issue.id)).length, 1);
   issues.splice(0, issues.length, {id: 'another-project-task'});
   assert.equal((await ctx.listTimeline(issue.id)).length, 0);
+});
+
+test('field-change activity uses spaces around old and new values', () => {
+  const ctx = {};
+  vm.runInNewContext('var ' + source.slice(activityTextStart, activityTextEnd), ctx);
+  const cases = [
+    [{action: 'status_changed', details: {from: 'todo', to: 'in_progress'}}, '状态从 待办 改为 进行中'],
+    [{action: 'priority_changed', details: {from: 'medium', to: 'high'}}, '优先级从 中 改为 高'],
+    [{action: 'assignee_changed', details: {from_name: '周远', to_name: '林晓'}}, '执行负责人从 周远 改为 林晓'],
+    [{action: 'due_date_changed', details: {from: '2026-09-15', to: '2026-10-01'}}, '截止日期从 2026-09-15 改为 2026-10-01'],
+    [{action: 'title_changed', details: {from: '来料异常', to: '来料异常复核'}}, '任务名称从 来料异常 改为 来料异常复核'],
+  ];
+  for (const [entry, expected] of cases) {
+    assert.equal(ctx.evaTaskActivityText(entry), expected);
+  }
 });
