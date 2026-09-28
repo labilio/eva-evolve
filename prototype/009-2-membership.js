@@ -425,6 +425,16 @@
         // Upgrade only the shipped request text, preserving user messages and edits.
         const request=(state.messages['all:prod']||[]).find(m=>m.fixtureId==='supply-chat-v2:all:prod:7');
         if(request&&request.text==="备选方案会多一次换型。我把产能影响补到 SC-105，等质量结论一起确认。"){request.text="备选方案会多一次换型。我把产能影响补到 SC-105，等质量结论一起确认。\n@Eva 项目管理专员 请结合刚才的更新，简要汇总还需要确认的事项。";changed=true;}
+        const oldTaskLinkCopy={
+          'supply-chat-v4:all:prod:task-link-request':'@Eva 项目管理专员 请把 SC-103 的任务链接发到群里，方便大家进入任务核对进展。',
+          'supply-chat-v4:all:prod:task-link-response':'SC-103 任务链接：[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
+        };
+        const allHandsFixtures=(root.__EVA_SUPPLY_CHAT_CONTENT||[]).find(block=>block.scopeId==='all:prod')?.messages||[];
+        for(const [fixtureId,oldText] of Object.entries(oldTaskLinkCopy)){
+          const message=(state.messages['all:prod']||[]).find(m=>m.fixtureId===fixtureId);
+          const fixture=allHandsFixtures.find(m=>m.fixtureId===fixtureId);
+          if(message?.text===oldText&&fixture?.text){message.text=fixture.text;changed=true;}
+        }
         if(changed)notify();
       },
       loadSupplyDemo(){

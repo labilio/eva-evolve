@@ -26,6 +26,8 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     await page.goto(origin+'/#/messages');
     const link=page.locator('[data-eva-task-link]').first();
     await link.waitFor();
+    await page.getByText(/采购问 A-2409 什么时候能给供应商答复/).waitFor();
+    await page.getByText(/任务要求复核 A-2409 的隔离措施/).waitFor();
     assert.equal(await link.textContent(),'SC-103 · 处理关键供应商来料质量异常');
     await link.click();
     await page.locator('.loop-idp__title').waitFor();

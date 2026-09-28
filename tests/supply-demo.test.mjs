@@ -11,7 +11,7 @@ function setup(){
  const s=window.EvaMembership.create({people,clones:window.__EVA_MEMBERSHIP_CLONES});
  s.createProject('prod','供应链运营协同','u-wangyilin',[]);s.createProject('other','其他项目','u-wangyilin',[]);
  for(const [id,name] of [['c-eva','采购与招投标'],['c-review','质量与排产'],['c-weekly','合规与合同'],['im-bubble-lab','IM 气泡验证']])s.createGroup(id,name,'prod','u-wangyilin',[]);
- return {s,files:window.EvaFileSharing.create(s)};
+ return {s,files:window.EvaFileSharing.create(s),window};
 }
 test('供应链教程闭环：直接添加、主人带入分身、文件共享不泄漏群、独立进群、退出级联、重复载入',()=>{
  const {s,files}=setup();const before=JSON.stringify(s.snapshot().projects.other);s.loadSupplyDemo();
@@ -70,4 +70,24 @@ test('群聊预设增量加载不重复、不覆盖成员与手动消息',()=>{
  const projectAgentName=s.projectAgent('prod').name;
  for(const [index,message] of messages.entries()){if(message.fixtureId?.startsWith('supply-chat-v2:')&&message.sender.uid==='project-agent:prod')assert.ok(messages[index-1].text.includes('@'+projectAgentName));}
  assert.equal(s.canRead('prod','u-hejing'),true);
+});
+
+test('项目管家按任务事实回复问题，旧链接演示升级且保留手动消息',()=>{
+ const {s,window}=setup();s.loadSupplyDemo();
+ const id='all:prod',state=s.snapshot();
+ const request=state.messages[id].find(m=>m.fixtureId==='supply-chat-v4:all:prod:task-link-request');
+ const reply=state.messages[id].find(m=>m.fixtureId==='supply-chat-v4:all:prod:task-link-response');
+ assert.match(request.text,/采购问 A-2409/);
+ assert.match(reply.text,/负责人是\*\*周远\*\*/);
+ assert.match(reply.text,/隔离措施、8D 根因分析和长期整改证据/);
+ assert.match(reply.text,/evaTask=SC-103/);
+ request.text='@Eva 项目管理专员 请把 SC-103 的任务链接发到群里，方便大家进入任务核对进展。';
+ reply.text='SC-103 任务链接：[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)';
+ const restored=window.EvaMembership.create(state);
+ restored.sendMessage(id,'u-wangyilin','我的手动补充');
+ restored.seedSupplyChatContent();
+ const messages=restored.snapshot().messages[id];
+ assert.equal(messages.find(m=>m.fixtureId===request.fixtureId).text,window.__EVA_SUPPLY_CHAT_CONTENT[0].messages.find(m=>m.fixtureId===request.fixtureId).text);
+ assert.equal(messages.find(m=>m.fixtureId===reply.fixtureId).text,window.__EVA_SUPPLY_CHAT_CONTENT[0].messages.find(m=>m.fixtureId===reply.fixtureId).text);
+ assert.ok(messages.some(m=>m.text==='我的手动补充'));
 });
