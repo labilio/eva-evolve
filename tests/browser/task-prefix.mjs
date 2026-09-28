@@ -22,6 +22,7 @@ test('Edge：前缀变更同步编号，旧编号链接与稳定 ID 链接仍打
   await page.getByText('确认修改任务前缀？').waitFor();
   await page.getByText('该项目已有任务的编号将改用新前缀。',{exact:true}).waitFor();
   await page.locator('button').filter({hasText:'确认修改'}).click();
+  await page.getByText('任务前缀已修改',{exact:true}).waitFor();
   await page.getByText('项目信息已保存').waitFor();
   const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('eva-collab-spaces')).find(item=>item.id==='prod'));
   assert.equal(persisted.issue_prefix,'TEST');
