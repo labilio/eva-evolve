@@ -534,7 +534,7 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
   await page.locator('.collab-frame').waitFor();
   await page.getByRole('tab', { name: '任务', exact: true }).click();
   await page.getByRole('tab', { name: '表格', exact: true }).click();
-  await page.locator('.eva-task-table__row').first().waitFor();
+  await page.locator('.eva-task-table__grid').waitFor();
   await page.waitForTimeout(400);
 
   // 2026-09-21 指派选择统一为 AssigneePicker：semi-dropdown 面板内含搜索框、
@@ -574,8 +574,8 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
         filtered = true;
       } catch {}
     }
-    assert.ok(filtered, '输入时应立即过滤无关候选（列表收尾重挂会清空搜索，重试后仍未生效）');
-    // 与上方同一期望；但批量栏收尾重挂可能在过滤生效后把列表重置回全量，
+    assert.ok(filtered, '输入时应立即过滤无关候选（表格收尾重挂会清空搜索，重试后仍未生效）');
+    // 与上方同一期望；但批量栏收尾重挂可能在过滤生效后把候选重置回全量，
     // 按本断言上下两处的同档重试容忍重挂，不接受重读后仍含无关候选。
     let cleanPanel = false;
     for (let attempt = 0; attempt < 4 && !cleanPanel; attempt += 1) {
@@ -621,12 +621,13 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
 
   await verifyAssigneeSearch(page.locator('.eva-task-table__row .loop-assignee-trigger').first());
 
-  await page.locator('.eva-task-table__row .eva-task-table__check').first().click();
-  await page.locator('.eva-task-table__toolbar--batch').waitFor();
-  await verifyAssigneeSearch(page.locator('.eva-task-table__toolbar--batch .loop-assignee-trigger'), { checkEnter: false });
-  await page.locator('.eva-task-table__toolbar--batch').getByRole('button', { name: '清除选择' }).click();
+  await page.locator('.eva-task-table__row .eva-task-table__check .semi-checkbox').first().click();
+  const batchBar = page.locator('.eva-task-table__toolbar--batch');
+  await batchBar.waitFor();
+  await verifyAssigneeSearch(batchBar.locator('.loop-assignee-trigger'), { checkEnter: false });
+  await batchBar.locator('.eva-task-table__selected-clear').click();
 
-  await page.locator('.eva-task-table__title-btn').first().click();
+  await page.locator('.eva-task-table__row .eva-task-table__title-btn').first().click();
   const detail = page.locator('.loop-idp').last();
   await detail.waitFor();
   await verifyAssigneeSearch(detail.locator('.loop-idp__prop:has-text("负责人") .loop-assignee-trigger'));
