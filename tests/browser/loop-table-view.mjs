@@ -125,6 +125,16 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.keyboard.press('Escape');
     assert.deepEqual(await table.locator('.eva-task-table__th-btn .eva-task-table__th-label').allTextContents(),['任务','状态','优先级','负责人','截止日期','标签']);
 
+    const firstLabelCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-editor').last();
+    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
+    const tableLabelMenu=page.locator('.eva-task-table__menu:visible');
+    await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('供应风');
+    assert.deepEqual(await tableLabelMenu.locator('.eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
+    await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('表格验收标签');
+    await tableLabelMenu.getByRole('button',{name:'新建'}).click();
+    assert.ok(await firstLabelCell.locator('.eva-task-label-chip').filter({hasText:'表格验收标签'}).count()>0,'新标签已写入该任务，窄列可折叠为 +N');
+    await page.keyboard.press('Escape');
+
     // 排序：任务列菜单升序（title 可经菜单排序）
     await table.locator('.eva-task-table__th-btn',{hasText:'任务'}).first().click();
     const headerMenu=page.locator('.eva-task-table__menu:visible');

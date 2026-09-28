@@ -55,10 +55,20 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'质量'}).count(),0);
 
     await labels.locator('button').first().click();
-    await page.locator('.semi-dropdown-menu:visible').getByText('管理标签...').click();
+    menu=page.locator('.semi-dropdown-menu:visible');
+    const search=menu.getByRole('textbox',{name:'搜索或新建标签'});
+    await search.fill('供应风');
+    assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['供应风险'],'任务详情标签菜单按名称筛选');
+    await page.screenshot({path:'/tmp/eva-task-label-picker-search.png'});
+    await search.fill('详情验收标签');
+    await menu.getByText('新建“详情验收标签”').click();
+    await labels.locator('.loop-label-chip').filter({hasText:'详情验收标签'}).waitFor();
+    await labels.locator('button').first().click();
+    await page.locator('.semi-dropdown-menu:visible').getByText('管理标签…').click();
     const manager=page.locator('.loop-label-mgr');
     await manager.waitFor();
     assert.equal(await manager.locator('.loop-label-color,[role="radiogroup"]').count(),0,'标签管理不再提供配色入口');
+    assert.equal(await manager.locator('.loop-label-mgr__pick button,[aria-checked],.loop-label-mgr__pick.is-active').count(),0,'管理弹窗不再承担任务关联');
     await manager.getByPlaceholder('新标签名').fill('验收标签');
     await manager.getByRole('button',{name:'创建标签'}).click();
     await manager.getByText('验收标签',{exact:true}).waitFor();
@@ -69,6 +79,8 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     await createdRow.locator('input').fill('验收标签已改名');
     await createdRow.getByRole('button',{name:'保存'}).click();
     await manager.getByText('验收标签已改名',{exact:true}).waitFor();
+    await manager.locator('.loop-label-mgr__list').evaluate(element=>{element.scrollTop=0;});
+    await page.waitForTimeout(3200);
     await page.screenshot({path:'/tmp/eva-task-label-manager-no-colors.png'});
     await page.locator('.semi-modal-close').click();
 

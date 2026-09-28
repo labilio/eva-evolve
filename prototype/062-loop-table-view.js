@@ -433,25 +433,33 @@
         const name=creating.trim();
         if(!name)return;
         try{
+          const existing=labels.find(item=>item.name.toLowerCase()===name.toLowerCase());
+          if(existing){if(!attached.some(item=>item.id===existing.id))await toggle(existing.id);setCreating('');return;}
           const label=evaCreateTaskLabel(project,name);
           setLabels(evaTaskLabels(project));setCreating('');
-          if(!attached.some(item=>item.id===label.id))await toggle(label.id);
+          if(!attached.some(item=>item.id===label.id)){
+            await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,label.id);
+            issue.labels=[...attached,label];onChanged&&onChanged();
+          }
         }catch(error){Toast.error(error?.message||'标签创建失败');}
       };
+      const needle=creating.trim().toLowerCase();
+      const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
+      const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
         h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
           h('div',{className:'eva-task-table__menu-list'},
-            labels.length?labels.map(label=>h(MenuItem,{key:label.id,role:'option',variant:'action',
+            filtered.length?filtered.map(label=>h(MenuItem,{key:label.id,role:'option',variant:'action',
               selected:attached.some(item=>item.id===label.id),
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
-            :h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签')),
+            :h('div',{className:'eva-task-table__menu-empty'},needle?'没有匹配的标签':'暂无任务标签')),
           h('div',{className:'eva-task-table__label-create'},
-            h(Input,{value:creating,onChange:setCreating,placeholder:'新建标签',maxLength:20,'aria-label':'新建标签',
+            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索或新建标签',maxLength:20,'aria-label':'搜索或新建标签',
               className:'eva-task-table__create-input',onKeyDown:event=>{if(event.key==='Enter')create();}}),
-            h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create,disabled:!creating.trim()},'新建'))));
+            needle&&!exact?h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create},'新建'):null)));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */
