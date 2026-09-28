@@ -3,8 +3,8 @@
 (function (root) {
   'use strict';
   const pad = value => String(value).padStart(2, '0');
-  const monthDay = date => `${date.getMonth() + 1}月${date.getDate()}日`;
-  const dateText = date => `${date.getFullYear()}年${monthDay(date)}`;
+  const monthDay = date => `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const dateText = date => `${date.getFullYear()}-${monthDay(date)}`;
   const clock = date => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
   const parseInstant = value => {
     if (!value) return null;
@@ -19,7 +19,7 @@
     return check.getUTCFullYear() === year && check.getUTCMonth() + 1 === month && check.getUTCDate() === day
       ? { year, month, day } : null;
   };
-  const dateOnlyText = (parts, withYear) => (withYear ? `${parts.year}年` : '') + `${parts.month}月${parts.day}日`;
+  const dateOnlyText = (parts, withYear) => (withYear ? `${parts.year}-` : '') + `${pad(parts.month)}-${pad(parts.day)}`;
   const localDay = date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const todayOrYesterday = (date, now) => {
     const today = localDay(now);

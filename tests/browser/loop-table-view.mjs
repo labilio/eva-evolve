@@ -61,7 +61,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
 
     // 截止日期：当年省略年份，跨年直接显示年份；空态与清除仍沿用原编辑器。
     const dateLabels=(await table.locator('.eva-task-table__row .eva-task-table__cell-trigger[aria-label="截止日期"] .eva-task-table__cell-label').allTextContents()).map(t=>t.trim());
-    for(const t of dateLabels.filter(t=>t&&t!=='截止日期'))assert.match(t,/^(?:\d{4}年)?\d{1,2}月\d{1,2}日$/,'截止日期应按年份分层: '+t);
+    for(const t of dateLabels.filter(t=>t&&t!=='截止日期'))assert.match(t,/^(?:\d{4}-)?\d{2}-\d{2}$/,'截止日期应按年份分层: '+t);
     const clippedDates=await table.locator('.eva-task-table__row .eva-task-table__cell-trigger[aria-label="截止日期"] .eva-task-table__cell-label').evaluateAll(
       els=>els.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
     assert.deepEqual(clippedDates,[],'日期单元格不应截断: '+clippedDates.join(','));
