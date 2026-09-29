@@ -2169,8 +2169,8 @@ function EvaAITeamPage() {
       'onClick:()=>{if(mode!=="recent"){Fa("");setEvaRailSearchOpen(false)}ir(mode)}',
       '离开最近时清理搜索状态');
     source=root.__evaCut(source,'React.createElement("div",{className:"ch-main__body"}',
-      'ut&&evaTeamGlobal&&Cn==="recent"&&Sa.threads.some(thread=>thread.status===1&&!evaThreadPrefs(thread).hidden)&&React.createElement("nav",{className:"eva-recent-topic-tabs","aria-label":"群聊子区"},React.createElement("button",{type:"button",className:!fa?"is-active":"","aria-current":!fa?"page":undefined,onClick:()=>La(Sa.id)},"主群"),evaSortThreads(Sa.threads.filter(thread=>thread.status===1&&!evaThreadPrefs(thread).hidden)).map(thread=>React.createElement("button",{key:thread.id,type:"button",className:fa?.id===thread.id?"is-active":"","aria-current":fa?.id===thread.id?"page":undefined,onClick:()=>Za(Sa.id,thread.id)},thread.name))),React.createElement("div",{className:"ch-main__body"}',
-      '最近大群内提供主群和子区导航');
+      'ut&&evaTeamGlobal&&Cn==="recent"&&Sa.threads.some(thread=>thread.status===1&&!evaThreadPrefs(thread).hidden)&&React.createElement("nav",{className:"eva-recent-topic-tabs","aria-label":"群聊子区"},React.createElement("button",{type:"button",className:!fa?"is-active":"","aria-current":!fa?"page":undefined,onClick:()=>La(Sa.id)},"主群"),React.createElement("span",{className:"eva-recent-topic-tabs__divider","aria-hidden":true}),evaSortThreads(Sa.threads.filter(thread=>thread.status===1&&!evaThreadPrefs(thread).hidden)).map(thread=>React.createElement("button",{key:thread.id,type:"button",className:fa?.id===thread.id?"is-active":"","aria-current":fa?.id===thread.id?"page":undefined,onClick:()=>Za(Sa.id,thread.id)},React.createElement(ThreadIcon,{size:16,"aria-hidden":true}),React.createElement("span",{className:"eva-recent-topic-tabs__label"},thread.name)))),React.createElement("div",{className:"ch-main__body"}',
+      '最近大群内提供主群、分隔线和子区图标导航');
     // 原生 title 只保留语义/可访问名用途（如 iframe title）；其余提示统一改挂声明式 Tooltip 桥。
     // 这些字符串由前面的 cut 链生成，直接改 cut 锚点会互相破坏，故在最终成品上做定点收敛。
     source=source.replaceAll('title:"新建群聊","aria-label":"新建群聊"','"data-eva-tooltip":"新建群聊","aria-label":"新建群聊"');

@@ -264,6 +264,9 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 }
 
 .eva-recent-topic-tabs > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   flex: none;
   max-width: 220px;
   padding: 6px 10px;
@@ -276,6 +279,17 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
   border-radius: 6px;
   cursor: pointer;
 }
+
+.eva-recent-topic-tabs__divider {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: var(--eva-border-faint);
+}
+
+.eva-recent-topic-tabs > button > svg { flex: none; }
+.eva-recent-topic-tabs__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .eva-recent-topic-tabs > button:hover { background: var(--eva-conversation-row-hover); }
 .eva-recent-topic-tabs > button.is-active { color: var(--eva-action-primary); background: var(--eva-conversation-row-selected); }

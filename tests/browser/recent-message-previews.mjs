@@ -26,6 +26,9 @@ try {
   await group.click();
   const tabs = page.getByRole('navigation', {name: '群聊子区'});
   await tabs.getByRole('button', {name: '主群'}).waitFor();
+  const divider = tabs.locator('.eva-recent-topic-tabs__divider');
+  assert.equal(await divider.count(), 1, '主群与子区之间只有一条分隔线');
+  assert.equal(await tabs.locator('button:not(:first-child) svg.lucide-corner-down-right').count(), (await tabs.locator('button').count()) - 1, '每个子区标签都有统一图标');
   await tabs.getByRole('button', {name: '近期体验反馈整理'}).click();
   assert.match(await page.locator('.wk-chat-conversation-header-channel-info').innerText(), /近期体验反馈整理/);
   assert.match(await group.getAttribute('class'), /wk-conversationlist-item-selected/, '进入子区仍选中所属大群');
