@@ -251,3 +251,51 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-content:has(.eva-rece
 body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__scroll {
   padding-top: 0;
 }
+.eva-recent-topic-tabs {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 4px 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--eva-border-faint);
+  scrollbar-width: thin;
+}
+
+.eva-recent-topic-tabs > button {
+  flex: none;
+  max-width: 220px;
+  padding: 6px 10px;
+  overflow: hidden;
+  color: var(--eva-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.eva-recent-topic-tabs > button:hover { background: var(--eva-conversation-row-hover); }
+.eva-recent-topic-tabs > button.is-active { color: var(--eva-action-primary); background: var(--eva-conversation-row-selected); }
+.eva-recent-topic-tabs > button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+
+.eva-recent-search-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  color: var(--eva-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.eva-recent-search-toggle:hover,
+.eva-recent-search-toggle[aria-pressed="true"] { background: var(--eva-conversation-row-hover); }
+.eva-recent-search-toggle:focus-visible { outline: 2px solid var(--eva-border-focus); }
+.eva-recent-search-input { margin: 8px 10px; }

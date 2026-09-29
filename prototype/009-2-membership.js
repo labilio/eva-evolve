@@ -143,6 +143,10 @@
       const p=projectInfo(pid),owner=person(state.projects[pid].ownerId);
       list.unshift({fixtureId,kind:'text',sender:agentSender(pid),time:'09:00',text:'@所有人 大家好，我是 '+agentFor(pid).name+'。\n项目：'+p.name+'\n共同目标：'+(goal||p.desc||'尚未填写，可在项目信息中补充')+'\n负责人：'+(owner?.name||'未指定')+'\n我是本项目的云端 AI，了解项目目标、成员、各群进展及共享资料，电脑关闭后也可继续服务。每位项目成员都可以 @我 提问，我会结合整个项目的信息回答。',notifiedHumanIds:state.projects[pid].humans.map(m=>m.id)});
     };
+    const recentFamilyMessageCount=id=>{
+      const ids=[id,...Object.keys(state.threads||{}).filter(threadId=>state.threads[threadId]===id&&!state.threadDetails[threadId]?.deleted)];
+      return ids.reduce((total,key)=>total+(state.messages[key]||[]).length+(state.directConversations?.[key]?.messages||[]).length,0);
+    };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
@@ -411,8 +415,8 @@
       },
       setGroupMd(id,uid,value){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可编辑 GROUP.md');ensureGovernance(key).groupMd=String(value||'');notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
-      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length;notify();},
-      recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length<=count;},
+      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify();},
+      recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
       conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
       conversationUnread(id,uid,seed=0){const count=state.chatPreferences[uid]?.[id]?.readMessageCount;return count===undefined?seed:Math.max(0,[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length-count);},
       clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify();},
@@ -529,7 +533,7 @@
         }
         if(changed)notify();return changed;
       },
-      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify();},
+      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify();},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));

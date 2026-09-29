@@ -517,10 +517,22 @@ test('数字员工市场：统一搜索二合一结果与「更多」限高面�
   assert.match(await page.locator('.eva-digital-center__domain-filters .semi-button[aria-pressed="true"]').innerText(), /^研发域 /, '面板点击应用业务域筛选');
 });
 
-test('消息中栏使用标题与创建按钮，不再显示列表搜索框', async () => {
+test('消息中栏搜索按钮展开输入框并保留创建入口', async () => {
   const header = await open('/messages', '.eva-rail-header');
   assert.equal(await header.locator('h1').innerText(), '我的消息');
   assert.equal(await header.locator('input').count(), 0);
+  const search = header.getByRole('button', {name: '搜索会话'});
+  assert.equal(await search.count(), 0, '关注页不新增搜索入口');
+  await page.getByRole('button', {name:'最近',exact:true}).click();
+  assert.equal(await search.isVisible(), true);
+  await search.click();
+  const searchInput = page.getByRole('textbox', {name: '搜索群聊或子区'});
+  await searchInput.fill('近期体验反馈整理');
+  await page.locator('.wk-conversationlist-item').filter({has:page.getByRole('heading',{name:'产品共创交流群 / 近期体验反馈整理',exact:true})}).waitFor();
+  await search.click();
+  assert.equal(await searchInput.count(), 0);
+  await page.getByRole('button', {name:'关注',exact:true}).click();
+  assert.equal(await search.count(), 0, '离开最近后搜索入口消失');
   const button = header.locator('.eva-message-invite');
   assert.equal(await button.isVisible(), true);
   assert.equal((await button.boundingBox()).width, 32);
