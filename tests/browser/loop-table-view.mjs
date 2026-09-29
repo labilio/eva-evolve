@@ -99,13 +99,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.deepEqual(await labelMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,'标签选项沿用任务菜单的浮层外观');
     const fixedLabelControls=await labelMenu.evaluate(el=>{
       const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect().top;
-      const manage=[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect().top;
       const list=el.querySelector('.eva-task-table__menu-list');const scrollable=list.scrollHeight>list.clientHeight;
       list.scrollTop=list.scrollHeight;
-      return {scrollable,before:[search,manage],after:[el.querySelector('.eva-task-table__label-search').getBoundingClientRect().top,[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect().top]};
+      return {scrollable,before:search,after:el.querySelector('.eva-task-table__label-search').getBoundingClientRect().top};
     });
     assert.equal(fixedLabelControls.scrollable,true,'标签结果区独立滚动');
-    assert.deepEqual(fixedLabelControls.after,fixedLabelControls.before,'标签目录滚动时顶部搜索与底部管理保持可见');
+    assert.equal(fixedLabelControls.after,fixedLabelControls.before,'标签目录滚动时顶部搜索保持可见');
+    assert.equal(await labelMenu.getByText('管理标签',{exact:true}).count(),0,'表格标签菜单没有管理入口');
     await page.keyboard.press('Escape');
 
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
@@ -157,7 +157,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await tableCreateLabel.locator('.eva-task-label-chip').textContent(),'供应风','新建结果呈现为输入名称的 Tag');
     assert.equal(await tableCreateLabel.locator('.eva-task-label-create-option > span:not(.eva-task-label-chip)').textContent(),'新建','加号后显示新建文案');
     assert.equal(await tableCreateLabel.locator('svg.lucide').count(),1,'新建行使用 Lucide Plus');
-    assert.ok(await tableLabelMenu.evaluate(el=>{const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect(),option=el.querySelector('[role="option"]').getBoundingClientRect(),manage=[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect();return search.bottom<=option.top&&option.bottom<=manage.top;}),'表格标签菜单依次显示搜索、标签和管理');
+    assert.ok(await tableLabelMenu.evaluate(el=>{const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect(),option=el.querySelector('[role="option"]').getBoundingClientRect();return search.bottom<=option.top;}),'表格标签菜单依次显示搜索与标签');
     await page.waitForTimeout(250);
     await page.screenshot({path:'/tmp/eva-task-label-table-menu.png'});
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('表格验收标签');
@@ -174,13 +174,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'标签'}).waitFor();
     await page.keyboard.press('Escape');
     await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
-    const tableManageLabel=tableLabelMenu.getByRole('menuitem',{name:'管理标签',exact:true});
-    assert.equal(await tableManageLabel.locator('svg.lucide').count(),1,'表格管理标签使用 Lucide 图标');
-    assert.ok((await tableManageLabel.getAttribute('class')).includes('is-muted'),'表格管理入口使用次要文字色');
-    assert.notEqual(await tableManageLabel.evaluate(el=>getComputedStyle(el).color),await tableLabelMenu.locator('.eva-task-table__menu-item[role="option"]:not(.is-selected)').first().evaluate(el=>getComputedStyle(el).color),'管理入口比普通选项更低一层文字色');
-    await tableManageLabel.click();
-    await page.locator('.eva-task-entry-manager').waitFor();
-    await page.locator('.semi-modal-close').click();
+    assert.equal(await tableLabelMenu.getByText('管理标签',{exact:true}).count(),0,'表格选标签菜单不显示管理入口');
     await page.keyboard.press('Escape');
 
     // 排序：任务列菜单升序（title 可经菜单排序）
@@ -346,10 +340,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await detailLabels.locator('.semi-tag').count(),0,'详情标签同样不使用 Semi Tag');
     await detailLabels.locator('button').first().click();
     await page.locator('.semi-dropdown-wrapper:visible .loop-label-option .eva-task-label-chip').first().waitFor();
-    const detailManageLabel=page.locator('.semi-dropdown-wrapper:visible').getByRole('menuitem',{name:'管理标签',exact:true});
-    assert.equal(await detailManageLabel.locator('svg.lucide').count(),1,'详情管理标签使用同一 Lucide 图标');
-    assert.ok((await detailManageLabel.getAttribute('class')).includes('eva-task-label-manage'),'详情管理入口使用次要文字色');
-    assert.notEqual(await detailManageLabel.evaluate(el=>getComputedStyle(el).color),await page.locator('.semi-dropdown-wrapper:visible .semi-dropdown-item:not(.eva-task-label-manage)').first().evaluate(el=>getComputedStyle(el).color),'详情管理入口也比普通选项更低一层文字色');
+    assert.equal(await page.locator('.semi-dropdown-wrapper:visible').getByText('管理标签',{exact:true}).count(),0,'详情选标签菜单不显示管理入口');
     await page.keyboard.press('Escape');
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
@@ -393,10 +384,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.screenshot({path:'/tmp/eva-task-create-label-menu.png'});
     await draftCreate.click();
     await page.locator('.eva-loop-task-create__tag-selected .eva-task-label-chip',{hasText:'创建验收标签'}).waitFor();
-    await page.locator('.eva-loop-task-create__tag-menu:visible .eva-loop-task-create__tag-manage').click();
-    await page.locator('.eva-task-entry-manager:visible').waitFor();
-    await page.locator('.semi-modal:has(.eva-task-entry-manager) .semi-modal-close').click();
-    await page.locator('.eva-task-entry-manager:visible').waitFor({state:'hidden'});
+    assert.equal(await page.locator('.eva-loop-task-create__tag-menu:visible').getByText('管理标签',{exact:true}).count(),0,'新建任务选标签菜单不显示管理入口');
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留

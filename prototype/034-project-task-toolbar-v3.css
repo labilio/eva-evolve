@@ -307,33 +307,6 @@
 :root[data-theme="dark"] .loop-label-chip.eva-task-label-chip { color:var(--eva-text-primary); }
 .eva-task-label-create-option { display:inline-flex; align-items:center; gap:8px; max-width:100%; min-width:0; }
 .eva-task-label-create-option > svg { flex:none; color:var(--eva-text-secondary-accessible); }
-/* 项目任务的条目管理弹窗：表单、列表和行内编辑共用同一结构。 */
-.eva-task-entry-manager-modal > :is(.semi-modal-mask,.semi-modal-wrap) { top:var(--topbar-height);height:calc(100% - var(--topbar-height)); }
-.eva-task-entry-manager-modal .semi-modal { max-width:calc(100vw - 32px); }
-.eva-task-entry-manager-modal .semi-modal-content { display:flex;flex-direction:column;max-height:calc(100vh - var(--topbar-height) - 48px);border:1px solid var(--eva-border-faint);border-radius:var(--eva-radius-panel);background:var(--eva-surface-primary);box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); }
-.eva-task-entry-manager-modal .semi-modal-header { flex:none;margin-bottom:0;padding:22px 24px 18px; }
-.eva-task-entry-manager-modal .semi-modal-title { color:var(--eva-text-primary);font:600 18px/26px var(--eva-font-sans); }
-.eva-task-entry-manager-modal .semi-modal-body { min-height:0;overflow:hidden;padding:0 24px 24px; }
-.eva-task-entry-manager { display:flex;min-height:0;flex-direction:column; }
-.eva-task-entry-manager__toolbar { display:flex;align-items:center;gap:10px; }
-.eva-task-entry-manager__search.semi-input-wrapper { flex:1;min-width:0; }
-.eva-task-entry-manager__toolbar > .semi-button { flex:none;height:32px;min-width:104px; }
-.eva-task-entry-manager__section { display:flex;align-items:center;justify-content:space-between;padding:22px 2px 10px;color:var(--eva-text-primary);font:500 13px/20px var(--eva-font-sans); }
-.eva-task-entry-manager__count { color:var(--eva-text-secondary-accessible);font:400 12px/20px var(--eva-font-sans);font-variant-numeric:tabular-nums; }
-.eva-task-entry-manager__list { min-height:0;max-height:min(384px,calc(100vh - var(--topbar-height) - 250px));overflow:auto;border:1px solid var(--eva-border-faint);border-radius:var(--eva-radius-control);background:var(--eva-surface-primary); }
-.eva-task-entry-manager__row { display:flex;min-height:47px;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--eva-border-faint); }
-.eva-task-entry-manager__row:last-child { border-bottom:0; }
-.eva-task-entry-manager__row:hover,.eva-task-entry-manager__row:focus-within { background:var(--eva-overlay-hover); }
-.eva-task-entry-manager__row--editing { min-height:54px; }
-.eva-task-entry-manager__item { display:flex;min-width:0;flex:1;align-items:center; }
-.eva-task-entry-manager__chip.loop-label-chip.eva-task-label-chip { height:24px;padding:0 8px;font:400 13px/24px var(--eva-font-sans); }
-.eva-task-entry-manager__edit.semi-input-wrapper { min-width:0;flex:1; }
-.eva-task-entry-manager__actions { display:flex;flex:none;align-items:center;gap:4px;opacity:.7; }
-.eva-task-entry-manager__row:hover .eva-task-entry-manager__actions,.eva-task-entry-manager__row:focus-within .eva-task-entry-manager__actions { opacity:1; }
-.eva-task-entry-manager__actions .semi-button { width:32px;height:32px;min-width:32px;padding:0; }
-.eva-task-entry-manager__empty { padding:36px 8px 28px;color:var(--eva-text-secondary-accessible);font:400 13px/20px var(--eva-font-sans);text-align:center; }
-@media (max-width:520px) { .eva-task-entry-manager__toolbar { gap:8px; }.eva-task-entry-manager__toolbar > .semi-button { min-width:32px;padding:0 8px; } }
-@media (hover:none) { .eva-task-entry-manager__actions { opacity:1; } }
 /* 项目任务日期共用同一轻量触发器，浮层和清空行由公共日期组件负责。 */
 .eva-task-date-field.semi-datepicker { width:auto; min-width:0; }
 body .eva-task-date-field .semi-datepicker-input { display:inline-flex; width:auto; min-width:0; height:auto; min-height:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
@@ -839,7 +812,6 @@ body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field
 /* 任务身份选择面板（AssigneePicker）：顶部搜索 + 每组 5 条展开 + 限高滚动，对齐统一提及候选规范。 */
 .eva-task-assignee-scroll { max-height: 480px; min-height: 72px; min-width: 220px; overflow-y: auto; padding: 0; }
 .eva-task-assignee-empty { padding: 20px 16px; color: var(--semi-color-text-2); font: 400 12px/20px var(--eva-font-sans); text-align: center; }
-body .semi-dropdown-wrapper .semi-dropdown-item.eva-task-label-manage { color: var(--eva-text-secondary-accessible); }
 /* 选人弹层宿主：固定在系统标题栏下方，Semi 的溢出回弹与限高都只在该区域内进行，
    长列表不会再被顶到标题栏上方。自身不拦截指针，交互仍交给弹层内容。 */
 .eva-task-popup-host { position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 1050; pointer-events: none; }

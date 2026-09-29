@@ -5,16 +5,16 @@
   function create(R){
     const h=R.createElement;
     return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,deps}){
-      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,AssigneePicker,DatePicker,Popover,LoopPropertyPill,LabelManagementModal,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
+      const {Modal,Button,LoopButton,Input,AutoGrowTextarea,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
       const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
-      const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[labelManagerOpen,setLabelManagerOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
+      const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
       R.useEffect(()=>{
         const token=++generation.current;
-        setForm(empty());setTagQuery('');setTagMenuOpen(false);setLabelManagerOpen(false);setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
+        setForm(empty());setTagQuery('');setTagMenuOpen(false);setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
       },[visible,project?.id,parentIssueId,snapshot.actorId]);
@@ -57,7 +57,6 @@
         }catch(e){if(token===generation.current)setError(e?.message||'标签创建失败，请重试。');}
       }
       function selectTaskLabel(id){patch('labels',[...new Set([...form.labels,id])]);setTagQuery('');}
-      function refreshLabels(){Promise.resolve(listLabels()).then(rows=>{const next=Array.isArray(rows)?rows:rows?.items||[];setLabels(next);setForm(old=>({...old,labels:old.labels.filter(id=>next.some(label=>label.id===id))}));}).catch(()=>setError('标签暂时无法加载，其他内容仍可填写。'));}
       const attachmentButton=h(R.Fragment,null,
         h('input',{type:'file',multiple:true,hidden:true,ref:fileInput,onChange:e=>{setFiles(old=>[...old,...Array.from(e.target.files||[])]);e.target.value='';}}),
         h('button',{type:'button',className:'loop-ci__attach','aria-label':'添加附件',title:'添加附件',disabled,onClick:()=>fileInput.current?.click()},h(icons.Paperclip,{size:18}))
@@ -65,13 +64,12 @@
       const normalizedTagQuery=tagQuery.trim().toLowerCase(),tagOptions=labels.filter(label=>!normalizedTagQuery||label.name.toLowerCase().includes(normalizedTagQuery)),hasExactTag=labels.some(label=>label.name.toLowerCase()===normalizedTagQuery);
       const taskLabels=h('div',{className:'eva-loop-task-create__tag-combobox'},
         form.labels.length?h('div',{className:'eva-loop-task-create__tag-selected'},form.labels.map(id=>{const label=labels.find(item=>item.id===id);return label&&h('button',{type:'button',className:'eva-loop-task-create__tag-chip',key:id,'aria-label':'移除标签 '+label.name,disabled,onClick:()=>patch('labels',form.labels.filter(item=>item!==id))},root.EvaLoopTaskComponents.labelChip(R,label,{suffix:h(icons.X,{size:12,'aria-hidden':true})}));})):null,
-        h(Popover,{trigger:'custom',visible:tagMenuOpen&&!disabled,position:'bottomLeft',getPopupContainer:popup,onClickOutSide:()=>setTagMenuOpen(false),content:h('div',{className:'eva-loop-task-create__tag-menu',role:'listbox'},tagOptions.map(label=>h('button',{type:'button',key:label.id,role:'option','aria-selected':form.labels.includes(label.id),onMouseDown:event=>event.preventDefault(),onClick:()=>selectTaskLabel(label.id)},root.EvaLoopTaskComponents.labelChip(R,label),form.labels.includes(label.id)?h(icons.Check,{size:14,className:'eva-loop-task-create__tag-check','aria-hidden':true}):null)),normalizedTagQuery&&!hasExactTag&&h('button',{type:'button',className:'eva-loop-task-create__tag-create-option','aria-label':'新建标签：'+tagQuery,onMouseDown:event=>event.preventDefault(),onClick:()=>addTaskLabel(tagQuery)},root.EvaLoopTaskComponents.labelCreateOption(R,icons.Plus,tagQuery)),!tagOptions.length&&!normalizedTagQuery&&h('p',null,'暂无任务标签'),h('div',{className:'eva-loop-task-create__tag-separator'}),h('button',{type:'button',className:'eva-loop-task-create__tag-manage',onMouseDown:event=>event.preventDefault(),onClick:()=>{setTagMenuOpen(false);setLabelManagerOpen(true);}},h(icons.Settings2,{size:14,'aria-hidden':true}),'管理标签'))},h(Input,{value:tagQuery,onChange:setTagQuery,onFocus:()=>setTagMenuOpen(true),onBlur:()=>setTimeout(()=>setTagMenuOpen(false),120),onEnterPress:()=>addTaskLabel(tagQuery),placeholder:'选择或输入任务标签',maxLength:20,disabled,'aria-label':'添加或编辑任务标签'}))
+        h(Popover,{trigger:'custom',visible:tagMenuOpen&&!disabled,position:'bottomLeft',getPopupContainer:popup,onClickOutSide:()=>setTagMenuOpen(false),content:h('div',{className:'eva-loop-task-create__tag-menu',role:'listbox'},tagOptions.map(label=>h('button',{type:'button',key:label.id,role:'option','aria-selected':form.labels.includes(label.id),onMouseDown:event=>event.preventDefault(),onClick:()=>selectTaskLabel(label.id)},root.EvaLoopTaskComponents.labelChip(R,label),form.labels.includes(label.id)?h(icons.Check,{size:14,className:'eva-loop-task-create__tag-check','aria-hidden':true}):null)),normalizedTagQuery&&!hasExactTag&&h('button',{type:'button',className:'eva-loop-task-create__tag-create-option','aria-label':'新建标签：'+tagQuery,onMouseDown:event=>event.preventDefault(),onClick:()=>addTaskLabel(tagQuery)},root.EvaLoopTaskComponents.labelCreateOption(R,icons.Plus,tagQuery)),!tagOptions.length&&!normalizedTagQuery&&h('p',null,'暂无任务标签'))},h(Input,{value:tagQuery,onChange:setTagQuery,onFocus:()=>setTagMenuOpen(true),onBlur:()=>setTimeout(()=>setTagMenuOpen(false),120),onEnterPress:()=>addTaskLabel(tagQuery),placeholder:'选择或输入任务标签',maxLength:20,disabled,'aria-label':'添加或编辑任务标签'}))
       );
       // Layout restored from the pre-7da18d9 Loop CreateIssueModal.
       // The outer collaboration project is fixed; there is no Loop project picker.
       return h(R.Fragment,null,
         h('div',{className:'eva-loop-task-create-portal',ref:host}),
-        h(LabelManagementModal,{visible:labelManagerOpen,project,onClose:()=>setLabelManagerOpen(false),onChanged:refreshLabels}),
         h(Modal,{visible,className:'loop-modal loop-ci-modal eva-loop-task-create',width:600,title:null,header:null,footer:null,closable:false,getPopupContainer:popup,onCancel:close,maskClosable:!busy,closeOnEsc:!busy},
           h('div',{className:'loop-ci'},
             h('div',{className:'loop-ci__head'},h('div',{className:'loop-ci__crumb'},

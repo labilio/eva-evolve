@@ -10,7 +10,7 @@
   function create(deps){
     const {
       React,useI18n,Popover,Dropdown,Checkbox,Switch,Toast,DatePicker,Input,
-      AssigneePicker,LabelManagementModal,RunningChip,useRunConfirm,
+      AssigneePicker,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
@@ -414,7 +414,6 @@
       const [open,setOpen]=React.useState(false);
       const [labels,setLabels]=React.useState(()=>evaTaskLabels(project));
       const [creating,setCreating]=React.useState('');
-      const [managerOpen,setManagerOpen]=React.useState(false);
       const [,refreshCell]=React.useState(0);
       const pendingRefresh=React.useRef(false);
       const flushPendingRefresh=()=>{
@@ -466,10 +465,7 @@
               selected:attached.some(item=>item.id===label.id),
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
             :!needle?h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签'):null,
-            needle&&!exact?h(MenuItem,{variant:'action',ariaLabel:'新建标签：'+creating.trim(),content:root.EvaLoopTaskComponents.labelCreateOption(React,icons.Plus,creating),onClick:create}):null),
-          h('div',{className:'eva-task-table__menu-sep'}),
-          h(MenuItem,{variant:'action',muted:true,icon:h(icons.Settings2,{size:14,'aria-hidden':true}),label:'管理标签',onClick:()=>{setOpen(false);setManagerOpen(true);}})),
-        h(LabelManagementModal,{visible:managerOpen,onClose:()=>{setManagerOpen(false);flushPendingRefresh();},onChanged:()=>{setLabels(evaTaskLabels(project));onChanged&&onChanged();}}));
+            needle&&!exact?h(MenuItem,{variant:'action',ariaLabel:'新建标签：'+creating.trim(),content:root.EvaLoopTaskComponents.labelCreateOption(React,icons.Plus,creating),onClick:create}):null)));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */

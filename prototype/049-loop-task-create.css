@@ -56,8 +56,6 @@
 .eva-loop-task-create__tag-menu button { display:flex; align-items:center; gap:8px; cursor:pointer; }
 .eva-loop-task-create__tag-check { margin-left:auto; color:var(--semi-color-primary); }
 .eva-loop-task-create__tag-menu button:hover { background: var(--eva-overlay-hover); }
-.eva-loop-task-create__tag-separator { height:1px; margin:4px 10px; background:var(--eva-border-faint); }
-.eva-loop-task-create__tag-menu .eva-loop-task-create__tag-manage { color:var(--eva-text-secondary-accessible); }
 .eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
 
 /* Child popups share the modal stacking context, outside its scroll clipping. */

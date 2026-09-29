@@ -36,60 +36,6 @@
       React.createElement('span',null,'新建'),
       labelChip(React,{name:name.trim()}));
   }
-  const entryManagerCache=new WeakMap();
-  function entryManager(React){
-    let Manager=entryManagerCache.get(React);
-    if(Manager)return Manager;
-    const h=React.createElement;
-    Manager=function TaskEntryManager({visible,title,itemLabel,listTitle,deleteDescription,scopeKey,readItems,createItem,renameItem,removeItem,renderItem,onClose,onChanged,ui,icons}){
-      const [items,setItems]=React.useState([]),[query,setQuery]=React.useState(''),[draft,setDraft]=React.useState(''),[creating,setCreating]=React.useState(false),[editing,setEditing]=React.useState(null),[editName,setEditName]=React.useState(''),[busy,setBusy]=React.useState(false);
-      const listRef=React.useRef(null),scopeRef=React.useRef(0);
-      const {Modal,Input,Button,Popconfirm,Toast}=ui,{Search,Plus,PenLine,Trash2,Save,X}=icons;
-      const refresh=async()=>{const scope=scopeRef.current;try{const next=await readItems();if(scope===scopeRef.current)setItems([...next])}catch(error){if(scope===scopeRef.current)Toast.error(error?.message||'加载'+itemLabel+'失败')}};
-      React.useEffect(()=>{scopeRef.current++;if(visible){setQuery('');setDraft('');setCreating(false);setEditing(null);setEditName('');refresh()}},[visible,scopeKey]);
-      React.useEffect(()=>{if(visible&&(creating||editing))listRef.current?.querySelector('.eva-task-entry-manager__edit input')?.focus()},[visible,creating,editing]);
-      const perform=async(action,verb)=>{
-        if(busy)return;
-        setBusy(true);
-        try{await action();await refresh();onChanged?.();Toast.success(itemLabel+'已'+verb)}
-        catch(error){Toast.error(error?.message||itemLabel+verb+'失败')}
-        finally{setBusy(false)}
-      };
-      const add=()=>{const name=draft.trim();if(!name)return;perform(async()=>{await createItem(name);setDraft('');setCreating(false)},'创建')};
-      const save=()=>{const name=editName.trim();if(!editing||!name)return;
-        const current=items.find(item=>item.id===editing);
-        if(current?.name===name){setEditing(null);return}
-        perform(async()=>{await renameItem(editing,name);setEditing(null)},'更新')};
-      const remove=item=>perform(async()=>{await removeItem(item.id);if(editing===item.id)setEditing(null)},'删除');
-      const beginCreate=()=>{listRef.current?.scrollTo(0,0);if(creating)return;setQuery('');setEditing(null);setDraft('');setCreating(true)};
-      const matches=items.filter(item=>item.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-      const editActions=(commit,cancel,disabled)=>h('span',{className:'eva-task-entry-manager__actions'},
-        h(Button,{theme:'borderless',size:'small',type:'primary',icon:h(Save,{size:16}),onClick:commit,loading:busy,disabled,'aria-label':'保存'+itemLabel}),
-        h(Button,{theme:'borderless',size:'small',type:'tertiary',icon:h(X,{size:16}),onClick:cancel,'aria-label':'取消'}));
-      return h(Modal,{className:'loop-modal eva-task-entry-manager-modal',title,visible,onCancel:onClose,footer:null,width:464},
-        h('div',{className:'eva-task-entry-manager'},
-          h('div',{className:'eva-task-entry-manager__toolbar'},
-            h(Input,{className:'eva-task-entry-manager__search',prefix:h(Search,{size:16}),value:query,onChange:setQuery,placeholder:'搜索'+itemLabel,showClear:true,'aria-label':'搜索'+itemLabel}),
-            h(Button,{theme:'solid',icon:h(Plus,{size:16}),onClick:beginCreate,disabled:busy,'aria-label':'新建'+itemLabel},'新建'+itemLabel)),
-          h('div',{className:'eva-task-entry-manager__section'},h('span',null,listTitle||itemLabel+'列表'),h('span',{className:'eva-task-entry-manager__count'},items.length+' 个')),
-          h('div',{className:'eva-task-entry-manager__list',ref:listRef},
-            creating?h('div',{className:'eva-task-entry-manager__row eva-task-entry-manager__row--editing'},
-              h(Input,{className:'eva-task-entry-manager__edit',value:draft,onChange:setDraft,placeholder:'新'+itemLabel+'名称',maxLength:20,onEnterPress:add,autoFocus:true,disabled:busy,'aria-label':'新'+itemLabel+'名称'}),
-              editActions(add,()=>setCreating(false),!draft.trim())):null,
-            matches.length?matches.map(item=>{
-              const active=editing===item.id;
-              return h('div',{key:item.id,className:'eva-task-entry-manager__row'},
-                active?h(Input,{className:'eva-task-entry-manager__edit',value:editName,onChange:setEditName,maxLength:20,onEnterPress:save,autoFocus:true,disabled:busy,'aria-label':'修改'+itemLabel+'名称'}):h('span',{className:'eva-task-entry-manager__item'},renderItem(item)),
-                active?editActions(save,()=>setEditing(null),!editName.trim()):
-                  h('span',{className:'eva-task-entry-manager__actions'},
-                    h(Button,{theme:'borderless',size:'small',type:'tertiary',icon:h(PenLine,{size:16}),onClick:()=>{setCreating(false);setEditing(item.id);setEditName(item.name)},'aria-label':'编辑'+itemLabel+'：'+item.name}),
-                    h(Popconfirm,{title:'删除这个'+itemLabel+'？',content:deleteDescription||'删除后无法撤销。',onConfirm:()=>remove(item)},
-                      h(Button,{theme:'borderless',size:'small',type:'tertiary',icon:h(Trash2,{size:16}),'aria-label':'删除'+itemLabel+'：'+item.name}))));
-            }):!creating?h('div',{className:'eva-task-entry-manager__empty'},query?'没有找到匹配的'+itemLabel:'还没有'+itemLabel+'，点击右上角新建。'):null)));
-    };
-    entryManagerCache.set(React,Manager);
-    return Manager;
-  }
   const enumDropdownCache=new WeakMap();
   function enumMenu(React,Dropdown,{options,value,onChange}){
     return React.createElement(Dropdown.Menu,{className:'eva-task-enum-menu',style:{minWidth:160}},
@@ -186,5 +132,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,entryManager,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);
