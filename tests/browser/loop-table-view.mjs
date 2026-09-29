@@ -179,7 +179,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.ok((await tableManageLabel.getAttribute('class')).includes('is-muted'),'表格管理入口使用次要文字色');
     assert.notEqual(await tableManageLabel.evaluate(el=>getComputedStyle(el).color),await tableLabelMenu.locator('.eva-task-table__menu-item[role="option"]:not(.is-selected)').first().evaluate(el=>getComputedStyle(el).color),'管理入口比普通选项更低一层文字色');
     await tableManageLabel.click();
-    await page.locator('.loop-label-mgr').waitFor();
+    await page.locator('.eva-task-entry-manager').waitFor();
     await page.locator('.semi-modal-close').click();
     await page.keyboard.press('Escape');
 
@@ -394,9 +394,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await draftCreate.click();
     await page.locator('.eva-loop-task-create__tag-selected .eva-task-label-chip',{hasText:'创建验收标签'}).waitFor();
     await page.locator('.eva-loop-task-create__tag-menu:visible .eva-loop-task-create__tag-manage').click();
-    await page.locator('.loop-label-mgr:visible').waitFor();
-    await page.locator('.semi-modal:has(.loop-label-mgr) .semi-modal-close').click();
-    await page.locator('.loop-label-mgr:visible').waitFor({state:'hidden'});
+    await page.locator('.eva-task-entry-manager:visible').waitFor();
+    await page.locator('.semi-modal:has(.eva-task-entry-manager) .semi-modal-close').click();
+    await page.locator('.eva-task-entry-manager:visible').waitFor({state:'hidden'});
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留
