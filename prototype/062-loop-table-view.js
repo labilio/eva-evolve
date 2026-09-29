@@ -415,6 +415,16 @@
       const [labels,setLabels]=React.useState(()=>evaTaskLabels(project));
       const [creating,setCreating]=React.useState('');
       const [managerOpen,setManagerOpen]=React.useState(false);
+      const [,refreshCell]=React.useState(0);
+      const pendingRefresh=React.useRef(false);
+      const flushPendingRefresh=()=>{
+        if(pendingRefresh.current){
+          pendingRefresh.current=false;
+          queueMicrotask(()=>onChanged&&onChanged());
+        }
+      };
+      const setLabelOpen=value=>{setOpen(value);if(value===false)flushPendingRefresh();};
+      const notifyLabelChange=()=>{pendingRefresh.current=true;refreshCell(value=>value+1);};
       React.useEffect(()=>{if(open)setLabels(evaTaskLabels(project));},[open,project]);
       const attached=issue.labels||[];
       const toggle=async labelId=>{
@@ -423,7 +433,7 @@
           if(has)await evaDetachTaskLabel(project,evaTaskProjectId(project),issue.id,labelId);
           else await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,labelId);
           const next=has?attached.filter(item=>item.id!==labelId):[...attached,labels.find(item=>item.id===labelId)].filter(Boolean);
-          issue.labels=next;onChanged&&onChanged();
+          issue.labels=next;notifyLabelChange();
         }catch(error){Toast.error(error?.message||'标签保存失败');}
       };
       const create=async()=>{
@@ -436,7 +446,7 @@
           setLabels(evaTaskLabels(project));setCreating('');
           if(!attached.some(item=>item.id===label.id)){
             await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,label.id);
-            issue.labels=[...attached,label];onChanged&&onChanged();
+            issue.labels=[...attached,label];notifyLabelChange();
           }
         }catch(error){Toast.error(error?.message||'标签创建失败');}
       };
@@ -444,7 +454,7 @@
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
       const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
+        h(PopMenu,{open,setOpen:setLabelOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
@@ -459,7 +469,7 @@
             needle&&!exact?h(MenuItem,{variant:'action',ariaLabel:'新建标签：'+creating.trim(),content:root.EvaLoopTaskComponents.labelCreateOption(React,icons.Plus,creating),onClick:create}):null),
           h('div',{className:'eva-task-table__menu-sep'}),
           h(MenuItem,{variant:'action',muted:true,icon:h(icons.Settings2,{size:14,'aria-hidden':true}),label:'管理标签',onClick:()=>{setOpen(false);setManagerOpen(true);}})),
-        h(LabelManagementModal,{visible:managerOpen,onClose:()=>setManagerOpen(false),onChanged:()=>{setLabels(evaTaskLabels(project));onChanged&&onChanged();}}));
+        h(LabelManagementModal,{visible:managerOpen,onClose:()=>{setManagerOpen(false);flushPendingRefresh();},onChanged:()=>{setLabels(evaTaskLabels(project));onChanged&&onChanged();}}));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */

@@ -44,6 +44,12 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['采购','招投标','质量','供应商','合规','合同','成本','排产','交付','供应风险']);
     await menu.getByText('质量',{exact:true}).click();
     await labels.locator('.loop-label-chip').filter({hasText:'质量'}).waitFor();
+    assert.equal(await menu.isVisible(),true,'多选标签后菜单保持打开');
+    await menu.getByText('合规',{exact:true}).click();
+    await labels.locator('.loop-label-chip').filter({hasText:'合规'}).waitFor();
+    assert.equal(await menu.isVisible(),true,'连续选择第二个标签时菜单仍保持打开');
+    await menu.getByText('合规',{exact:true}).click();
+    assert.equal(await labels.locator('.loop-label-chip').filter({hasText:'合规'}).count(),0,'再次点击可取消该标签');
 
     await closeTask();
     await openTask();
@@ -69,7 +75,7 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     await search.fill('详情验收标签');
     await menu.getByRole('menuitem',{name:/新建.*详情验收标签/}).click();
     await labels.locator('.loop-label-chip').filter({hasText:'详情验收标签'}).waitFor();
-    await labels.locator('button').first().click();
+    assert.equal(await menu.isVisible(),true,'详情新建标签后多选菜单保持打开');
     await page.locator('.semi-dropdown-menu:visible').getByText('管理标签',{exact:true}).click();
     const manager=page.locator('.loop-label-mgr');
     await manager.waitFor();
