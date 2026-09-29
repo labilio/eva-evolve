@@ -32,7 +32,9 @@
       onKeyDown:event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setOpen(true);}}
     });
     function PopMenu(props){
-      const {open,setOpen,position='bottomLeft',role='menu',trigger,children,menuClassName=''}=props;
+      const {open,setOpen,position='bottomLeft',role='menu',trigger,children,menuClassName='',onNavigate}=props;
+      const menuRef=React.useRef(null);
+      React.useEffect(()=>{if(open)requestAnimationFrame(()=>menuRef.current?.focus());},[open]);
       React.useEffect(()=>{
         if(!open)return;
         const onKey=event=>{if(event.key==='Escape')setOpen(false);};
@@ -40,14 +42,22 @@
         return()=>document.removeEventListener('keydown',onKey);
       },[open,setOpen]);
       return h(Popover,{trigger:'custom',visible:open,position,onClickOutSide:()=>setOpen(false),motion:false,
-        content:h('div',{className:'eva-task-table__menu'+(menuClassName?' '+menuClassName:''),role,
-          onKeyDown:event=>{if(event.key==='Escape')setOpen(false);}},children)},trigger);
+        content:h('div',{ref:menuRef,tabIndex:-1,className:'eva-task-table__menu'+(menuClassName?' '+menuClassName:''),role,
+          onKeyDown:event=>{
+            if(event.key==='Escape'){setOpen(false);return;}
+            if(event.key!=='ArrowDown'&&event.key!=='ArrowUp')return;
+            const items=Array.from(event.currentTarget.querySelectorAll('.eva-task-table__menu-item:not(:disabled)'));
+            if(!items.length)return;
+            const current=items.indexOf(document.activeElement);
+            const next=current<0?(event.key==='ArrowDown'?0:items.length-1):(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;
+            event.preventDefault();items[next].focus();onNavigate?.(next);
+          }},children)},trigger);
     }
     function MenuItem(props){
-      const {role='menuitem',selected,disabled,icon,label,onClick,content,variant,muted=false,ariaLabel}=props;
+      const {role='menuitem',selected,active,disabled,icon,label,onClick,content,variant,muted=false,ariaLabel}=props;
       const extra=role==='option'?{'aria-selected':!!selected}:{'aria-current':selected?'true':undefined};
       return h('button',{type:'button',role,disabled,'aria-label':ariaLabel,...extra,
-        className:'eva-task-table__menu-item'+(selected?' is-selected':'')+(variant==='action'?' is-action':'')+(muted?' is-muted':''),
+        className:'eva-task-table__menu-item'+(selected?' is-selected':'')+(active?' is-active':'')+(variant==='action'?' is-action':'')+(muted?' is-muted':''),
         onMouseDown:event=>event.preventDefault(),onClick},
         variant==='action'?null:h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
         content||h(React.Fragment,null,icon||null,h('span',{className:'eva-task-table__menu-label'},label)),
@@ -344,16 +354,18 @@
       const {state}=props;
       const [open,setOpen]=React.useState(false);
       const [query,setQuery]=React.useState('');
+      const [activeIndex,setActiveIndex]=React.useState(0);
       const needle=query.trim().toLowerCase();
       const list=SYSTEM_COLUMNS.filter(key=>!needle||COLUMN_LABELS[key].toLowerCase().includes(needle));
-      return h(PopMenu,{open,setOpen,position:'bottomRight',role:'listbox',menuClassName:'eva-task-table__menu--wide','aria-label':'配置列',trigger:
+      return h(PopMenu,{open,setOpen,onNavigate:setActiveIndex,position:'bottomRight',role:'listbox',menuClassName:'eva-task-table__menu--wide','aria-label':'配置列',trigger:
         h('button',{type:'button',className:'eva-task-table__toolbtn','aria-label':'配置列','aria-haspopup':'listbox','aria-expanded':open,title:'列',...menuTrigger(setOpen)},
           h(icons.Columns3,{size:14}),h('span',null,'列'))},
-        h(Input,{value:query,onChange:setQuery,placeholder:'搜索列…','aria-label':'搜索列',
+        h(Input,{value:query,onChange:value=>{setQuery(value);setActiveIndex(0);},placeholder:'搜索列…','aria-label':'搜索列',
+          onKeyDown:event=>{if(event.key==='Enter'&&list[activeIndex]&&list[activeIndex]!=='title'){event.preventDefault();state.toggleColumn(list[activeIndex]);}},
           prefix:h(icons.Search,{size:16}),showClear:true}),
         h('div',{className:'eva-task-table__menu-title'},'任务属性'),
         h('div',{className:'eva-task-table__menu-list',role:'presentation'},
-          list.length?list.map(key=>h(MenuItem,{key,role:'option',selected:state.columns.some(item=>item.key===key),
+          list.length?list.map((key,index)=>h(MenuItem,{key,role:'option',selected:state.columns.some(item=>item.key===key),active:!!needle&&index===activeIndex,
             disabled:key==='title',label:COLUMN_LABELS[key],onClick:()=>state.toggleColumn(key)}))
           :h('div',{className:'eva-task-table__menu-empty'},'没有匹配的列')));
     }
@@ -410,6 +422,7 @@
       const [open,setOpen]=React.useState(false);
       const [labels,setLabels]=React.useState(()=>evaTaskLabels(project));
       const [creating,setCreating]=React.useState('');
+      const [activeIndex,setActiveIndex]=React.useState(0);
       const [,refreshCell]=React.useState(0);
       const pendingRefresh=React.useRef(false);
       const flushPendingRefresh=()=>{
@@ -449,15 +462,15 @@
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
       const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen:setLabelOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
+        h(PopMenu,{open,setOpen:setLabelOpen,onNavigate:setActiveIndex,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
           h('div',{className:'eva-task-picker-search eva-task-table__label-search'},
-            h(Input,{value:creating,onChange:setCreating,placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
-              onKeyDown:event=>{if(event.key==='Enter'&&needle&&!exact)create();}})),
+            h(Input,{value:creating,onChange:value=>{setCreating(value);setActiveIndex(0);},placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
+              onKeyDown:event=>{if(event.key==='Enter'){event.preventDefault();if(filtered[activeIndex])toggle(filtered[activeIndex].id);else if(needle&&!exact)create();}}})),
           h('div',{className:'eva-task-table__menu-list'},
-            filtered.length?filtered.map(label=>h(MenuItem,{key:label.id,role:'option',variant:'action',
+            filtered.length?filtered.map((label,index)=>h(MenuItem,{key:label.id,role:'option',variant:'action',active:!!needle&&index===activeIndex,
               selected:attached.some(item=>item.id===label.id),
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
             :!needle?h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签'):null,
@@ -622,8 +635,6 @@
         ?(selectedIssues.find(issue=>(issue.assignee_id||null)===commonAssigneeId)||{}).assignee_name||null
         :null;
       const [batchBusy,setBatchBusy]=React.useState(false);
-      const [batchStatusOpen,setBatchStatusOpen]=React.useState(false);
-      const [batchPriorityOpen,setBatchPriorityOpen]=React.useState(false);
       /* 完成 toast 右侧固定「撤回」：Semi Toast 无 action 槽，撤回按钮内嵌在 content 里。
          执行前先快照原值，撤回时逐条写回；撤回成功再用轻提示确认。 */
       const toastWithUndo=(text,onUndo)=>{
@@ -812,20 +823,10 @@
             h('button',{type:'button',className:'eva-task-table__selected-clear','aria-label':'清除选择',
               onClick:()=>setSelection([])},h(icons.X,{size:13}))),
           h('span',{className:'eva-task-table__batch-divider','aria-hidden':true}),
-          h(PopMenu,{open:batchStatusOpen,setOpen:setBatchStatusOpen,role:'listbox',trigger:
-            h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,
-              'aria-label':'批量修改状态','aria-haspopup':'listbox','aria-expanded':batchStatusOpen,
-              ...menuTrigger(setBatchStatusOpen)},'状态')},
-            statusOptions.map(option=>h(MenuItem,{key:option.value,role:'option',selected:commonStatus===option.value,
-              icon:option.icon,label:option.label,content:option.content,
-              onClick:()=>{setBatchStatusOpen(false);batchApply({status:option.value});}}))),
-          h(PopMenu,{open:batchPriorityOpen,setOpen:setBatchPriorityOpen,role:'listbox',trigger:
-            h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,
-              'aria-label':'批量修改优先级','aria-haspopup':'listbox','aria-expanded':batchPriorityOpen,
-              ...menuTrigger(setBatchPriorityOpen)},'优先级')},
-            priorityOptions.map(option=>h(MenuItem,{key:option.value,role:'option',selected:commonPriority===option.value,
-              icon:option.icon,label:option.label,content:option.content,
-              onClick:()=>{setBatchPriorityOpen(false);batchApply({priority:option.value});}}))),
+          root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{ariaLabel:'批量修改状态',options:statusOptions,value:commonStatus,
+            onChange:value=>batchApply({status:value}),trigger:'状态',triggerClassName:'eva-task-table__toolbtn',disabled:batchBusy}),
+          root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{ariaLabel:'批量修改优先级',options:priorityOptions.map(option=>({...option,icon:h(PriorityGlyph,{priority:option.value,size:13})})),value:commonPriority,
+            onChange:value=>batchApply({priority:value}),trigger:'优先级',triggerClassName:'eva-task-table__toolbtn',disabled:batchBusy}),
           h(AssigneePicker,{size:'small',value:commonAssigneeId,valueName:commonAssigneeName,candidates:assigneeCandidates,
             onChange:(assigneeId,assigneeType)=>batchApply({assignee_id:assigneeId,assignee_type:assigneeType})}),
           h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,

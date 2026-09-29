@@ -826,7 +826,12 @@ body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field
 .eva-loop-mention-host > .eva-im-mention-picker { position: absolute; left: 0; top: auto; bottom: calc(100% + 8px); max-width: none; }
 
 /* 任务身份选择面板（AssigneePicker）：顶部搜索 + 每组 5 条展开 + 限高滚动，对齐统一提及候选规范。 */
-.eva-task-assignee-scroll { max-height: 480px; min-height: 72px; min-width: 220px; overflow-y: auto; padding: 0; }
+.eva-task-assignee-scroll { max-height: 480px; min-width: 220px; overflow-y: auto; padding: 0; }
+body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active,
+body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:is(:hover, :focus-visible) {
+  background: var(--eva-list-option-selected);
+  font-weight: 400;
+}
 .eva-task-assignee-empty { padding: 20px 16px; color: var(--semi-color-text-2); font: 400 12px/20px var(--eva-font-sans); text-align: center; }
 /* 选人弹层宿主：固定在系统标题栏下方，Semi 的溢出回弹与限高都只在该区域内进行，
    长列表不会再被顶到标题栏上方。自身不拦截指针，交互仍交给弹层内容。 */

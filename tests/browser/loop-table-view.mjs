@@ -24,6 +24,14 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.getByRole('button',{name:'供应链运营协同 协同推进间接采购、供应商质量与合规风控工作',exact:true}).click();
     await page.locator('.loop-board').waitFor();
 
+    const kanbanCard=page.locator('.loop-board .loop-card',{hasText:'SC-104'});
+    const kanbanFoot=kanbanCard.locator('.loop-card__foot');
+    assert.equal(await kanbanFoot.locator('.eva-issue-assignee').count(),1,'看板卡片只展示一位负责人');
+    assert.equal(await kanbanFoot.locator('.eva-issue-assignee').getAttribute('title'),'负责人：苏航');
+    assert.equal(await kanbanFoot.locator('.eva-issue-assignee img').count(),1,'负责人使用真实身份头像');
+    assert.equal(await kanbanFoot.locator('.eva-issue-source,.loop-card__project,.loop-abadge').count(),0,'项目内看板不重复显示项目名或来源者');
+    assert.equal(await kanbanFoot.locator('.loop-card__due').count(),1,'保留截止日期');
+
     // 三视图切换器，从左到右：看板、表格、层级
     const switcher=page.locator('.eva-task-view-switcher');
     assert.deepEqual(await switcher.getByRole('tab').allTextContents(),['看板','表格','层级']);
@@ -119,6 +127,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
 
     // 分组：按状态分组出现分组行与计数（PopMenu 列表项）
     await table.locator('.eva-task-table__toolbtn',{hasText:'分组'}).click();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await page.locator('.eva-task-table__menu:visible .eva-task-table__menu-item:focus').textContent(),'状态','方向键应逐项移动菜单焦点');
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'状态'}).click();
     await table.locator('.eva-task-table__group-row').first().waitFor();
     assert.ok(await table.locator('.eva-task-table__group-row').count()>=1);
@@ -136,6 +147,12 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();
     const colMenu=page.locator('.eva-task-table__menu:visible');
     await colMenu.getByText('任务属性',{exact:true}).waitFor();
+    await colMenu.getByRole('textbox',{name:'搜索列'}).fill('标签');
+    assert.equal(await colMenu.locator('.eva-task-table__menu-item.is-active').count(),1,'搜索列应默认突出首条结果');
+    await colMenu.getByRole('textbox',{name:'搜索列'}).press('Enter');
+    assert.ok(!(await table.locator('.eva-task-table__th-btn .eva-task-table__th-label').allTextContents()).includes('标签'),'回车应执行首条搜索结果');
+    await colMenu.getByRole('textbox',{name:'搜索列'}).fill('');
+    await colMenu.getByRole('option',{name:'标签'}).click();
     await colMenu.getByRole('option',{name:'标签'}).click();
     await page.keyboard.press('Escape');
     await page.locator('.eva-task-table__menu:visible').waitFor({state:'detached'}).catch(()=>{});
@@ -152,6 +169,12 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const tableLabelMenu=page.locator('.eva-task-table__menu:visible');
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('供应风');
     assert.deepEqual(await tableLabelMenu.locator('[role="option"] .eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
+    assert.equal(await tableLabelMenu.locator('[role="option"].is-active').count(),1,'标签搜索应默认突出首条匹配项');
+    const firstMatch=tableLabelMenu.getByRole('option',{name:'供应风险'});
+    const selectedBefore=await firstMatch.getAttribute('aria-selected');
+    await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).press('Enter');
+    assert.notEqual(await firstMatch.getAttribute('aria-selected'),selectedBefore,'回车应切换首条匹配标签');
+    assert.equal(await tableLabelMenu.getByRole('option',{name:'供应风',exact:true}).count(),0,'有匹配项时回车不应新建标签');
     const tableCreateLabel=tableLabelMenu.getByRole('menuitem',{name:'新建标签：供应风'});
     assert.equal(await tableCreateLabel.count(),1,'非精确名称在已有匹配项之后提供新建');
     assert.equal(await tableCreateLabel.locator('.eva-task-label-chip').textContent(),'供应风','新建结果呈现为输入名称的 Tag');
@@ -269,7 +292,8 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await rowCheck(secondRow).click();
     await batchBar.getByText('已选择 2 个').waitFor();
     await batchBar.getByRole('button',{name:'批量修改状态'}).click();
-    await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'进行中'}).click();
+    assert.ok(await page.locator('.semi-dropdown-item:visible').count()>0,'批量状态应使用 Semi Dropdown.Item');
+    await page.locator('.semi-dropdown-item:visible',{hasText:'进行中'}).click();
     const updateToast=page.locator('.semi-toast',{hasText:'已更新 2 个任务'});
     await updateToast.waitFor();
     await table.locator('.eva-task-table__search').waitFor();
