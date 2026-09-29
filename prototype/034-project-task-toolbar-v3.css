@@ -305,6 +305,8 @@
 .eva-task-label-chips { display:inline-flex; flex-wrap:wrap; align-items:center; gap:4px; min-width:0; }
 .loop-label-chip.eva-task-label-chip { flex:none; max-width:100%; height:20px; padding:0 7px; overflow:hidden; border:0; border-radius:var(--eva-radius-key); background:var(--eva-overlay-hover); color:var(--eva-text-secondary-accessible); font:400 12px/20px var(--eva-font-sans); text-overflow:ellipsis; box-shadow:none; }
 :root[data-theme="dark"] .loop-label-chip.eva-task-label-chip { color:var(--eva-text-primary); }
+.eva-task-label-create-option { display:inline-flex; align-items:center; gap:8px; max-width:100%; min-width:0; }
+.eva-task-label-create-option > svg { flex:none; color:var(--eva-text-secondary-accessible); }
 .loop-label-mgr__row > .loop-label-mgr__pick { cursor:default; }
 /* 项目任务日期共用同一轻量触发器，浮层和清空行由公共日期组件负责。 */
 .eva-task-date-field.semi-datepicker { width:auto; min-width:0; }

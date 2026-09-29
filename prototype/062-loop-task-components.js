@@ -30,6 +30,12 @@
       ...shown.map(label=>React.createElement(React.Fragment,{key:label.id},labelChip(React,label))),
       rest>0?React.createElement('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
   }
+  function labelCreateOption(React,Plus,name){
+    return React.createElement('span',{className:'eva-task-label-create-option'},
+      React.createElement(Plus,{size:14,'aria-hidden':true}),
+      React.createElement('span',null,'新建'),
+      labelChip(React,{name:name.trim()}));
+  }
   const enumDropdownCache=new WeakMap();
   function enumMenu(React,Dropdown,{options,value,onChange}){
     return React.createElement(Dropdown.Menu,{className:'eva-task-enum-menu',style:{minWidth:160}},
@@ -126,5 +132,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);

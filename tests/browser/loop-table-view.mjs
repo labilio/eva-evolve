@@ -151,13 +151,17 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
     const tableLabelMenu=page.locator('.eva-task-table__menu:visible');
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('供应风');
-    assert.deepEqual(await tableLabelMenu.locator('.eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
-    assert.equal(await tableLabelMenu.getByRole('menuitem',{name:'创建标签“供应风”'}).count(),1,'非精确名称在已有匹配项之后提供新建');
+    assert.deepEqual(await tableLabelMenu.locator('[role="option"] .eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
+    const tableCreateLabel=tableLabelMenu.getByRole('menuitem',{name:'新建标签：供应风'});
+    assert.equal(await tableCreateLabel.count(),1,'非精确名称在已有匹配项之后提供新建');
+    assert.equal(await tableCreateLabel.locator('.eva-task-label-chip').textContent(),'供应风','新建结果呈现为输入名称的 Tag');
+    assert.equal(await tableCreateLabel.locator('.eva-task-label-create-option > span:not(.eva-task-label-chip)').textContent(),'新建','加号后显示新建文案');
+    assert.equal(await tableCreateLabel.locator('svg.lucide').count(),1,'新建行使用 Lucide Plus');
     assert.ok(await tableLabelMenu.evaluate(el=>{const search=el.querySelector('.eva-task-table__label-search').getBoundingClientRect(),option=el.querySelector('[role="option"]').getBoundingClientRect(),manage=[...el.querySelectorAll('button')].find(button=>button.textContent.includes('管理标签')).getBoundingClientRect();return search.bottom<=option.top&&option.bottom<=manage.top;}),'表格标签菜单依次显示搜索、标签和管理');
     await page.waitForTimeout(250);
     await page.screenshot({path:'/tmp/eva-task-label-table-menu.png'});
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('表格验收标签');
-    await tableLabelMenu.getByRole('menuitem',{name:'创建标签“表格验收标签”'}).click();
+    await tableLabelMenu.getByRole('menuitem',{name:'新建标签：表格验收标签'}).click();
     assert.ok(await firstLabelCell.locator('.eva-task-label-chip').filter({hasText:'表格验收标签'}).count()>0,'新标签已写入该任务，窄列可折叠为 +N');
     if(!(await tableLabelMenu.isVisible()))await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
     const tableManageLabel=tableLabelMenu.getByRole('menuitem',{name:'管理标签',exact:true});
@@ -366,6 +370,19 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await tagMenu.locator('[role="option"] .eva-task-label-chip').first().waitFor();
     await tagMenu.locator('[role="option"]').first().click();
     await page.locator('.eva-loop-task-create__tag-selected .eva-task-label-chip').first().waitFor();
+    await page.getByRole('textbox',{name:'添加或编辑任务标签'}).fill('创建验收标签');
+    const draftCreate=page.locator('.eva-loop-task-create__tag-menu:visible .eva-loop-task-create__tag-create-option');
+    assert.equal(await draftCreate.locator('.eva-task-label-chip').textContent(),'创建验收标签','新建任务入口也呈现 Tag');
+    assert.equal(await draftCreate.locator('.eva-task-label-create-option > span:not(.eva-task-label-chip)').textContent(),'新建','新建任务入口显示相同文案');
+    assert.equal(await draftCreate.getAttribute('aria-label'),'新建标签：创建验收标签','输入名称保留在操作项无障碍名称中');
+    await page.waitForTimeout(250);
+    await page.screenshot({path:'/tmp/eva-task-create-label-menu.png'});
+    await draftCreate.click();
+    await page.locator('.eva-loop-task-create__tag-selected .eva-task-label-chip',{hasText:'创建验收标签'}).waitFor();
+    await page.locator('.eva-loop-task-create__tag-menu:visible .eva-loop-task-create__tag-manage').click();
+    await page.locator('.loop-label-mgr:visible').waitFor();
+    await page.locator('.semi-modal:has(.loop-label-mgr) .semi-modal-close').click();
+    await page.locator('.loop-label-mgr:visible').waitFor({state:'hidden'});
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留

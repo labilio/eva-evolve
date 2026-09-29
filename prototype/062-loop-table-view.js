@@ -44,9 +44,9 @@
           onKeyDown:event=>{if(event.key==='Escape')setOpen(false);}},children)},trigger);
     }
     function MenuItem(props){
-      const {role='menuitem',selected,disabled,icon,label,onClick,content,variant,muted=false}=props;
+      const {role='menuitem',selected,disabled,icon,label,onClick,content,variant,muted=false,ariaLabel}=props;
       const extra=role==='option'?{'aria-selected':!!selected}:{'aria-current':selected?'true':undefined};
-      return h('button',{type:'button',role,disabled,...extra,
+      return h('button',{type:'button',role,disabled,'aria-label':ariaLabel,...extra,
         className:'eva-task-table__menu-item'+(selected?' is-selected':'')+(variant==='action'?' is-action':'')+(muted?' is-muted':''),
         onMouseDown:event=>event.preventDefault(),onClick},
         variant==='action'?null:h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
@@ -456,7 +456,7 @@
               selected:attached.some(item=>item.id===label.id),
               content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
             :!needle?h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签'):null,
-            needle&&!exact?h(MenuItem,{variant:'action',icon:h(icons.Plus,{size:14}),label:'创建标签“'+creating.trim()+'”',onClick:create}):null),
+            needle&&!exact?h(MenuItem,{variant:'action',ariaLabel:'新建标签：'+creating.trim(),content:root.EvaLoopTaskComponents.labelCreateOption(React,icons.Plus,creating),onClick:create}):null),
           h('div',{className:'eva-task-table__menu-sep'}),
           h(MenuItem,{variant:'action',muted:true,icon:h(icons.Settings2,{size:14,'aria-hidden':true}),label:'管理标签',onClick:()=>{setOpen(false);setManagerOpen(true);}})),
         h(LabelManagementModal,{visible:managerOpen,onClose:()=>setManagerOpen(false),onChanged:()=>{setLabels(evaTaskLabels(project));onChanged&&onChanged();}}));

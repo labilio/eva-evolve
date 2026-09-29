@@ -50,13 +50,14 @@
 .eva-loop-task-create__tag-selected { display: flex; flex-wrap: wrap; gap: 6px; }
 .eva-loop-task-create__tag-chip { display:inline-flex; align-items:center; padding:0; border:0; background:transparent; font:inherit; cursor:pointer; }
 .eva-loop-task-create__tag-chip:hover .eva-task-label-chip { filter:brightness(.96); }
-.eva-loop-task-create__tag-menu { width: min(568px, calc(100vw - 64px)); max-height: 200px; overflow-y: auto; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
+.eva-loop-task-create__tag-menu { width: min(256px, calc(100vw - 64px)); max-height: 200px; overflow-y: auto; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline); }
 .eva-loop-task-create__tag-menu button,
 .eva-loop-task-create__tag-menu p { display: block; box-sizing: border-box; width: 100%; min-height: 32px; margin: 0; padding: 6px 10px; border: 0; background: transparent; color: var(--semi-color-text-0); font: inherit; line-height: 20px; text-align: left; }
 .eva-loop-task-create__tag-menu button { display:flex; align-items:center; gap:8px; cursor:pointer; }
 .eva-loop-task-create__tag-check { margin-left:auto; color:var(--semi-color-primary); }
 .eva-loop-task-create__tag-menu button:hover { background: var(--eva-overlay-hover); }
-.eva-loop-task-create__tag-menu .eva-loop-task-create__tag-create-option { color: var(--semi-color-primary); }
+.eva-loop-task-create__tag-separator { height:1px; margin:4px 10px; background:var(--eva-border-faint); }
+.eva-loop-task-create__tag-menu .eva-loop-task-create__tag-manage { color:var(--eva-text-secondary-accessible); }
 .eva-loop-task-create__tag-menu p { color: var(--semi-color-text-2); }
 
 /* Child popups share the modal stacking context, outside its scroll clipping. */
