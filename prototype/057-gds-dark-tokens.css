@@ -409,7 +409,7 @@ body[theme-mode="dark"] {
 
 /* ============================================================
    Part 3 · 顶栏元信息（B1）
-   .eva-tb-item（✦100M Token / 帮助中心 / 反馈问题）基态未声明颜色、只继承标题栏，
+   .eva-tb-item（✦100M Token / 产品文档 / 反馈问题）基态未声明颜色、只继承标题栏，
    暗色下实测对比度 3.19 未达 AA；.eva-tb-updated 走 --text-tertiary（049 映射到
    --eva-text-muted），同样偏暗。这里按「承载必要信息的小字不得用 muted」的规范要求
    （gds §14 / evamate §10）在暗色下提档到 secondary 档。

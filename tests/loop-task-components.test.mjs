@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 function setup(){
-  const window={};
+  const window={__EVA_DEMO_TIME:{TASK_VIEW_NOW:"2026-09-29T12:00:00+08:00"}};
+  vm.runInNewContext(fs.readFileSync(new URL('../prototype/063-task-time.js',import.meta.url),'utf8'),{window});
   vm.runInNewContext(fs.readFileSync(new URL('../prototype/062-loop-task-components.js',import.meta.url),'utf8'),{window});
   const React={createElement:(type,props,...children)=>({type,props:props||{},children:children.flat()})};
   const lucide={CircleDashed:'CircleDashed',Circle:'Circle',CircleCheck:'CircleCheck'};
@@ -59,5 +60,5 @@ test('项目任务标签片在各视图共用中性外观与名称',()=>{
   assert.match(chip.props.className,/loop-label-chip eva-task-label-chip/);
   assert.equal(chip.props.style,undefined);
   assert.equal(chip.children[0],label.name);
-  assert.equal(api.formatDate('2026-09-25'),'9月25日');
+  assert.equal(api.formatDate('2026-09-25'),'09-25');
 });

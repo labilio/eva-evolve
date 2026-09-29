@@ -9,15 +9,16 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   const id=typeof ref==='string'?ref:ref?.id||ref?.uid;if(!id)return null;
   const actor=store.actorId();
   const human=store.person(id);
-  if(human)return {id,name:human.name,kind:'human',departmentL2:human.departmentL2||root.__EVA_CONTACT_L2_DEPARTMENTS?.[id]||human.dept||'',avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};
+  if(human){const deptFull=human.deptFull||root.__EVA_ORG_UNITS?.[human.dept]||'';return {id,name:human.name,kind:'human',subtitle:'联系人',departmentL2:deptFull.split('/').filter(Boolean).pop()||human.dept||'',deptFull,avatar:portrait(id),owner:null,action:id===actor?null:{label:'发消息',personId:id}};}
   const alias=team?.getSnapshot().identityAliases?.[id]||root.__EVA_CONTACT_IDENTITY_ALIASES?.[id];
   if(alias)return resolve(alias);
   const persona=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='persona');
   const clone=store.clone(id)||root.__EVA_CONTACT_PERSONAS?.find(i=>i.id===id);
   if(persona||clone){
-   const p=persona||clone,owner=store.person(persona?ownerId:p.ownerId);
+   const p=persona||clone,ownerRefId=persona?ownerId:p.ownerId,own=actor===ownerRefId,owner=store.person(ownerRefId);
    const appearance=root.EvaAIIdentity.cloneAppearance(owner);
-   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:null,hint:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':'可在已加入的项目群中 @ 协作。'};
+   // 本人的分身可以直接私聊；他人分身仍只在已加入的项目群中 @ 协作，查看不授予私聊权限。
+   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:own?link('发送消息','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(p.id)):null,hint:own?undefined:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':'可在已加入的项目群中 @ 协作。'};
   }
   const assistant=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='assistant');
   if(assistant){

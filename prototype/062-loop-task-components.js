@@ -60,13 +60,12 @@
     return React.createElement(Field,props);
   }
   function formatDate(value){
-    const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(value||''));
-    return match?Number(match[2])+'月'+Number(match[3])+'日':'';
+    return root.EvaTaskTime?.compactDate(value)||'';
   }
   function dateTrigger(React,{label='截止日期',value,icon,open=false,overdue=false,className='',textClassName='',iconClassName=''}){
     return React.createElement('button',{type:'button',
       className:['eva-task-date-trigger',className,overdue?'is-overdue':''].filter(Boolean).join(' '),
-      'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open,title:value?value:undefined},
+      'aria-label':label,'aria-haspopup':'dialog','aria-expanded':open,'data-eva-tooltip':value?label+' '+root.EvaTaskTime.fullDate(value):undefined},
       icon?React.createElement(icon,{size:14,className:['eva-task-date-trigger__icon',iconClassName].filter(Boolean).join(' '),'aria-hidden':true}):null,
       React.createElement('span',{className:['eva-task-date-trigger__text',textClassName,value?'':'is-empty',overdue?'is-overdue':''].filter(Boolean).join(' ')},value?formatDate(value):label));
   }

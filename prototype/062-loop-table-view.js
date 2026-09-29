@@ -63,7 +63,7 @@
     const SYSTEM_COLUMNS=Object.keys(COLUMN_LABELS);
     const DEFAULT_COLUMNS=[
       {key:'title',width:360},{key:'status',width:150},{key:'priority',width:130},
-      {key:'assignee',width:180},{key:'due_date',width:140},{key:'labels',width:180}
+      {key:'assignee',width:180},{key:'due_date',width:180},{key:'labels',width:180}
     ];
     /* 与 Multica SORTABLE_COLUMNS 一致：title 可经菜单排序，但不可拖拽重排。 */
     const SORTABLE_COLUMNS={title:'title',status:'status',priority:'priority',start_date:'start_date',due_date:'due_date',created_at:'created_at',updated_at:'updated_at'};
@@ -91,16 +91,12 @@
       return list.length?list:DEFAULT_COLUMNS.map(item=>({...item}));
     }
     function clampWidth(key,width){
-      const min=key==='title'?260:96,max=640;
+      const min=key==='title'?260:key==='created_at'||key==='updated_at'||key==='due_date'||key==='start_date'?180:96,max=640;
       const fallback=key==='title'?360:160;
       const parsed=Math.round(Number(width));
       return Math.max(min,Math.min(max,Number.isFinite(parsed)?parsed:fallback));
     }
-    function formatAbsoluteDate(value){
-      if(!value)return '';
-      try{return new Intl.DateTimeFormat('zh-CN',{month:'short',day:'numeric',year:'numeric'}).format(new Date(value));}
-      catch{return String(value);}
-    }
+    const taskTime=root.EvaTaskTime;
 
     /* ---------- CSV（移植 Multica table-view-model 的转义与拼装） ---------- */
     function escapeCsvCell(value){
@@ -720,8 +716,8 @@
               case 'labels':return (issue.labels||[]).map(label=>label.name).join(', ');
               case 'start_date':return issue.start_date||'';
               case 'due_date':return issue.due_date||'';
-              case 'created_at':return formatAbsoluteDate(issue.created_at);
-              case 'updated_at':return formatAbsoluteDate(issue.updated_at);
+              case 'created_at':return issue.created_at||'';
+              case 'updated_at':return issue.updated_at||'';
               case 'child_progress':{
                 const progress=built.progressOf(issue.id);
                 return progress?progress.done+'/'+progress.total:'';
@@ -767,7 +763,7 @@
           case 'start_date':return h(DateCell,{issue,field:'start_date',label:'开始日期',applyUpdate});
           case 'due_date':return h(DateCell,{issue,field:'due_date',label:'截止日期',applyUpdate});
           case 'created_at':case 'updated_at':
-            return h('span',{className:'eva-task-table__timestamp'},formatAbsoluteDate(issue[columnKey])||'—');
+            return h('time',{className:'eva-task-table__timestamp',dateTime:issue[columnKey]||undefined},taskTime.fullTimestamp(issue[columnKey])||'—');
           case 'child_progress':{
             const progress=built.progressOf(issue.id);
             if(!progress)return h('span',{className:'eva-task-table__muted'},'空');

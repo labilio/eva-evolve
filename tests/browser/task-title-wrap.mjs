@@ -10,7 +10,7 @@ test('Edge：任务标题随文字和抽屉宽度换行，新建时保留 200 �
   const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
   try{
     const page=await browser.newPage({viewport:{width:1280,height:800}});
-    await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103`);
+    await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-104`);
     const title=page.locator('.loop-idp__title');
     await title.waitFor();
     assert.equal(await title.evaluate(el=>el.tagName),'TEXTAREA');

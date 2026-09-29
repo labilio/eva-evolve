@@ -124,6 +124,13 @@
   padding: 0 10px;
   border-radius: var(--eva-radius-key);
 }
+.app-shell .app-titlebar a.eva-tb-item {
+  text-decoration: none;
+}
+.app-shell .app-titlebar a.eva-tb-item:focus-visible {
+  outline: 2px solid var(--eva-action-primary);
+  outline-offset: 2px;
+}
 .app-shell .app-titlebar__button {
   width: 28px;
   height: 28px;

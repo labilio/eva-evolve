@@ -3,7 +3,7 @@
  */
 (function(root){
 'use strict';
-root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIcon,useNavigate},store){
+root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store){
  const h=R.createElement,model=root.EvaContactIdentities.create(store);
  function Appearance({profile,size=32}){
   return profile.appearance?root.EvaAIIdentity.avatar(profile.appearance,size,h):h('img',{className:'eva-profile-human-avatar',src:profile.avatar,alt:'',width:size,height:size,draggable:false});
@@ -88,11 +88,11 @@ root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIc
   R.useSyncExternalStore(store.subscribe,store.getSnapshot);
   R.useSyncExternalStore(root.EvaAITeam.subscribe,root.EvaAITeam.getSnapshot);
   R.useSyncExternalStore(root.EvaDigitalEmployeesStore.subscribe,root.EvaDigitalEmployeesStore.getSnapshot);
-  const [ownerId,setOwnerId]=R.useState(null),[error,setError]=R.useState('');
+  const [ownerId,setOwnerId]=R.useState(null),[error,setError]=R.useState(''),[page,setPage]=R.useState('identity');
   const [avatarEditing,setAvatarEditing]=R.useState(!!startAvatarEditing),[avatarError,setAvatarError]=R.useState(''),[cropImage,setCropImage]=R.useState(null);
   const id=typeof identity==='string'?identity:identity?.id||identity?.uid;
   const actor=store.snapshot().actorId;
-  R.useEffect(()=>{setOwnerId(null);setError('');setAvatarEditing(!!startAvatarEditing);setAvatarError('');setCropImage(null);},[id,actor,startAvatarEditing]);
+  R.useEffect(()=>{setOwnerId(null);setError('');setPage('identity');setAvatarEditing(!!startAvatarEditing);setAvatarError('');setCropImage(null);},[id,actor,startAvatarEditing]);
   const profile=model.resolve(ownerId||id),owner=profile?.owner&&model.resolve(profile.owner.id);
   // Portrait ownership follows the identity data: self, clone owner, or the
   // assistant owner. Employees, project agents and squads never expose editing.
@@ -123,33 +123,64 @@ root.EvaIdentityCard={create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIc
    if(!store.canRead(profile.project.id,store.snapshot().actorId)){setError('当前无法访问该项目。');return;}
    onClose();navigate('/collab?evaProject='+encodeURIComponent(profile.project.id));
   };
-  const field=(label,value,multiline=false)=>h('div',{className:'eva-person-card__field'+(multiline?' eva-person-card__field--multiline':''),key:label},h('dt',null,label),h('dd',null,value));
-  const hasDetails=owner||profile?.description||profile?.ownership||profile?.project;
+  const field=(label,value,multiline=false)=>h('div',{className:'eva-person-card__row'+(multiline?' eva-person-card__row--multiline':''),key:label},h('span',{className:'eva-person-card__row-label'},label),h('span',{className:'eva-person-card__row-value'},value));
+  const run=fn=>{try{fn();setError('');}catch(e){setError(e.message);}};
+  // 免 @ 回答仅本人的云端分身可见，点开直接进入按群开关，不再套一层管理菜单。
+  const manageClone=!!profile&&profile.kind==='clone'&&profile.owner?.id===actor;
+  const mentionGroups=manageClone&&typeof store.cloneMentionFreeGroups==='function'?store.cloneMentionFreeGroups(profile.owner.id):[];
+  const enabledGroups=mentionGroups.filter(group=>group.noMention),otherGroups=mentionGroups.filter(group=>!group.noMention);
+  const goBack=()=>{setError('');if(page==='mentionFree')setPage('identity');else setOwnerId(null);};
+  const pageTitle=page==='mentionFree'?'免 @ 回答':'身份资料';
+  const canGoBack=page!=='identity'||!!ownerId;
+  const hasRows=owner||profile?.deptFull||profile?.description||profile?.ownership||profile?.project||manageClone;
+  // 「部门」沿用企业微信名片的信息层级：最末级组织做大字主值，
+  // 上层链路做小字灰字副行并完整换行——任意层数都放得下，不需要截断或悬停。
+  const orgSegments=profile?.deptFull?String(profile.deptFull).split('/').filter(Boolean):[];
+  const orgLeaf=orgSegments.length?orgSegments[orgSegments.length-1]:'';
+  const orgParents=orgSegments.slice(0,-1).join('/');
+  const mentionSection=(title,rows)=>h('section',{className:'eva-person-card__mention-section',key:title},title&&h('p',{className:'eva-person-card__mention-section-title'},title),h('div',{className:'eva-person-card__mention-list'},rows.map(group=>h('div',{className:'eva-person-card__mention-row',key:group.groupId},h('div',{className:'eva-person-card__mention-main'},h('span',{className:'eva-person-card__mention-name',title:group.name},group.name),h('span',{className:'eva-person-card__mention-status'},group.noMention?'已开启免 @ 回答':'需要 @ 才回答')),Switch&&h(Switch,{'aria-label':group.name+'：'+(group.noMention?'已开启免 @ 回答':'需要 @ 才回答'),checked:group.noMention,onChange:value=>run(()=>store.setCloneMentionFree(profile.owner.id,actor,group.groupId,value))})))));
   return h(R.Fragment,null,id&&(popupHost||!root.document)&&h(Modal,{
-   visible:true,centered:true,getPopupContainer:popupContainer,className:'eva-person-card-modal',width:440,title:null,
+   visible:true,centered:true,getPopupContainer:popupContainer,className:'eva-person-card-modal',width:420,title:null,
    'aria-label':profile?profile.name+'的资料':'身份资料',onCancel:onClose,footer:null,maskClosable:true
   },h('article',{className:'eva-person-card'},
-   ownerId&&!avatarEditing&&h(Button,{className:'eva-person-card__back',theme:'borderless',type:'tertiary',size:'small',icon:h(BackIcon,{size:16}),onClick:()=>{setOwnerId(null);setError('');}},'返回'),
+   !avatarEditing&&profile&&h('header',{className:'eva-person-card__head'},
+    canGoBack&&h(Button,{className:'eva-person-card__back',theme:'borderless',type:'tertiary',icon:h(BackIcon,{size:20}),'aria-label':'返回',onClick:goBack}),
+    h('h2',{className:'eva-person-card__title'},pageTitle)),
    avatarEditing&&profile&&canEditAvatar?h('div',{className:'eva-avatar-editor__host'},
      h(AvatarEditor,{current:profile.appearance?profile.appearance.avatar:profile.avatar,initialImage:cropImage,onCancel:closeEditor,onSave:finishAvatar}),
      avatarError&&h('p',{className:'eva-person-card__error',role:'alert'},avatarError))
    :profile?h(R.Fragment,null,
-    h('div',{className:'eva-person-card__scroll'},
-     h('header',{className:'eva-person-card__identity'},
-      h('div',{className:'eva-person-card__avatar'},h(Appearance,{profile,size:56}),canEditAvatar&&CameraIcon&&h(R.Fragment,null,
-       h('button',{type:'button',className:'eva-person-card__avatar-edit','aria-label':'更换头像',onClick:pickAvatar},h(CameraIcon,{size:20})),
-       h('input',{ref:avatarFileRef,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择头像图片',onChange:onAvatarFile}))),
-      h('div',{className:'eva-person-card__name-row'},h('h2',{title:profile.name},profile.name),profile.kind!=='human'&&root.EvaAIIdentity.badge(h)),
-      profile.subtitle&&h('p',{className:'eva-person-card__type'},profile.subtitle)),
-     avatarError&&h('p',{className:'eva-person-card__error',role:'alert'},avatarError),
-     hasDetails&&h('dl',{className:'eva-person-card__details'},
-      owner&&field('所属人',h(Button,{className:'eva-person-card__person-link',theme:'borderless',type:'tertiary','aria-label':'所属人：'+owner.name,onClick:()=>setOwnerId(owner.id)},h(Appearance,{profile:owner,size:24}),h('span',null,owner.name))),
-      profile.description&&field('简介',h('p',null,profile.description),true),
-      profile.ownership&&field('归属',profile.ownership),
-      profile.project&&field('所属项目',h(Button,{className:'eva-person-card__project-link',theme:'borderless',type:'tertiary',onClick:openProject},h(ProjectIdentity,{project:profile.project}))))),
-    (profile.action||profile.hint||error)&&h('footer',{className:'eva-person-card__actions'},
-     error&&h('p',{role:'alert',className:'eva-person-card__error'},error),
-     profile.action?h(Button,{theme:'solid',type:'primary',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
+    page==='mentionFree'?h(R.Fragment,null,
+     h('div',{className:'eva-person-card__scroll'},
+      h('p',{className:'eva-person-card__mention-hint'},'开启后，这个 AI 在这些群及其子区不需要 @ 也会回答；其他 AI、其他群不受影响。'),
+      mentionGroups.length?h(R.Fragment,null,
+       enabledGroups.length?mentionSection('已开启（'+enabledGroups.length+'）',enabledGroups):null,
+       otherGroups.length?mentionSection(enabledGroups.length?'其他群':'群聊',otherGroups):null)
+      :h('p',{className:'eva-person-card__mention-empty',role:'status'},'这个 AI 暂未加入任何群聊。')),
+     error&&h('footer',{className:'eva-person-card__actions'},h('p',{role:'alert',className:'eva-person-card__error'},error)))
+    :h(R.Fragment,null,
+     h('div',{className:'eva-person-card__scroll'},
+      h('header',{className:'eva-person-card__identity'},
+       h('div',{className:'eva-person-card__avatar'},h(Appearance,{profile,size:56}),canEditAvatar&&CameraIcon&&h(R.Fragment,null,
+        h('button',{type:'button',className:'eva-person-card__avatar-edit','aria-label':'更换头像',onClick:pickAvatar},h(CameraIcon,{size:20})),
+        h('input',{ref:avatarFileRef,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择头像图片',onChange:onAvatarFile}))),
+       h('div',{className:'eva-person-card__heading'},
+        h('div',{className:'eva-person-card__name-row'},h('h2',{title:profile.name},profile.name),profile.kind!=='human'&&root.EvaAIIdentity.badge(h)),
+        profile.subtitle&&h('p',{className:'eva-person-card__type'},profile.subtitle))),
+      avatarError&&h('p',{className:'eva-person-card__error',role:'alert'},avatarError),
+      hasRows&&h('div',{className:'eva-person-card__details'},
+       /* 组织链路按 / 分段：插入 wbr 让换行优先落在段边界，而不是把「应用组」这类词拆开；
+          单段本身超长时仍由 .org-path 的 overflow-wrap:anywhere 兜底，不截断。 */
+       profile.deptFull&&h('div',{className:'eva-person-card__row eva-person-card__row--org',key:'部门'},h('span',{className:'eva-person-card__row-label'},'部门'),h('span',{className:'eva-person-card__row-value eva-person-card__row-value--org'},h('span',{className:'eva-person-card__org-leaf'},orgLeaf),orgParents&&h('span',{className:'eva-person-card__org-path'},...orgParents.split('/').flatMap((seg,i,all)=>i<all.length-1?[seg+'/',h('wbr',{key:'w'+i})]:[seg])))),
+       owner&&field('所属人',h(Button,{className:'eva-person-card__person-link',theme:'borderless',type:'tertiary','aria-label':'所属人：'+owner.name,onClick:()=>setOwnerId(owner.id)},h(Appearance,{profile:owner,size:24}),h('span',null,owner.name))),
+       profile.description&&field('简介',h('p',null,profile.description),true),
+       profile.ownership&&field('归属',profile.ownership),
+       profile.project&&field('所属项目',h(Button,{className:'eva-person-card__project-link',theme:'borderless',type:'tertiary',onClick:openProject},h(ProjectIdentity,{project:profile.project}))),
+       manageClone&&h(Button,{className:'eva-person-card__row eva-person-card__row--button',key:'manage',theme:'borderless',type:'tertiary',onClick:()=>setPage('mentionFree')},h('span',{className:'eva-person-card__row-label'},'免 @ 回答'),h('span',{className:'eva-person-card__row-value'},h('span',{className:'eva-person-card__row-desc'},'选择哪些群里 AI 不需要 @ 也会回答')),ChevronRight&&h(ChevronRight,{size:16,className:'eva-person-card__row-chevron','aria-hidden':true})))),
+     (profile.action||profile.hint||error)&&h('footer',{className:'eva-person-card__actions'},
+      error&&h('p',{role:'alert',className:'eva-person-card__error'},error),
+      profile.action?h(Button,{className:'eva-person-card__cta',theme:'solid',type:'primary',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
+   )
    ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看。'))));
  }
  return {IdentityCard,IdentityAppearance:Appearance,ProjectIdentity,identityModel:model,AvatarEditor,readAvatarFile};

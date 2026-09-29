@@ -7,7 +7,7 @@
     return {conversationId, messageId:reply.messageId, fromName:reply.fromName, digest:reply.digest};
   }
   function create(seed, persist, resolveProjectInfo){
-    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},groupGovernance:{},memberAdditions:[],sequence:0,...seed}));
+    let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},groupGovernance:{},cloneMentionFree:{},memberAdditions:[],sequence:0,...seed}));
     // Consolidate legacy records by stable owner ID. Existing memberships and
     // messages follow the same owner's canonical identity, never another person.
     const cloneAliases={...(state.cloneAliases||{})},byOwner=new Map();
@@ -52,7 +52,7 @@
     const groupKey=id=>{const target=state.threads[id]||id;if(target?.startsWith('all:')&&state.projects[target.slice(4)])return target;if(state.groups[target])return target;return null;};
     const groupScope=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.groups[key]);};
     const governanceRecord=id=>state.groupGovernance?.[groupKey(id)]||{};
-    const ensureGovernance=id=>{const key=groupKey(id)||fail('群聊不存在');state.groupGovernance||={};return state.groupGovernance[key]||={managerIds:[],botAdminIds:[],allowNoMention:true,groupMd:''};};
+    const ensureGovernance=id=>{const key=groupKey(id)||fail('群聊不存在');state.groupGovernance||={};return state.groupGovernance[key]||={managerIds:[],botAdminIds:[],groupMd:''};};
     const manager=(id,uid)=>{
       const key=groupKey(id);
       if(!key){const s=scope(id);if(!member(id,uid))return false;if(s.ownerId===uid)return true;const p=state.projects[projectId(id)];return !!p&&p.humans.some(m=>m.id===uid&&['owner','admin'].includes(m.role));}
@@ -221,6 +221,26 @@
         state.followedConversations||={};state.followedConversations[uid]||={};channelIds.forEach(cid=>state.followedConversations[uid][cid]=true);
         notify();return id;
       },
+      deleteConversationCategory(uid,id){
+        requireHuman(uid);
+        if(!id||id==='scope:other')fail('默认分组不可删除');
+        if(!api.conversationCategories(uid).some(c=>c.id===id))fail('分组不存在');
+        const assignments=state.conversationCategoryAssignments?.[uid]||{};
+        const followed=state.followedConversations?.[uid]||{};
+        for(const [channelId,categoryId] of Object.entries(assignments)){
+          if(categoryId!==id)continue;
+          delete followed[channelId];
+          delete assignments[channelId];
+          for(const threadId of Object.keys(state.threads||{}))if(state.threads[threadId]===channelId)delete followed[threadId];
+          for(const thread of root.__EVA_IM_DEMO?.channels?.find(channel=>channel.id===channelId)?.threads||[])delete followed[thread.id];
+        }
+        state.conversationCategories[uid]=state.conversationCategories[uid].filter(c=>c.id!==id);
+        if(state.followOrders?.[uid]){
+          delete state.followOrders[uid]['channels:'+id];
+          state.followOrders[uid].categories=(state.followOrders[uid].categories||[]).filter(categoryId=>categoryId!==id);
+        }
+        notify();
+      },
       moveConversationCategory(uid,channel,categoryId){
         requireHuman(uid);
         if(!api.conversationCategories(uid).some(c=>c.id===categoryId))fail('分组不存在');
@@ -359,7 +379,7 @@
         const humanIds=new Set(s.humans.map(item=>item.id)),manualManagerIds=(record.managerIds||[]).filter(uid=>humanIds.has(uid)&&uid!==s.ownerId);
         const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid));
         const botIds=new Set(api.groupMembers(key).filter(item=>item.kind!=='human').map(item=>item.id));
-        return {groupId:key,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),allowNoMention:record.allowNoMention!==false,groupMd:String(record.groupMd||'')};
+        return {groupId:key,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
       },
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
@@ -367,11 +387,28 @@
         const record=ensureGovernance(key),ids=new Set(record.managerIds||[]);enabled?ids.add(target):ids.delete(target);record.managerIds=[...ids];notify();
       },
       setGroupBotAdmin(id,uid,target,enabled){
-        requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可设置 Bot 管理员');
+        requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可设置 AI 管理员');
         if(!api.groupMembers(key).some(item=>item.id===target&&item.kind!=='human'))fail('只能设置当前群内的 AI 成员');
         const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify();
       },
-      setGroupAllowNoMention(id,uid,enabled){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可修改 Bot 回复规则');ensureGovernance(key).allowNoMention=!!enabled;notify();},
+      // 免 @ 回答只保留 Bot 级：以主人稳定 ID 定位唯一分身，再按其所在群逐群开启。
+      cloneMentionFreeGroups(ownerId){
+        const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);if(!c)return [];
+        const actor=state.actorId,prefs=state.cloneMentionFree?.[c.id]||{},rows=[];
+        const add=(key,name,projectId)=>{if(!key||!api.canRead(key,actor))return;rows.push({groupId:key,name:name||key,projectId:projectId||null,noMention:!!prefs[key]});};
+        for(const p of Object.values(state.projects))if((p.cloneIds||[]).includes(c.id))add('all:'+p.id,projectInfo(p.id).name||'全员群',p.id);
+        for(const g of Object.values(state.groups))if((g.cloneIds||[]).includes(c.id))add(g.id,g.name||g.id,g.projectId||null);
+        return rows.sort((a,b)=>(Number(b.noMention)-Number(a.noMention))||a.name.localeCompare(b.name,'zh-Hans-CN'));
+      },
+      setCloneMentionFree(ownerId,uid,groupId,enabled){
+        requireHuman(uid);const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);if(!c)fail('分身不存在');
+        if(c.ownerId!==uid)fail('仅分身主人可修改免 @ 回答');
+        const key=groupKey(groupId)||fail('群聊不存在');if(!api.canRead(key,uid))fail('请先加入群聊');
+        state.cloneMentionFree||={};const prefs=state.cloneMentionFree[c.id]||(state.cloneMentionFree[c.id]={});
+        enabled?prefs[key]=true:delete prefs[key];
+        if(!Object.keys(prefs).length)delete state.cloneMentionFree[c.id];
+        notify();
+      },
       setGroupMd(id,uid,value){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可编辑 GROUP.md');ensureGovernance(key).groupMd=String(value||'');notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length;notify();},
@@ -437,6 +474,20 @@
           const message=(state.messages['all:prod']||[]).find(m=>m.fixtureId===fixtureId);
           const fixture=allHandsFixtures.find(m=>m.fixtureId===fixtureId);
           if(oldTexts.includes(message?.text)&&fixture?.text){message.text=fixture.text;changed=true;}
+        }
+        for(const fixtureId of [
+          'supply-chat-v5:all:prod:deleted-project-task-link',
+          'supply-chat-v5:all:prod:cross-project-accessible'
+        ]){
+          const message=(state.messages['all:prod']||[]).find(m=>m.fixtureId===fixtureId);
+          const fixture=allHandsFixtures.find(m=>m.fixtureId===fixtureId);
+          const oldDeletedProjectText=`这里放一条项目已删除后的模拟失效链接，用来检查提示与原会话是否保留。编号与供应链项目里的任务相同，也不能误打开那个任务：
+
+[已删除项目的 SC-103（模拟）](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)`;
+          const normalizedText=message?.text?.replaceAll('\\n\\n','\n\n');
+          if(message?.text&&fixture?.text&&message.text!==fixture.text&&(normalizedText===fixture.text||fixtureId==='supply-chat-v5:all:prod:deleted-project-task-link'&&normalizedText===oldDeletedProjectText)){
+            message.text=fixture.text;changed=true;
+          }
         }
         if(changed)notify();
       },

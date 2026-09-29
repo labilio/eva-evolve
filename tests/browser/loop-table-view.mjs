@@ -63,9 +63,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
       .filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
     assert.deepEqual(humanNames,[],'短姓名应完整显示: '+humanNames.join(','));
 
-    // 截止日期（Multica DateOnlyPicker 合同）：本地化短格式 M月D日、空态占位、面板含「无截止日期」行
+    // 截止日期：当年省略年份，跨年直接显示年份；空态与清除仍沿用原编辑器。
     const dateLabels=(await table.locator('.eva-task-table__row .eva-task-table__cell-trigger[aria-label="截止日期"] .eva-task-table__cell-label').allTextContents()).map(t=>t.trim());
-    for(const t of dateLabels.filter(t=>t&&t!=='截止日期'))assert.match(t,/^\d{1,2}月\d{1,2}日$/,'截止日期应为本地化短格式: '+t);
+    for(const t of dateLabels.filter(t=>t&&t!=='截止日期'))assert.match(t,/^(?:\d{4}-)?\d{2}-\d{2}$/,'截止日期应按年份分层: '+t);
     const clippedDates=await table.locator('.eva-task-table__row .eva-task-table__cell-trigger[aria-label="截止日期"] .eva-task-table__cell-label').evaluateAll(
       els=>els.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
     assert.deepEqual(clippedDates,[],'日期单元格不应截断: '+clippedDates.join(','));
@@ -329,7 +329,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await detailDate.locator('.eva-task-date-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'详情应使用同一紧凑日期面板');
     await page.locator('.eva-loop-task-date-panel:visible .semi-datepicker-day[aria-label$="-15"]').first().click();
-    assert.match((await detailDate.locator('.eva-task-date-trigger').textContent())||'',/15日/,'详情选日应写回共享日期字段');
+    assert.match((await detailDate.locator('.eva-task-date-trigger').textContent())||'',/^(?:\d{4}-)?\d{2}-15$/,'详情选日应按任务统一日期格式写回共享字段');
     await page.locator('.eva-loop-task-date-panel:visible').waitFor({state:'detached'}).catch(()=>{});
     await detailDate.locator('.eva-task-date-trigger').click();
     await page.locator('.eva-loop-task-date-panel:visible .eva-task-date-clear').click();

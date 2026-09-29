@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {pinyin} from 'pinyin-pro';
 import { createPatchedRuntime } from '../tools/build-runtime.mjs';
 const runtime = createPatchedRuntime().source;
 const start = runtime.indexOf('createIssue=rt=>{');
@@ -12,7 +14,8 @@ function setup() {
   const lists = {prod:[{id:'old',identifier:'SC-101',run_id:'old-run',description:'old description'}],q:[{id:'q-old',identifier:'QA-9'}]};
   const scope = {humans:[{id:'owner'},{id:'member'}],cloneIds:['clone'],employeeIds:['employee']};
   const store = {taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',people:[{id:'owner',name:'项目所有者'},{id:'member',name:'当前成员'},{id:'outsider',name:'外部联系人'}],clones:[{id:'clone',name:'成员分身'},{id:'clone2',name:'未入项目分身'}],projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
-  const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
+  const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{pinyinPro:{pinyin}},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
+  vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
   const helperStart=runtime.indexOf('function evaNormalizeTaskStatus'),helperEnd=runtime.indexOf('function evaNormalizeTaskList',helperStart);
   vm.runInNewContext(runtime.slice(helperStart,helperEnd),ctx);
   vm.runInNewContext(runtime.slice(start,end),ctx);

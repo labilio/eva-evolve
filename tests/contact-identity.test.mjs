@@ -19,7 +19,8 @@ test('身份按 ID 解析，同名不会串人，自己与停用账号不提供�
 test('分身所属人为真实主人，查看不授予他人分身私聊权限',()=>{
  const {model}=setup();assert.ok(model);
  const p=model.resolve('clone-a');assert.equal(p.owner.id,'a');assert.equal(p.action,null);
- assert.equal(model.resolve('mine').action,null);
+ // 本人的分身可私聊；他人分身仍只在群内 @，查看不授予私聊权限。
+ assert.equal(model.resolve('mine').action.url,'/messages?evaIM=my-ai&evaIdentity=mine');
 });
 test('公共数字员工没有个人主人，沿用数字员工对话入口',()=>{
  const {model}=setup();assert.ok(model);const p=model.resolve('staff');
@@ -110,4 +111,22 @@ test('身份渲染不复制全量聊天状态，切换账号后仍实时更新',
  store.snapshot=original;
  const detached=store.snapshot();detached.actorId='b';
  assert.equal(store.actorId(),'a','快照仍与真实状态隔离');
+});
+
+test('联系人带「联系人」副标题与部门全路径，AI 身份不带部门',()=>{
+ const window={EvaAIIdentity:{projectAgentAppearance:()=>({markerKind:'bot'})},EvaAvatar:{personUri:id=>'avatar:'+id},__EVA_CURRENT_USER_PORTRAIT:'me',__EVA_COLLEAGUE_PORTRAIT:'eva',__EVA_ORG_UNITS:{'AI 产品共创':'吉利汽车集团/数智化中心/AI 中台/AI 产品共创'}};
+ loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ const store=window.EvaMembership.create({actorId:'me',people:[{id:'me',name:'王宜林',dept:'AI 产品共创'},{id:'other',name:'白宇',dept:'数据与算法',deptFull:'吉利汽车集团/数智化中心/数据与算法部'}],clones:[{id:'clone-a',ownerId:'me',name:'分身'}],projects:{}});
+ vm.runInNewContext(readFileSync('prototype/009-3-contact-identities.js','utf8'),{window});
+ const model=window.EvaContactIdentities.create(store,{team:{getSnapshot:()=>({identities:[]})},digital:{get:()=>null,hasInTeam:()=>false,appearance:()=>({})},ownerId:'me'});
+ assert.equal(model.resolve('me').kind,'human');
+ assert.equal(model.resolve('me').subtitle,'联系人');
+ assert.equal(model.resolve('other').subtitle,'联系人');
+ // 部门映射与人员记录上的 deptFull 都能得到全路径，AI 身份不输出部门。
+ assert.equal(model.resolve('me').deptFull,'吉利汽车集团/数智化中心/AI 中台/AI 产品共创');
+ assert.equal(model.resolve('other').deptFull,'吉利汽车集团/数智化中心/数据与算法部');
+ // 通讯录列表展示的部门与卡片「部门」同源：都取 deptFull 的最后一级，不再单独维护一份 L2 数据。
+ assert.equal(model.resolve('me').departmentL2,'AI 产品共创');
+ assert.equal(model.resolve('other').departmentL2,'数据与算法部');
+ assert.equal(model.resolve('clone-a').deptFull,undefined);
 });

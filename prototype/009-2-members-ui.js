@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   // Components receive the runtime's existing React and Semi instances.
-  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ProjectIcon,useNavigate,Toast},store,files){
+  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ChevronRight,ProjectIcon,useNavigate,Toast},store,files){
     const h=R.createElement;
     function HumanIdentity({id,detail,compact=false}){const person=store.person(id);return h('span',{className:'eva-members-human-identity'+(compact?' is-compact':'')},h('img',{className:'eva-members-human-avatar',alt:'',src:root.EvaAvatar.personUri(id),draggable:false}),h('span',{className:'eva-members-human-copy'},h('span',{className:'eva-members-human-name'},person?.name||id),detail&&h('span',{className:'eva-members-human-role'},detail)));}
     function CloneIdentity({clone}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(root.EvaAIIdentity.cloneAppearance(store.person(clone.ownerId)),32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},clone.name),root.EvaAIIdentity.badge(h))));}
@@ -19,8 +19,8 @@
       const legacyField=nameField||(withName?{label:'群聊名称',placeholder:'输入群聊名称',maxLength:50,required:true}:null),configuredFields=Array.isArray(fields)&&fields.length?fields:(legacyField?[legacyField]:[]);
       // 创建形态既可只有一个名称字段（新建群聊），也可承载「名称 + 附加字段」（新建项目的共同目标），仍复用同一套双栏选择区与同一提交校验。
       const fieldList=configuredFields.map((field,index)=>({...field,key:field.key||(index===0?'name':'field-'+index),id:field.id||(index===0?'eva-member-picker-name':'eva-member-picker-'+index)})),hasFields=fieldList.length>0,primaryKey=fieldList[0]?.key,fieldSignature=fieldList.map(field=>String(field.initialValue||'')).join('|'),searchEnabled=search??!single;
-      const [ids,setIds]=R.useState([]),[form,setForm]=R.useState({}),[query,setQuery]=R.useState(''),[error,setError]=R.useState(''),[invalid,setInvalid]=R.useState(null),[groupId]=R.useState(()=>'eva-member-picker-'+Math.random().toString(36).slice(2,8));
-      R.useEffect(()=>{if(!visible)return;setIds(initialSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled)));const next={};fieldList.forEach(field=>{next[field.key]=field.initialValue||'';});setForm(next);setQuery('');setError('');setInvalid(null);},[visible,title,fieldSignature,initialSelectedIds.join('|')]);
+      const [ids,setIds]=R.useState([]),[form,setForm]=R.useState({}),[query,setQuery]=R.useState(''),[error,setError]=R.useState(''),[invalid,setInvalid]=R.useState(null),[groupId]=R.useState(()=>'eva-member-picker-'+Math.random().toString(36).slice(2,8)),touched=R.useRef(new Set());
+      R.useEffect(()=>{if(!visible)return;touched.current.clear();setIds(initialSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled)));const next={};fieldList.forEach(field=>{next[field.key]=field.initialValue||'';});setForm(next);setQuery('');setError('');setInvalid(null);},[visible,title,fieldSignature,initialSelectedIds.join('|')]);
       const toggle=id=>{setIds(value=>single?[id]:value.includes(id)?value.filter(item=>item!==id):[...value,id]);setError('');setInvalid(null);};
       const normalized=query.trim().normalize('NFKC').toLocaleLowerCase();
       const visibleItems=items.filter(item=>!normalized||item.name.normalize('NFKC').toLocaleLowerCase().includes(normalized));
@@ -31,7 +31,7 @@
       const required=minimumSelection??(allowEmpty?0:1);
       // 提交时校验：按钮保持可点，点击后在出错字段旁给出行内错误并聚焦缺失字段，避免「点了没反应」被当成 bug。
       const invalidReason=()=>{
-        for(const field of fieldList){const value=String(form[field.key]||'').trim();if(field.required&&!value)return {scope:'field',key:field.key,text:'请输入'+field.label};if(field.maxLength&&value.length>field.maxLength)return {scope:'field',key:field.key,text:field.label+'最多 '+field.maxLength+' 个字符'};}
+        for(const field of fieldList){const value=String(form[field.key]||'').trim();if(field.required&&!value)return {scope:'field',key:field.key,text:'请输入'+field.label};if(field.maxLength&&value.length>field.maxLength)return {scope:'field',key:field.key,text:field.label+'最多 '+field.maxLength+' 个字符'};const reason=field.validate?.(value,form);if(reason)return {scope:'field',key:field.key,text:reason};}
         // 中文与拉丁字母之间留一个半角空格：memberLabel 可能是中文（群成员），也可能以 AI 开头（AI 小队成员）。
         if(chosen.length<required)return {scope:'members',text:'请至少选择 '+required+' 位'+(/^[A-Za-z]/.test(memberLabel)?' ':'')+memberLabel};
         return null;
@@ -42,7 +42,7 @@
       // 只有一个分组类别时不渲染分组头：该入口设定上不可能出现第二类身份，分组层没有区分作用。
       const groupless=declaredGroups.length<2;
       const pickerGroups=groupless?[{kind:declaredGroups[0]?.kind||'human',label:declaredGroups[0]?.label||'成员',items:declaredGroups[0]?.items}]:declaredGroups;
-      const fieldNode=field=>h('div',{key:field.key,className:'eva-member-picker__field'},h('label',{htmlFor:field.id},field.label),h(Input,{id:field.id,'aria-label':field.label,value:form[field.key]||'',onChange:value=>{setForm(old=>({...old,[field.key]:value}));setError('');setInvalid(null);},placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus===true||(field.autoFocus===undefined&&fieldList.length===1),...(invalid&&invalid.scope==='field'&&invalid.key===field.key?{'aria-invalid':true,'aria-describedby':field.id+'-error'}:{})}),invalid&&invalid.scope==='field'&&invalid.key===field.key&&h('p',{role:'alert',className:'eva-member-picker__field-error',id:field.id+'-error'},invalid.text));
+      const fieldNode=field=>h('div',{key:field.key,className:'eva-member-picker__field'},h('label',{htmlFor:field.id},field.label),h(Input,{id:field.id,'aria-label':field.label,value:form[field.key]||'',onChange:value=>{touched.current.add(field.key);setForm(old=>{const next={...old,[field.key]:field.normalize?field.normalize(value):value};for(const derived of fieldList)if(derived.deriveFrom===field.key&&!touched.current.has(derived.key))next[derived.key]=derived.derive(value,old);return next});setError('');setInvalid(null);},placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus===true||(field.autoFocus===undefined&&fieldList.length===1),...(invalid&&invalid.scope==='field'&&invalid.key===field.key?{'aria-invalid':true,'aria-describedby':field.id+'-error'}:{})}),invalid&&invalid.scope==='field'&&invalid.key===field.key&&h('p',{role:'alert',className:'eva-member-picker__field-error',id:field.id+'-error'},invalid.text));
       const footer=h('div',{className:'eva-picker-footer eva-member-picker__footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',onClick:()=>{const reason=invalidReason();if(reason){setInvalid(reason);setError('');if(reason.scope==='field'){const target=fieldList.find(field=>field.key===reason.key),node=target&&document.getElementById(target.id);node&&node.focus();}return;}try{const values={};fieldList.forEach(field=>{values[field.key]=String(form[field.key]||'').trim();});onSubmit(chosen,primaryKey?values[primaryKey]:'',values);}catch(e){setError(e.message);}}},typeof submit==='function'?submit(chosen):submit));
       return h(Modal,{className:('eva-members-modal eva-picker-modal eva-member-picker-modal '+className).trim(),width:680,title,visible,zIndex,onCancel,footer,getPopupContainer,maskClosable:true},
         h('div',{className:'eva-member-picker'+(hasFields?'':' eva-member-picker--selection-only'),style:{'--eva-member-picker-label-w':labelWidth,'--eva-member-picker-extra-fields':(Math.max(0,fieldList.length-1)*52)+'px'}},
@@ -238,7 +238,7 @@
           rowBody,
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
-    const cards=root.EvaIdentityCard.create({React:R,Modal,Button,BackIcon,ProjectIcon,CameraIcon,useNavigate},store);
+    const cards=root.EvaIdentityCard.create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store);
     const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
     return {...cards,HumanIdentity,ChatSettings,Members,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker,projectCreateCandidates};
   }};

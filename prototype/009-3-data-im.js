@@ -178,15 +178,6 @@ window.__EVA_PERSONA_SHORT_DEMO = {"team-persona-welcome": ["A-2409 现在能恢
 
 window.__EVA_PERSONA_VARIETY_DEMO = {"team-persona-welcome": {"title": "供应商催交期，这句话怎么回", "texts": ["供应商催我确认恢复交期。我想回“应该没问题”，你觉得呢？", "这句话容易被理解成承诺。复测通过了，但现场放行和运输窗口还没确认。现在可以确认的是“正在复核”，还不是“何时恢复”。", "那替我拟一句，别写得像公文。", "可以这样回：\n\n> 复测材料我们已经收到，正在安排现场复核。放行和运输时间确认后，我第一时间给你明确交期。\n\n**有进展、有下一步，也不提前承诺。**"]}};
 
-// Prototype-only L2 departments; these are illustrative, not HR directory data.
-window.__EVA_CONTACT_L2_DEPARTMENTS={
-  'u-wangyilin':'人工智能中心',
-  'u-hejing':'数智化中心',
-  'u-linxiao':'质量中心',
-  'u-zhouyuan':'制造中心',
-  'u-suhang':'研发中心'
-};
-
 // User-approved additional demo in the existing team-file project.
 window.__EVA_DRIVE_CHAT_DEMO = [
   {id:'drive-product-design',name:'文件体验设计',threads:[{id:'drive-share-review',name:'分享链接权限评审'}],messages:{

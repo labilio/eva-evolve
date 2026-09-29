@@ -38,10 +38,10 @@ window.__EVA_PEOPLE = [
   {"uid":"u-qianmu","name":"钱牧","color":"#e8590c","dept":"财务","title":"财务负责人","id":"u-qianmu","active":true,"internal":true,"activated":true},
   {"uid":"u-huiling","name":"惠玲","color":"#1d5bd6","dept":"财务","title":"成本分析","online":true,"id":"u-huiling","active":true,"internal":true,"activated":true},
   {"uid":"u-zhangkuo","name":"张阔","color":"#f59f00","dept":"财务","title":"结算","id":"u-zhangkuo","active":true,"internal":true,"activated":true},
-  {"id":"u-kangzhixi","uid":"u-kangzhixi","name":"康执玺","color":"#4c83a5","active":true,"internal":true,"activated":true},
-  {"id":"u-haozong","uid":"u-haozong","name":"昊总","color":"#6f75a8","active":true,"internal":true,"activated":true},
-  {"id":"u-chenbo","uid":"u-chenbo","name":"陈博","color":"#8c658f","active":true,"internal":true,"activated":true},
-  {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true}
+  {"id":"u-kangzhixi","uid":"u-kangzhixi","name":"康执玺","color":"#4c83a5","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/数智化中心/AI 中台/AI 产品共创"},
+  {"id":"u-haozong","uid":"u-haozong","name":"昊总","color":"#6f75a8","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/总裁办"},
+  {"id":"u-chenbo","uid":"u-chenbo","name":"陈博","color":"#8c658f","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/市场中心/品牌市场部"},
+  {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/研发中心/软件研发部"}
 ];
 
 // Isolated permission fixture: Zhou can share this task link in a non-project group;
@@ -52,6 +52,19 @@ window.__EVA_TASK_LINK_PERMISSION_DEMO = {
   issue: {id:'zhou-private-review-1',workspace_id:'zhou-private-review',number:1,identifier:'ZY-101',title:'复核交互方案中的任务跳转边界',description:'核对跨群分享任务链接时的可见性和访问权限。',status:'in_progress',priority:'medium',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',creator_id:'u-zhouyuan',creator_name:'周远',due_date:null,position:1,created_at:window.__EVA_DEMO_TIME.T0,updated_at:window.__EVA_DEMO_TIME.T1}
 };
 if(window.__EVA_PROJECTS&&!window.__EVA_PROJECTS.some(project=>project.id===window.__EVA_TASK_LINK_PERMISSION_DEMO.projectId))window.__EVA_PROJECTS.push(window.EvaProjectAppearance.view(window.__EVA_TASK_LINK_PERMISSION_DEMO.project));
+
+// 演示用组织架构：正式版由 HR 组织架构服务下发「集团/中心/中台/组」全路径，原型按部门给出稳定 mock。
+// 通讯录列表继续用 __EVA_CONTACT_L2_DEPARTMENTS 展示部门；资料卡展示这里的完整路径。
+window.__EVA_ORG_UNITS = {
+  '总经办': '吉利汽车集团/总裁办',
+  'AI 产品共创': '吉利汽车集团/数智化中心/AI 中台/AI 产品共创',
+  '研发中心': '吉利汽车集团/研发中心/软件研发部',
+  '数据与算法': '吉利汽车集团/数智化中心/数据与算法部',
+  '市场部': '吉利汽车集团/市场中心/品牌市场部',
+  '销售部': '吉利汽车集团/销售中心/销售部',
+  '人力资源': '吉利汽车集团/人力资源中心/人力资源部',
+  '财务': '吉利汽车集团/财务中心/财务部'
+};
 
 (function () {
   'use strict';
@@ -173,7 +186,7 @@ if(window.__EVA_PROJECTS&&!window.__EVA_PROJECTS.some(project=>project.id===wind
   var supplyIssues = [
     supplyTask(1, '完成本季度间接采购需求归集', 'in_progress', 'high', 'member', 'u-wangyilin', '王宜林', '2026-09-18', '合并行政、IT 和设备维保需求，确认数量、预算、交期与待补信息。'),
     supplyTask(2, '完成供应商招投标文件评审', 'in_review', 'high', 'member', 'u-linxiao', '林晓', '2026-09-19', '复核资格条件、评分规则、技术标与商务标，标记影响公平性和履约的风险项。'),
-    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'member', 'u-zhouyuan', '周远', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。'),
+    supplyTask(3, '处理关键供应商来料质量异常', 'in_progress', 'high', 'member', 'u-zhouyuan', '周远', '2026-09-15', '复核批次 A-2409 的隔离措施、8D 根因分析和长期整改证据。\n\n排产与齐套影响由 [SC-105](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-105) 跟进。\n\n跨项目协作参考：\n- [客户联合交付的联调任务 CLIENT-103](#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103)\n- [周远方案评审的任务 ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)（仅该项目成员可查看）\n- [SC-103 复核物料替代方案](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)（原项目已删除）'),
     supplyTask(4, '分析核心品类采购成本偏差', 'todo', 'medium', 'member', 'u-suhang', '苏航', '2026-09-21', '拆解预算、合同与实际采购金额的价差、量差和物流费用影响。'),
     supplyTask(5, '评估下月KD排产与齐套风险', 'todo', 'high', 'member', 'u-suhang', '苏航', '2026-09-17', '结合需求计划、产能、物料齐套率和运输周期识别高风险节点。'),
     supplyTask(6, '复核新供应商准入合规材料', 'todo', 'high', 'member', 'u-hejing', '何静', '2026-09-22', '检查供应商资质、关联关系声明、制裁名单与关键履约条款。'),
@@ -230,6 +243,23 @@ if(window.__EVA_PROJECTS&&!window.__EVA_PROJECTS.some(project=>project.id===wind
   // 任务评论演示数据：正文使用 Markdown 与 mention:// 提及令牌，
   // 由 009-6 的 listComments 适配读取，评论正文复用 IM 的渲染与提及样式。
   var supplyComments = {
+    'supply-3': [
+      {
+        id:'cm-supply-3-task-link',parent_id:null,author_type:'member',author_id:'u-zhouyuan',author_name:'周远',
+        created_at:'2026-09-03T10:12:00Z',resolved_at:null,reactions:null,attachments:null,
+        content:'质量放行结论出来前，备选排产先按 [SC-105](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-105) 跟进；这里继续复核 A-2409 的隔离与整改证据。'
+      },
+      {
+        id:'cm-supply-3-cross-project-visible',parent_id:null,author_type:'member',author_id:'u-wangyilin',author_name:'王宜林',
+        created_at:'2026-09-03T10:18:00Z',resolved_at:null,reactions:null,attachments:null,
+        content:'我在 Official 项目的 [EVA-102](#/collab?evaProject=official&evaTab=tasks&evaTask=EVA-102) 核对了分享链接的权限口径，供应商整改材料转给其他项目时也按这个范围处理。'
+      },
+      {
+        id:'cm-supply-3-cross-project-restricted',parent_id:null,author_type:'member',author_id:'u-zhouyuan',author_name:'周远',
+        created_at:'2026-09-03T10:24:00Z',resolved_at:null,reactions:null,attachments:null,
+        content:'我在另一个方案评审项目的 [ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101) 核对跨项目引用边界；没有加入该项目的同事点开会看到权限提示。'
+      }
+    ],
     'supply-1': [
       {
         id: 'cm-supply-1-1', parent_id: null, author_type: 'member', author_id: 'u-wangyilin', author_name: '王宜林',
@@ -418,6 +448,30 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
     fixtureId: 'supply-chat-v4:all:prod:task-link-response',
     kind: 'text', senderId: 'project-agent:prod', time: '11:24',
     text: '查到 SC-103：**进行中**，负责人 **周远**。\n待复核：A-2409 的隔离措施、8D 根因分析和长期整改证据。\n群里尚无质量放行结论，暂不能向供应商承诺恢复时间。\n\n[查看任务](#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103)'
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:cross-project-task-link',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:25',
+    text: '客户联合交付项目的联调任务也需要对齐。加入了该项目的同事可以从这里查看：\n\n[CLIENT-103](#/collab?evaProject=lab&evaTab=tasks&evaTask=CLIENT-103)'
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:restricted-task-link',
+    kind: 'text', senderId: 'u-zhouyuan', time: '11:26',
+    text: '我在自己的方案评审项目里复核任务跳转边界。这条链接只有该项目成员能打开：\n\n[ZY-101](#/collab?evaProject=zhou-private-review&evaTab=tasks&evaTask=ZY-101)'
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:deleted-project-task-link',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:27',
+    text: `之前在采购专项项目里跟进过物料替代方案，任务链接现在打不开了。麻烦帮我确认一下那个项目是不是已经删除：
+
+[SC-103 复核物料替代方案](#/collab?evaProject=deleted-project&evaTab=tasks&evaTask=SC-103)`
+  },
+  {
+    fixtureId: 'supply-chat-v5:all:prod:cross-project-accessible',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:28',
+    text: `顺便在这里核对一下跨项目任务链接：Official 项目里那条分享权限验证任务，我也参与，大家可以点开看它的验收口径。
+
+[EVA-102](#/collab?evaProject=official&evaTab=tasks&evaTask=EVA-102)`
   }
 ]},
   {scopeId:'supply-demo-rectification',notice:'跟进 A-2409 来料异常与供应商整改。证据放入“A-2409整改证据”子区；对外承诺和放行由负责人确认。',messages:[
@@ -628,7 +682,7 @@ window.__EVA_OFFICIAL_TASKS.push(
 );
 window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-8',number:8,identifier:'SC-108',position:8,title:'收集下一季度供应商协同需求',status:'todo',due_date:'2026-09-25',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'归集采购、质量和合同团队的改进建议，待优先级评审后再进入执行。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-9',number:9,identifier:'SC-109',position:9,parent_issue_id:'supply-1',title:'汇总行政办公采购需求',status:'done',priority:'medium',due_date:'2026-09-12',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'核对办公设备数量、预算和最晚到货日期，形成行政采购需求清单。',updated_at:window.__EVA_DEMO_TIME.TASK_TODAY},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-10',number:10,identifier:'SC-110',position:10,parent_issue_id:'supply-1',title:'核对 IT 设备预算与交付批次',status:'in_progress',priority:'high',due_date:'2026-09-16',assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'按设备类型核对预算、数量和交付批次，标记仍需业务确认的缺口。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-11',number:11,identifier:'SC-111',position:11,parent_issue_id:'supply-1',title:'确认设备维保续约计划',status:'todo',priority:'medium',due_date:'2026-09-20',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'汇总维保范围、续约期限和预算口径，确认进入询价前的必要条件。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-12',number:12,identifier:'SC-112',position:12,parent_issue_id:'supply-11',title:'补齐维保预算与到期清单',status:'todo',priority:'medium',due_date:'2026-09-18',assignee_type:'member',assignee_id:'u-zhouyuan',assignee_name:'周远',description:'逐项补齐设备维保预算、合同到期日和业务负责人，供续约计划复核。'},
@@ -681,11 +735,18 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
     }
     var previous='todo';
     (progress[issue.status]||[]).forEach(function(status){
-      var at=status==='in_progress'?time('08-30','09',minute):status==='in_review'?time('09-01','10',minute):status==='done'?time('09-02','15',minute):status==='blocked'?time('09-02','16',minute):time('09-01','11',minute);
+      var at=issue.identifier==='SC-109'&&status==='in_review'?window.__EVA_DEMO_TIME.TASK_YESTERDAY
+        :issue.identifier==='SC-109'&&status==='done'?window.__EVA_DEMO_TIME.TASK_TODAY
+        :status==='in_progress'?time('08-30','09',minute):status==='in_review'?time('09-01','10',minute):status==='done'?time('09-02','15',minute):status==='blocked'?time('09-02','16',minute):time('09-01','11',minute);
       var actor=status==='done'?(issue.assignee_id==='u-hejing'?'u-wangyilin':'u-hejing'):status==='cancelled'?issue.creator_id:issue.assignee_id||issue.creator_id;
       add('status_changed',actor,{from:previous,to:status},at);
       previous=status;
     });
+    if(issue.identifier==='SC-103'){
+      add('description_updated','u-zhouyuan',{},window.__EVA_DEMO_TIME.TASK_YESTERDAY);
+      add('description_updated','u-wangyilin',{},window.__EVA_DEMO_TIME.TASK_TODAY);
+      issue.updated_at=window.__EVA_DEMO_TIME.TASK_TODAY;
+    }
     issue.activity_log=entries;
   });
 })();
