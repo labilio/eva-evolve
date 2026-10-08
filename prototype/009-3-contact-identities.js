@@ -29,21 +29,21 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
   if(employee?.kind==='staff'){
    const personal=employee.ownership==='personal'||employee.scope==='self';
    const allowed=actor===ownerId&&(!personal||employee.by===actor)&&digital.hasInTeam(id);
-   const pid=employee.projectId,project=pid&&store.canRead(pid,actor)?store.snapshot().projects[pid]:null;
+   const pid=employee.projectId,project=pid&&store.canRead(pid,actor)?store.projectRecord(pid):null;
    if(employee.ownership==='project'&&!project)return null;
    return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI。':'当前账号未开放个人对话。'};
   }
   if(id.startsWith('project-agent:')){
    const pid=id.slice('project-agent:'.length),agent=store.projectAgent(pid);
    if(!agent||!store.canRead(pid,actor))return null;
-   return {id,name:agent.name,kind:'project-agent',subtitle:'项目管家',appearance:agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.snapshot().projects[pid],action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
+   return {id,name:agent.name,kind:'project-agent',subtitle:'项目管家',appearance:agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),owner:null,project:store.projectRecord(pid),action:link('进入项目','/collab?evaProject='+encodeURIComponent(pid))};
   }
   return null;
  }
  function directory(){
-  const s=store.snapshot(),actor=store.actorId();
+  const clones=store.cloneRecords(),actor=store.actorId();
   return store.people().map(p=>{
-   const ids=p.id===ownerId?team.getSnapshot().identities.filter(i=>i.role==='persona').map(i=>i.id):[...s.clones.filter(c=>c.ownerId===p.id&&c.active!==false).map(c=>c.id),...(root.__EVA_CONTACT_PERSONAS||[]).filter(c=>c.ownerId===p.id).map(c=>c.id)];
+   const ids=p.id===ownerId?team.getSnapshot().identities.filter(i=>i.role==='persona').map(i=>i.id):[...clones.filter(c=>c.ownerId===p.id&&c.active!==false).map(c=>c.id),...(root.__EVA_CONTACT_PERSONAS||[]).filter(c=>c.ownerId===p.id).map(c=>c.id)];
    return {person:resolve(p.id),personas:[...new Set(ids)].map(resolve).filter(Boolean)};
   }).sort((a,b)=>{
    if(a.person.id===actor)return -1;

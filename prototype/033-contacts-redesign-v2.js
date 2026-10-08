@@ -16,11 +16,12 @@ function create({React:R,Input,SearchIcon,store,ui}){
      h(IdentityAppearance,{profile:persona,size:28}),h('span',{className:'eva-contacts__ai-identity'},h('span',{className:'eva-contacts__ai-name','data-eva-tooltip':persona.name,'data-eva-tooltip-clamp':''},persona.name),root.EvaAIIdentity.badge(h))):h('span',{className:'eva-contacts__clone-empty'},'未创建')));
  }
  return function Contacts(){
-  R.useSyncExternalStore(store.subscribe,store.getSnapshot);
-  R.useSyncExternalStore(root.EvaAITeam.subscribe,root.EvaAITeam.getSnapshot);
-  const [query,setQuery]=R.useState(''),[profile,setProfile]=R.useState(null),actor=store.snapshot().actorId;
+  const memberRevision=R.useSyncExternalStore(store.subscribe,store.getSnapshot);
+  const teamSnapshot=R.useSyncExternalStore(root.EvaAITeam.subscribe,root.EvaAITeam.getSnapshot);
+  const [query,setQuery]=R.useState(''),[profile,setProfile]=R.useState(null),actor=store.actorId();
   R.useEffect(()=>{setProfile(null);setQuery('');},[actor]);
-  const term=query.trim().toLowerCase(),rows=model.directory().filter(row=>[row.person.name,row.person.departmentL2,...row.personas.map(p=>p.name)].some(value=>value.toLowerCase().includes(term)));
+  const directory=R.useMemo(()=>model.directory(),[memberRevision,teamSnapshot,actor]);
+  const term=query.trim().toLowerCase(),rows=directory.filter(row=>[row.person.name,row.person.departmentL2,...row.personas.map(p=>p.name)].some(value=>value.toLowerCase().includes(term)));
   return h('section',{id:'eva-contacts-root',className:'eva-contacts eva-contacts--redesigned','aria-label':'通讯录'},
    h('header',{className:'eva-contacts__main-head'},h('div',{className:'eva-contacts__title'},h('strong',null,'通讯录'),h('span',{className:'eva-contacts__result-count'},rows.length+' 位联系人')),
     h(Input,{className:'eva-contacts__search',prefix:h(SearchIcon,{size:16}),value:query,onChange:setQuery,placeholder:'搜索联系人、部门或分身','aria-label':'搜索通讯录',showClear:true,onKeyDown:e=>{if(e.key==='Escape')setQuery('');}})),

@@ -7,7 +7,7 @@ const plain=value=>JSON.parse(JSON.stringify(value));
 function setup(){
  const issues=[{id:'a',status:'backlog',identifier:'SC-1',workspace_id:'prod'},{id:'b',status:'todo'},{id:'c',status:'done'}];
  const ctx={scoped:()=>issues,ISSUES_BY_SPACE:{prod:issues},issues,
-   evaMembers:()=>({store:{snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
+   evaMembers:()=>({store:{actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
  const start=source.indexOf('issuesOf='),end=source.indexOf('function groupIssuesByAssignee',start);
  vm.runInNewContext(source.slice(start,end),ctx);
  return ctx;

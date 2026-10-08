@@ -24,7 +24,7 @@ function setup() {
   ];
   // 切片内含有图标定义（EvaLinkIcon 等），裸 vm 上下文补齐其工厂依赖；仅提供桩，不断言图标行为。
   const ctx = {issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name}),
-    evaMembers:()=>({store:{snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
+    evaMembers:()=>({store:{actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);

@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const url=`http://127.0.0.1:${server.address().port}/#/messages`;
+ const open=async()=>{await page.goto(url);await page.getByRole('button',{name:'最近',exact:true}).click();await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();};
+ await open();
+ const tabs=page.getByRole('navigation',{name:'群聊子区'}),badge=tabs.locator('.eva-recent-topic-tabs__unread');
+ assert.deepEqual(await badge.allTextContents(),['12','3','1']);
+ const topic=tabs.getByRole('tab').nth(1);
+ await topic.click();assert.equal(await topic.getAttribute('aria-selected'),'true');assert.deepEqual(await badge.allTextContents(),['12','3','1'],'查看后提醒常驻');
+ await tabs.getByRole('tab').first().click();await page.reload();await page.getByRole('button',{name:'最近',exact:true}).click();await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();
+ assert.deepEqual(await badge.allTextContents(),['12','3','1'],'刷新不消耗演示提醒');
+ await page.screenshot({path:'/tmp/eva-topic-unread-light.png'});
+ await page.evaluate(()=>window.EvaTheme.apply('dark'));await page.screenshot({path:'/tmp/eva-topic-unread-dark.png'});
+ await page.evaluate(()=>window.EvaTheme.apply('light'));
+ await page.getByRole('heading',{name:'供应链专题协同（多子区演示）',exact:true}).click();
+ assert.equal(await tabs.getByRole('tab').count(),25);assert.equal(await badge.count(),4);
+ await tabs.getByRole('tab').last().focus();await page.keyboard.press('Enter');
+ assert.equal(await tabs.getByRole('tab').last().getAttribute('aria-selected'),'true');assert.equal(await badge.count(),4);
+ await page.setViewportSize({width:1000,height:800});await tabs.getByRole('tab').last().scrollIntoViewIfNeeded();await page.waitForTimeout(250);await page.screenshot({path:'/tmp/eva-topic-unread-overflow.png'});
+ await page.getByRole('button',{name:'关注',exact:true}).click();assert.equal(await tabs.count(),0);
+ await page.getByRole('button',{name:'最近',exact:true}).click();await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();assert.deepEqual(await badge.allTextContents(),['12','3','1']);
+ assert.deepEqual(errors,[]);console.log('PASS: topic counts, persistent open/reload, light/dark, overflow, Following/Recent round trip');
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

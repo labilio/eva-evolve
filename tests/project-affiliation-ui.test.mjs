@@ -24,7 +24,7 @@ function setup(){
   }
   const project={id:'prod',name:'供应链运营协同',colorKey:'blue',ownerId:'u-owner',humans:[{id:'u-owner'}],cloneIds:[]};
   const state={actorId:'u-owner',projects:{prod:project},groups:{group:{id:'group',name:'采购与招投标',projectId:'prod',ownerId:'u-owner',humans:[{id:'u-owner'}],cloneIds:[]}}};
-  const store={
+  const store={projectRecord:id=>state.projects[id],cloneRecords:()=>state.clones,
     subscribe:()=>()=>{},getSnapshot:()=>state,snapshot:()=>state,actorId:()=>state.actorId,
     person:id=>id==='u-owner'?{id,name:'王宜林'}:null,clone:()=>null,projectAgent:()=>({id:'project-agent:prod',name:'供应链运营协同 · 项目管家',identityAppearance:window.EvaAIIdentity.projectAgentAppearance(project)}),
     canRead:()=>true,chatSettings:()=>({}),chatPreferences:()=>({}),manager:()=>true,groupMembers:()=>[],conversationContext:()=>({projectId:'prod',projectName:project.name,colorKey:project.colorKey}),

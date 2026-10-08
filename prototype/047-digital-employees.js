@@ -13,8 +13,8 @@ function Field({label,content,hint}){
 }
 const field=(label,content,hint)=>h(Field,{label,content,hint});
 return function DigitalCenter({view='market',navigate,employeeId}){
-R.useSyncExternalStore(store.subscribe,store.getSnapshot);R.useSyncExternalStore(members.subscribe,members.getSnapshot);
-const ms=members.snapshot(),actor=ms.actorId;
+const employeeRevision=R.useSyncExternalStore(store.subscribe,store.getSnapshot),memberRevision=R.useSyncExternalStore(members.subscribe,members.getSnapshot);
+const projects=R.useMemo(()=>members.projectRecords(),[memberRevision]),actor=members.actorId();
 const [domain,setDomain]=R.useState(null),[dialog,setDialog]=R.useState(null),[chosen,setChosen]=R.useState([]),[projectQuery,setProjectQuery]=R.useState(''),[error,setError]=R.useState('');
 const [panel,setPanel]=R.useState(false),[query,setQuery]=R.useState('');
 const [searchOpen,setSearchOpen]=R.useState(false),[expand,setExpand]=R.useState({}),[activeIndex,setActiveIndex]=R.useState(-1);
@@ -35,9 +35,10 @@ R.useEffect(()=>{if(!panel)return;
 },[panel]);
 /* 业务域行按可用宽度自适应放满：隐藏测量行量出每个 chip 与「更多」按钮的宽度，
    ResizeObserver 跟踪行宽；选中低频域预留其宽度顶替末位槽，重置即恢复纯高频列表。 */
-const base=store.agents().filter(a=>a.kind==='staff').map(a=>({...a,domain:a.domain?.trim()||(a.scope==='org'?'全公司':'未设置')}));
-const domains=[...new Set(base.map(a=>a.domain).filter(Boolean))].sort((a,b)=>base.filter(x=>x.domain===b).length-base.filter(x=>x.domain===a).length);
-const countOf=d=>base.filter(a=>a.domain===d).length;
+const base=R.useMemo(()=>store.agents().filter(a=>a.kind==='staff').map(a=>({...a,domain:a.domain?.trim()||(a.scope==='org'?'全公司':'未设置')})),[employeeRevision]);
+const domainCounts=R.useMemo(()=>{const counts=new Map();for(const a of base)counts.set(a.domain,(counts.get(a.domain)||0)+1);return counts;},[base]);
+const domains=R.useMemo(()=>[...domainCounts.keys()].sort((a,b)=>domainCounts.get(b)-domainCounts.get(a)),[domainCounts]);
+const countOf=d=>domainCounts.get(d)||0;
 const [fit,setFit]=R.useState(null);
 const measureRef=R.useRef(null),fitW=R.useRef(null),domainRef=R.useRef(domain);
 domainRef.current=domain;
@@ -66,7 +67,7 @@ const host=R.useRef(null);const popup=()=>host.current;
 R.useEffect(()=>{setDialog(null);setChosen([]);setProjectQuery('');setError('');setPanel(false);setQuery('');setSearchOpen(false);setExpand({});},[view,actor,employeeId]);
 const run=fn=>{try{fn();setError('');}catch(e){setError(e.message);}};
 const open=(kind,a)=>{setDialog({kind,a});setChosen([]);setProjectQuery('');setError('');};
-const allProjects=Object.values(ms.projects).filter(p=>members.canRead(p.id,actor));
+const allProjects=Object.values(projects).filter(p=>members.canRead(p.id,actor));
 const projectName=p=>p.name|| (p.id==='prod'?'供应链运营协同':p.id);
 const select=(key,options,extra={})=>h(Select,{...extra,value:draft[key]||undefined,onChange:v=>update(key,v),optionList:options.map(o=>typeof o==='string'?{value:o,label:o}:o),getPopupContainer:popup});
 const input=(key,placeholder,more={})=>h(Input,{value:draft[key]||'',onChange:v=>update(key,v),placeholder,...more});

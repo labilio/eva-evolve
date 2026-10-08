@@ -10,7 +10,7 @@ function setup(){
  assert.ok(start>=0,'project-scoped save helper exists');
  let saved=[{id:'p',name:'原项目',desc:'原目标'},{id:'q',name:'其他项目',desc:'其他目标'}];
  let projection='原项目';
- const store={snapshot:()=>({actorId:'owner'}),manager:(_,actor)=>actor==='owner',renameProject:(_,actor,name)=>{assert.equal(actor,'owner');projection=name;}};
+ const store={actorId:()=>store.snapshot().actorId,snapshot:()=>({actorId:'owner'}),manager:(_,actor)=>actor==='owner',renameProject:(_,actor,name)=>{assert.equal(actor,'owner');projection=name;}};
  const ctx={ISSUES_BY_SPACE:{},loadSpaces:()=>structuredClone(saved),KEY:'spaces',localStorage:{setItem:(_,value)=>{saved=JSON.parse(value);}},evaMembers:()=>({store}),window:{pinyinPro:{pinyin}}};
  vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
  vm.runInNewContext(runtime.slice(start,end),ctx);

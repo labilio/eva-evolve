@@ -128,7 +128,7 @@ test('文件库、项目文件、任务附件与消息统一使用可缩放的�
     assertPushedRight(await geometry(projectFiles, '.eva-project-files__content', '.eva-project-file-preview-sidebar'), projectWidth);
     await shrinkPreview(page, projectFiles, '.eva-project-files__content', '.eva-project-file-preview-sidebar', false);
     await enterAndExitFullscreen(page, projectPreview);
-    await page.locator('.eva-project-files__header').click();
+    await page.locator('.eva-project-files__toolbar').click({position:{x:2,y:2}});
     await projectPreview.waitFor({ state: 'detached' });
 
     await page.reload();

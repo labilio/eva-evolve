@@ -122,11 +122,10 @@
   function create(membership,seed=[],persist,resetSeed=seed,pinSeed=[],persistPins){
     let records=clone(seed).filter(item=>item.area!=='shared'&&!String(item.spaceId||'').startsWith('shared:')).map(normalizeRecord),pins=normalizePins(pinSeed),revision=0;const listeners=new Set();
     const actorName=actorId=>membership.person(actorId)?.name||membership.clone?.(actorId)?.name||membership.employee?.(actorId)?.name||membership.projectAgent?.(String(actorId).replace(/^project-agent:/,''))?.name||actorId;
-    const snapshot=()=>membership.snapshot();
     const personalSpace=actorId=>'personal:'+actorId;
     const role=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'owner';
-      const project=snapshot().projects[spaceId];
+      const project=membership.projectRecord(spaceId);
       const row=project?.humans?.find(item=>item.id===actorId);
       if(!row)return membership.canRead(spaceId,actorId)?'editor':null;
       if(project.ownerId===actorId||row.role==='owner')return'owner';
@@ -248,7 +247,7 @@
     };
     const spaceLabel=(spaceId,actorId)=>{
       if(spaceId===personalSpace(actorId))return'个人文件库';
-      return snapshot().projects[spaceId]?.name||'项目文件库';
+      return membership.projectRecord(spaceId)?.name||'项目文件库';
     };
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
@@ -309,7 +308,7 @@
       },
       writableSpaces(actorId,excludeSpaceId){
         const result=[{id:personalSpace(actorId),name:'个人文件库',kind:'personal'}];
-        Object.entries(snapshot().projects).forEach(([projectId,project])=>{if(role(projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
+        Object.entries(membership.projectRecords()).forEach(([projectId,project])=>{if(role(projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
         return clone(result.filter(space=>space.id!==excludeSpaceId));
       },
       relationsFor(idOrRecord,actorId){
@@ -468,7 +467,7 @@
       transfer(actorId,projectId,sourceFile,source){
         if(!membership.canRead(source.groupId,actorId))fail('你已不在来源群，无法转存此文件');
         if(!membership.canRead(projectId,actorId))fail('请先加入目标项目');
-        if(!snapshot().projects[projectId])fail('请选择有效项目');
+        if(!membership.projectRecord(projectId))fail('请选择有效项目');
         if(!sourceFile?.name)fail('文件不存在');
         requireAction('save-group-file',projectId,actorId);
         const version=sourceFile.version||1,identity=JSON.stringify([projectId,source.groupId,source.threadId||null,sourceFile.id||sourceFile.name,version]);

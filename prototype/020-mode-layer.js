@@ -227,7 +227,7 @@
 
   function fileActor() {
     var context = fileContext();
-    return context ? context.store.snapshot().actorId : 'u-wangyilin';
+    return context ? context.store.actorId() : 'u-wangyilin';
   }
 
   function personalSpaceId() {

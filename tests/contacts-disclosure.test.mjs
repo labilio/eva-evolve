@@ -22,7 +22,7 @@ test('单分身目录保留零个状态，旧多分身合并且项目成员不�
 test('通讯录实际渲染保留搜索、头像、AI 标和双资料入口，无多分身控件',()=>{
  const {window,model,store}=setup();
  const h=(type,props,...children)=>typeof type==='function'?type(props||{}):({type,props:props||{},children:children.flat(Infinity).filter(x=>x!==null&&x!==false&&x!==undefined)});
- const R={createElement:h,useState:v=>[v,()=>{}],useEffect:()=>{},useSyncExternalStore:()=>{}};
+ const R={createElement:h,useState:v=>[v,()=>{}],useMemo:fn=>fn(),useEffect:()=>{},useSyncExternalStore:()=>{}};
  window.EvaAITeam={subscribe:()=>{},getSnapshot:()=>({identities:[]})};
  const tree=window.EvaContactsUI.render({React:R,Input:'input',SearchIcon:'svg',store,ui:{identityModel:model,IdentityCard:()=>null,IdentityAppearance:({profile,size})=>window.EvaAIIdentity.avatar(profile.appearance,size,h)}});
  const nodes=[];function walk(n){if(typeof n==='object'){nodes.push(n);n.children?.forEach(walk);}}walk(tree);
@@ -32,4 +32,11 @@ test('通讯录实际渲染保留搜索、头像、AI 标和双资料入口，�
  assert.ok(nodes.some(n=>n.props.className==='ai-badge ai-badge-small'));
  assert.ok(nodes.some(n=>n.children?.includes('未创建')));
  assert.ok(!JSON.stringify(tree).includes('展开其余'));
+});
+
+test('通讯录目录与资料解析不复制聊天记录',()=>{
+ const {store,model}=setup();
+ store.snapshot=()=>{throw new Error('通讯录不应读取全量聊天状态');};
+ assert.equal(model.directory().length,3);
+ assert.equal(model.resolve('project-agent:p').project.name,'项目');
 });

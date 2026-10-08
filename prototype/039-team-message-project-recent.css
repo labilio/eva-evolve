@@ -251,49 +251,41 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-content:has(.eva-rece
 body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__scroll {
   padding-top: 0;
 }
+/* Semi line tabs: only group-local spacing is adapted here. */
 .eva-recent-topic-tabs {
-  display: flex;
   flex: none;
-  align-items: center;
-  gap: 4px;
-  min-height: 40px;
-  padding: 4px 12px;
-  overflow-x: auto;
+  min-width: 0;
+  padding: 0 12px;
   border-bottom: 1px solid var(--eva-border-faint);
-  scrollbar-width: thin;
 }
-
-.eva-recent-topic-tabs > button {
+.eva-recent-topic-tabs .semi-tabs-bar { border-bottom: 0; }
+.eva-recent-topic-tabs .semi-tabs-tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+.eva-recent-topic-tabs .semi-tabs-bar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
-  max-width: 220px;
-  padding: 6px 10px;
-  overflow: hidden;
-  color: var(--eva-text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  background: transparent;
-  border: 0;
-  border-radius: 6px;
-  cursor: pointer;
+  line-height: 0;
+  margin: 0;
 }
 
+.eva-recent-topic-tabs .semi-tabs-content { display: none; }
+.eva-recent-topic-tabs .semi-tabs-tab:first-child { margin-right: 28px; }
+.eva-recent-topic-tabs__main-label { position: relative; }
 .eva-recent-topic-tabs__divider {
-  flex: none;
+  position: absolute;
+  right: -16px;
+  top: 50%;
   width: 1px;
   height: 20px;
-  margin: 0 6px;
+  transform: translateY(-50%);
   background: var(--eva-border-faint);
+  pointer-events: none;
 }
-
-.eva-recent-topic-tabs > button > svg { flex: none; }
-.eva-recent-topic-tabs__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.eva-recent-topic-tabs > button:hover { background: var(--eva-conversation-row-hover); }
-.eva-recent-topic-tabs > button.is-active { color: var(--eva-action-primary); background: var(--eva-conversation-row-selected); }
-.eva-recent-topic-tabs > button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 
 .eva-recent-search-toggle {
   display: inline-flex;
@@ -313,3 +305,25 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 .eva-recent-search-toggle[aria-pressed="true"] { background: var(--eva-conversation-row-hover); }
 .eva-recent-search-toggle:focus-visible { outline: 2px solid var(--eva-border-focus); }
 .eva-recent-search-input { margin: 8px 10px; }
+
+/* One visual indicator follows the controlled Semi selection; the IM stays mounted. */
+.eva-recent-topic-tabs { position: relative; overflow: hidden; }
+.eva-recent-topic-tabs .semi-tabs-tab-line { border-bottom-color: transparent; }
+.eva-recent-topic-tabs__indicator {
+  position: absolute;
+  left: 0;
+  height: 2px;
+  background: var(--semi-color-primary);
+  pointer-events: none;
+}
+.eva-recent-topic-tabs__indicator.is-moving {
+  transition: transform var(--eva-switch-duration, 220ms) var(--eva-switch-easing, ease-out), width var(--eva-switch-duration, 220ms) var(--eva-switch-easing, ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .eva-recent-topic-tabs__indicator.is-moving { transition: none; }
+}
+
+/* Telegram's trailing count: separate from the selected-tab indicator. */
+.eva-recent-topic-tabs__label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+/* Geometry and tonal colors come from the shared IM unread badge rule in 017. */
+.eva-recent-topic-tabs__unread.is-muted { background: var(--eva-unread-surface); color: var(--eva-unread-text); }

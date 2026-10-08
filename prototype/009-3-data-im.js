@@ -528,3 +528,27 @@ window.__EVA_RECENT_PIN_DEMO = {
   actorId:'u-wangyilin',
   conversationIds:['c-eva','th-msg-architecture','community-feedback-roundup']
 };
+
+// Explicit many-topic exception: exercise Semi tab overflow in the existing supply project.
+window.__EVA_MANY_TOPICS_DEMO = {
+  id:'supply-many-topics-demo',name:'供应链专题协同（多子区演示）',projectId:'prod',
+  threads:[
+    '采购需求归集','供应商询价比价','招投标文件评审','合同条款确认','供应商准入复核',
+    '关键件交期跟踪','来料异常复核','供应商整改跟踪','排产齐套确认','运输窗口协调',
+    '库存风险排查','替代物料验证','成本变化分析','付款资料核对','月度交付复盘',
+    '质量证据归档','现场问题排查','紧急保供协调','新品试制准备','包装方案确认',
+    '检验标准对齐','采购预算复核','跨团队依赖协调','下季度供应商产能与交付计划确认'
+  ].map((name,index)=>({id:'supply-many-topic-'+String(index+1).padStart(2,'0'),name})),
+  messageText:name=>`这里单独讨论「${name}」。请在本子区补充相关材料和待确认事项，避免混入其他专题。`
+};
+
+// Persistent presentation fixtures for Recent only: opening a topic does not consume them.
+// Counts reuse existing conversation content and never change membership or notification preferences.
+window.__EVA_RECENT_UNREAD_DEMO = Object.freeze({
+  'th-msg-architecture': 3,
+  'th-mode-switch': 1,
+  'supply-many-topic-01': 1,
+  'supply-many-topic-04': 1,
+  'supply-many-topic-12': 1,
+  'supply-many-topic-24': 1
+});

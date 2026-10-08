@@ -45,8 +45,8 @@
     }
 
     return function ProjectFiles({context,projectId}){
-      useSyncExternalStore(context.store.subscribe,context.store.getSnapshot);
-      const actor=context.store.snapshot().actorId;
+      const memberRevision=useSyncExternalStore(context.store.subscribe,context.store.getSnapshot);
+      const actor=context.store.actorId();
       const revision=useSyncExternalStore(context.files.subscribe,context.files.getSnapshot);
       const canTrash=context.files.can('trash',projectId,actor);
       const canViewTrash=context.files.can('view-trash',projectId,actor);
@@ -89,9 +89,9 @@
         return()=>{document.removeEventListener('pointerdown',closePreviewOutside);document.removeEventListener('keydown',closePreviewOnKey);};
       },[preview]);
 
-      const all=useMemo(()=>context.files.list(projectId,actor),[revision,projectId,actor]);
-      const trash=useMemo(()=>canViewTrash?context.files.trashList(projectId,actor):[],[revision,projectId,actor,canViewTrash]);
-      const snapshot=useMemo(()=>context.files.snapshot(actor),[revision,actor]);
+      const all=useMemo(()=>context.files.list(projectId,actor),[revision,memberRevision,projectId,actor]);
+      const trash=useMemo(()=>canViewTrash?context.files.trashList(projectId,actor):[],[revision,memberRevision,projectId,actor,canViewTrash]);
+      const snapshot=useMemo(()=>context.files.snapshot(actor),[revision,memberRevision,actor]);
       const shown=useMemo(()=>{
         let list=trashMode?trash:all;
         const normalized=query.trim().toLowerCase();

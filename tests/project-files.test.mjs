@@ -287,3 +287,25 @@ test('两个文件入口使用可输入下拉框选择已有标签或新建标�
 test('两个文件入口按文件夹删除单元提示，并反馈恢复到文件库根目录',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/及其中内容/);assert.match(source,/trashedItemCount/);assert.match(source,/restoredToRoot/);assert.match(source,/原位置不存在，已恢复到文件库根目录/);}});
 test('两个文件详情入口按实时角色隐藏恢复和永久删除动作',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/canRestore/);assert.match(source,/canDeleteForever/);assert.match(source,/can\('restore'/);assert.match(source,/can\('delete-forever'/);}});
 test('两个文件入口共用置顶状态，文件库提供跨个人和项目文件库的聚合视图且不恢复共享空间',()=>{const store=fs.readFileSync(new URL('../prototype/009-1-file-sharing.js',import.meta.url),'utf8');const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const hierarchy=fs.readFileSync(new URL('../prototype/021-message-hierarchy.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');const hierarchyStyles=fs.readFileSync(new URL('../prototype/016-message-hierarchy.css',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/togglePin|togglePinned/);assert.match(source,/aria-pressed/);assert.match(source,/eva-drive__pin-button/);assert.match(source,/取消置顶/);}assert.match(store,/pinnedFiles\(/);assert.match(store,/setPinned\(/);assert.match(drive,/treeButton\('pinned', '置顶文件', 'pin'/);assert.match(drive,/pinnedFiles\(actor\)/);assert.match(drive,/eva-drive__table--pinned/);assert.match(drive,/openResourceLocation\(resource, true\)/);assert.match(drive,/打开所在位置/);assert.match(styles,/\.eva-drive__pin-button\.is-pinned/);assert.match(styles,/\.eva-drive__row:focus-within \.eva-drive__pin-button/);assert.doesNotMatch(drive,/共享空间|shared-space|new-shared-space|shared-manage|data-shared-space-id/);assert.doesNotMatch(hierarchy,/buildDriveScopebar|shared-all|私聊分享|来自共享的文件来源/);assert.doesNotMatch(styles,/eva-drive-project-card--shared|eva-drive-member-list|eva-drive-governance/);assert.doesNotMatch(hierarchyStyles,/eva-drive-scopebar|eva-drive-sourcebar/);assert.doesNotMatch(store,/DEFAULT_SHARED_SPACES|createSharedSpace/);assert.match(drive,/treeButton\('personal', '个人文件库'/);assert.match(drive,/treeButton\('projects', '项目文件库'/);});
+
+test('文件权限与目录查询不复制聊天全量快照，成员移除立即生效',()=>{
+  const {members,files}=setup();
+  members.snapshot=()=>{throw new Error('文件读取不应复制全量聊天状态');};
+  assert.equal(files.role('p','a'),'owner');
+  assert.equal(files.role('p','b'),'editor');
+  assert.equal(files.can('upload','p','b'),true);
+  assert.ok(files.writableSpaces('b').some(space=>space.id==='p'));
+  files.list('p','b');
+  members.remove('p','a','b');
+  assert.equal(files.can('upload','p','b'),false);
+  assert.equal(files.writableSpaces('b').some(space=>space.id==='p'),false);
+});
+
+test('项目定向读取保持副本隔离，不允许调用方改写成员权限',()=>{
+  const {members}=setup();
+  const p=members.projectRecord('p');p.ownerId='c';p.humans.length=0;
+  const projects=members.projectRecords();projects.p.name='篡改';
+  assert.equal(members.projectRecord('p').ownerId,'a');
+  assert.equal(members.projectRecord('p').name,'项目');
+  assert.equal(members.canRead('p','b'),true);
+});

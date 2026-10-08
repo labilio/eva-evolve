@@ -150,6 +150,11 @@
     const api={
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
+      // Narrow detached reads: UI metadata queries must not copy message history.
+      projectRecord:id=>state.projects[id]?JSON.parse(JSON.stringify(state.projects[id])):null,
+      projectRecords:()=>JSON.parse(JSON.stringify(state.projects)),
+      cloneRecords:()=>JSON.parse(JSON.stringify(state.clones.map(cloneView))),
+      identityRecords:()=>JSON.parse(JSON.stringify({people:state.people,clones:state.clones.map(cloneView)})),
       // Identity portraits are writable only by their owner. Humans edit themselves;
       // a clone is edited by its owner; employees, project agents and squads stay fixed.
       cloneAvatar(ownerId){const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);return(c&&c.avatar)||'';},
@@ -745,6 +750,22 @@
         saved.messages[id]=[...seeded,...custom];
       }
       saved.seededIMShowcaseV2=true;
+    }
+    // Add once, including messages; later user edits/deletions remain authoritative.
+    const manyTopics=root.__EVA_MANY_TOPICS_DEMO;
+    if(manyTopics&&bubbleProject&&!saved.seededManyTopicsDemoV1){
+      if(!saved.groups[manyTopics.id]){
+        saved.groups[manyTopics.id]={id:manyTopics.id,name:manyTopics.name,projectId:'prod',ownerId:bubbleProject.ownerId,humans:bubbleProject.humans.map(p=>({id:p.id,role:'member'})),cloneIds:[],employeeIds:[]};
+        saved.messages||={};saved.threadDetails||={};
+        const demoMessage=(text,id)=>({kind:'text',text,time:'16:00',fixtureId:'many-topics-v1:'+id,sender:{...saved.people.find(p=>p.id==='u-wangyilin'),uid:'u-wangyilin'}});
+        saved.messages[manyTopics.id]=[demoMessage('本群有 24 个专题子区。顶部箭头可滚动查看，点击标签切换独立聊天；群成员保持一致。',manyTopics.id)];
+        for(const topic of manyTopics.threads){
+          saved.threads[topic.id]=manyTopics.id;
+          saved.threadDetails[topic.id]={status:1,...topic,created_at:root.__EVA_DEMO_TIME?.T1};
+          saved.messages[topic.id]=[demoMessage(manyTopics.messageText(topic.name),topic.id)];
+        }
+      }
+      saved.seededManyTopicsDemoV1=true;
     }
     const supplyMemberDemo=root.__EVA_SUPPLY_MEMBER_DEMO,supplyProject=saved.projects[supplyMemberDemo?.projectId];
     if(supplyMemberDemo&&supplyProject&&(saved.supplyMemberPresetVersion||0)<supplyMemberDemo.version){

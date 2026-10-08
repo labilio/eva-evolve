@@ -91,7 +91,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
   const [ownerId,setOwnerId]=R.useState(null),[error,setError]=R.useState(''),[page,setPage]=R.useState('identity');
   const [avatarEditing,setAvatarEditing]=R.useState(!!startAvatarEditing),[avatarError,setAvatarError]=R.useState(''),[cropImage,setCropImage]=R.useState(null);
   const id=typeof identity==='string'?identity:identity?.id||identity?.uid;
-  const actor=store.snapshot().actorId;
+  const actor=store.actorId();
   R.useEffect(()=>{setOwnerId(null);setError('');setPage('identity');setAvatarEditing(!!startAvatarEditing);setAvatarError('');setCropImage(null);},[id,actor,startAvatarEditing]);
   const profile=model.resolve(ownerId||id),owner=profile?.owner&&model.resolve(profile.owner.id);
   // Portrait ownership follows the identity data: self, clone owner, or the
@@ -120,7 +120,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
    onClose();navigate(url);
   }catch(e){setError(e.message);}};
   const openProject=()=>{
-   if(!store.canRead(profile.project.id,store.snapshot().actorId)){setError('当前无法访问该项目。');return;}
+   if(!store.canRead(profile.project.id,store.actorId())){setError('当前无法访问该项目。');return;}
    onClose();navigate('/collab?evaProject='+encodeURIComponent(profile.project.id));
   };
   const field=(label,value,multiline=false)=>h('div',{className:'eva-person-card__row'+(multiline?' eva-person-card__row--multiline':''),key:label},h('span',{className:'eva-person-card__row-label'},label),h('span',{className:'eva-person-card__row-value'},value));

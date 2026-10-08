@@ -8,7 +8,7 @@
       const {Modal,Button,LoopButton,Input,AutoGrowTextarea,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
-      const snapshot=members.snapshot(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=snapshot.projects[pid];
+      const actor=members.actorId(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=members.projectRecord(pid);
       const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
       const [form,setForm]=R.useState(empty),[labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[busy,setBusy]=R.useState(false),[error,setError]=R.useState('');
       const lock=R.useRef(false),host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
@@ -17,9 +17,9 @@
         setForm(empty());setTagQuery('');setTagMenuOpen(false);setFiles([]);setError('');setBusy(false);lock.current=false;created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
-      },[visible,project?.id,parentIssueId,snapshot.actorId]);
+      },[visible,project?.id,parentIssueId,actor]);
       // 负责人只能是本项目联系人；来源者与创建者不提供选项，提交时固定为当前操作人本人。
-      const humans=(scope?.humans||[]).map(row=>snapshot.people.find(p=>p.id===row.id)).filter(Boolean);
+      const humans=(scope?.humans||[]).map(row=>members.personRecord(row.id)).filter(Boolean);
       const candidates=humans.map(p=>({...p,type:'member'}));
       const selected=candidates.find(p=>p.id===form.assignee),patch=(key,value)=>setForm(old=>({...old,[key]:value}));
       const popup=()=>host.current;
@@ -32,7 +32,7 @@
       const close=()=>{if(!lock.current)onClose();};
       async function submit(){
         if(lock.current)return;
-        if(!scope||!project?.id||!members.canRead(pid,snapshot.actorId)){setError('请从具体项目中创建任务。');return;}
+        if(!scope||!project?.id||!members.canRead(pid,actor)){setError('请从具体项目中创建任务。');return;}
         if(!form.title.trim()){setError('请填写任务标题。');return;}
         if(form.assignee&&!selected){setError('负责人已不在当前项目，请重新选择。');return;}
         lock.current=true;setBusy(true);setError('');const token=generation.current;
@@ -40,7 +40,7 @@
           const attachmentIds=[];
           for(const file of files){if(!uploaded.current.has(file)){const result=await uploadAttachment(file);if(token!==generation.current)return;if(!result?.id)throw new Error('附件上传失败');uploaded.current.set(file,result.id);}attachmentIds.push(uploaded.current.get(file));}
           if(token!==generation.current)return;
-          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,source_id:snapshot.actorId,creator_id:snapshot.actorId,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
+          if(!created.current){const result=await createIssue({title:form.title.trim(),description:form.description.trim(),status:form.status,priority:form.priority,due_date:form.dueDate||null,project_id:project.id,workspace_id:pid,assignee_id:selected?.id||null,assignee_type:selected?.type||null,assignee_name:selected?.name||null,source_id:actor,creator_id:actor,attachment_ids:attachmentIds,parent_issue_id:parentIssueId});if(token!==generation.current)return;created.current=result;}
           if(!created.current?.id)throw new Error('任务创建未返回任务编号，请重试。');
           for(const id of form.labels){if(!attached.current.has(id)){await attachLabel(created.current.id,id);if(token!==generation.current)return;attached.current.add(id);}}
           if(token===generation.current){onCreated?.(created.current);onClose();}
@@ -95,7 +95,7 @@
             error&&h('p',{className:'eva-loop-task-create__error',role:'alert'},error),
             h('div',{className:'loop-ci__footer'},attachmentButton,h('div',{className:'loop-ci__footer-right'},
               h(LoopButton,{variant:'ghost',onClick:close,disabled:busy},'取消'),
-              h(LoopButton,{onClick:submit,loading:busy,disabled:busy||!form.title.trim()||!scope||!members.canRead(pid,snapshot.actorId)},created.current?'补存标签':'创建'))))));
+              h(LoopButton,{onClick:submit,loading:busy,disabled:busy||!form.title.trim()||!scope||!members.canRead(pid,actor)},created.current?'补存标签':'创建'))))));
     };
   }
 })(window);
