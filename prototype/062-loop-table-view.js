@@ -399,13 +399,15 @@
           }
           setCount(fit);
         };
-        measure();
+        // ResizeObserver supplies the initial measurement before paint. Avoid measuring
+        // every row synchronously and then repeating all reads in its first callback.
         const host=rootRef.current&&(rootRef.current.closest('.eva-task-table__cell-editor')||rootRef.current.parentElement);
         if(host&&typeof ResizeObserver!=='undefined'){
           const observer=new ResizeObserver(measure);
           observer.observe(host);
           return ()=>observer.disconnect();
         }
+        measure();
       },[labels]);
       if(!labels||!labels.length)return null;
       const shown=labels.slice(0,count),rest=labels.length-shown.length;

@@ -88,7 +88,7 @@ const enterAndExitFullscreen = async (page, preview) => {
   assert.ok(restored && Math.abs(restored.width - before.width) <= 1, '退出全屏后恢复原预览宽度');
 };
 
-test('文件库、项目文件、任务附件与消息统一使用可缩放的右侧挤压及全屏预览', async () => {
+test('文件库与消息支持挤压预览，任务附件沿用工作区预览并可关闭返回', async () => {
   const server = createServer(fileURLToPath(new URL('../../dist', import.meta.url)));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -139,15 +139,14 @@ test('文件库、项目文件、任务附件与消息统一使用可缩放的�
     await detail.waitFor();
     const attachment = detail.locator('.eva-task-attachment-card__preview').first();
     await attachment.waitFor();
-    const detailWidth = await detail.locator('.loop-idp__body').evaluate(element => element.getBoundingClientRect().width);
     await attachment.click();
-    const taskPreview = detail.locator('.eva-task-file-preview-pane');
+    const taskPreview = page.getByRole('dialog', {name:'任务附件预览',exact:true});
     await taskPreview.waitFor();
-    const taskResult = await geometry(detail, '.loop-idp__body', '.eva-task-file-preview-pane');
-    assert.equal(taskResult.display, 'grid');
-    assertPushedRight(taskResult, detailWidth);
-    await shrinkPreview(page, detail, '.loop-idp__body', '.eva-task-file-preview-pane', false);
-    await enterAndExitFullscreen(page, taskPreview);
+    assert.match(await taskPreview.innerText(), /A-2409/);
+    const bounds=await taskPreview.boundingBox(),workspace=await page.locator('.collab-body').boundingBox();
+    assert.ok(Math.abs(bounds.x-workspace.x)<2 && Math.abs(bounds.width-workspace.width)<2, '任务预览铺满所属工作区');
+    const titlebar=await page.locator('.app-titlebar').boundingBox();
+    assert.ok(bounds.y>=titlebar.y+titlebar.height, '预览不得覆盖系统标题栏');
     await page.keyboard.press('Escape');
     await taskPreview.waitFor({ state: 'detached' });
 
