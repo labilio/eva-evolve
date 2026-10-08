@@ -139,6 +139,53 @@ test('表格视图搜索：任务页第四视图的新增入口沿用公共搜�
   assert.equal(await input.inputValue(), '', '清空后查询应恢复为空');
 });
 
+test('任务负责人搜索：首条匹配项默认高亮，单条结果没有空白行，回车可选择', async () => {
+  await page.goto(`${origin}/#/collab?evaProject=prod`);
+  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
+  await page.locator('.eva-task-table__row .loop-assignee-trigger').first().click();
+  const menu = page.locator('.eva-task-assignee-menu');
+  const input = menu.locator('.eva-task-assignee-search input');
+  await input.waitFor();
+  await page.waitForTimeout(600);
+  await input.fill('王宜林');
+  const row = menu.locator('.eva-task-assignee-scroll .semi-dropdown-item');
+  await page.waitForFunction(() => document.querySelectorAll('.eva-task-assignee-menu .eva-task-assignee-scroll .semi-dropdown-item').length === 1);
+  assert.equal(await row.count(), 1);
+  assert.match(await row.first().getAttribute('class'), /semi-dropdown-item-active/);
+  const dimensions = await menu.locator('.eva-task-assignee-scroll').evaluate(el => ({
+    scroll: el.getBoundingClientRect().height,
+    row: el.querySelector('.semi-dropdown-item').getBoundingClientRect().height,
+  }));
+  assert.ok(dimensions.scroll <= dimensions.row + 2, `结果区不应有空白行: ${JSON.stringify(dimensions)}`);
+  await input.press('Enter');
+  await menu.waitFor({ state: 'hidden' });
+});
+
+test('任务负责人搜索：多条匹配时只有最匹配的首项有选中样式', async () => {
+  await page.goto(`${origin}/#/collab?evaProject=prod`);
+  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.getByRole('tab', { name: '表格', exact: true }).click();
+  const trigger = page.locator('.eva-task-table__row .loop-assignee-trigger').first();
+  await trigger.click();
+  const menu = page.locator('.eva-task-assignee-menu:visible');
+  const input = menu.locator('input');
+  await input.waitFor();
+  await page.waitForTimeout(600);
+  await input.fill('林');
+  const rows = menu.locator('.eva-task-assignee-scroll .semi-dropdown-item');
+  await rows.filter({ hasText: '林晓' }).waitFor();
+  assert.deepEqual(await rows.allTextContents(), ['林晓', '王宜林']);
+  const active = rows.filter({ has: page.locator('.eva-loop-identity-name-text') }).and(page.locator('.semi-dropdown-item-active'));
+  assert.equal(await active.count(), 1, '搜索后只能有一个活动结果');
+  assert.match(await active.first().innerText(), /林晓/);
+  assert.notEqual(await active.first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)', '默认活动项必须显示与 @ 面板一致的浅色背景');
+  assert.equal(await active.first().locator('.semi-icon-tick').count(), 0, '选人菜单不显示对勾');
+  await input.press('Enter');
+  await menu.waitFor({ state: 'hidden' });
+  assert.match(await trigger.innerText(), /林晓/, '回车应提交首条最匹配结果');
+});
+
 test('转发面板搜索：沿用公共搜索外观，悬停和聚焦不改变几何', async () => {
   await page.goto(`${origin}/#/messages`);
   await page.locator('.eva-follow-channel > .wk-conv-compact-item').first().waitFor();
@@ -458,6 +505,8 @@ test('数字员工市场：统一搜索二合一结果与「更多」限高面�
   assert.deepEqual(await menu.locator('.semi-dropdown-title').allTextContents(), ['业务域', '数字员工'], '两类结果各自带分组标题');
   assert.equal(await menu.locator('.semi-dropdown-divider').count(), 1, '两个分组之间一条分隔线');
   assert.deepEqual(await menu.locator('.eva-task-assignee-expand').allTextContents(), ['展开其余 13 个', '展开其余 340 个'], '每组默认 5 条、其余折叠');
+  assert.equal(await menu.locator('.eva-task-assignee-expand').first().evaluate(el=>getComputedStyle(el).borderRadius),
+    await menu.locator('.semi-dropdown-item').first().evaluate(el=>getComputedStyle(el).borderRadius),'市场与任务共用 Semi 菜单展开行的圆角');
   await menu.locator('.eva-task-assignee-expand').first().click();
   assert.ok((await menu.locator('.semi-dropdown-item').count()) > 10, '「展开其余」补全该组且不收起弹层');
   // 在外层搜索框直接输入即筛选；业务域结果点击应用筛选、低频域回显筛选行并清空
@@ -558,6 +607,36 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
     const input = menu.locator('.eva-task-assignee-search input');
     await input.waitFor();
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
+    assert.equal(await input.evaluate(el=>parseFloat(getComputedStyle(el).height)),32,'公共选人搜索框使用统一的 32px 控件高度');
+    assert.equal(await input.evaluate(el=>getComputedStyle(el).borderRadius),'8px','选人搜索框使用王岩搜索控件的 8px 圆角');
+    const menuRhythm=await menu.evaluate(el=>{
+      const search=el.querySelector('.eva-task-assignee-search').getBoundingClientRect();
+      const clear=el.querySelector('.semi-dropdown-item').getBoundingClientRect();
+      const divider=el.querySelector('.eva-task-assignee-scroll .semi-dropdown-divider').getBoundingClientRect();
+      return {above:clear.top-search.bottom,below:divider.top-clear.bottom};
+    });
+    assert.ok(Math.abs(menuRhythm.above-menuRhythm.below)<=1,'未指派行上下留白应一致');
+    const expand=menu.locator('.eva-task-assignee-expand').first();
+    if(await expand.count()){
+      const radius=await expand.evaluate(el=>getComputedStyle(el).borderRadius);
+      const optionRadius=await menu.locator('.eva-task-assignee-scroll .semi-dropdown-item').first().evaluate(el=>getComputedStyle(el).borderRadius);
+      assert.equal(radius,optionRadius,'展开其余与人员行使用相同悬停圆角');
+      const beforeCount=await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').count();
+      await expand.hover();
+      await page.screenshot({path:'/tmp/eva-task-assignee-expand.png'});
+      await expand.click();
+      assert.equal(await menu.isVisible(),true,'展开更多联系人时选人菜单保持打开');
+      assert.ok(await menu.locator('.eva-task-assignee-scroll .eva-loop-identity-name-text').count()>beforeCount,'展开后显示更多真实候选');
+    }
+    const selectedItem=menu.locator('.semi-dropdown-item-active').first();
+    if(await selectedItem.count()){
+      const before=await selectedItem.evaluate(el=>getComputedStyle(el).backgroundColor);
+      await selectedItem.hover();
+      const hovered=await selectedItem.evaluate(el=>getComputedStyle(el).backgroundColor);
+      assert.notEqual(before,'rgba(0, 0, 0, 0)','已选中的负责人应有与 @ 面板一致的背景反馈');
+      assert.equal(hovered,before,'已选中的负责人悬停时应保持同一活动行背景');
+      await page.screenshot({path:'/tmp/eva-task-assignee-menu.png'});
+    }
     await menu.getByText('联系人', { exact: true }).waitFor();
     // 弹层必须落在系统标题栏下方，且高度受上限约束（长列表在限高内滚动）。
     // Semi 首次定位前 boundingBox 仍为隐藏测量态，先轮询到可见坐标再断言。

@@ -30,8 +30,7 @@ test('Edge：描述和评论中的任务引用在同一抽屉打开并可返回'
     assert.equal(await page.locator('.collab-route-right.eva-route-drawer').count(),1,'只保留一个任务抽屉');
     assert.equal(page.url().includes('evaTask=SC-103'),true,'浏览器路由仍指向入口任务');
     const close=page.getByRole('button',{name:'关闭任务详情'});
-    await close.hover();
-    await page.locator('.eva-tooltip-surface').getByText('关闭任务详情',{exact:true}).waitFor();
+    assert.equal(await close.getAttribute('data-eva-tooltip'),null,'关闭按钮不显示重复提示');
     const back=page.getByRole('button',{name:'返回跳转前的任务'});
     await back.hover();
     const tooltip=page.locator('.eva-tooltip-surface').getByText('返回跳转前的任务',{exact:true});

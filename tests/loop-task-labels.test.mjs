@@ -51,21 +51,15 @@ test('任务详情标签 API 读取当前项目目录，并将绑定与解绑写
   assert.deepEqual(Array.from(s.issues.prod[0].labels),[]);
 });
 
-test('任务标签改名和删除同步已绑定任务，且不同项目目录互不串联',async()=>{
+test('任务标签直接新建和关联在项目之间隔离',async()=>{
   const s=setup();
   await s.api.attachLabel('issue-prod','label-procurement');
-  await s.api.updateLabel('label-procurement',{name:'重点采购',color:'#ef4444'});
-  assert.deepEqual({...s.issues.prod[0].labels[0]},{id:'label-procurement',project_id:'p-supply',name:'重点采购',color:'#ef4444'});
-
   s.setCurrent('other');
   assert.deepEqual(Array.from(await s.api.listLabels()),[]);
   const otherLabel=await s.api.createLabel('其他项目标签','#22c55e');
   await s.api.attachLabel('issue-other',otherLabel.id);
   assert.equal(s.issues.other[0].labels[0].name,'其他项目标签');
-  assert.equal(s.issues.prod[0].labels[0].name,'重点采购');
-
   s.setCurrent('prod');
-  await s.api.deleteLabel('label-procurement');
-  assert.deepEqual(Array.from(s.issues.prod[0].labels),[]);
-  assert.equal(s.issues.other[0].labels[0].name,'其他项目标签');
+  assert.deepEqual(Array.from(await s.api.listLabels(),label=>label.name),['采购']);
+  assert.equal(s.issues.prod[0].labels[0].name,'采购');
 });

@@ -9,13 +9,13 @@
 
   function create(deps){
     const {
-      React,useI18n,Popover,Checkbox,Switch,Toast,Input,
-      AssigneePicker,Tag,RunningChip,useRunConfirm,
+      React,useI18n,Popover,Dropdown,Checkbox,Switch,Toast,DatePicker,Input,
+      AssigneePicker,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
       updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
-      ISSUE_STATUS_ORDER,ISSUE_STATUS_HEX,
-      PRIORITY_ORDER,PRIORITY_HEX,
+      ISSUE_STATUS_ORDER,ISSUE_STATUS_ICON,ISSUE_STATUS_HEX,
+      PRIORITY_ORDER,PRIORITY_ICON,
       DndContext,SortableContext,useSortable,useDndContext,
       useSensors,useSensor,PointerSensor,KeyboardSensor,sortableKeyboardCoordinates,
       closestCenter,restrictToHorizontalAxis,horizontalListSortingStrategy,
@@ -32,7 +32,9 @@
       onKeyDown:event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setOpen(true);}}
     });
     function PopMenu(props){
-      const {open,setOpen,position='bottomLeft',role='menu',trigger,children,menuClassName=''}=props;
+      const {open,setOpen,position='bottomLeft',role='menu',trigger,children,menuClassName='',onNavigate}=props;
+      const menuRef=React.useRef(null);
+      React.useEffect(()=>{if(open)requestAnimationFrame(()=>menuRef.current?.focus());},[open]);
       React.useEffect(()=>{
         if(!open)return;
         const onKey=event=>{if(event.key==='Escape')setOpen(false);};
@@ -40,17 +42,26 @@
         return()=>document.removeEventListener('keydown',onKey);
       },[open,setOpen]);
       return h(Popover,{trigger:'custom',visible:open,position,onClickOutSide:()=>setOpen(false),motion:false,
-        content:h('div',{className:'eva-task-table__menu'+(menuClassName?' '+menuClassName:''),role,
-          onKeyDown:event=>{if(event.key==='Escape')setOpen(false);}},children)},trigger);
+        content:h('div',{ref:menuRef,tabIndex:-1,className:'eva-task-table__menu'+(menuClassName?' '+menuClassName:''),role,
+          onKeyDown:event=>{
+            if(event.key==='Escape'){setOpen(false);return;}
+            if(event.key!=='ArrowDown'&&event.key!=='ArrowUp')return;
+            const items=Array.from(event.currentTarget.querySelectorAll('.eva-task-table__menu-item:not(:disabled)'));
+            if(!items.length)return;
+            const current=items.indexOf(document.activeElement);
+            const next=current<0?(event.key==='ArrowDown'?0:items.length-1):(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;
+            event.preventDefault();items[next].focus();onNavigate?.(next);
+          }},children)},trigger);
     }
     function MenuItem(props){
-      const {role='menuitem',selected,disabled,icon,label,onClick,content}=props;
+      const {role='menuitem',selected,active,disabled,icon,label,onClick,content,variant,muted=false,ariaLabel}=props;
       const extra=role==='option'?{'aria-selected':!!selected}:{'aria-current':selected?'true':undefined};
-      return h('button',{type:'button',role,disabled,...extra,
-        className:'eva-task-table__menu-item'+(selected?' is-selected':''),
+      return h('button',{type:'button',role,disabled,'aria-label':ariaLabel,...extra,
+        className:'eva-task-table__menu-item'+(selected?' is-selected':'')+(active?' is-active':'')+(variant==='action'?' is-action':'')+(muted?' is-muted':''),
         onMouseDown:event=>event.preventDefault(),onClick},
-        h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
-        content||h(React.Fragment,null,icon||null,h('span',{className:'eva-task-table__menu-label'},label)));
+        variant==='action'?null:h('span',{className:'eva-task-table__menu-check'},selected?h(icons.Check,{size:13}):null),
+        content||h(React.Fragment,null,icon||null,h('span',{className:'eva-task-table__menu-label'},label)),
+        variant==='action'&&selected?h('span',{className:'eva-task-table__menu-check'},h(icons.Check,{size:13})):null);
     }
 
     /* ---------- Multica 表格列模型 ---------- */
@@ -120,58 +131,23 @@
       return issueIds.slice(Math.min(start,end),Math.max(start,end)+1);
     }
 
-    /* ---------- 单元格矢量标记（一比一移植 Multica status-icon / priority-icon 几何） ----------
-       viewBox 14×14 / 16×16，颜色沿用 Eva 唯一色源 ISSUE_STATUS_HEX / PRIORITY_HEX。 */
-    function piePath(cx,cy,r,progress){
-      const angle=2*Math.PI*progress;
-      const x=cx+r*Math.sin(angle),y=cy-r*Math.cos(angle);
-      return 'M'+cx+','+cy+' L'+cx+','+(cy-r)+' A'+r+','+r+' 0 '+(progress>0.5?1:0)+',1 '+x+','+y+' Z';
-    }
+    /* 表格仅适配尺寸与类名，任务属性图形和颜色由公共组件决定。 */
     function StatusGlyph({status,size=14}){
-      const color=ISSUE_STATUS_HEX[status];
-      const parts=[h('circle',{key:'ring',cx:7,cy:7,r:6,fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeDasharray:'3.14 0',strokeDashoffset:-0.7})];
-      if(status==='in_progress')parts.push(h('path',{key:'fill',d:piePath(7,7,3.5,0.5),fill:'currentColor'}));
-      else if(status==='in_review')parts.push(h('path',{key:'fill',d:piePath(7,7,3.5,0.75),fill:'currentColor'}));
-      else if(status==='done')parts.push(
-        h('circle',{key:'fill',cx:7,cy:7,r:6,fill:'currentColor'}),
-        h('path',{key:'check',d:'M10.951 4.24896C11.283 4.58091 11.283 5.11909 10.951 5.45104L5.95104 10.451C5.61909 10.783 5.0809 10.783 4.74896 10.451L2.74896 8.45104C2.41701 8.11909 2.41701 7.5809 2.74896 7.24896C3.0809 6.91701 3.61909 6.91701 3.95104 7.24896L5.35 8.64792L9.74896 4.24896C10.0809 3.91701 10.6191 3.91701 10.951 4.24896Z',fill:'var(--semi-color-bg-0,#fff)',stroke:'none'}));
-      else if(status==='blocked')parts.push(h('line',{key:'fill',
-        x1:7+3.5*Math.cos(Math.PI*0.75),y1:7-3.5*Math.sin(Math.PI*0.75),
-        x2:7+3.5*Math.cos(-Math.PI*0.25),y2:7-3.5*Math.sin(-Math.PI*0.25),
-        stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'}));
-      else if(status==='cancelled')parts.push(h('path',{key:'fill',d:'M5 5 L9 9 M9 5 L5 9',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'}));
-      return h('svg',{viewBox:'0 0 14 14',width:size,height:size,'aria-hidden':true,focusable:false,
-        className:'eva-task-table__glyph',style:{color}},parts);
+      const Icon=ISSUE_STATUS_ICON[status]||ISSUE_STATUS_ICON.todo;
+      return h(Icon,{size,'aria-hidden':true,className:'eva-task-table__glyph'});
     }
     function PriorityGlyph({priority,size=14}){
-      const color=PRIORITY_HEX[priority];
-      if(!priority||priority==='none')
-        return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-          className:'eva-task-table__glyph',style:{color},fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'},
-          h('line',{x1:3,y1:8,x2:13,y2:8}));
-      if(priority==='urgent')
-        return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-          className:'eva-task-table__glyph',style:{color},fill:'none'},
-          h('rect',{x:2,y:2,width:12,height:12,rx:3,fill:'currentColor'}),
-          h('line',{x1:8,y1:5,x2:8,y2:8.6,stroke:'var(--semi-color-bg-0,#fff)',strokeWidth:1.7,strokeLinecap:'round'}),
-          h('circle',{cx:8,cy:11,r:0.95,fill:'var(--semi-color-bg-0,#fff)'}));
-      const filled={low:1,medium:2,high:3}[priority]||0;
-      return h('svg',{viewBox:'0 0 16 16',width:size,height:size,'aria-hidden':true,focusable:false,
-        className:'eva-task-table__glyph',style:{color},fill:'currentColor'},
-        [6,9,12].map((height,i)=>h('rect',{key:i,x:2+i*4.25,y:14-height,width:3.5,height,rx:1,opacity:i<filled?1:0.35})));
+      const Icon=PRIORITY_ICON[priority]||PRIORITY_ICON.none;
+      return h(Icon,{size,'aria-hidden':true,className:'eva-task-table__glyph'});
     }
-    /* Multica PRIORITY_DISPLAY_ORDER：菜单里空值（无优先级）置顶，与排序权重分开。 */
-    const PRIORITY_DISPLAY_ORDER=['none','urgent','high','medium','low'];
+    /* 菜单展示顺序由项目任务公共组件维护，排序权重仍使用业务域配置。 */
+    const PRIORITY_DISPLAY_ORDER=root.EvaLoopTaskComponents.priorityDisplayOrder;
 
     /* ---------- 枚举单元格：幽灵触发器 + 049 菜单（对齐 Multica PropertyPicker） ---------- */
     function CellMenu({ariaLabel,options,current,trigger,onPick}){
-      const [open,setOpen]=React.useState(false);
-      return h(PopMenu,{open,setOpen,role:'listbox',trigger:
-        h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':ariaLabel,
-          'aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},trigger)},
-        options.map(option=>h(MenuItem,{key:option.value,role:'option',selected:current===option.value,
-          icon:option.icon,label:option.label,content:option.content,
-          onClick:()=>{setOpen(false);if(option.value!==current)onPick(option.value);}})));
+      return root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{
+        ariaLabel,options,value:current,onChange:onPick,trigger,triggerClassName:'eva-task-table__cell-trigger'
+      });
     }
 
     /* ---------- 排序 / 分组 / 层级行构建 ---------- */
@@ -362,13 +338,13 @@
               h('span',{className:'eva-task-table__th-label'},label),
               active?h(direction==='asc'?icons.ArrowUp:icons.ArrowDown,{size:12,className:'eva-task-table__th-arrow'}):null)},
             sortable?[
-              h(MenuItem,{key:'asc',selected:active&&direction==='asc',icon:h(icons.ArrowUp,{size:13}),
+              h(MenuItem,{key:'asc',variant:'action',selected:active&&direction==='asc',icon:h(icons.ArrowUp,{size:13}),
                 label:'升序',onClick:()=>{onSort(columnKey,'asc');setHeaderOpen(false);}}),
-              h(MenuItem,{key:'desc',selected:active&&direction==='desc',icon:h(icons.ArrowDown,{size:13}),
+              h(MenuItem,{key:'desc',variant:'action',selected:active&&direction==='desc',icon:h(icons.ArrowDown,{size:13}),
                 label:'降序',onClick:()=>{onSort(columnKey,'desc');setHeaderOpen(false);}})
             ]:null,
             sortable&&onHide?h('div',{key:'sep',className:'eva-task-table__menu-sep'}):null,
-            onHide?h(MenuItem,{key:'hide',icon:h(icons.EyeOff,{size:13}),label:'隐藏列',
+            onHide?h(MenuItem,{key:'hide',variant:'action',icon:h(icons.EyeOff,{size:13}),label:'隐藏列',
               onClick:()=>{onHide();setHeaderOpen(false);}}):null),
           h('span',{className:'eva-task-table__resizer',onPointerDown:startResize,role:'separator','aria-orientation':'vertical','aria-label':'调整 '+label+' 列宽'})));
     }
@@ -378,21 +354,23 @@
       const {state}=props;
       const [open,setOpen]=React.useState(false);
       const [query,setQuery]=React.useState('');
+      const [activeIndex,setActiveIndex]=React.useState(0);
       const needle=query.trim().toLowerCase();
       const list=SYSTEM_COLUMNS.filter(key=>!needle||COLUMN_LABELS[key].toLowerCase().includes(needle));
-      return h(PopMenu,{open,setOpen,position:'bottomRight',role:'listbox',menuClassName:'eva-task-table__menu--wide','aria-label':'配置列',trigger:
+      return h(PopMenu,{open,setOpen,onNavigate:setActiveIndex,position:'bottomRight',role:'listbox',menuClassName:'eva-task-table__menu--wide','aria-label':'配置列',trigger:
         h('button',{type:'button',className:'eva-task-table__toolbtn','aria-label':'配置列','aria-haspopup':'listbox','aria-expanded':open,title:'列',...menuTrigger(setOpen)},
           h(icons.Columns3,{size:14}),h('span',null,'列'))},
-        h(Input,{value:query,onChange:setQuery,placeholder:'搜索列…','aria-label':'搜索列',
+        h(Input,{value:query,onChange:value=>{setQuery(value);setActiveIndex(0);},placeholder:'搜索列…','aria-label':'搜索列',
+          onKeyDown:event=>{if(event.key==='Enter'&&list[activeIndex]&&list[activeIndex]!=='title'){event.preventDefault();state.toggleColumn(list[activeIndex]);}},
           prefix:h(icons.Search,{size:16}),showClear:true}),
         h('div',{className:'eva-task-table__menu-title'},'任务属性'),
         h('div',{className:'eva-task-table__menu-list',role:'presentation'},
-          list.length?list.map(key=>h(MenuItem,{key,role:'option',selected:state.columns.some(item=>item.key===key),
+          list.length?list.map((key,index)=>h(MenuItem,{key,role:'option',selected:state.columns.some(item=>item.key===key),active:!!needle&&index===activeIndex,
             disabled:key==='title',label:COLUMN_LABELS[key],onClick:()=>state.toggleColumn(key)}))
           :h('div',{className:'eva-task-table__menu-empty'},'没有匹配的列')));
     }
 
-    /* 标签展示用标准 SemiUI Tag（与数字员工详情能力标签同一组件）。
+    /* 标签展示与详情、看板共用项目任务标签片。
        按单元格实际可用宽度测量：能放下的标签全部显示，放不下的折成 +N；列宽变化实时重算。
        （Multica 原实现写死前 2 个 + +N，这里按用户要求改为按宽度自适应。） */
     const LABEL_TAG_GAP=4;
@@ -433,10 +411,10 @@
       const shown=labels.slice(0,count),rest=labels.length-shown.length;
       return h('span',{className:'eva-task-table__label-tags',ref:rootRef},
         h('span',{className:'eva-task-table__label-tags-measure','aria-hidden':'true',ref:measureRef},
-          labels.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
-          h(Tag,{key:'__probe',size:'small',className:'eva-task-table__label-tag'},'+'+Math.max(1,labels.length-1))),
-        shown.map(label=>h(Tag,{key:label.id,size:'small',className:'eva-task-table__label-tag'},label.name)),
-        rest>0?h(Tag,{key:'__rest',size:'small',className:'eva-task-table__label-tag'},'+'+rest):null);
+          labels.map(label=>h(React.Fragment,{key:label.id},root.EvaLoopTaskComponents.labelChip(React,label))),
+          h('span',{key:'__probe',className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+Math.max(1,labels.length-1))),
+        shown.map(label=>h(React.Fragment,{key:label.id},root.EvaLoopTaskComponents.labelChip(React,label))),
+        rest>0?h('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
     }
 
     /* ---------- 标签单元格：展示 + 编辑（对齐 Multica LabelPicker） ---------- */
@@ -444,6 +422,17 @@
       const [open,setOpen]=React.useState(false);
       const [labels,setLabels]=React.useState(()=>evaTaskLabels(project));
       const [creating,setCreating]=React.useState('');
+      const [activeIndex,setActiveIndex]=React.useState(0);
+      const [,refreshCell]=React.useState(0);
+      const pendingRefresh=React.useRef(false);
+      const flushPendingRefresh=()=>{
+        if(pendingRefresh.current){
+          pendingRefresh.current=false;
+          queueMicrotask(()=>onChanged&&onChanged());
+        }
+      };
+      const setLabelOpen=value=>{setOpen(value);if(value===false)flushPendingRefresh();};
+      const notifyLabelChange=()=>{pendingRefresh.current=true;refreshCell(value=>value+1);};
       React.useEffect(()=>{if(open)setLabels(evaTaskLabels(project));},[open,project]);
       const attached=issue.labels||[];
       const toggle=async labelId=>{
@@ -452,33 +441,40 @@
           if(has)await evaDetachTaskLabel(project,evaTaskProjectId(project),issue.id,labelId);
           else await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,labelId);
           const next=has?attached.filter(item=>item.id!==labelId):[...attached,labels.find(item=>item.id===labelId)].filter(Boolean);
-          issue.labels=next;onChanged&&onChanged();
+          issue.labels=next;notifyLabelChange();
         }catch(error){Toast.error(error?.message||'标签保存失败');}
       };
       const create=async()=>{
         const name=creating.trim();
         if(!name)return;
         try{
+          const existing=labels.find(item=>item.name.toLowerCase()===name.toLowerCase());
+          if(existing){if(!attached.some(item=>item.id===existing.id))await toggle(existing.id);setCreating('');return;}
           const label=evaCreateTaskLabel(project,name);
           setLabels(evaTaskLabels(project));setCreating('');
-          if(!attached.some(item=>item.id===label.id))await toggle(label.id);
+          if(!attached.some(item=>item.id===label.id)){
+            await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,label.id);
+            issue.labels=[...attached,label];notifyLabelChange();
+          }
         }catch(error){Toast.error(error?.message||'标签创建失败');}
       };
+      const needle=creating.trim().toLowerCase();
+      const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
+      const exact=labels.some(label=>label.name.toLowerCase()===needle);
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide',trigger:
+        h(PopMenu,{open,setOpen:setLabelOpen,onNavigate:setActiveIndex,position:'bottomLeft',role:'listbox',menuClassName:'eva-task-table__menu--wide eva-task-table__menu--labels',trigger:
           attached.length?h('span',{className:'eva-task-table__cell-trigger',role:'button',tabIndex:0,title:'编辑标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},h(LabelTagList,{labels:attached}))
             :h('button',{type:'button',className:'eva-task-table__cell-trigger','aria-label':'添加标签','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
               h('span',{className:'eva-task-table__cell-label is-empty'},'空'))},
+          h('div',{className:'eva-task-picker-search eva-task-table__label-search'},
+            h(Input,{value:creating,onChange:value=>{setCreating(value);setActiveIndex(0);},placeholder:'搜索标签',maxLength:20,'aria-label':'搜索或新建标签',
+              onKeyDown:event=>{if(event.key==='Enter'){event.preventDefault();if(filtered[activeIndex])toggle(filtered[activeIndex].id);else if(needle&&!exact)create();}}})),
           h('div',{className:'eva-task-table__menu-list'},
-            labels.length?labels.map(label=>h(MenuItem,{key:label.id,role:'option',
+            filtered.length?filtered.map((label,index)=>h(MenuItem,{key:label.id,role:'option',variant:'action',active:!!needle&&index===activeIndex,
               selected:attached.some(item=>item.id===label.id),
-              icon:h('span',{className:'eva-task-table__label-dot',style:{background:label.color||'#64748b'}}),
-              label:label.name,onClick:()=>toggle(label.id)}))
-            :h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签')),
-          h('div',{className:'eva-task-table__label-create'},
-            h(Input,{value:creating,onChange:setCreating,placeholder:'新建标签',maxLength:20,'aria-label':'新建标签',
-              className:'eva-task-table__create-input',onKeyDown:event=>{if(event.key==='Enter')create();}}),
-            h('button',{type:'button',className:'eva-task-table__toolbtn',onClick:create,disabled:!creating.trim()},'新建'))));
+              content:root.EvaLoopTaskComponents.labelChip(React,label),onClick:()=>toggle(label.id)}))
+            :!needle?h('div',{className:'eva-task-table__menu-empty'},'暂无任务标签'):null,
+            needle&&!exact?h(MenuItem,{variant:'action',ariaLabel:'新建标签：'+creating.trim(),content:root.EvaLoopTaskComponents.labelCreateOption(React,icons.Plus,creating),onClick:create}):null)));
     }
 
     /* ---------- 标题单元格：层级缩进、子任务折叠；单击打开任务详情，无就地重命名 ---------- */
@@ -522,78 +518,20 @@
       const pad=value=>String(value).padStart(2,'0');
       return now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
     }
-    /** 日期展示使用任务公共规则；排序和存储仍使用 YYYY-MM-DD。 */
-    function formatDateOnly(value){
-      return taskTime.compactDate(value);
-    }
-    /** 单月网格日历（一比一移植 Multica Calendar 的月份视图几何与交互）。 */
-    function MonthCalendar({value,onSelect}){
-      const selected=parseDateParts(value),today=parseDateParts(todayDateOnly());
-      const anchor=React.useMemo(()=>{
-        if(selected)return {year:selected[0],month:selected[1]};
-        const now=new Date();
-        return {year:now.getFullYear(),month:now.getMonth()+1};
-      },[value]);
-      const [cursor,setCursor]=React.useState(anchor);
-      React.useEffect(()=>{setCursor(anchor);},[anchor.year,anchor.month]);
-      const monthLabel=new Intl.DateTimeFormat(undefined,{year:'numeric',month:'long',timeZone:'UTC'})
-        .format(new Date(Date.UTC(cursor.year,cursor.month-1,1)));
-      const daysInMonth=new Date(Date.UTC(cursor.year,cursor.month,0)).getUTCDate();
-      const leading=new Date(Date.UTC(cursor.year,cursor.month-1,1)).getUTCDay();
-      const inMonth=(day)=>cursor.year===today[0]&&cursor.month===today[1]&&day===today[2];
-      const isSelected=(day)=>!!selected&&cursor.year===selected[0]&&cursor.month===selected[1]&&day===selected[2];
-      const shift=step=>setCursor(current=>{
-        const index=current.month-1+step;
-        return {year:current.year+Math.floor(index/12),month:((index%12)+12)%12+1};
-      });
-      const cells=[];
-      for(let i=0;i<leading;i++)cells.push(h('span',{key:'lead-'+i,className:'eva-task-table__cal-blank'}));
-      for(let day=1;day<=daysInMonth;day++)cells.push(h('button',{key:'day-'+day,type:'button',
-        className:'eva-task-table__cal-day'+(isSelected(day)?' is-selected':'')+(inMonth(day)?' is-today':''),
-        'aria-label':cursor.year+'-'+String(cursor.month).padStart(2,'0')+'-'+String(day).padStart(2,'0'),
-        'aria-pressed':isSelected(day)?'true':'false',
-        onClick:()=>onSelect(cursor.year+'-'+String(cursor.month).padStart(2,'0')+'-'+String(day).padStart(2,'0'))},String(day)));
-      return h('div',{className:'eva-task-table__cal'},
-        h('div',{className:'eva-task-table__cal-nav'},
-          h('button',{type:'button',className:'eva-task-table__cal-navbtn','aria-label':'上个月',
-            onClick:()=>shift(-1)},h(icons.ChevronLeft,{size:14})),
-          h('span',{className:'eva-task-table__cal-month'},monthLabel),
-          h('button',{type:'button',className:'eva-task-table__cal-navbtn','aria-label':'下个月',
-            onClick:()=>shift(1)},h(icons.ChevronRight,{size:14}))),
-        h('div',{className:'eva-task-table__cal-weekdays'},['日','一','二','三','四','五','六']
-          .map((name,index)=>h('span',{key:index,className:'eva-task-table__cal-weekday'},name))),
-        h('div',{className:'eva-task-table__cal-grid',role:'grid'},cells));
-    }
-
-    /* ---------- 日期单元格（开始/截止）：一比一移植 Multica DateOnlyPicker ----------
+    /* ---------- 日期单元格（开始/截止）：统一 Semi 日期面板 ----------
        幽灵触发器「图标 + 短格式日期 / 占位文案」，截止日期早于今天标红（纯日期比较，不看状态）。
-       弹层结构照搬：顶部「无日期」空值行（可选中、空态显示勾）+ 单月网格日历，选日即写回并关闭。
-       日历日按 'YYYY-MM-DD' 传输，解析/格式化固定 UTC，查看者时区不会让日期漂移。 */
+       顶部保留「无日期」空值行；日历与创建、详情使用同一 Semi 面板配置。 */
     function DateCell({issue,field,label,applyUpdate}){
       const value=issue[field]?String(issue[field]).slice(0,10):undefined;
-      const [open,setOpen]=React.useState(false);
-      React.useEffect(()=>{if(!open)return;
-        const onKey=event=>{if(event.key==='Escape')setOpen(false);};
-        window.addEventListener('keydown',onKey);
-        return ()=>window.removeEventListener('keydown',onKey);
-      },[open]);
       const overdue=field==='due_date'&&issue.status!=='done'&&issue.status!=='cancelled'&&isPastDateOnly(value);
-      const commit=next=>{setOpen(false);
-        if(next!==(issue[field]||null))applyUpdate(issue,{[field]:next});};
+      const commit=next=>{
+        if(next!==(value||null))applyUpdate(issue,{[field]:next});
+      };
       return h('div',{className:'eva-task-table__cell-editor',onClick:event=>event.stopPropagation()},
-        h(PopMenu,{open,setOpen,position:'bottomLeft',role:'dialog',trigger:
-          h('button',{type:'button',className:'eva-task-table__cell-trigger'+(overdue?' is-overdue':''),
-            'aria-label':label,
-            'data-eva-tooltip':value?label+' '+taskTime.fullDate(value):undefined,
-            'aria-haspopup':'dialog','aria-expanded':open,...menuTrigger(setOpen)},
-            h(field==='start_date'?icons.CalendarClock:icons.CalendarDays,{size:14,className:'eva-task-table__glyph'}),
-            value?h('span',{className:'eva-task-table__cell-label'+(overdue?' is-overdue':'')},formatDateOnly(value))
-              :h('span',{className:'eva-task-table__cell-label is-empty'},label))},
-          h('button',{type:'button',className:'eva-task-table__date-clear',
-            onClick:()=>commit(null)},
-            h('span',{className:'eva-task-table__date-clear-label'},'无'+label),
-            h(icons.Check,{size:14,className:'eva-task-table__date-clear-check',style:{visibility:value?'hidden':'visible'}})),
-          h(MonthCalendar,{value,onSelect:commit})));
+        root.EvaLoopTaskComponents.dateField(React,DatePicker,{
+          className:'eva-task-table__date-picker',value,label,onChange:commit,overdue,
+          icon:field==='start_date'?icons.CalendarClock:icons.CalendarDays,
+          triggerClassName:'eva-task-table__cell-trigger',textClassName:'eva-task-table__cell-label',iconClassName:'eva-task-table__glyph'}));
     }
 
     /* ---------- 主组件 ---------- */
@@ -603,9 +541,9 @@
       const {requestStatus,requestAssign,runConfirmModal}=useRunConfirm();
       const saved=React.useMemo(()=>loadState(viewKey),[]);
       const [columns,setColumns]=React.useState(()=>normalizeColumns(saved&&saved.columns));
-      const [grouping,setGrouping]=React.useState((saved&&saved.grouping)||'none');
-      /* Multica tableHierarchy 默认 true（显示菜单里的层级开关）；持久化里的显式选择优先。 */
-      const [hierarchy,setHierarchy]=React.useState(saved?!!saved.hierarchy:true);
+      const [grouping,setGrouping]=React.useState((saved&&saved.grouping)||'status');
+      /* 新视图默认按状态分组并展示层级；持久化里的显式选择优先。 */
+      const [hierarchy,setHierarchy]=React.useState(saved&&typeof saved.hierarchy==='boolean'?saved.hierarchy:true);
       const [collapsedGroups,setCollapsedGroups]=React.useState((saved&&saved.collapsedGroups)||[]);
       const [collapsedParents,setCollapsedParents]=React.useState((saved&&saved.collapsedParents)||[]);
       const [sortBy,setSortBy]=React.useState((saved&&saved.sortBy)||'created_at');
@@ -697,8 +635,6 @@
         ?(selectedIssues.find(issue=>(issue.assignee_id||null)===commonAssigneeId)||{}).assignee_name||null
         :null;
       const [batchBusy,setBatchBusy]=React.useState(false);
-      const [batchStatusOpen,setBatchStatusOpen]=React.useState(false);
-      const [batchPriorityOpen,setBatchPriorityOpen]=React.useState(false);
       /* 完成 toast 右侧固定「撤回」：Semi Toast 无 action 槽，撤回按钮内嵌在 content 里。
          执行前先快照原值，撤回时逐条写回；撤回成功再用轻提示确认。 */
       const toastWithUndo=(text,onUndo)=>{
@@ -765,11 +701,7 @@
         icon:h(StatusGlyph,{status:value,size:14})
       })),[t]);
       const priorityOptions=React.useMemo(()=>PRIORITY_DISPLAY_ORDER.map(value=>({
-        value,label:t('loop.priority.'+value),
-        content:h('span',{className:'eva-task-table__priority-badge',
-          style:{'--eva-task-priority-color':PRIORITY_HEX[value]||'var(--eva-text-secondary-accessible)'}},
-          h(PriorityGlyph,{priority:value,size:13}),
-          h('span',null,t('loop.priority.'+value)))
+        value,label:t('loop.priority.'+value),icon:h(PriorityGlyph,{priority:value,size:14})
       })),[t]);
 
       const sensors=useSensors(
@@ -891,20 +823,10 @@
             h('button',{type:'button',className:'eva-task-table__selected-clear','aria-label':'清除选择',
               onClick:()=>setSelection([])},h(icons.X,{size:13}))),
           h('span',{className:'eva-task-table__batch-divider','aria-hidden':true}),
-          h(PopMenu,{open:batchStatusOpen,setOpen:setBatchStatusOpen,role:'listbox',trigger:
-            h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,
-              'aria-label':'批量修改状态','aria-haspopup':'listbox','aria-expanded':batchStatusOpen,
-              ...menuTrigger(setBatchStatusOpen)},'状态')},
-            statusOptions.map(option=>h(MenuItem,{key:option.value,role:'option',selected:commonStatus===option.value,
-              icon:option.icon,label:option.label,content:option.content,
-              onClick:()=>{setBatchStatusOpen(false);batchApply({status:option.value});}}))),
-          h(PopMenu,{open:batchPriorityOpen,setOpen:setBatchPriorityOpen,role:'listbox',trigger:
-            h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,
-              'aria-label':'批量修改优先级','aria-haspopup':'listbox','aria-expanded':batchPriorityOpen,
-              ...menuTrigger(setBatchPriorityOpen)},'优先级')},
-            priorityOptions.map(option=>h(MenuItem,{key:option.value,role:'option',selected:commonPriority===option.value,
-              icon:option.icon,label:option.label,content:option.content,
-              onClick:()=>{setBatchPriorityOpen(false);batchApply({priority:option.value});}}))),
+          root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{ariaLabel:'批量修改状态',options:statusOptions,value:commonStatus,
+            onChange:value=>batchApply({status:value}),trigger:'状态',triggerClassName:'eva-task-table__toolbtn',disabled:batchBusy}),
+          root.EvaLoopTaskComponents.enumDropdown(React,Dropdown,{ariaLabel:'批量修改优先级',options:priorityOptions.map(option=>({...option,icon:h(PriorityGlyph,{priority:option.value,size:13})})),value:commonPriority,
+            onChange:value=>batchApply({priority:value}),trigger:'优先级',triggerClassName:'eva-task-table__toolbtn',disabled:batchBusy}),
           h(AssigneePicker,{size:'small',value:commonAssigneeId,valueName:commonAssigneeName,candidates:assigneeCandidates,
             onChange:(assigneeId,assigneeType)=>batchApply({assignee_id:assigneeId,assignee_type:assigneeType})}),
           h('button',{type:'button',className:'eva-task-table__toolbtn',disabled:batchBusy,

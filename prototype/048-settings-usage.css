@@ -112,10 +112,8 @@
 .eva-sider-footer.is-collapsed .eva-sider-account__name,
 .eva-sider-footer.is-collapsed .eva-sider-account__chevron { display:none; }
 
-/* 账户悬浮菜单：皮肤（面板底色/圆角、菜单留白、选项内边距/圆角与交互态）
- * 统一走 049 全局浮层契约，本处不再平行声明；只保留契约之外的投影、
- * 最小宽度、行内密度与 danger 色。 */
-.eva-account-menu.semi-dropdown { box-shadow:var(--eva-shadow-floating),var(--eva-shadow-hairline); }
+/* 账户悬浮菜单的表面、圆角与投影统一由 049 全局 Dropdown 外壳提供；
+ * 本处只保留最小宽度、行内密度与 danger 色。 */
 .eva-account-menu .semi-dropdown-menu { min-width:180px; }
 .eva-account-menu__item.semi-dropdown-item { display:flex;align-items:center;gap:10px;color:var(--gds-color-text-primary);font:400 14px/22px var(--gds-font-family-sans); }
 .eva-account-menu__icon { flex:none;width:16px;height:16px;color:var(--gds-color-text-secondary-accessible); }

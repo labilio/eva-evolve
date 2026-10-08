@@ -116,7 +116,7 @@ function market(){
     const shown=expand[group.kind]?group.items:group.items.slice(0,perGroup);
     shown.forEach(row=>searchBody.push(searchItem(row,group.kind)));
     const rest=group.items.length-shown.length;
-    if(rest>0)searchBody.push(h('div',{key:group.kind+':more',className:'eva-task-assignee-expand',onMouseDown:e=>e.preventDefault(),onClick:e=>{e.stopPropagation();setExpand(previous=>({...previous,[group.kind]:true}));}},'展开其余 '+rest+' 个'));
+    if(rest>0)searchBody.push(h(Dropdown.Item,{key:group.kind+':more',className:'eva-task-assignee-expand',type:'primary',onClick:e=>{e.stopPropagation();setExpand(previous=>({...previous,[group.kind]:true}));}},'展开其余 '+rest+' 个'));
   });
   searchRowsRef.current=searchRows;
   /* 外层搜索框按键与任务下拉一致：↑↓ 移动、Enter 触发、Escape 清空并收起。 */

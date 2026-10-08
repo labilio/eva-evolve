@@ -36,6 +36,14 @@ async function verifyFooter(){
   await account.click();
   // 2026-09-20 起菜单走 evaNavFlyout 总线（hover 优先），按钮 is-open 类不再是可靠信号。
   await page.locator('.eva-account-menu:visible').waitFor();
+  const accountMenuSkin=await page.locator('.eva-account-menu:visible').evaluate(el=>({
+    isWrapper:el.matches('.semi-dropdown-wrapper'),
+    shadow:getComputedStyle(el).boxShadow,
+    nestedShadows:[...el.querySelectorAll('*')].filter(node=>getComputedStyle(node).boxShadow!=='none').length
+  }));
+  assert.equal(accountMenuSkin.isWrapper,true,'账户菜单应直接复用全局 Dropdown 外壳');
+  assert.notEqual(accountMenuSkin.shadow,'none','全局 Dropdown 外壳应有浮层投影');
+  assert.equal(accountMenuSkin.nestedShadows,0,'账户菜单内部不重复叠加投影');
   const menuItems=page.locator('.eva-account-menu__item:visible');
   assert.equal(await menuItems.count(),3,'Menu offers avatar, settings and logout');
   assert.equal(await page.locator('.eva-account-menu__item:visible',{hasText:'更换头像'}).count(),1,'Avatar entry present');

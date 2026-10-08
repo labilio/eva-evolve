@@ -12,13 +12,13 @@ function setup(){
  vm.runInNewContext(source.slice(start,end),ctx);
  return ctx;
 }
-test('旧待规划任务进入待办且保留对象、编号、项目和任务总数',()=>{
+test('待规划任务保留独立状态、对象、编号、项目和任务总数',()=>{
  const ctx=setup(),original=ctx.issues[0],items=ctx.issuesOf();
- assert.equal(items.length,3);assert.equal(items[0],original);assert.equal(items[0].status,'todo');
+ assert.equal(items.length,3);assert.equal(items[0],original);assert.equal(items[0].status,'backlog');
  assert.equal(items[0].identifier,'SC-1');assert.equal(items[0].workspace_id,'prod');assert.equal(items[2].status,'done');
  assert.equal(ctx.issuesOf()[0],original);
 });
-test('旧状态写入和批量修改均落到待办，不触及其他任务',async()=>{
+test('待规划状态写入和批量修改均保留，不触及其他任务',async()=>{
  const ctx=setup();ctx.issuesOf();
  const activityStart=source.indexOf('evaTaskActivityActor='),activityEnd=source.indexOf(',updateIssue=',activityStart);
  vm.runInNewContext(source.slice(activityStart,activityEnd),ctx);
@@ -26,16 +26,16 @@ test('旧状态写入和批量修改均落到待办，不触及其他任务',asy
   const start=source.indexOf(name+'='),end=source.indexOf(','+next+'=',start);
   vm.runInNewContext(source.slice(start,end),ctx);
  }
- await ctx.updateIssue('a',{status:'backlog'});assert.equal(ctx.issues[0].status,'todo');
- await ctx.batchUpdateIssues(['b'],{status:'backlog'});assert.equal(ctx.issues[1].status,'todo');assert.equal(ctx.issues[2].status,'done');
+ await ctx.updateIssue('a',{status:'backlog'});assert.equal(ctx.issues[0].status,'backlog');
+ await ctx.batchUpdateIssues(['b'],{status:'backlog'});assert.equal(ctx.issues[1].status,'backlog');assert.equal(ctx.issues[2].status,'done');
 });
-test('保存的旧筛选映射到待办并去重，不扩大成全部状态',()=>{
+test('保存的待规划和待办筛选分别保留，不扩大成全部状态',()=>{
  const ctx=setup();
  const start=source.indexOf('const STATUSES='),end=source.indexOf('function scopeToAssigneeTypes',start);
  vm.runInNewContext(source.slice(start,end),ctx);
  const state=vm.runInNewContext('normalizeFilters({statuses:["backlog","todo","done"],keyword:"SC"},false)',ctx);
- assert.deepEqual(plain(state.statuses),['todo','done']);assert.equal(state.keyword,'SC');
- assert.deepEqual(plain(vm.runInNewContext('normalizeFilters({statuses:["backlog"]},false).statuses',ctx)),['todo']);
+ assert.deepEqual(plain(state.statuses),['backlog','todo','done']);assert.equal(state.keyword,'SC');
+ assert.deepEqual(plain(vm.runInNewContext('normalizeFilters({statuses:["backlog"]},false).statuses',ctx)),['backlog']);
 });
 test('指派AI或修改任何任务状态不进入启动执行确认',()=>{
  const start=source.indexOf('function needsConfirm'),end=source.indexOf('function useRunConfirm',start),ctx={isAgentAssignee:()=>true};

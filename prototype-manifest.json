@@ -846,20 +846,27 @@
     {
       "order": 106,
       "tag": "script",
+      "name": "loop-task-components",
+      "file": "prototype/062-loop-task-components.js",
+      "role": "prototype"
+    },
+    {
+      "order": 107,
+      "tag": "script",
       "name": "loop-table-view",
       "file": "prototype/062-loop-table-view.js",
       "bytes": 36933,
       "role": "prototype"
     },
     {
-      "order": 107,
+      "order": 108,
       "tag": "script",
       "name": "task-time",
       "file": "prototype/063-task-time.js",
       "role": "prototype"
     },
     {
-      "order": 108,
+      "order": 109,
       "tag": "style",
       "name": "tooltip",
       "file": "prototype/062-tooltip.css",
@@ -867,7 +874,7 @@
       "role": "prototype"
     },
     {
-      "order": 109,
+      "order": 110,
       "tag": "script",
       "name": "tooltip-controller",
       "file": "prototype/062-tooltip.js",
