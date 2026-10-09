@@ -112,6 +112,18 @@ function EvaSharedAutomationPage({scope:rt,items:ct,loading:ut,onCreate:pt,onOpe
     detail = root.__evaCut(detail, "React.createElement(LoopTag,{tone:STATUS_TAG[mt.status]},ut(`loop.automation.statusLabel.${mt.status}`))", "React.createElement(\"span\",{className:\"eva-project-automation__state\"},mt.status===\"active\"?\"已启用\":ut(`loop.automation.statusLabel.${mt.status}`))", "项目自动化详情文字操作4");
     detail = detail.replaceAll("ut(`loop.automation.statusLabel.${mt.status}`)", "(mt.status===\"active\"?\"已启用\":mt.status===\"paused\"?\"已暂停\":ut(`loop.automation.statusLabel.${mt.status}`))");
     source = source.slice(0, detailStart) + detail + source.slice(detailEnd);
+    source=root.__evaCut(source,'[Dt,Ft]=reactExports.useState(void 0),[Qt,Vt]=reactExports.useState("")','[Qt,Vt]=reactExports.useState("")','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'[tn,Kt]=reactExports.useState([]),[nn,rn]=reactExports.useState(!1)','[nn,rn]=reactExports.useState(!1)','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'listProjectOptions().then(Kt).catch(()=>Kt([])),','','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'Mt(null),Ft(void 0),Vt("")','Mt(null),Vt("")','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'description:Qt.trim()||void 0,project_id:Dt??null,assignee_type:xt','description:Qt.trim()||void 0,assignee_type:xt','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'[Ht,jt]=reactExports.useState([]),[tn,Kt]=reactExports.useState("")','[tn,Kt]=reactExports.useState("")','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,',reactExports.useEffect(()=>{listProjectOptions().then(jt).catch(()=>jt([]))},[rt])','','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'React.createElement(Select,{value:rt.dayOfWeek','React.createElement(EvaSelect,{value:rt.dayOfWeek','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'React.createElement("div",{className:"loop-fields__row"},React.createElement("div",{className:"loop-fields__label"},pt("loop.automation.sendTo")),React.createElement(Select,{value:Dt,onChange:cn=>Ft(cn),placeholder:pt("loop.automation.sendToPlaceholder"),dropdownClassName:"loop-fields__dropdown",showClear:!0,filter:!0,style:{width:"100%"}},tn.map(cn=>React.createElement(Select.Option,{key:cn.id,value:cn.id},cn.title)))),','','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'React.createElement("div",{className:"loop-apd__prop"},React.createElement("div",{className:"loop-apd__prop-label"},ut("loop.automation.sendTo")),React.createElement(Select,{value:mt.project_id??void 0,onChange:ra=>Ir({project_id:ra??null}),placeholder:ut("loop.automation.sendToPlaceholder"),dropdownClassName:"loop-fields__dropdown",showClear:!0,filter:!0,style:{width:"100%"}},Ht.map(ra=>React.createElement(Select.Option,{key:ra.id,value:ra.id},ra.title)))),','','删除自动化旧项目字段及副作用／公共计划选择');
+    source=root.__evaCut(source,'listProjectOptions=()=>Promise.resolve(PROJECTS.map(rt=>({id:rt.id,name:rt.title,icon:rt.icon}))),','','删除无调用方的旧项目候选接口');
+    source=root.__evaCut(source,'WEEKDAYS=[0,1,2,3,4,5,6];function ScheduleFields','WEEKDAYS=[1,2,3,4,5,6,0];function ScheduleFields','每周从周一开始，保留 cron 星期值');
     return source;
   });
 })(window);

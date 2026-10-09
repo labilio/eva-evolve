@@ -879,10 +879,3 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .loop-filter-panel .semi-select { min-height:32px; }
 .loop-filter-panel .semi-datepicker { min-width:0; }
 .eva-task-filter-identity { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
-
-/* 筛选只适配 Select 的承载层；选项复用公共菜单皮肤，保留 Select 的选项语义。 */
-.eva-task-filter-menu .semi-select-option-list { padding: 6px; }
-.eva-task-select-option__check { margin-left: auto; flex-shrink: 0; }
-.eva-task-filter-menu .eva-task-select-option[data-focused="true"] { background: var(--eva-overlay-hover); }
-.eva-task-filter-menu .eva-task-select-option.semi-dropdown-item-active,
-.eva-task-filter-menu .eva-task-select-option.semi-dropdown-item-active:hover { background: var(--eva-list-option-selected); font-weight: 400; }

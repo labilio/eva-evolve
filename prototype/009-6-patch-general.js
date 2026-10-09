@@ -986,7 +986,7 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){const evaFilt
       'evaFilterCandidates.creators.map(person=>React.createElement(Select.Option,{key:person.id,value:person.id,person,icon:React.createElement(EvaLoopIdentityAvatar,{person,size:20}),content:React.createElement("span",{"data-identity-id":person.id},React.createElement(EvaLoopIdentityName,{person}))},React.createElement(EvaTaskFilterIdentity,{person}))),{filter:!0,identity:!0}',
       '创建者筛选复用公共身份渲染');
     source=root.__evaCut(source,'filter:za?.filter,disabled:Sa,maxTagCount:',
-      'filter:za?.identity?((query,option)=>option.person.name.toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())):za?.filter,"aria-label":$a,inputProps:{"aria-label":$a},arrowIcon:React.createElement(ChevronDown,{size:16}),renderOptionItem:option=>window.EvaLoopTaskComponents.selectOption(React,Check,option),renderSelectedItem:option=>({isRenderInTag:true,content:option.person?React.createElement(EvaTaskFilterIdentity,{person:option.person}):React.createElement("span",{className:"eva-task-filter-identity"},option.icon,option.content||option.label)}),disabled:Sa,maxTagCount:',
+      'filter:za?.identity?((query,option)=>option.person.name.toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())):za?.filter,"aria-label":$a,inputProps:{"aria-label":$a},arrowIcon:React.createElement(ChevronDown,{size:16}),renderSelectedItem:option=>({isRenderInTag:true,content:option.person?React.createElement(EvaTaskFilterIdentity,{person:option.person}):React.createElement("span",{className:"eva-task-filter-identity"},option.icon,option.content||option.label)}),disabled:Sa,maxTagCount:',
       '筛选已选身份与候选使用同一组件');
     source=root.__evaCut(source,'...FIELD_POPUP,style:{width:"100%"},placeholder:$a},Za)',
       '...FIELD_POPUP,dropdownClassName:"loop-fields__dropdown eva-task-filter-menu",style:{width:"100%"},placeholder:$a},Za)',
@@ -1153,6 +1153,29 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视�
       'xt.due_date?formatShortDate(xt.due_date):"未设置"',
       'xt.due_date?window.EvaTaskTime.fullDate(xt.due_date):"未设置"',
       '只读任务详情截止日期显示完整年份');
+    source=root.__evaCut(source,'function EvaLoopIdentityAvatar(',
+      'const EvaSelect=window.EvaSelectControls.create(React,Select,Check,ChevronDown);function EvaLoopIdentityAvatar(',
+      '公共 Select 组件装配');
+    source=root.__evaCut(source,'React.createElement(Select,{filter:(Ct,xt)=>{const Pt=gt.find','React.createElement(EvaSelect,{filter:(Ct,xt)=>{const Pt=gt.find','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{placeholder:mt("loop.menu.changeStatus")','React.createElement(EvaSelect,{placeholder:mt("loop.menu.changeStatus")','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{placeholder:mt("loop.menu.changePriority")','React.createElement(EvaSelect,{placeholder:mt("loop.menu.changePriority")','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{value:xt.parent_issue_id??void 0','React.createElement(EvaSelect,{value:xt.parent_issue_id??void 0','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{multiple:!0,value:Xa,onChange:ei=>La','React.createElement(EvaSelect,{multiple:!0,value:Xa,onChange:ei=>La','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{value:sn.dateField,onChange:$a=>wa','React.createElement(EvaSelect,{value:sn.dateField,onChange:$a=>wa','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{value:ln,onChange:Qr=>','React.createElement(EvaSelect,{value:ln,onChange:Qr=>','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{value:ir,onChange:pa=>','React.createElement(EvaSelect,{value:ir,onChange:pa=>','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{value:ir,onChange:ha=>','React.createElement(EvaSelect,{value:ir,onChange:ha=>','业务 Select 公共适配');
+    source=root.__evaCut(source,'React.createElement(Select,{multiple:!0,filter:!0,value:pr','React.createElement(EvaSelect,{multiple:!0,filter:!0,value:pr','业务 Select 公共适配');
+    source=root.__evaCut(source,'ISSUE_STATUS_ORDER.map(Kt=>React.createElement(Select.Option,{key:Kt,value:Kt},mt("loop.status."+Kt)))','ISSUE_STATUS_ORDER.map(Kt=>React.createElement(Select.Option,{key:Kt,value:Kt,icon:React.createElement(ISSUE_STATUS_ICON[Kt],{size:14})},mt("loop.status."+Kt)))','公共选择入口业务呈现');
+    source=root.__evaCut(source,'PRIORITY_ORDER.map(Kt=>React.createElement(Select.Option,{key:Kt,value:Kt},mt("loop.priority."+Kt)))','window.EvaLoopTaskComponents.priorityDisplayOrder.map(Kt=>React.createElement(Select.Option,{key:Kt,value:Kt,icon:React.createElement(PRIORITY_ICON[Kt],{size:14})},mt("loop.priority."+Kt)))','公共选择入口业务呈现');
+    source=root.__evaCut(source,'SettingsIcon:Settings2,Button,Select,Modal,Table','SettingsIcon:Settings2,Button,Select:EvaSelect,Modal,Table','公共选择入口业务呈现');
+    source=root.__evaCut(source,'[qr,Yr]=reactExports.useState([])','[qr]=reactExports.useState([])','移除筛选已下线项目候选加载');
+    source=root.__evaCut(source,'[Kr,na]=reactExports.useState(!1)','Kr=!0','移除筛选已下线项目候选加载');
+    source=root.__evaCut(source,'[oa,ra]=reactExports.useState(!1)','oa=!0','移除筛选已下线项目候选加载');
+    source=root.__evaCut(source,'na(!1),ra(!1),sa(!1),aa(!1),listProjectOptions().then(Xa=>{$a&&(Yr(Xa),ra(!0))}).catch(()=>{$a&&ra(!1)}).finally(()=>{$a&&na(!0)}),','sa(!1),aa(!1),','移除筛选已下线项目候选加载');
+    source=root.__evaCut(source,'value:`${pa.type}:${pa.id}`},pa.name," · ",ut(`loop.assignee.${pa.type}`)','value:`${pa.type}:${pa.id}`,label:pa.name,icon:React.createElement(EvaLoopIdentityAvatar,{person:pa}),content:React.createElement(EvaLoopIdentityName,{person:pa})},pa.name','专家团候选复用身份组件');
+    source=root.__evaCut(source,'value:`${ha.type}:${ha.id}`},ha.name," · ",rt(`loop.assignee.${ha.type}`)','value:`${ha.type}:${ha.id}`,label:ha.name,icon:React.createElement(EvaLoopIdentityAvatar,{person:ha}),content:React.createElement(EvaLoopIdentityName,{person:ha})},ha.name','专家团候选复用身份组件');
+    source=root.__evaCut(source,'la.map(ha=>React.createElement(Select.Option,{key:ha.id,value:ha.id},ha.name))','la.map(ha=>React.createElement(Select.Option,{key:ha.id,value:ha.id,label:ha.name,icon:React.createElement(EvaLoopIdentityAvatar,{person:{...ha,type:"agent"}}),content:React.createElement(EvaLoopIdentityName,{person:{...ha,type:"agent"}})},ha.name))','专家团负责人公共身份');
     return evaCreateProjectResolver.toString()+"\n"+source;
   });
 })(window);
