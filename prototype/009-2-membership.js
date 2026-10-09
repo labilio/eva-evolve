@@ -388,7 +388,7 @@
         const humanIds=new Set(s.humans.map(item=>item.id)),manualManagerIds=(record.managerIds||[]).filter(uid=>humanIds.has(uid)&&uid!==s.ownerId);
         const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid));
         const botIds=new Set(api.groupMembers(key).filter(item=>item.kind!=='human').map(item=>item.id));
-        return {groupId:key,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
+        return {groupId:key,allowAIWithoutMention:record.allowAIWithoutMention===true,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
       },
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
@@ -400,11 +400,21 @@
         if(!api.groupMembers(key).some(item=>item.id===target&&item.kind!=='human'))fail('只能设置当前群内的 AI 成员');
         const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify();
       },
-      // 免 @ 回答只保留 Bot 级：以主人稳定 ID 定位唯一分身，再按其所在群逐群开启。
+      setGroupAllowNoMention(id,uid,enabled){
+        requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');
+        if(state.threads[id])fail('请在父群管理中操作');
+        if(!manager(key,uid))fail('仅群主或群管理员可修改');
+        ensureGovernance(key).allowAIWithoutMention=enabled===true;notify();
+      },
+      cloneCanReplyWithoutMention(id,cid){
+        const key=groupKey(id),c=clone(cid);
+        return !!(key&&c&&api.canRead(key,c.id)&&api.canRead(key,c.ownerId)&&governanceRecord(key).allowAIWithoutMention===true&&state.cloneMentionFree?.[c.id]?.[key]);
+      },
+      // 主人偏好与群级许可共同决定实际有效配置。
       cloneMentionFreeGroups(ownerId){
         const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);if(!c)return [];
         const actor=state.actorId,prefs=state.cloneMentionFree?.[c.id]||{},rows=[];
-        const add=(key,name,projectId)=>{if(!key||!api.canRead(key,actor))return;rows.push({groupId:key,name:name||key,projectId:projectId||null,noMention:!!prefs[key]});};
+        const add=(key,name,projectId)=>{if(!key||!api.canRead(key,actor))return;rows.push({groupId:key,name:name||key,projectId:projectId||null,noMention:!!prefs[key],groupAllowed:governanceRecord(key).allowAIWithoutMention===true,effective:api.cloneCanReplyWithoutMention(key,c.id)});};
         for(const p of Object.values(state.projects))if((p.cloneIds||[]).includes(c.id))add('all:'+p.id,projectInfo(p.id).name||'全员群',p.id);
         for(const g of Object.values(state.groups))if((g.cloneIds||[]).includes(c.id))add(g.id,g.name||g.id,g.projectId||null);
         return rows.sort((a,b)=>(Number(b.noMention)-Number(a.noMention))||a.name.localeCompare(b.name,'zh-Hans-CN'));
@@ -418,7 +428,18 @@
         if(!Object.keys(prefs).length)delete state.cloneMentionFree[c.id];
         notify();
       },
-      setGroupMd(id,uid,value){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可编辑 GROUP.md');ensureGovernance(key).groupMd=String(value||'');notify();},
+      groupMd(id,uid){
+        if(!api.canRead(id,uid))fail('无会话访问权限');
+        const key=groupKey(id)||fail('群聊不存在'),thread=state.threads[id],details=state.threadDetails[id];
+        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
+      },
+      setGroupMd(id,uid,value){
+        requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');
+        value=String(value||'');if(unescape(encodeURIComponent(value)).length>10240)fail('内容超出 10240 bytes 限制');
+        const record=state.threads[id]?(state.threadDetails[id]||={id}):ensureGovernance(id);
+        record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify();
+      },
+      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify();},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
@@ -677,6 +698,15 @@
       const index=saved.people.findIndex(existing=>existing.id===p.id);
       if(index<0)saved.people.push({...p});
       else saved.people[index]={...p,...saved.people[index]};
+    }
+    // Refresh approved demo job/path fields once; preserve all other local profile and collaboration data.
+    if(!saved.seededContactPositionsV1&&root.__EVA_PEOPLE){
+      const fixtures=new Map(root.__EVA_PEOPLE.filter(p=>p.title&&p.deptFull).map(p=>[p.id||p.uid,p]));
+      for(const person of saved.people){
+        const fixture=fixtures.get(person.id);
+        if(fixture){person.title=fixture.title;person.deptFull=fixture.deptFull;}
+      }
+      saved.seededContactPositionsV1=true;
     }
     if(!saved.seededOrgGroups){
       saved.seededOrgGroups=true;

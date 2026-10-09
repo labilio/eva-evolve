@@ -867,18 +867,10 @@
     },
     {
       "order": 109,
-      "tag": "style",
-      "name": "tooltip",
-      "file": "prototype/062-tooltip.css",
-      "bytes": 1045,
-      "role": "prototype"
-    },
-    {
-      "order": 110,
       "tag": "script",
-      "name": "tooltip-controller",
-      "file": "prototype/062-tooltip.js",
-      "bytes": 4982,
+      "name": "tooltip-adapter",
+      "file": "prototype/062-tooltip-adapter.js",
+      "bytes": 3333,
       "role": "prototype"
     }
   ]

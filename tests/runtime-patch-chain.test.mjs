@@ -88,7 +88,7 @@ test('子区信息成员区置顶且在父群之上，只读且头像按当前�
 
   assert.match(settings, /function ThreadMembers\(\{groupId,actorId\}\)/, '子区成员区组件缺失');
   assert.match(settings, /ChatSettings\.ThreadMembers=ThreadMembers;/, '子区成员区未挂到公共设置组件');
-  assert.match(settings, /'子区继承所属群聊的成员与角色，不能单独增删。'/, '子区成员区缺少只读说明');
+  assert.match(settings, /'子区继承所属群聊的成员与角色，不能单独增删'/, '子区成员区缺少只读说明');
   assert.doesNotMatch(settings.slice(settings.indexOf('function ThreadMembers'), settings.indexOf('ChatSettings.ThreadMembers=ThreadMembers;')), /setPicker\('add'\)|MemberPicker|先将其加入项目/, '子区成员区不应提供增删入口');
   assert.match(settings, /className:'eva-chat-settings eva-thread-members-page'/, '子区成员页未复用聊天信息页面外壳');
   assert.match(settings, /'群聊成员（'\+members\.length\+'）'/, '子区成员页标题未沿用原样式');

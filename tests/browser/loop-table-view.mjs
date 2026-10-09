@@ -121,7 +121,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await search.fill('收集下一季度供应商协同需求');
     await table.locator('.eva-task-table__row',{hasText:'收集下一季度供应商协同需求'}).first().waitFor();
     await search.fill('zzz-不存在-zzz');
-    await table.locator('.eva-task-table__empty',{hasText:'当前视图没有匹配的任务。'}).waitFor();
+    await table.locator('.eva-task-table__empty',{hasText:'当前视图没有匹配的任务'}).waitFor();
     await table.locator('.eva-task-table__search-clear').click();
     await table.locator('.eva-task-table__row').first().waitFor();
 

@@ -106,6 +106,22 @@ body, .collab-frame, .collab-list-page, .collab-empty {
   --semi-color-primary-active: var(--eva-action-primary-hover);
 }
 
+/* Semi Switch 的开启态表示设置已启用，统一接 Eva 品牌色。
+   仅在组件内映射 Semi 原生状态槽，成功提示等仍使用全局绿色；
+   尺寸、滑块、键盘操作与禁用/加载行为继续由 Semi 管理。
+   Eva 语义 token 随 057 切换明暗主题，Portal 同样适用。 */
+.semi-switch {
+  --semi-color-fill-0: var(--eva-surface-subtle);
+  --semi-color-fill-1: var(--eva-overlay-hover);
+  --semi-color-fill-2: var(--eva-overlay-pressed);
+  --semi-color-border: var(--eva-border-faint);
+  --semi-color-success: var(--eva-action-primary);
+  --semi-color-success-hover: var(--eva-action-primary-hover);
+  --semi-color-success-active: var(--eva-action-primary-hover);
+  --semi-color-success-disabled: color-mix(in srgb, var(--eva-action-primary) 35%, transparent);
+  --semi-color-primary-light-active: var(--eva-border-focus);
+}
+
 /* GDS all-page adaptation: shared semantic palette.
    Product layout, status colors and AI identity geometry retain their owners.
    Body scope also supplies the same tokens to portalled controls. */

@@ -18,7 +18,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
    const p=persona||clone,ownerRefId=persona?ownerId:p.ownerId,own=actor===ownerRefId,owner=store.person(ownerRefId);
    const appearance=root.EvaAIIdentity.cloneAppearance(owner);
    // 本人的分身可以直接私聊；他人分身仍只在已加入的项目群中 @ 协作，查看不授予私聊权限。
-   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:own?link('发送消息','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(p.id)):null,hint:own?undefined:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话。':'可在已加入的项目群中 @ 协作。'};
+   return {id:p.id,name:appearance.name,kind:'clone',subtitle:'云端分身',appearance,owner:owner?{id:owner.id,name:owner.name}:null,action:own?link('发送消息','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(p.id)):null,hint:own?undefined:persona&&actor!==ownerId?'请使用本人账号进入自己的分身对话':'可在已加入的项目群中 @ 协作'};
   }
   const assistant=team?.getSnapshot().identities.find(i=>i.id===id&&i.role==='assistant');
   if(assistant){
@@ -31,7 +31,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
    const allowed=actor===ownerId&&(!personal||employee.by===actor)&&digital.hasInTeam(id);
    const pid=employee.projectId,project=pid&&store.canRead(pid,actor)?store.projectRecord(pid):null;
    if(employee.ownership==='project'&&!project)return null;
-   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI。':'当前账号未开放个人对话。'};
+   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI':'当前账号未开放个人对话'};
   }
   if(id.startsWith('project-agent:')){
    const pid=id.slice('project-agent:'.length),agent=store.projectAgent(pid);
