@@ -15,54 +15,14 @@
   root.__evaPatch('general', function (source) {
     source = 'import {createForms as evaCreateForms} from "./eva-forms.module.js";\n' + source;
     source = root.__evaCut(source, 'var reactDomExports=requireReactDom();', 'var reactDomExports=requireReactDom();const evaForms=evaCreateForms(reactExports,reactDomExports);', '统一 Semi Form 实例');
-    // Eva 统一 Tooltip：全站唯一实现。
-    // 合规依据：W3C WCAG 2.1 SC 1.4.13（可关闭 / 可悬停 / 持续）与 WAI-ARIA APG Tooltip Pattern、
-    // SC 2.1.1 键盘可达。气泡本体由项目设计系统 Semi 的 Tooltip 渲染，全站共用同一实例与同一组
-    // 鼠标/焦点时机；触发方式只有 DOM 声明式 data-eva-tooltip（见 062-tooltip.js），
-    // React 触发器同样写该属性，不再各自挂载独立气泡造成切换时交叉淡入与位置残留。
-    // 不再沿用脚手架 AionUI 自带的 Arco TooltipComponent：AionUI 只是当年的壳，不是 Eva 的设计系统。
+    // React controls use Semi directly; legacy DOM surfaces only adapt their real nodes.
     var evaTooltipPrimitive = String.raw`var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";
-    var EvaTooltipBridge=(function(){
-      var evaState={visible:!1,content:null,position:"top",target:null,rect:null,revision:0};
-      var evaListeners=new Set();
-      var evaSubscribe=function(evaFn){evaListeners.add(evaFn);return function(){evaListeners.delete(evaFn)}};
-      var evaGet=function(){return evaState};
-      var evaEmit=function(){evaListeners.forEach(function(evaFn){try{evaFn()}catch(evaError){}})};
-      var evaRoot=null;
-      var evaEnsure=function(){
-        if(evaRoot||!document.body)return;
-        var evaHost=document.createElement("div");
-        evaHost.className="eva-tooltip-bridge";
-        evaHost.setAttribute("data-eva-tooltip-bridge","");
-        document.body.appendChild(evaHost);
-        evaRoot=clientExports.createRoot(evaHost);
-        evaRoot.render(reactExports.createElement(function(){
-          var evaNow=reactExports.useSyncExternalStore(evaSubscribe,evaGet,evaGet);
-          var evaRect=evaNow.rect;
-          // 锚点几何在 show() 时固化到 state，用 Semi Tooltip 的 rePosKey 触发重定位：
-          // 同一实例保持挂载，相邻目标之间移动时气泡不会整棵卸载/重挂，入场退场交给
-          // Semi 自己的 motion（semi-tooltip-zoomIn/zoomOut），不再出现硬切与闪烁。
-          var evaAnchorStyle=evaRect?{left:evaRect.left+"px",top:evaRect.top+"px",width:evaRect.width+"px",height:evaRect.height+"px"}:void 0;
-          return reactExports.createElement(Tooltip,{trigger:"custom",visible:evaNow.visible,content:evaNow.content,position:evaNow.position,rePosKey:evaNow.revision,className:"eva-tooltip-surface",mouseEnterDelay:0,mouseLeaveDelay:0,getPopupContainer:function(){return document.body}},reactExports.createElement("span",{id:"eva-tooltip-virtual-anchor",className:"eva-tooltip-virtual-anchor","aria-hidden":"true",style:evaAnchorStyle}));
-        }));
-      };
-      var evaSet=function(evaNext){evaState=Object.assign({},evaState,evaNext);evaEmit()};
-      return{
-        show:function(evaTarget,evaContent,evaPosition){
-          if(!evaTarget||evaContent==null||evaContent==="")return;
-          evaEnsure();
-          var evaRect=evaTarget.getBoundingClientRect();
-          evaSet({visible:!0,content:evaContent,position:evaPosition||"top",target:evaTarget,rect:{left:evaRect.left,top:evaRect.top,width:evaRect.width,height:evaRect.height},revision:evaState.revision+1});
-        },
-        hide:function(){evaSet({visible:!1})},
-        isVisible:function(){return!!evaState.visible}
-      };
-    })();
-    window.EvaTooltip=Object.freeze({show:EvaTooltipBridge.show,hide:EvaTooltipBridge.hide,isVisible:EvaTooltipBridge.isVisible});
+    window.EvaTooltipComponent=function EvaTooltipComponent(props){return reactExports.createElement(Tooltip,props)};
+    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:Tooltip})});
 `;
     source = root.__evaCut(source,
       'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',
-      evaTooltipPrimitive, '统一 Tooltip 原语与 DOM 桥');
+      evaTooltipPrimitive, 'Semi Tooltip 组件与原生节点适配');
     source = root.__evaCut(source,
       'execLog:"执行日志",execEmpty:"暂无执行记录"',
       'execLog:"AI 执行记录",execEmpty:"暂无 AI 执行记录"',
@@ -304,7 +264,7 @@
         var memberEnd=source.indexOf('const listAutopilots=',memberStart);
         if(memberStart<0||memberEnd<memberStart||source.indexOf('function MembersTab({workspaceId:rt}){',memberStart+1)>=0)throw new Error('成员管理替换边界不匹配');
         source=root.__evaCut(source,source.slice(memberStart,memberEnd),String.raw`let evaMembershipStore,evaMembershipComponents,evaSharedFileStore;
-        function evaMembers(){return evaMembershipStore||(evaMembershipStore=window.EvaMembership.bootstrap(ORG_PEOPLE,loadSpaces(),CHANNELS_BY_SPACE,ORG_CHANNELS,evaCreateProjectResolver(loadSpaces,()=>localStorage.getItem(KEY)))),evaSharedFileStore||(evaSharedFileStore=window.EvaFileSharing.bootstrap(evaMembershipStore)),evaMembershipComponents||(evaMembershipComponents=window.EvaMembersUI.create({React:reactExports,forms:evaForms,Button,Select,Modal,Table,Input:ForwardInput,Tag,Checkbox,Radio,Switch,PlusIcon:Plus$c,UserCogIcon:createLucideIcon("user-cog",[["path",{"d":"M10 15H6a4 4 0 0 0-4 4v2","key":"user-cog-0"}],["path",{"d":"m14.305 16.53.923-.382","key":"user-cog-1"}],["path",{"d":"m15.228 13.852-.923-.383","key":"user-cog-2"}],["path",{"d":"m16.852 12.228-.383-.923","key":"user-cog-3"}],["path",{"d":"m16.852 17.772-.383.924","key":"user-cog-4"}],["path",{"d":"m19.148 12.228.383-.923","key":"user-cog-5"}],["path",{"d":"m19.53 18.696-.382-.924","key":"user-cog-6"}],["path",{"d":"m20.772 13.852.924-.383","key":"user-cog-7"}],["path",{"d":"m20.772 16.148.924.383","key":"user-cog-8"}],["circle",{"cx":"18","cy":"15","r":"3","key":"user-cog-9"}],["circle",{"cx":"9","cy":"7","r":"4","key":"user-cog-10"}]]),UserMinusIcon:createLucideIcon("user-minus",[["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2","key":"user-minus-0"}],["circle",{"cx":"9","cy":"7","r":"4","key":"user-minus-1"}],["line",{"x1":"22","x2":"16","y1":"11","y2":"11","key":"user-minus-2"}]]),TrashIcon:Trash2,CircleMinusIcon:createLucideIcon("circle-minus",[["circle",{cx:"12",cy:"12",r:"10",key:"circle"}],["path",{d:"M8 12h8",key:"minus"}]]),CameraIcon:createLucideIcon("camera",[["path",{d:"M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z",key:"1o9zid"}],["circle",{cx:"12",cy:"13",r:"3",key:"1jzowv"}]]),CloseIcon:X,BackIcon:ArrowLeft$3,SearchIcon:Search$1,ChevronRight,ProjectIcon:LayoutGrid,MailIcon:Mail$1,useNavigate,Toast},evaMembershipStore,evaSharedFileStore)),{store:evaMembershipStore,ui:evaMembershipComponents,files:evaSharedFileStore}}
+        function evaMembers(){return evaMembershipStore||(evaMembershipStore=window.EvaMembership.bootstrap(ORG_PEOPLE,loadSpaces(),CHANNELS_BY_SPACE,ORG_CHANNELS,evaCreateProjectResolver(loadSpaces,()=>localStorage.getItem(KEY)))),evaSharedFileStore||(evaSharedFileStore=window.EvaFileSharing.bootstrap(evaMembershipStore)),evaMembershipComponents||(evaMembershipComponents=window.EvaMembersUI.create({React:reactExports,forms:evaForms,MarkdownView:LoopMarkdown,TextArea,Card,PermissionList:EvaProjectList,FileTextIcon:FileText,SettingsIcon:Settings2,Button,Select,Modal,Table,Input:ForwardInput,Tag,Checkbox,Radio,Switch,PlusIcon:Plus$c,UserCogIcon:createLucideIcon("user-cog",[["path",{"d":"M10 15H6a4 4 0 0 0-4 4v2","key":"user-cog-0"}],["path",{"d":"m14.305 16.53.923-.382","key":"user-cog-1"}],["path",{"d":"m15.228 13.852-.923-.383","key":"user-cog-2"}],["path",{"d":"m16.852 12.228-.383-.923","key":"user-cog-3"}],["path",{"d":"m16.852 17.772-.383.924","key":"user-cog-4"}],["path",{"d":"m19.148 12.228.383-.923","key":"user-cog-5"}],["path",{"d":"m19.53 18.696-.382-.924","key":"user-cog-6"}],["path",{"d":"m20.772 13.852.924-.383","key":"user-cog-7"}],["path",{"d":"m20.772 16.148.924.383","key":"user-cog-8"}],["circle",{"cx":"18","cy":"15","r":"3","key":"user-cog-9"}],["circle",{"cx":"9","cy":"7","r":"4","key":"user-cog-10"}]]),UserMinusIcon:createLucideIcon("user-minus",[["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2","key":"user-minus-0"}],["circle",{"cx":"9","cy":"7","r":"4","key":"user-minus-1"}],["line",{"x1":"22","x2":"16","y1":"11","y2":"11","key":"user-minus-2"}]]),TrashIcon:Trash2,CircleMinusIcon:createLucideIcon("circle-minus",[["circle",{cx:"12",cy:"12",r:"10",key:"circle"}],["path",{d:"M8 12h8",key:"minus"}]]),CameraIcon:createLucideIcon("camera",[["path",{d:"M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z",key:"1o9zid"}],["circle",{cx:"12",cy:"13",r:"3",key:"1jzowv"}]]),CloseIcon:X,BackIcon:ArrowLeft$3,SearchIcon:Search$1,ChevronRight,ProjectIcon:LayoutGrid,MailIcon:Mail$1,useNavigate,Toast},evaMembershipStore,evaSharedFileStore)),{store:evaMembershipStore,ui:evaMembershipComponents,files:evaSharedFileStore}}
         window.__evaGetFileContext=evaMembers;
         function evaLoopMentionItems(options){const store=evaMembers().store,actorId=store.actorId(),projectId=currentWorkspaceId(),agents=scoped(BY_SPACE.agents)||[],squads=scoped(BY_SPACE.squads)||[];if(!window.EvaMentionCandidates)return[];return window.EvaMentionCandidates.flat({store:store,actorId:actorId,projectId:projectId,agents:agents,squads:squads,query:(options&&options.query)||""})}
         function evaLoopMentionSuggestion(){
@@ -528,7 +488,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     // 切换 .eva-drawer-expanded（面板铺满），图标随态由 CSS 切换。
     source=root.__evaCut(source,
       'React.createElement(Button,{className:"loop-idp__boardbtn",theme:"borderless",onClick:Qa},St("loop.detail.board")),React.createElement(Dropdown,{trigger:"click",position:"bottomRight",render:mi(),clickToHide:!0},React.createElement(Button,{icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"more"}))',
-      String.raw`React.createElement(Dropdown,{trigger:"click",position:"bottomRight",clickToHide:!0,getPopupContainer:()=>document.querySelector(".collab-route-right.eva-route-drawer .panel")||document.body,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{icon:React.createElement(EvaLinkIcon,{size:13}),onClick:()=>evaOpenParentPicker(xt,Ta)},"关联父任务"),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Item,{type:"danger",icon:React.createElement(Trash2,{size:13}),onClick:Aa},St("loop.menu.deleteIssue")))},React.createElement("span",{className:"loop-idp__morewrap"},React.createElement(Button,{className:"loop-idp__morebtn",icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"更多操作","data-eva-tooltip":"更多操作","data-eva-tooltip-position":"bottom"}))),React.createElement(Button,{className:"loop-idp__copybtn",theme:"borderless","aria-label":"复制任务链接","data-eva-tooltip":"复制任务链接","data-eva-tooltip-position":"bottom",onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(xt.workspace_id||currentSpaceId(),xt.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}},icon:React.createElement(Copy$a,{size:16})}),React.createElement(Button,{className:"loop-idp__fsbtn",theme:"borderless","aria-label":"切换全屏","data-eva-tooltip":"切换全屏","data-eva-tooltip-position":"bottom",onClick:()=>{var el=document.querySelector(".collab-route-right.eva-route-drawer");el&&el.classList.toggle("eva-drawer-expanded")},icon:React.createElement("span",{className:"eva-fs-ico"},React.createElement(EvaExpandIcon,{size:16,className:"eva-fs-ico__enter"}),React.createElement(EvaCollapseIcon,{size:16,className:"eva-fs-ico__exit"}))}),React.createElement(Button,{className:"loop-idp__closebtn",theme:"borderless","aria-label":"关闭任务详情",onClick:Qa,icon:React.createElement(X,{size:18})})`,
+      String.raw`React.createElement(Dropdown,{trigger:"click",position:"bottomRight",clickToHide:!0,getPopupContainer:()=>document.querySelector(".collab-route-right.eva-route-drawer .panel")||document.body,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{icon:React.createElement(EvaLinkIcon,{size:13}),onClick:()=>evaOpenParentPicker(xt,Ta)},"关联父任务"),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Item,{type:"danger",icon:React.createElement(Trash2,{size:13}),onClick:Aa},St("loop.menu.deleteIssue")))},React.createElement("span",{className:"loop-idp__morewrap"},React.createElement(window.EvaTooltipComponent,{content:"更多操作",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__morebtn",icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"更多操作"}))))),React.createElement(window.EvaTooltipComponent,{content:"复制任务链接",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__copybtn",theme:"borderless","aria-label":"复制任务链接",onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(xt.workspace_id||currentSpaceId(),xt.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}},icon:React.createElement(Copy$a,{size:16})}))),React.createElement(window.EvaTooltipComponent,{content:"切换全屏",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__fsbtn",theme:"borderless","aria-label":"切换全屏",onClick:()=>{var el=document.querySelector(".collab-route-right.eva-route-drawer");el&&el.classList.toggle("eva-drawer-expanded")},icon:React.createElement("span",{className:"eva-fs-ico"},React.createElement(EvaExpandIcon,{size:16,className:"eva-fs-ico__enter"}),React.createElement(EvaCollapseIcon,{size:16,className:"eva-fs-ico__exit"}))}))),React.createElement(Button,{className:"loop-idp__closebtn",theme:"borderless","aria-label":"关闭任务详情",onClick:Qa,icon:React.createElement(X,{size:18})})`,
       '任务详情抽屉顶栏恢复链接入口与图标提示');
 
     // 折叠菜单只保留两项：关联父任务、删除（删除沿用既有 confirmDelete 模态 Aa）。
@@ -1008,6 +968,44 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       'React.createElement(AssigneePicker,{size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(currentSpaceId(),"member"),value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       '批量指派候选人只限本项目联系人');
+    // 筛选与编辑共用任务所属项目的候选合同，不能回退到旧 Loop 全局专家目录。
+    source=root.__evaCut(source,'function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){',
+      `function EvaTaskFilterIdentity({person}){return React.createElement("span",{className:"eva-task-filter-identity","data-identity-id":person.id},React.createElement(EvaLoopIdentityAvatar,{person,size:20}),React.createElement(EvaLoopIdentityName,{person}))}
+function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){const evaFilterStore=evaMembers().store,evaFilterSnapshot=reactExports.useSyncExternalStore(evaFilterStore.subscribe,evaFilterStore.getSnapshot),evaFilterProject=currentSpaceId(),evaFilterCandidates=reactExports.useMemo(()=>{const ownFirst=items=>{const me=items.find(item=>item.id===evaFilterStore.actorId());return me?[me,...items.filter(item=>item.id!==me.id)]:items};return{assignees:ownFirst(evaTaskProjectIdentities(evaFilterProject,"member")),creators:ownFirst(evaTaskIdentityCandidates(evaFilterProject))}},[evaFilterSnapshot,evaFilterProject]);`,
+      '任务筛选身份由项目父容器提供');
+    source=root.__evaCut(source,'{candidates:hr,loaded:$r,succeeded:Ir,refresh:Ur}=useAssigneeCandidateState(),Qr=reactExports.useMemo(()=>{const $a=WKApp$1.loginInfo.uid;return hr.find(Xa=>Xa.type==="member"&&Xa.octo_uid===$a)?.id},[hr])',
+      'hr=evaFilterCandidates.creators,$r=!0,Ir=!0,Qr=evaFilterStore.actorId()','筛选不再请求旧全局候选');
+    source=root.__evaCut(source,'issueFilterOptionIds({candidates:hr,candidatesLoaded:$r,candidatesSucceeded:Ir,projects:qr,projectsLoaded:Kr,projectsSucceeded:oa,labels:jr,labelsLoaded:ia,labelsSucceeded:la}),mt)',
+      '{...issueFilterOptionIds({candidates:hr,candidatesLoaded:$r,candidatesSucceeded:Ir,projects:qr,projectsLoaded:Kr,projectsSucceeded:oa,labels:jr,labelsLoaded:ia,labelsSucceeded:la}),assigneeIds:evaFilterCandidates.assignees.map(person=>person.id),creatorIds:evaFilterCandidates.creators.map(person=>person.id)},mt)',
+      '筛选校验与身份候选同源');
+    source=root.__evaCut(source,'[hr,$r,Ir,mt,jr,ia,la,qr,Kr,oa]','[hr,$r,Ir,mt,jr,ia,la,qr,Kr,oa,evaFilterCandidates]','项目成员变化后更新筛选校验');
+    source=root.__evaCut(source,'hr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id},$a.name)),{filter:!0,onOpen:Ur}',
+      'evaFilterCandidates.assignees.map(person=>React.createElement(Select.Option,{key:person.id,value:person.id,person,icon:React.createElement(EvaLoopIdentityAvatar,{person,size:20}),content:React.createElement("span",{"data-identity-id":person.id},React.createElement(EvaLoopIdentityName,{person}))},React.createElement(EvaTaskFilterIdentity,{person}))),{filter:!0,identity:!0}',
+      '负责人筛选复用公共身份渲染');
+    source=root.__evaCut(source,'hr.filter($a=>$a.type==="member").map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id},$a.name)),{filter:!0,onOpen:Ur}',
+      'evaFilterCandidates.creators.map(person=>React.createElement(Select.Option,{key:person.id,value:person.id,person,icon:React.createElement(EvaLoopIdentityAvatar,{person,size:20}),content:React.createElement("span",{"data-identity-id":person.id},React.createElement(EvaLoopIdentityName,{person}))},React.createElement(EvaTaskFilterIdentity,{person}))),{filter:!0,identity:!0}',
+      '创建者筛选复用公共身份渲染');
+    source=root.__evaCut(source,'filter:za?.filter,disabled:Sa,maxTagCount:',
+      'filter:za?.identity?((query,option)=>option.person.name.toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())):za?.filter,"aria-label":$a,inputProps:{"aria-label":$a},arrowIcon:React.createElement(ChevronDown,{size:16}),renderOptionItem:option=>window.EvaLoopTaskComponents.selectOption(React,Check,option),renderSelectedItem:option=>({isRenderInTag:true,content:option.person?React.createElement(EvaTaskFilterIdentity,{person:option.person}):React.createElement("span",{className:"eva-task-filter-identity"},option.icon,option.content||option.label)}),disabled:Sa,maxTagCount:',
+      '筛选已选身份与候选使用同一组件');
+    source=root.__evaCut(source,'...FIELD_POPUP,style:{width:"100%"},placeholder:$a},Za)',
+      '...FIELD_POPUP,dropdownClassName:"loop-fields__dropdown eva-task-filter-menu",style:{width:"100%"},placeholder:$a},Za)',
+      '筛选菜单复用公共任务选项行');
+    source=root.__evaCut(source,'Ma=ISSUE_STATUS_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a},pt(`loop.status.${$a}`)))',
+      'Ma=ISSUE_STATUS_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a,icon:React.createElement(ISSUE_STATUS_ICON[$a],{size:14})},pt(`loop.status.${$a}`)))',
+      '筛选状态复用公共图形');
+    source=root.__evaCut(source,'Va=PRIORITY_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a},pt(`loop.priority.${$a}`)))',
+      'Va=window.EvaLoopTaskComponents.priorityDisplayOrder.map($a=>React.createElement(Select.Option,{key:$a,value:$a,icon:React.createElement(PRIORITY_ICON[$a],{size:14})},pt(`loop.priority.${$a}`)))',
+      '筛选优先级复用公共顺序与图形');
+    source=root.__evaCut(source,'da=jr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id,label:$a.name},React.createElement(LabelChips,{labels:[$a]})))',
+      'da=jr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id,label:$a.name,content:window.EvaLoopTaskComponents.labelChip(React,$a)},$a.name))',
+      '筛选标签搜索文本与公共标签呈现分离');
+    source=root.__evaCut(source,'const evaHit=hr.find(evaP=>evaP.id===evaId);','const evaHit=evaFilterCandidates.creators.find(evaP=>evaP.id===evaId);','筛选摘要使用相同身份来源');
+    source=root.__evaCut(source,'style:{width:104}},ISSUE_DATE_FIELDS',
+      '"aria-label":"时间字段",arrowIcon:React.createElement(ChevronDown,{size:16}),style:{width:"100%"}},ISSUE_DATE_FIELDS','时间字段与日期范围各自完整显示');
+    source=root.__evaCut(source,'placeholder:pt("loop.filter.dateRange"),zIndex:FIELD_POPUP.zIndex,style:{flex:1}',
+      'placeholder:["开始日期","结束日期"],showClear:true,zIndex:FIELD_POPUP.zIndex,style:{width:"100%"}',
+      '日期范围使用完整宽度与清空能力');
     source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
     function evaNormalizeTaskStatus(status){return status}
     // 任务身份解析：联系人不限项目；AI 分身与数字员工必须已加入所在项目（传入 scope 时校验）。

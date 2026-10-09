@@ -197,9 +197,9 @@ body .semi-dropdown-wrapper {
   backdrop-filter: none;
 }
 body .semi-dropdown-wrapper .semi-dropdown-menu { padding: 6px; }
-body .semi-dropdown-wrapper .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
-body .semi-dropdown-wrapper .semi-dropdown-item-active:hover,
-body .semi-dropdown-wrapper .semi-dropdown-item-active:focus-visible { background: var(--eva-overlay-hover); }
+body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
+body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item-active:hover,
+body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item-active:focus-visible { background: var(--eva-overlay-hover); }
 /* 日期选择同属操作浮层：沿用王岩确立的 Dropdown 面板表面与抬升层级。
    Semi DatePicker 用 Popover 承载；这里仅替换外壳，不改日历内部行为。 */
 body .semi-popover-wrapper:has(.semi-datepicker) {

@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   // Components receive the runtime's existing React and Semi instances.
-  root.EvaMembersUI={create({React:R,forms,Button,Select,Modal:LegacyModal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ChevronRight,ProjectIcon,useNavigate,Toast},store,files){
+  root.EvaMembersUI={create({React:R,forms,MarkdownView,TextArea,Card,PermissionList,FileTextIcon,SettingsIcon,Button,Select,Modal:LegacyModal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ChevronRight,ProjectIcon,useNavigate,Toast},store,files){
     const h=R.createElement;
     const {Form,withField,useSubmission,SubmissionError,Dialog:Modal,Actions,requiredLabelPolicy}=forms;
     const SelectionField=withField(function SelectionField({children,...props}){return h('div',{'aria-invalid':props['aria-invalid'],'aria-describedby':props['aria-describedby'],tabIndex:-1},children);});
@@ -9,7 +9,7 @@
     function CloneIdentity({clone}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(root.EvaAIIdentity.cloneAppearance(store.person(clone.ownerId)),32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},clone.name),root.EvaAIIdentity.badge(h))));}
     function ProjectAgentIdentity({agent,size=32}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),size,h),h('span',null,agent.name),root.EvaAIIdentity.badge(h));}
     const roleNames={owner:'负责人',admin:'管理员',member:'成员'};
-    const PickerPreview=root.EvaPickerPreview.create({React:R,Button,Select,Modal,Input,Tag,Checkbox,Radio},store);
+    const PickerPreview=root.EvaPickerPreview.create({React:R,MarkdownView,TextArea,Card,PermissionList,FileTextIcon,SettingsIcon,Button,Select,Modal,Input,Tag,Checkbox,Radio},store);
     const SelectionBody=PickerPreview.SelectionBody;
     function humanItems(people,pid){const s=store.snapshot(),p=s.projects[pid],rank={owner:0,admin:1,member:2};return people.filter(person=>store.person(person.id)).map(person=>{const role=p?.humans.find(m=>m.id===person.id)?.role,projectRoles=pid?store.memberRoles(pid,person.id).map(item=>item.name):[];return {...person,kind:'human',projectRole:role,detail:projectRoles.join('、')};}).sort((a,b)=>(rank[a.projectRole]??3)-(rank[b.projectRole]??3));}
     function cloneItems(actorId,pid,scopeId){const s=store.snapshot(),scope=s.projects[scopeId]||s.groups[scopeId];return s.clones.filter(c=>c.ownerId===actorId&&c.active!==false&&(!pid||s.projects[pid]?.cloneIds.includes(c.id))&&!scope?.cloneIds.includes(c.id)).map(c=>({...c,kind:'clone'}));}
@@ -262,7 +262,7 @@
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
     const cards=root.EvaIdentityCard.create({React:R,Modal:LegacyModal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,forms,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,forms,MarkdownView,TextArea,Card,PermissionList,FileTextIcon,SettingsIcon,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
     return {...cards,HumanIdentity,ChatSettings,Members,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker,projectCreateCandidates};
   }};
 })(window);

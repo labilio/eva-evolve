@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch({channel:'msedge'});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:900}});
+ await page.addInitScript(()=>{let membership;Object.defineProperty(window,'EvaMembership',{configurable:true,get:()=>membership,set:api=>{membership={...api,bootstrap(...args){const store=api.bootstrap(...args);window.testTopicStore=store;return store;}};}});});
+ await page.goto(`http://127.0.0.1:${server.address().port}/#/messages?evaDM=supply-many-topics-demo`);
+ const nav=page.locator('.eva-recent-topic-tabs');await nav.getByRole('tab',{name:'主聊天',exact:true}).waitFor();
+ const ids=await nav.locator('[data-eva-topic-id]').evaluateAll(nodes=>nodes.map(n=>n.dataset.evaTopicId).filter(Boolean));
+ const pinnedCount=await page.evaluate(ids=>ids.filter(id=>window.testTopicStore.chatPreferences(id,'u-wangyilin').top).length,ids);
+ const ordinaryFirst=()=>nav.locator('[data-eva-topic-id]').nth(pinnedCount+1).getAttribute('data-eva-topic-id');
+ const first=()=>nav.locator('[data-eva-topic-id]').nth(1).getAttribute('data-eva-topic-id');
+ const target=ids[ids.length-2];
+ await page.evaluate(id=>window.testTopicStore.sendMessage(id,'u-hejing','排序验收：该子区有一条新消息'),target);
+ await page.waitForTimeout(150);assert.equal(await ordinaryFirst(),target,'新消息立即移到普通子区前方');
+ assert.equal(await first(),ids[0],'保留现有置顶项');
+ const namesBefore=await nav.locator('[data-eva-topic-id]').evaluateAll(ns=>ns.map(n=>n.dataset.evaTopicId));
+ const tab=nav.getByRole('tab').filter({has:page.locator(`[data-eva-topic-id="${target}"]`)});
+ const normalColor=await tab.evaluate(n=>getComputedStyle(n).color);
+ await tab.click({button:'right'});await page.getByRole('menuitem',{name:'设为免打扰',exact:true}).click();
+ assert.equal(await tab.evaluate(n=>getComputedStyle(n).color),normalColor,'免打扰不改变标题色');
+ assert.deepEqual(await nav.locator('[data-eva-topic-id]').evaluateAll(ns=>ns.map(n=>n.dataset.evaTopicId)),namesBefore,'免打扰不改变位置');
+ await page.evaluate(id=>window.testTopicStore.clearConversationUnread(id,'u-wangyilin'),target);assert.equal(await ordinaryFirst(),target);
+ await tab.click({button:'right'});await page.getByRole('menuitem',{name:'置顶会话',exact:true}).click();
+ await page.evaluate(id=>window.testTopicStore.sendMessage(id,'u-wangyilin','另一子区的新消息'),ids[0]);await page.waitForTimeout(100);assert.equal(await first(),target,'新消息不越过置顶项');
+ await page.screenshot({path:'/tmp/eva-topic-order-mute.png'});
+ console.log('PASS incoming activity, mute title/order, read order, pinned priority');
+}finally{await browser.close();await new Promise(r=>server.close(r));}

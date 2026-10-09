@@ -182,3 +182,26 @@ test('移除旧 AI 成员按群隔离、撤销 Bot 资格且恢复后不重新�
  s.setGroupBotAdmin('g','a',id,true);assert.throws(()=>s.removeEmployee('g','b',id),/无移除权限/);assert.throws(()=>s.removeEmployee('all:p','a',id),/项目成员管理/);s.removeEmployee('g','a',id);
  for(const store of [s,windowlessRestore(s.snapshot())]){assert.equal(store.canRead('g',id),false);assert.equal(store.canRead('t',id),false);assert.equal(store.canRead('g2',id),true);assert.equal(store.groupMembers('g').some(m=>m.id===id),false);assert.equal(store.snapshot().groupGovernance.g.botAdminIds.includes(id),false);assert.equal(store.channels('p','a').find(c=>c.id==='g').members,2);}
 });
+
+test('免 @ 需要双层许可，默认关闭并按父群继承',()=>{
+ const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.createGroup('g','群','p','a',['aa']);s.addMember('g','a','b');s.createThread('t','g');
+ s.setCloneMentionFree('a','a','g',true);assert.equal(s.cloneCanReplyWithoutMention('g','aa'),false);
+ assert.throws(()=>s.setGroupAllowNoMention('g','b',true));assert.throws(()=>s.setGroupAllowNoMention('t','a',true));
+ s.setGroupAllowNoMention('g','a',true);assert.equal(s.cloneCanReplyWithoutMention('t','aa'),true);
+ assert.equal(windowlessRestore(s.snapshot()).cloneCanReplyWithoutMention('g','aa'),true);
+ s.setGroupAllowNoMention('g','a',false);assert.equal(s.cloneCanReplyWithoutMention('t','aa'),false);
+ s.setGroupManager('g','a','b',true);s.setGroupAllowNoMention('g','b',true);
+ s.setCloneMentionFree('a','a','g',false);assert.equal(s.cloneCanReplyWithoutMention('g','aa'),false);
+ s.setCloneMentionFree('a','a','g',true);s.removeClone('g','a','aa');assert.equal(s.cloneCanReplyWithoutMention('g','aa'),false);
+});
+
+test('子区 GROUP.md 独立保存且权限按父群访问与子区创建者校验',()=>{
+ const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');
+ s.createThread('t','all:p',{name:'子区',creator_uid:'b'},'b');s.createThread('t2','all:p',{},'a');
+ s.setGroupMd('all:p','a','父群');s.setGroupMd('t','b','子区');
+ assert.equal(s.groupMd('t','a').content,'子区');assert.equal(s.groupMd('t2','a').content,'');assert.equal(s.groupGovernance('all:p').groupMd,'父群');
+ assert.throws(()=>s.setGroupMd('t2','b','越权'));assert.throws(()=>s.groupMd('t','c'));
+ s.remove('p','a','b');assert.throws(()=>s.setGroupMd('t','b','已退出'));assert.equal(s.groupMd('t','a').content,'子区');
+});
+
+test('GROUP.md 字节上限、版本与删除权限',()=>{const s=setup();s.createProject('p','项目','a',[]);s.setGroupMd('all:p','a','汉');assert.equal(s.groupMd('all:p','a').version,1);assert.throws(()=>s.setGroupMd('all:p','a','汉'.repeat(3414)));assert.equal(s.groupMd('all:p','a').content,'汉');assert.throws(()=>s.deleteGroupMd('all:p','b'));s.deleteGroupMd('all:p','a');assert.equal(s.groupMd('all:p','a').content,'');assert.equal(s.groupMd('all:p','a').version,0);});

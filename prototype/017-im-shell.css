@@ -89,6 +89,7 @@
  * 字号 11px 与最近列日期同档；字重 500 取 EvaMate「Badge / Compact」。
  * 高度 16px、min-width 18px 维持规范几何未变。 */
 .ch-layout :is(.wk-conv-compact-badge, .wk-category-header__badge, .wk-sidebar-tabbar__badge, .wk-conv-unread-num, .eva-recent-topic-tabs__unread),
+.eva-thread-list--compact .eva-recent-topic-tabs__unread,
 .collab-tab .badge {
   box-sizing: border-box;
   min-width: 18px;

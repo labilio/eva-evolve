@@ -37,7 +37,7 @@ requireText("groupStore.createGroup(record)", 'My AI does not create AI teams th
 requireText("className:'eva-ai-team__teams'},teamGroups.map(teamGroupItem)", 'My AI does not render its canonical AI team container');
 requireText("className:'eva-ai-team__direct-groups'},roleGroup('persona','云端分身'", 'My AI does not separate its direct identity groups from AI teams');
 requireText('setSectionCollapsed', 'My AI top-level team and assistant sections cannot collapse independently');
-requireText("'新建 AI 团队'", 'My AI is missing its create-team action');
+requireText("'新建 AI 小队'", 'My AI is missing its create-team action');
 requireText("'新建个人助理'", 'My AI is missing its create-assistant action');
 requireText("className:'eva-ai-team__identity-action eva-ai-team__new-session'", 'My AI is missing its identity new-session action');
 requireText('eva-my-ai-identity-toggle', 'My AI identity expand/collapse control is missing from the right side');
@@ -53,9 +53,10 @@ forbidText('const openDetails =', 'My AI still exposes the removed identity conf
 forbidText("presentation:'ai-team-workspace'", 'My AI still opens the removed identity configuration workspace');
 forbidText("Dropdown.Item,{onClick:()=>newConversation(i.id)},'新建会话'", 'the identity menu duplicates the dedicated new-session plus action');
 forbidText("Dropdown.Item,{onClick:()=>openDetails(i.id)},'查看配置'", 'identity configuration still uses the obsolete overflow menu');
-requireText("if(i.role!=='assistant')return null", 'My AI must expose configuration editing only for personal assistants');
-requireText("content:'编辑配置'", 'personal assistants are missing the edit configuration entry');
-requireText("role:'assistant',id:i.sourceAssistantId,returnFocus:event.currentTarget", 'personal assistant editing does not map the IM identity to its shared assistant record or preserve its focus return target');
+requireText("if(item.role==='assistant')menus.push", 'My AI must expose configuration editing only for personal assistants');
+requireText("title:'编辑配置'", 'personal assistants are missing the edit configuration entry');
+requireText("role:'assistant',id:item.sourceAssistantId,returnFocus", 'personal assistant editing does not map the IM identity to its shared assistant record or preserve its focus return target');
+requireText('openAssistantConfig(item,identityMenuOpener.current)', 'assistant editing must preserve the original menu opener');
 requireText('store.subscribe', 'My AI does not observe canonical identity data');
 
 requireText('Sa.identityAppearance?React.createElement(EvaAIIdentityAvatar', 'the shared conversation header loses source and ownership');

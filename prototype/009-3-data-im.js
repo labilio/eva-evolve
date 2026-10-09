@@ -537,8 +537,8 @@ window.__EVA_MANY_TOPICS_DEMO = {
     '关键件交期跟踪','来料异常复核','供应商整改跟踪','排产齐套确认','运输窗口协调',
     '库存风险排查','替代物料验证','成本变化分析','付款资料核对','月度交付复盘',
     '质量证据归档','现场问题排查','紧急保供协调','新品试制准备','包装方案确认',
-    '检验标准对齐','采购预算复核','跨团队依赖协调','下季度供应商产能与交付计划确认'
-  ].map((name,index)=>({id:'supply-many-topic-'+String(index+1).padStart(2,'0'),name})),
+    '检验标准对齐','采购预算复核','跨团队依赖协调','下季度核心供应商产能保障与跨区域交付计划联合评审及风险确认'
+  ].map((name,index)=>({id:'supply-many-topic-'+String(index+1).padStart(2,'0'),name})).filter((topic,index)=>index<10||index===17||index===23),
   messageText:name=>`这里单独讨论「${name}」。请在本子区补充相关材料和待确认事项，避免混入其他专题。`
 };
 
@@ -547,8 +547,79 @@ window.__EVA_MANY_TOPICS_DEMO = {
 window.__EVA_RECENT_UNREAD_DEMO = Object.freeze({
   'th-msg-architecture': 3,
   'th-mode-switch': 1,
-  'supply-many-topic-01': 1,
+  'th-contract-renewal': 3,
+  'supply-many-topic-03': 2,
+  'supply-many-topic-18': 3,
+  'supply-many-topic-06': 5,
   'supply-many-topic-04': 1,
-  'supply-many-topic-12': 1,
   'supply-many-topic-24': 1
 });
+
+// Complete topic stories: coordination in the parent, decisions/materials in each topic.
+window.__EVA_TOPIC_STORY_DEMO = {
+  version:2,
+  groups:{
+    'c-eva':{intro:'本轮采购同时涉及需求数量、供应商报价和招标文件。三件事混着聊容易漏确认，我们拆开推进。',reasons:['需求表里还有数量与交期冲突，逐项确认需要一个独立记录。','两家报价的税率、运费和付款条件不同，需要放在一起核对。','招标文件有多个修订版本，评审意见需要单独收口。']},
+    'c-review':{intro:'来料异常、供应商整改和排产齐套都在推进，先拆成三个子区，各自确认，影响交付的结论再回主聊天同步。',reasons:['异常批次的复测记录和现场照片需要逐项核对。','整改措施需要责任人、证据和复核结果，避免被当天排产消息冲走。','关键件到货会影响两条产线，齐套缺口和排产调整需要集中确认。']},
+    'c-weekly':{intro:'新供应商准入、采购合同续签和到期条款确认都挤在这里了。材料和负责人不同，拆成三个子区，主聊天只同步共同的截止时间和阻塞。',reasons:['新供应商还缺授权书和资质有效期证明，准入资料在一个子区逐项复核。','三份采购合同即将到期，报价和供货周期变化在一个子区对齐。','续签条款里的责任边界与签署时间需要最后确认，单独留存结论。']}
+  },
+  details:{
+    'c-eva':[
+      ['华东仓需求 320 件、华南仓 180 件；华南要求 9 月 18 日到货，比汇总表提前两天。数量已确认，交期还待采购核实。','需求总量 500 件；待确认项是华南仓 180 件能否在 9 月 18 日到货。不要把交期要求写成供应商已承诺。'],
+      ['甲供应商含税单价 42 元、运费另计；乙供应商含税单价 44 元、含运费。两家报价均为 500 件，甲的运费金额尚未提供。','报价口径尚未统一：甲缺运费金额，暂时不能仅按单价判断总成本更低。'],
+      ['招标文件当前为 v3；交付日期已修改，验收标准附件还是 v2。请先核对版本，未签字的修改意见不要当成定稿。','当前正文 v3 与验收附件 v2 不一致；需确认附件版本和修改签字，暂不对外发标。']
+    ],
+    'c-review':[
+      ['A-2409 批次共 200 件，抽检 20 件中有 2 件尺寸超差，整批已隔离。复测报告只有测量值，还缺质量负责人签字。','已知异常为抽检 20 件中 2 件超差；缺口是复测签字。材料齐全和允许放行是两项不同判断。'],
+      ['供应商已提交夹具调整照片，但没有连续三批的验证记录。整改责任人已确认，复核时间约在周五。','已提交措施照片，尚缺连续三批验证记录；周五是计划复核时间，不能据此标记整改闭环。'],
+      ['产线 A 缺 80 件连接件，产线 B 缺 40 件。仓库可调拨 50 件，供应商剩余到货时间未确认。','缺口合计 120 件，调拨后仍缺 70 件；到货时间未知，不能直接得出两条产线均可按期开工。']
+    ],
+    'c-weekly':[
+      ['新供应商的营业执照已收到；授权书缺签章，质量体系证书有效期到 9 月 30 日，续期证明尚未提供。合同续签材料不放在这份清单里。','准入缺项：授权书签章、质量体系证书续期证明。已有营业执照不能替代这两项，当前材料不足以确认准入通过。'],
+      ['采购合同 A、B、C 本月底到期。A 保持原价；B 提价 3% 但未附报价依据；C 供货周期由 14 天改为 21 天。续签审批尚未完成。','A 暂无价格变化；B 缺提价依据；C 交期延长 7 天。以上是待评审变化，不能写成已批准续签。'],
+      ['最终签署前还剩两项：违约责任修改由法务确认，签署时间由双方盖章人确认。当前只是计划周五签署，没有收到对方确认。','签署前仍需法务确认责任条款，以及对方确认盖章时间。周五只是计划日期，不能作为已确认节点。']
+    ]
+  },
+  build(group,topics,people,ai){
+    const spec=this.groups[group.id]||{intro:'这几项工作需要不同材料和负责人。我们按主题分开讨论，主聊天保留整体协调和最终结论。',reasons:topics.map(t=>'「'+t.name+'」需要集中核对材料和待确认事项，详细讨论放进对应子区。')};
+    const authors=group.humans.map(m=>people.find(p=>p.id===m.id)).filter(Boolean);if(!authors.length)return null;
+    const time=minute=>String(9+Math.floor(minute/60)).padStart(2,'0')+':'+String(minute%60).padStart(2,'0');
+    const text=(author,body,minute)=>({kind:'text',sender:{...author,uid:author.id},time:time(minute),text:body});
+    const parent=[text(authors[0],spec.intro,0)],children={};
+    topics.forEach((topic,index)=>{const author=authors[index%authors.length],reason=spec.reasons[index%spec.reasons.length],minute=2+index*8;
+      parent.push(text(author,reason+' 我来建「'+topic.name+'」。',minute));
+      parent.push({kind:'threadcreated',sender:{...author,uid:author.id},time:time(minute+1),text:author.name+' 创建了子区「'+topic.name+'」',thread:{id:topic.id,name:topic.name,replies:3,participants:authors.slice(0,3).map(p=>p.id)}});
+      const detail=this.details[group.id]?.[index];
+      children[topic.id]=[text(author,reason+' 请把相关材料和意见发在这里。',minute+2),text(authors[(index+1)%authors.length],detail?.[0]||'我先核对当前版本，把缺失材料、待确认项和责任人整理在同一份清单中，未确认的内容会明确标注。',minute+3)];
+      if(detail&&ai){children[topic.id].push(text(author,'@'+ai.name+' 请仅根据本子区上面提供的材料整理已知事实和待确认项。不要把其他议题的结论带进来，缺少信息就明确列出。',minute+4),text({...ai,ai:true},detail[1],minute+5));}
+      children[topic.id].push(text(author,detail?'按这份缺项继续核对，确认之前不对外承诺。我会把影响整体进度的阻塞同步回主聊天。':'收到。这个子区保留过程记录；有影响其他工作的结论，我会回主聊天同步。',minute+6));
+      parent[parent.length-1].thread.replies=children[topic.id].length;
+    });
+    parent.push(text(authors[0],'分工已明确。请到对应子区继续，涉及跨事项的时间冲突和需要共同决定的问题再回这里讨论。',2+topics.length*8));
+    if(this.details[group.id])parent.push(text(authors[0],group.id==='c-weekly'?'同步三个子区的进展：准入还缺签章和续期证明；合同 B 的提价依据、C 的交期影响待评审；法务条款和盖章时间未确认。本轮均不提前对外承诺通过。':'各子区已列清材料缺口和待确认项，详细依据留在对应讨论里。跨事项的时间安排在这里协调，未确认事项不标记完成。',5+topics.length*8));
+    return {parent,children};
+  }
+};
+
+// Muted unread example: one-time preference seed, persistent preview count above.
+window.__EVA_MUTED_TOPIC_DEMO = {
+ actorId:'u-wangyilin',groupId:'c-weekly',threadId:'th-contract-renewal',
+ messages:[
+  {senderId:'u-hejing',time:'14:10',text:'合同 B 的供应商补充了提价说明：原料成本上涨 3%，本轮报价有效期到周五。我已把依据放进续签清单，等采购核对。'},
+  {senderId:'u-linxiao',time:'14:12',text:'合同 C 的交期仍是 21 天，比原合同多 7 天。仓库确认现有库存只能覆盖 18 天，需要再确认分批交付方案。'},
+  {senderId:'u-hejing',time:'14:15',text:'我会继续在这里补充报价和交期材料。两项都确认后，再回主聊天同步最终续签建议，目前先不对外承诺。'}
+ ]
+};
+
+// A single scenario makes topic sorting and notification states visible together.
+window.__EVA_TOPIC_ORDER_DEMO = {
+ version:1,groupId:'supply-many-topics-demo',actorId:'u-wangyilin',
+ topics:[
+  {id:'supply-many-topic-01',top:true,pinOrder:2,minute:0,messages:['本周采购需求已收齐，数量和到货日期以这里确认的版本为准。常用清单留在这个子区，后续增补继续在这里登记。']},
+  {id:'supply-many-topic-03',top:true,pinOrder:1,minute:5,messages:['技术评分表已经补齐，交付能力的权重调整为 30%。请在这个子区复核评分依据。','商务条款中新增了延期赔付上限，等法务确认后一起并入招标文件。']},
+  {id:'supply-many-topic-18',minute:50,messages:['A 线关键件库存只能支持到明天下午，需要今天确认补货方案。','供应商可以先发 200 件，但需要我们在 17 点前确认加急运输费用。','我已协调好卸货窗口。请采购在这里确认发货时间，确认后我再同步产线。']},
+  {id:'supply-many-topic-06',mute:true,minute:40,messages:['供应商已回传本周关键件生产排程，我会在这里持续更新交期。','第一批 300 件完成检验，预计今天出库。','第二批还缺一份材质证明，供应商承诺下午补齐。','承运商已确认车辆，提货时间调整为 16:30。','第一批运单已生成，预计明天 10 点到厂。后续物流节点继续在本子区更新。']},
+  {id:'supply-many-topic-08',minute:30,messages:['异常批次的纠正措施已复核通过，补充照片和检验记录已归档。本轮整改关闭，后续抽检结果仍在这里留存。']},
+  {id:'supply-many-topic-04',minute:20,messages:['合同付款节点已改为验收后 30 天，请确认附件中的验收标准与最终报价一致。']}
+ ]
+};

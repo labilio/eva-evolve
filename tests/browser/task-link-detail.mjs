@@ -33,7 +33,7 @@ test('Edge：描述和评论中的任务引用在同一抽屉打开并可返回'
     assert.equal(await close.getAttribute('data-eva-tooltip'),null,'关闭按钮不显示重复提示');
     const back=page.getByRole('button',{name:'返回跳转前的任务'});
     await back.hover();
-    const tooltip=page.locator('.eva-tooltip-surface').getByText('返回跳转前的任务',{exact:true});
+    const tooltip=page.getByRole('tooltip').getByText('返回跳转前的任务',{exact:true});
     await tooltip.waitFor();
     await page.mouse.move(0,0);
     await tooltip.waitFor({state:'hidden'});

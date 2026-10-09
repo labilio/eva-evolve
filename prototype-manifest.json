@@ -867,22 +867,14 @@
     },
     {
       "order": 109,
-      "tag": "style",
-      "name": "tooltip",
-      "file": "prototype/062-tooltip.css",
-      "bytes": 1045,
+      "tag": "script",
+      "name": "tooltip-adapter",
+      "file": "prototype/062-tooltip-adapter.js",
+      "bytes": 3333,
       "role": "prototype"
     },
     {
       "order": 110,
-      "tag": "script",
-      "name": "tooltip-controller",
-      "file": "prototype/062-tooltip.js",
-      "bytes": 4982,
-      "role": "prototype"
-    },
-    {
-      "order": 111,
       "tag": "script",
       "name": "shared-semi-forms",
       "file": "prototype/063-forms-entry.jsx",
@@ -891,7 +883,7 @@
       "description": "统一原生 Semi Form 配置与提交 Hook，由 tools/build-forms.mjs 构建；复用运行时 React。"
     },
     {
-      "order": 112,
+      "order": 111,
       "tag": "script",
       "name": "063-forms",
       "file": "prototype/063-forms.jsx",
@@ -899,7 +891,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 113,
+      "order": 112,
       "tag": "script",
       "name": "063-form-policy",
       "file": "prototype/063-form-policy.js",
@@ -907,7 +899,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 114,
+      "order": 113,
       "tag": "script",
       "name": "063-personal-folder-form",
       "file": "prototype/063-personal-folder-form.jsx",
@@ -915,7 +907,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 115,
+      "order": 114,
       "tag": "script",
       "name": "063-personal-rail-form",
       "file": "prototype/063-personal-rail-form.jsx",
@@ -923,7 +915,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 116,
+      "order": 115,
       "tag": "script",
       "name": "063-file-form",
       "file": "prototype/063-file-form.jsx",
@@ -931,7 +923,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 117,
+      "order": 116,
       "tag": "link",
       "name": "dialog-layout",
       "file": "prototype/063-dialog.css",
@@ -939,7 +931,7 @@
       "bytes": 1888
     },
     {
-      "order": 118,
+      "order": 117,
       "tag": "script",
       "name": "shared-dialog",
       "file": "prototype/063-dialog.jsx",
@@ -947,7 +939,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 119,
+      "order": 118,
       "tag": "script",
       "name": "063-dialog-theme",
       "file": "prototype/063-dialog-theme.js",
@@ -955,7 +947,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 120,
+      "order": 119,
       "tag": "script",
       "name": "063-dialog-focus",
       "file": "prototype/063-dialog-focus.jsx",

@@ -39,7 +39,10 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByText('群聊管理',{exact:true}).click();
     await panel.getByRole('heading',{name:'群聊管理',exact:true}).waitFor();
-    assert.equal(await panel.getByText('Bot 回复规则',{exact:true}).count(),0,'群级免 @ 已下线，免 @ 回答只属于分身主人的 Bot 级设置');
+    const gate=panel.getByRole('switch',{name:'允许 AI 免 @ 回复'});
+    assert.equal(await gate.isChecked(),false);await gate.click();assert.equal(await gate.isChecked(),true);
+    await panel.getByRole('button',{name:'返回聊天信息'}).click();await panel.getByText('群聊管理',{exact:true}).click();
+    assert.equal(await gate.isChecked(),true);await gate.click();assert.equal(await gate.isChecked(),false);
     assert.equal(await panel.getByRole('button',{name:'添加管理员',exact:true}).count(),0,'任免只有成员行一个入口');
     assert.equal(await panel.getByRole('button',{name:'添加 AI 管理员',exact:true}).count(),0,'AI 管理员任免只有成员行一个入口');
     assert.equal(await panel.getByRole('button',{name:'转让群主',exact:true}).count(),1,'有可接任联系人时保留转让群主入口');
@@ -64,6 +67,16 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     const grantBot=botManagerRow.getByRole('button',{name:/^设为 AI 管理员 /});
     assert.match(await grantBot.locator('svg').getAttribute('class'),/lucide-user-cog/);
     await grantBot.click();
+    const grantDialog=page.locator('.semi-modal:visible');
+    await grantDialog.getByText('移除普通成员（不能移除群主和群管理员）',{exact:true}).waitFor();
+    assert.equal(await grantDialog.getByText(/授权范围/).count(),0);
+    await grantDialog.getByText('修改群聊及其子区的 GROUP.md',{exact:true}).waitFor();
+    assert.equal(await grantDialog.getByText(/免 @ 回复/).count(),0);
+    assert.equal(await grantDialog.getByRole('listitem').count(),3);
+    assert.equal(await botManagerRow.getByText('AI 管理员',{exact:true}).count(),0);
+    await grantDialog.getByText('取消',{exact:true}).click();
+    assert.equal(await botManagerRow.getByText('AI 管理员',{exact:true}).count(),0);
+    await grantDialog.waitFor({state:'hidden'});await botManagerRow.hover();await grantBot.click();await grantDialog.getByText('确认授权',{exact:true}).click();
     await botManagerRow.getByText('AI 管理员',{exact:true}).waitFor();
     assert.deepEqual((await order()).map(x=>x.replace('AI 管理员','')),beforeBot,'AI 任命不立即重排');
     const revokeBot=botManagerRow.getByRole('button',{name:/^取消 AI 管理员 /});
@@ -132,7 +145,7 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
 
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByText('GROUP.md',{exact:true}).click();
-    await panel.getByRole('button',{name:'编辑',exact:true}).click();
+    await panel.getByRole('tab',{name:'编辑',exact:true}).click();
     const groupMd=panel.getByRole('textbox',{name:'GROUP.md 内容'});
     await groupMd.fill('# 采购协作约定');
     await panel.getByRole('button',{name:'保存',exact:true}).click();

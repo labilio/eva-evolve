@@ -388,7 +388,7 @@
         const humanIds=new Set(s.humans.map(item=>item.id)),manualManagerIds=(record.managerIds||[]).filter(uid=>humanIds.has(uid)&&uid!==s.ownerId);
         const managerIds=s.humans.map(item=>item.id).filter(uid=>uid===s.ownerId||manualManagerIds.includes(uid));
         const botIds=new Set(api.groupMembers(key).filter(item=>item.kind!=='human').map(item=>item.id));
-        return {groupId:key,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
+        return {groupId:key,allowAIWithoutMention:record.allowAIWithoutMention===true,manualManagerIds,managerIds,botAdminIds:(record.botAdminIds||[]).filter(id=>botIds.has(id)),groupMd:String(record.groupMd||'')};
       },
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
@@ -400,11 +400,21 @@
         if(!api.groupMembers(key).some(item=>item.id===target&&item.kind!=='human'))fail('只能设置当前群内的 AI 成员');
         const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify();
       },
-      // 免 @ 回答只保留 Bot 级：以主人稳定 ID 定位唯一分身，再按其所在群逐群开启。
+      setGroupAllowNoMention(id,uid,enabled){
+        requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');
+        if(state.threads[id])fail('请在父群管理中操作');
+        if(!manager(key,uid))fail('仅群主或群管理员可修改');
+        ensureGovernance(key).allowAIWithoutMention=enabled===true;notify();
+      },
+      cloneCanReplyWithoutMention(id,cid){
+        const key=groupKey(id),c=clone(cid);
+        return !!(key&&c&&api.canRead(key,c.id)&&api.canRead(key,c.ownerId)&&governanceRecord(key).allowAIWithoutMention===true&&state.cloneMentionFree?.[c.id]?.[key]);
+      },
+      // 主人偏好与群级许可共同决定实际有效配置。
       cloneMentionFreeGroups(ownerId){
         const c=state.clones.find(item=>item.ownerId===ownerId&&item.active!==false);if(!c)return [];
         const actor=state.actorId,prefs=state.cloneMentionFree?.[c.id]||{},rows=[];
-        const add=(key,name,projectId)=>{if(!key||!api.canRead(key,actor))return;rows.push({groupId:key,name:name||key,projectId:projectId||null,noMention:!!prefs[key]});};
+        const add=(key,name,projectId)=>{if(!key||!api.canRead(key,actor))return;rows.push({groupId:key,name:name||key,projectId:projectId||null,noMention:!!prefs[key],groupAllowed:governanceRecord(key).allowAIWithoutMention===true,effective:api.cloneCanReplyWithoutMention(key,c.id)});};
         for(const p of Object.values(state.projects))if((p.cloneIds||[]).includes(c.id))add('all:'+p.id,projectInfo(p.id).name||'全员群',p.id);
         for(const g of Object.values(state.groups))if((g.cloneIds||[]).includes(c.id))add(g.id,g.name||g.id,g.projectId||null);
         return rows.sort((a,b)=>(Number(b.noMention)-Number(a.noMention))||a.name.localeCompare(b.name,'zh-Hans-CN'));
@@ -418,10 +428,31 @@
         if(!Object.keys(prefs).length)delete state.cloneMentionFree[c.id];
         notify();
       },
-      setGroupMd(id,uid,value){requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可编辑 GROUP.md');ensureGovernance(key).groupMd=String(value||'');notify();},
+      groupMd(id,uid){
+        if(!api.canRead(id,uid))fail('无会话访问权限');
+        const key=groupKey(id)||fail('群聊不存在'),thread=state.threads[id],details=state.threadDetails[id];
+        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
+      },
+      setGroupMd(id,uid,value){
+        requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');
+        value=String(value||'');if(unescape(encodeURIComponent(value)).length>10240)fail('内容超出 10240 bytes 限制');
+        const record=state.threads[id]?(state.threadDetails[id]||={id}):ensureGovernance(id);
+        record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify();
+      },
+      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify();},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
+      conversationActivity(id,uid,seedAt=''){
+        if(!api.canReadForwardSource(id,uid))return '';
+        let latest=String(seedAt||'');
+        for(const message of state.messages[id]||[]){if(message.createdAt&&String(message.createdAt)>latest)latest=String(message.createdAt);}
+        return latest;
+      },
+      topicNavigation(id,uid,items){
+        if(!api.canRead(id,uid))return [];
+        return items.filter(t=>state.threads[t.id]===id&&api.canRead(t.id,uid)).map(t=>({id:t.id,pinned:!!state.chatPreferences[uid]?.[t.id]?.top,pinOrder:Number(state.chatPreferences[uid]?.[t.id]?.pinOrder)||0,at:api.conversationActivity(t.id,uid,t.updated_at||t.created_at)})).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||(a.pinned?b.pinOrder-a.pinOrder:b.at.localeCompare(a.at)));
+      },
       conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
       conversationUnread(id,uid,seed=0){const count=state.chatPreferences[uid]?.[id]?.readMessageCount;return count===undefined?seed:Math.max(0,[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length-count);},
       clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify();},
@@ -441,7 +472,12 @@
         requireHuman(uid);if(!id)fail('会话不存在');
         if((state.groups[id]||state.threads[id]||id.startsWith('all:'))&&!api.canRead(id,uid))fail('请先加入群聊');
         if(Object.keys(patch).some(k=>!['mute','top','hidden','restoreOnMention','clearedCount'].includes(k)))fail('未知个人设置');
-        state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],...patch};notify();
+        state.chatPreferences[uid]||={};
+        const previous=state.chatPreferences[uid][id]||{},next={...previous,...patch};
+        if(patch.top===true&&!previous.top)next.pinOrder=Math.max(0,...Object.values(state.chatPreferences[uid]).map(pref=>Number(pref.pinOrder)||0))+1;
+        if(patch.top===false)delete next.pinOrder;
+        if(patch.mute===null)delete next.mute;
+        state.chatPreferences[uid][id]=next;notify();
       },
       visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));},
       setActor(uid){requireHuman(uid);state.actorId=uid;notify();},
@@ -523,8 +559,12 @@
       },
       createProject(id,name,uid,ids,goal,humanIds){requireHuman(uid);if(state.projects[id]||state.groups[id])fail('项目已存在');const clones=selected(uid,ids),humans=[{id:uid,role:'owner'}];(Array.isArray(humanIds)?humanIds:[]).map(canonicalId).forEach(humanId=>{if(!humanId||humanId===uid||humans.some(member=>member.id===humanId))return;requireHuman(humanId);humans.push({id:humanId,role:'member'});});state.projects[id]={id,name,ownerId:uid,humans,cloneIds:clones};agentWelcome(id,goal);notify();return id;},
       createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};if(!pid){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();return id;},
-      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid&&!api.canRead(gid,uid))fail('请先加入父群');state.threads[id]=gid;state.threadDetails[id]={...details,id};if(uid&&api.conversationFollowed(gid,uid)){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();},
-      updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');state.threadDetails[id]={...state.threadDetails[id],...patch,id};notify();},
+      demoStoryGroups(){return [...(state.topicStoryGroups||[])];},
+      threadNameConflict(gid,name,excludeId){const value=String(name||'').trim();const match=Object.entries(state.threads).filter(([id,parent])=>parent===gid&&id!==excludeId&&!state.threadDetails[id]?.deleted).map(([id])=>state.threadDetails[id]).find(t=>String(t?.name||'').trim()===value);return match?JSON.parse(JSON.stringify(match)):null;},
+      validateThreadName(gid,name,excludeId){const value=String(name||'').trim();if(!value)fail('请输入子区名称');if(value.length>30)fail('子区名称不能超过 30 个字');if(value==='主聊天')fail('主聊天为保留名称，请换一个名称');if(api.threadNameConflict(gid,value,excludeId))fail('本群已有同名子区');return value;},
+      canManageThread(id,uid){return api.canRead(id,uid)&&(state.threadDetails[id]?.creator_id===uid||manager(state.threads[id],uid));},
+      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid){requireHuman(uid);if(!api.canRead(gid,uid))fail('请先加入父群');}if(state.threads[id])fail('子区已存在');const name=details.name===undefined?undefined:api.validateThreadName(gid,details.name);state.threads[id]=gid;state.threadDetails[id]={...details,...(name===undefined?{}:{name}),id,...(uid?{creator_id:uid}:{})};if(uid&&name){state.messages[gid]||=[];state.messages[gid].push({id:'topic-created:'+id,kind:'threadcreated',createdAt:details.created_at||new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}),sender:{...person(uid),uid},text:person(uid).name+' 创建了子区「'+name+'」',thread:{id,name,replies:0,participants:[uid]}});}if(uid&&api.conversationFollowed(gid,uid)){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();},
+      updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');if(['name','status','deleted'].some(key=>Object.prototype.hasOwnProperty.call(patch,key))&&!api.canManageThread(id,uid))fail('仅创建者或群管理员可管理子区');const next={...patch};if(next.name!==undefined)next.name=api.validateThreadName(state.threads[id],next.name,id);delete next.creator_id;state.threadDetails[id]={...state.threadDetails[id],...next,id};notify();},
       restoreHiddenOnMention(id,message){
         let changed=false;
         for(const [uid,preferences] of Object.entries(state.chatPreferences)){
@@ -635,6 +675,15 @@
         }
       }
       saved=seed;
+    }
+    // Legacy channels supplied topic metadata only to the view. Seed missing fields
+    // once into the same record used by name validation, history and governance.
+    saved.threadDetails||={};
+    for(const group of [...Object.values(channels).flat(),...orgChannels]){
+      for(const topic of group.threads||[]){
+        if(saved.threads[topic.id]!==group.id)continue;
+        saved.threadDetails[topic.id]={status:1,...topic,...saved.threadDetails[topic.id]};
+      }
     }
     const registeredProjects=new Map(projects.map(project=>[project.id,project]));
     const permissionDemo=root.__EVA_TASK_LINK_PERMISSION_DEMO;
@@ -767,7 +816,7 @@
         saved.groups[manyTopics.id]={id:manyTopics.id,name:manyTopics.name,projectId:'prod',ownerId:bubbleProject.ownerId,humans:bubbleProject.humans.map(p=>({id:p.id,role:'member'})),cloneIds:[],employeeIds:[]};
         saved.messages||={};saved.threadDetails||={};
         const demoMessage=(text,id)=>({kind:'text',text,time:'16:00',fixtureId:'many-topics-v1:'+id,sender:{...saved.people.find(p=>p.id==='u-wangyilin'),uid:'u-wangyilin'}});
-        saved.messages[manyTopics.id]=[demoMessage('本群有 24 个专题子区。顶部箭头可滚动查看，点击标签切换独立聊天；群成员保持一致。',manyTopics.id)];
+        saved.messages[manyTopics.id]=[demoMessage('本群有 12 个专题子区。顶部可横向滚动，点击标签切换独立聊天；群成员保持一致。',manyTopics.id)];
         for(const topic of manyTopics.threads){
           saved.threads[topic.id]=manyTopics.id;
           saved.threadDetails[topic.id]={status:1,...topic,created_at:root.__EVA_DEMO_TIME?.T1};
@@ -899,6 +948,81 @@
       }
       saved.seededRecentPinsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
+    const longTopic=saved.threadDetails?.['supply-many-topic-24'];
+    if(longTopic?.name==='下季度供应商产能与交付计划确认')longTopic.name=manyTopics?.threads.find(t=>t.id===longTopic.id)?.name||longTopic.name;
+    const stories=root.__EVA_TOPIC_STORY_DEMO;
+    if(stories&&saved.topicStoryVersion!==stories.version){
+      saved.topicStoryGroups||=[];
+      const storyMembers=create(saved,undefined,resolveProjectInfo);
+      for(const spec of root.__EVA_MOCK_LAYOUT?.groups||[]){
+        const group=saved.groups[spec.id];if(!group)continue;
+        const topics=Object.entries(saved.threads).filter(([id,parent])=>parent===group.id&&saved.threadDetails[id]?.status===1&&!saved.threadDetails[id]?.deleted&&!saved.chatPreferences?.[saved.actorId]?.[id]?.hidden).map(([id])=>saved.threadDetails[id]);
+        const ai=storyMembers.groupMembers(group.id).find(p=>p.kind==='project-agent');const story=stories.build(group,topics,saved.people,ai);if(!story)continue;
+        const add=(id,rows)=>{const custom=(saved.messages[id]||[]).filter(m=>!String(m.fixtureId||'').startsWith('topic-story:'));saved.messages[id]=[...rows.map((m,index)=>({...m,fixtureId:'topic-story:'+id+':'+index})),...custom];};
+        add(group.id,story.parent);for(const [id,rows] of Object.entries(story.children))add(id,rows);
+        for(const record of story.parent.filter(m=>m.kind==='threadcreated')){const detail=saved.threadDetails[record.thread.id];if(!detail.creator_id){detail.creator_id=record.sender.uid;detail.creator_name=record.sender.name;}}
+        if(!saved.topicStoryGroups.includes(group.id))saved.topicStoryGroups.push(group.id);
+      }
+      saved.topicStoryVersion=stories.version;
+    }
+    const mutedTopicDemo=root.__EVA_MUTED_TOPIC_DEMO;
+    if(mutedTopicDemo&&!saved.seededMutedTopicUnreadV1&&saved.threads[mutedTopicDemo.threadId]===mutedTopicDemo.groupId){
+      saved.chatPreferences||={};saved.chatPreferences[mutedTopicDemo.actorId]||={};
+      const preferences=saved.chatPreferences[mutedTopicDemo.actorId];
+      preferences[mutedTopicDemo.threadId]={...preferences[mutedTopicDemo.threadId],mute:true};
+      saved.messages[mutedTopicDemo.threadId]||=[];
+      for(const [index,entry] of mutedTopicDemo.messages.entries()){
+        const sender=saved.people.find(p=>p.id===entry.senderId);if(!sender)continue;
+        saved.messages[mutedTopicDemo.threadId].push({kind:'text',fixtureId:'muted-topic-unread:'+index,sender:{...sender,uid:sender.id},time:entry.time,text:entry.text});
+      }
+      saved.seededMutedTopicUnreadV1=true;
+    }
+    const topicOrderDemo=root.__EVA_TOPIC_ORDER_DEMO;
+    if(topicOrderDemo&&saved.groups[topicOrderDemo.groupId]&&saved.topicOrderDemoVersion!==topicOrderDemo.version){
+      const actor=topicOrderDemo.actorId,base=Date.parse(root.__EVA_DEMO_TIME.TASK_YESTERDAY);
+      saved.chatPreferences||={};saved.chatPreferences[actor]||={};
+      for(const topic of topicOrderDemo.topics){
+        if(saved.threads[topic.id]!==topicOrderDemo.groupId)continue;
+        const prefs=saved.chatPreferences[actor][topic.id]||{};
+        saved.chatPreferences[actor][topic.id]={top:!!topic.top,...(topic.top?{pinOrder:topic.pinOrder}:{}),mute:!!topic.mute,...prefs};
+        const messages=saved.messages[topic.id]||=[];
+        for(const [index,text] of topic.messages.entries()){
+          const sender=saved.people.find(p=>p.id===(index%2?'u-linxiao':'u-hejing'));if(!sender)continue;
+          const date=new Date(base+(topic.minute+index)*60000);
+          messages.push({kind:'text',fixtureId:'topic-order-v1:'+topic.id+':'+index,text,createdAt:date.toISOString(),time:date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Shanghai'}),sender:{...sender,uid:sender.id}});
+        }
+      }
+      const intro=(saved.messages[topicOrderDemo.groupId]||[]).find(m=>m.fixtureId==='many-topics-v1:'+topicOrderDemo.groupId);
+      if(intro)intro.text='本群按专题分别讨论。采购需求与招标评审是常用入口；紧急保供和交期跟踪正在持续更新。请在对应子区补充材料，影响整体交付的结论再回主聊天同步。';
+      saved.topicOrderDemoVersion=topicOrderDemo.version;
+    }
+    // Retire only the removed built-in examples; keep user-created topics intact.
+    if(manyTopics&&saved.groups[manyTopics.id]&&!saved.seededManyTopicsTwelveV1){
+      const keep=new Set(manyTopics.threads.map(t=>t.id)),removed=new Set();
+      for(const [id,parent] of Object.entries(saved.threads)){
+        if(parent!==manyTopics.id||!/^supply-many-topic-(0[1-9]|1[0-9]|2[0-4])$/.test(id)||keep.has(id))continue;
+        removed.add(id);delete saved.threads[id];delete saved.threadDetails[id];delete saved.messages[id];
+        for(const prefs of Object.values(saved.chatPreferences||{}))delete prefs[id];
+      }
+      saved.messages[manyTopics.id]=(saved.messages[manyTopics.id]||[]).filter(m=>!removed.has(m.thread?.id));
+      saved.seededManyTopicsTwelveV1=true;
+    }
+    // Backfill every existing topic once, including hidden/archived topics and
+    // groups outside the story fixtures. Creation history is not a personal preference.
+    if(!saved.seededTopicCreationRecordsV1){
+      saved.messages||={};
+      for(const [id,gid] of Object.entries(saved.threads||{})){
+        const topic=saved.threadDetails?.[id];
+        const group=saved.groups[gid]||(gid.startsWith('all:')?saved.projects[gid.slice(4)]:null);
+        if(!topic?.name||topic.deleted||!group)continue;
+        const messages=saved.messages[gid]||=[];
+        if(messages.some(m=>m.kind==='threadcreated'&&m.thread?.id===id))continue;
+        const creatorId=topic.creator_id||group.ownerId||group.humans?.[0]?.id;
+        const creator=saved.people.find(p=>p.id===creatorId);if(!creator)continue;
+        messages.unshift({id:'topic-created:'+id,fixtureId:'topic-created-backfill:'+id,kind:'threadcreated',createdAt:topic.created_at||root.__EVA_DEMO_TIME?.T1,time:'09:00',sender:{...creator,uid:creator.id},text:creator.name+' 创建了子区「'+topic.name+'」',thread:{id,name:topic.name,replies:(saved.messages[id]||[]).length,participants:[creator.id]}});
+      }
+      saved.seededTopicCreationRecordsV1=true;
     }
     // 关注为显式状态。一次性把随包演示的非项目会话标记为已关注，保留既有关注内容；
     // 之后用户可以逐个取消关注或重新加入关注。
