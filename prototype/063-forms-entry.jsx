@@ -7,3 +7,4 @@ export {Dialog, Actions, dialogWidths} from "./063-dialog.jsx";
 
 export {dialogText} from "./063-dialog-theme.js";
 
+export {FileDetail,FileConfirmation,FileToolbar,FileRowActions,FileButton,FilePath,FilePreviewActions} from './063-file-controls.jsx';

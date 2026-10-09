@@ -11,15 +11,16 @@ for(const entry of ['project','drive'])test(entry+' 文件标签：选择已有�
   const host=page.locator(entry==='project'?'.eva-project-files':'#eva-drive-root');
   const item=await page.evaluate(()=>{const c=window.__evaGetFileContext();return c.files.list('prod',c.store.actorId()).find(i=>i.parent_id===0&&i.type!=='folder'&&i.type!=='shortcut');});
   const open=async()=>{await host.getByRole('button',{name:'更多操作：'+item.name,exact:true}).click();await page.getByRole('menuitem',{name:'编辑标签',exact:true}).click();};await open();
-  const dialog=page.getByRole('dialog',{name:'编辑标签',exact:true}),input=dialog.getByRole('combobox',{name:'输入或选择标签',exact:true});
-  while(await dialog.getByRole('button',{name:/^移除标签 /}).count())await dialog.getByRole('button',{name:/^移除标签 /}).first().click();
-  const existing=dialog.getByRole('option').first();const existingName=await existing.innerText();await existing.click();
-  await input.fill('FormTag');await input.press('Enter');await dialog.getByRole('button',{name:'移除标签 FormTag',exact:true}).waitFor();
+  const dialog=page.getByRole('dialog',{name:'编辑标签',exact:true}),select=dialog.getByRole('combobox',{name:'输入或选择标签',exact:true}),input=select.locator('input');
+  while(await dialog.locator('.semi-tag-close').count())await dialog.locator('.semi-tag-close').first().click();
+  await select.click();
+  const existing=page.getByRole('option').first();const existingName=await existing.innerText();await existing.click();
+  await input.fill('FormTag');await input.press('Enter');await dialog.locator('.semi-tag').filter({hasText:'FormTag'}).locator('.semi-tag-close').waitFor();
   await input.fill('formtag');await input.press('Enter');await dialog.getByText('该标签已选择',{exact:true}).waitFor();
   await input.fill('保存待确认标签');await dialog.getByRole('button',{name:'保存',exact:true}).click();await dialog.waitFor({state:'hidden'});
   const read=()=>page.evaluate(id=>{const c=window.__evaGetFileContext();return c.files.snapshot(c.store.actorId()).find(i=>i.id===id).tags;},item.id);
   assert.deepEqual(await read(),[existingName,'FormTag','保存待确认标签']);await open();
-  await dialog.getByRole('button',{name:'移除标签 FormTag',exact:true}).click();await dialog.getByRole('button',{name:'取消',exact:true}).click();await dialog.waitFor({state:'hidden'});assert.ok((await read()).includes('FormTag'));
+  await dialog.locator('.semi-tag').filter({hasText:'FormTag'}).locator('.semi-tag-close').click();await dialog.getByRole('button',{name:'取消',exact:true}).click();await dialog.waitFor({state:'hidden'});assert.ok((await read()).includes('FormTag'));
   await page.reload();await host.waitFor();assert.deepEqual(await read(),[existingName,'FormTag','保存待确认标签']);assert.deepEqual(errors,[]);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });

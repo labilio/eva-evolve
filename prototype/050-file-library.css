@@ -137,10 +137,6 @@ body.eva-message-hierarchy-ready .eva-drive__scroll,
   flex: 0 0 auto;
 }
 
-.eva-drive__scroll:has(.eva-drive__external-add[open]) {
-  overflow: visible;
-}
-
 body.eva-message-hierarchy-ready .eva-drive__actions,
 .eva-drive__actions {
   position: relative;
@@ -224,202 +220,12 @@ body.eva-message-hierarchy-ready .eva-drive__action--primary:hover {
   justify-content: center;
 }
 
-.eva-drive__external-add {
-  position: relative;
-}
-
-.eva-drive__external-add[open] {
-  z-index: 100;
-}
-
-.eva-drive__external-add > summary {
-  list-style: none;
-}
-
-.eva-drive__external-add > summary::-webkit-details-marker {
-  display: none;
-}
-
-.eva-drive__external-add > summary > .eva-drive-icon:last-child,
-.eva-drive__external-add > summary > .eva-lucide-host:last-child .eva-drive-icon {
-  width: 12px;
-  height: 12px;
-  transition: transform 120ms ease;
-}
-
-.eva-drive__external-add[open] > summary {
-  border-color: var(--gds-color-border-focus, #1563eb);
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__external-add[open] > summary > .eva-drive-icon:last-child,
-.eva-drive__external-add[open] > summary > .eva-lucide-host:last-child .eva-drive-icon {
-  transform: rotate(180deg);
-}
-
-.eva-drive__external-add-menu {
-  position: absolute;
-  z-index: 90;
-  top: calc(100% + 6px);
-  left: 0;
-  box-sizing: border-box;
-  width: min(264px, calc(100vw - 24px));
-  padding: 5px;
-  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
-  border-radius: var(--gds-radius-chip, 12px);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--gds-color-surface-primary, #fff);
-  box-shadow: var(--gds-shadow-floating, 0 16px 48px -8px rgb(0 0 0 / 7%));
-}
-
-@media (max-width: 760px) {
-  .eva-drive__external-add-menu {
-    right: 0;
-    left: auto;
-    width: min(240px, calc(100vw - 24px));
-  }
-}
-
-.eva-drive__external-add-menu > button {
-  width: 100%;
-  min-height: 54px;
-  padding: 8px;
-  border: 0;
-  border-radius: var(--gds-radius-control, 8px);
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.eva-drive__external-add-menu > button:hover,
-.eva-drive__external-add-menu > button:focus-visible {
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__external-add-menu > button:focus-visible,
-.eva-drive__external-add > summary:focus-visible {
-  outline: 2px solid var(--gds-color-border-focus, #1563eb);
-  outline-offset: 2px;
-}
-
-.eva-drive__external-add-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--gds-radius-control, 8px);
-  display: grid;
-  place-items: center;
-  color: var(--gds-color-action-primary, #1563eb);
-  background: rgb(21 99 235 / 8%);
-}
-
-.eva-drive__external-add-icon .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.eva-drive__external-add-menu > button > span:last-child {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.eva-drive__external-add-menu strong,
-.eva-drive__external-add-menu small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.eva-drive__external-add-menu strong {
-  font-size: var(--gds-type-label-font-size, 14px);
-  font-weight: var(--gds-font-weight-medium, 500);
-}
-
-.eva-drive__external-add-menu small {
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: var(--gds-type-caption-font-size, 12px);
-  line-height: var(--gds-type-caption-line-height, 16px);
-}
-
-.eva-drive__breadcrumbs {
-  min-height: 26px;
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-}
-
 .eva-drive__pathbar {
   min-height: 30px;
   margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.eva-drive__pathbar .eva-drive__breadcrumbs {
-  min-width: 0;
-  min-height: 26px;
-  margin-top: 0;
-  overflow: hidden;
-}
-
-.eva-drive__back-button {
-  min-height: 28px;
-  padding: 0 9px 0 7px;
-  border: 1px solid var(--gds-color-border-default, #ccc);
-  border-radius: var(--gds-radius-control, 8px);
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 4px;
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: var(--gds-color-surface-primary, #fff);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.eva-drive__back-button:hover {
-  border-color: var(--gds-color-text-secondary-accessible, #6b7280);
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__back-button .eva-drive-icon {
-  width: 14px;
-  height: 14px;
-  transform: rotate(180deg);
-}
-
-.eva-drive__breadcrumbs button {
-  padding: 2px 4px;
-  border: 0;
-  border-radius: var(--gds-radius-small, 4px);
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.eva-drive__breadcrumbs button:not([aria-current="page"]):hover {
-  color: var(--gds-color-action-primary, #1563eb);
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__breadcrumbs button[aria-current="page"] {
-  color: var(--gds-color-text-primary, #1e1e1e);
-  cursor: default;
 }
 
 body.eva-message-hierarchy-ready .eva-drive__table--with-source,
@@ -617,8 +423,7 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 }
 
 .eva-file-tag,
-.eva-file-type,
-.eva-file-readonly {
+.eva-file-type {
   box-sizing: border-box;
   max-width: 100%;
   min-height: 20px;
@@ -751,32 +556,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   font-size: 11px;
 }
 
-.eva-drive__row-more,
-.eva-drive__pin-button {
-  width: 28px;
-  min-width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--gds-radius-control, 8px);
-  display: grid;
-  place-items: center;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  background: transparent;
-  cursor: pointer;
-}
-
-.eva-drive__row-more:hover,
-.eva-drive__row-more[aria-expanded="true"] {
-  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
-}
-
-.eva-drive__row-more .eva-drive-icon,
-.eva-drive__pin-button .eva-drive-icon {
-  width: 18px;
-  height: 18px;
-}
-
 .eva-drive__pin-button {
   opacity: 0;
   transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
@@ -789,25 +568,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   opacity: 1;
 }
 
-.eva-drive__pin-button:hover,
-.eva-drive__pin-button:focus-visible {
-  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
-}
-
-.eva-drive__pin-button.is-pinned {
-  color: var(--eva-action-primary);
-}
-
-.eva-drive__pin-button.is-pinned .eva-drive-icon {
-  fill: currentColor;
-}
-
-.eva-drive__pin-button:focus-visible,
-.eva-drive__row-more:focus-visible {
-  outline: 2px solid var(--eva-border-focus);
-  outline-offset: 2px;
-}
-
 .eva-drive__row-actions {
   position: relative;
   width: 68px;
@@ -816,48 +576,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   align-items: center;
   gap: 4px;
   overflow: visible !important;
-}
-
-.eva-drive__row-menu {
-  position: fixed;
-  z-index: 320;
-  box-sizing: border-box;
-  width: 168px;
-  max-height: calc(100vh - 24px);
-  padding: 4px;
-  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
-  border-radius: 10px;
-  display: flex !important;
-  flex-direction: column;
-  align-items: stretch !important;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: var(--gds-color-surface-primary, #fff);
-  box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
-}
-
-.eva-drive__row-menu > button {
-  width: 100%;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 7px;
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: transparent;
-  font: inherit;
-  font-size: 13px;
-  text-align: left;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.eva-drive__row-menu > button:hover {
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__row-menu > button.is-danger {
-  color: #c53b3b;
 }
 
 .eva-drive-projects {
@@ -990,35 +708,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   gap: 4px;
 }
 
-.eva-file-preview-sidebar__head button {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--gds-radius-control, 8px);
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: transparent;
-  font: inherit;
-  font-size: 20px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.eva-file-preview-sidebar__actions .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.eva-file-preview-sidebar__head button:hover {
-  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
-}
-
-.eva-file-preview-sidebar__head button:focus-visible {
-  outline: 2px solid var(--gds-color-action-primary);
-  outline-offset: 2px;
-}
-
 .eva-file-preview-sidebar.is-fullscreen {
   position: fixed;
   z-index: 950;
@@ -1061,33 +750,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   gap: 3px;
 }
 
-.eva-file-detail__copy-link {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--gds-radius-control, 8px);
-  display: grid;
-  place-items: center;
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: transparent;
-  cursor: pointer;
-}
-
-.eva-file-detail__copy-link:hover {
-  background: var(--gds-color-overlay-hover, rgb(0 0 0 / 5%));
-}
-
-.eva-file-detail__copy-link:focus-visible {
-  outline: var(--gds-border-focus, 2px) solid var(--gds-color-border-focus, #1563eb);
-  outline-offset: 2px;
-}
-
-.eva-file-detail__copy-link .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
 .eva-file-detail__identity strong,
 .eva-file-detail__identity small {
   overflow: hidden;
@@ -1113,36 +775,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   background: var(--gds-color-surface-subtle, #f5f5f5);
 }
 
-.eva-drive__management-actions {
-  margin: 12px 0 4px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.eva-drive__management-actions button,
-.eva-drive-dialog button {
-  min-height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--gds-color-border-default, #ccc);
-  border-radius: var(--gds-radius-control, 8px);
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: var(--gds-color-surface-primary, #fff);
-  font: inherit;
-  cursor: pointer;
-}
-
-.eva-drive__management-actions button:hover,
-.eva-drive-dialog button:hover {
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-drive__management-actions button.is-danger,
-.eva-drive-dialog button.is-danger {
-  border-color: #f0b8b8;
-  color: #c53b3b;
-}
-
 .eva-file-detail__section {
   margin-top: 18px;
   padding-top: 16px;
@@ -1163,34 +795,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   color: var(--gds-color-text-primary, #1e1e1e);
   font-size: 13px;
   font-weight: var(--gds-font-weight-semibold, 600);
-}
-
-.eva-file-detail__section-head button {
-  min-height: 26px;
-  padding: 0 7px;
-  border: 0;
-  border-radius: var(--gds-radius-control, 8px);
-  color: var(--gds-color-action-primary, #1563eb);
-  background: transparent;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.eva-file-detail__section-head button:hover {
-  background: rgb(21 99 235 / 7%);
-}
-
-.eva-file-readonly {
-  color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
-  background: var(--gds-color-surface-subtle, #f5f5f5);
-}
-
-.eva-file-detail__classification {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
 }
 
 .eva-file-relations {
@@ -1293,79 +897,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   color: var(--gds-color-text-secondary, #4a4a4a);
   font-size: var(--gds-type-caption-font-size, 12px);
   overflow-wrap: anywhere;
-}
-
-.eva-drive-dialog {
-  position: absolute;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-.eva-drive-dialog .eva-drive-dialog__mask,
-.eva-drive-dialog .eva-drive-dialog__mask:hover {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: rgb(15 23 42 / 28%);
-  cursor: default;
-}
-
-.eva-drive-dialog__panel {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100% - 48px);
-  overflow: hidden;
-  width: min(420px, calc(100% - 40px));
-  border: 1px solid var(--gds-color-border-subtle, #dbdbdb);
-  border-radius: var(--gds-radius-window, 20px);
-  background: var(--gds-color-surface-primary, #fff);
-  box-shadow: var(--gds-shadow-floating, 0 12px 30px rgb(0 0 0 / 15%));
-}
-
-.eva-drive-dialog__panel header,
-.eva-drive-dialog__panel footer {
-  flex-shrink: 0;
-  min-height: 52px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-}
-
-.eva-drive-dialog__panel header {
-  border-bottom: 1px solid var(--gds-color-border-faint, #ebebeb);
-}
-
-.eva-drive-dialog__panel header h2 {
-  margin: 0;
-  flex: 1;
-  font-size: var(--gds-type-header-font-size, 16px);
-}
-
-.eva-drive-dialog__panel header button {
-  width: 32px;
-  padding: 0;
-  border: 0;
-  font-size: 20px;
-}
-
-.eva-drive-dialog__body {
-  min-height: 0;
-  overflow: auto;
-  padding: 24px;
-}
-
-.eva-drive-dialog__body p {
-  margin: 0;
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  font-size: var(--gds-type-body-font-size, 14px);
-  line-height: var(--gds-type-body-line-height, 22px);
 }
 
 .eva-file-preview-sidebar__frame {
@@ -1868,22 +1399,8 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   text-align: center;
 }
 
-.eva-file-detail-dialog__panel {
-  width: min(720px, calc(100% - 48px));
-}
-
-.eva-file-detail-dialog__panel .eva-drive-dialog__body {
-  max-height: min(680px, calc(100vh - 180px));
-}
-
 .eva-file-detail-dialog__content {
   font: 400 14px/22px var(--eva-font-sans, "PingFang SC", sans-serif);
-}
-
-.eva-file-detail-dialog__content .eva-drive__inspector-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
 }
 
 .eva-shortcut-source {
@@ -1928,20 +1445,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   font-size: var(--gds-type-caption-font-size, 12px);
 }
 
-.eva-drive-dialog__field input:not(.semi-input),
-.eva-drive-dialog__field select,
-.eva-drive-dialog__field textarea {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--gds-color-border-default, #ccc);
-  border-radius: var(--gds-radius-control, 8px);
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: var(--gds-color-surface-primary, #fff);
-  font: inherit;
-}
-
 .eva-external-link-warning {
   margin-top: 16px;
   padding: 10px 12px;
@@ -1962,165 +1465,10 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   flex: 0 0 auto;
 }
 
-.eva-drive-dialog__field textarea {
-  min-height: 80px;
-  padding: 9px 10px;
-  line-height: 20px;
-  resize: vertical;
-}
-
-.eva-tag-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.eva-tag-editor__label {
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  font-size: var(--gds-type-caption-font-size, 12px);
-}
-
-.eva-tag-editor__selected {
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.eva-tag-editor__chip {
-  min-width: 0;
-  height: 26px;
-  padding: 0 4px 0 9px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  color: var(--gds-color-text-secondary, #4a4a4a);
-  background: var(--gds-color-surface-subtle, #f2f2f2);
-  font-size: 12px;
-}
-
-.eva-tag-editor__chip > span {
-  overflow: hidden;
-  max-width: 180px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.eva-tag-editor__chip > button {
-  width: 20px;
-  height: 20px;
-  min-height: 20px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  background: transparent;
-  line-height: 18px;
-  cursor: pointer;
-}
-
-.eva-tag-editor__chip > button:hover {
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: var(--gds-color-surface-hover, #e8e8e8);
-}
-
-.eva-tag-editor__control {
-  min-height: 38px;
-  border: 1px solid var(--gds-color-border-default, #ccc);
-  border-radius: var(--gds-radius-control, 8px);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
-  align-items: center;
-  background: var(--gds-color-surface-primary, #fff);
-}
-
-.eva-tag-editor__control:focus-within {
-  border-color: var(--gds-color-brand-primary, #1769e0);
-  box-shadow: 0 0 0 2px rgba(23, 105, 224, .12);
-}
-
-.eva-tag-editor__control > input {
-  min-width: 0;
-  height: 36px;
-  padding: 0 10px;
-  border: 0;
-  outline: 0;
-  color: var(--gds-color-text-primary, #1e1e1e);
-  background: transparent;
-  font: inherit;
-}
-
-.eva-tag-editor__toggle {
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
-  padding: 8px;
-  border: 0 !important;
-  color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
-  background: transparent !important;
-  cursor: pointer;
-}
-
-.eva-tag-editor__toggle .eva-drive-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.eva-tag-editor__dropdown {
-  max-height: 144px;
-  padding: 4px;
-  border: 1px solid var(--gds-color-border-faint, #ebebeb);
-  border-radius: var(--gds-radius-control, 8px);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  background: var(--gds-color-surface-primary, #fff);
-  box-shadow: var(--gds-shadow-menu, 0 8px 24px rgba(0, 0, 0, .08));
-}
-
-.eva-tag-editor__option {
-  min-height: 32px;
-  padding: 0 9px;
-  border: 0 !important;
-  border-radius: 6px !important;
-  color: var(--gds-color-text-primary, #1e1e1e) !important;
-  background: transparent !important;
-  text-align: left;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.eva-tag-editor__option:hover,
-.eva-tag-editor__option:focus-visible {
-  background: var(--gds-color-surface-subtle, #f5f5f5) !important;
-  outline: 0;
-}
-
-.eva-tag-editor__empty {
-  padding: 6px 8px;
-  color: var(--gds-color-text-secondary-accessible, #6b7280);
-  font-size: 12px;
-}
-
 .eva-drive-dialog__hint {
   margin-top: 10px !important;
   color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
   font-size: var(--gds-type-caption-font-size, 12px) !important;
-}
-
-.eva-drive-dialog__panel footer {
-  justify-content: flex-end;
-  gap: 8px;
-  border-top: 1px solid var(--gds-color-border-faint, #ebebeb);
-}
-
-.eva-drive-dialog button.is-primary {
-  border-color: var(--eva-action-primary-solid);
-  color: var(--eva-action-primary-solid-text);
-  background: var(--eva-action-primary-solid);
 }
 
 /* Project > Team Files uses the same file primitives without the global space tree. */
@@ -2178,11 +1526,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   white-space: nowrap;
 }
 
-.eva-project-files__trash-toggle.eva-iconbtn .eva-drive-icon {
-  width: var(--gds-icon-size-content, 16px);
-  height: var(--gds-icon-size-content, 16px);
-}
-
 .eva-project-files__trash-toggle + .eva-drive__side-search {
   margin-left: 0;
 }
@@ -2199,11 +1542,6 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
   margin: 0 24px 24px;
 }
 
-.eva-project-files > .eva-drive__breadcrumbs {
-  flex: 0 0 auto;
-  margin: 0 24px 10px;
-}
-
 .eva-project-files > .eva-drive__pathbar {
   flex: 0 0 auto;
   margin: 0 24px 10px;
@@ -2215,32 +1553,6 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
   place-items: center;
   color: var(--gds-color-text-secondary-accessible, #6b7280);
   font-size: var(--gds-type-body-font-size, 14px);
-}
-
-.eva-file-detail-dialog__content .eva-drive__inspector-actions > :last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-}
-
-.eva-file-detail-dialog__content .eva-drive__management-actions {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.eva-project-files-dialog {
-  position: absolute;
-  z-index: 110;
-}
-
-.eva-project-files-dialog.eva-file-detail-dialog {
-  z-index: 100;
-}
-
-.eva-project-files-dialog__panel--wide {
-  width: min(900px, calc(100% - 48px));
-}
-
-.eva-project-files-dialog__panel--wide .eva-drive-dialog__body {
-  max-height: min(680px, calc(100vh - 180px));
-  overflow: auto;
 }
 
 .eva-project-files__error {
@@ -2387,17 +1699,19 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
 .eva-drive__table-head { position: sticky; top: 0; z-index: 2; font: 500 12px/16px var(--eva-font-sans); }
 .eva-drive__row { font: 400 14px/22px var(--eva-font-sans); }
 .eva-drive__table:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
-.eva-drive-dialog__panel header h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 16px/24px var(--eva-font-sans); }
 .eva-drive-dialog__field > span { font: 500 14px/22px var(--eva-font-sans); color: var(--eva-text-primary); }
-.eva-drive-dialog__field :is(input:not(.semi-input),select,textarea):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
 .eva-drive__meta :is(dt,dd) { font: 400 12px/16px var(--eva-font-sans); }
-@media (prefers-reduced-motion: reduce) { .eva-drive__inspector, .eva-drive__pin-button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .eva-drive__pin-button { transition: none; } }
 
 /* Native Form owns validation; preserve the existing file dialog geometry. */
 .eva-file-name-form.semi-form-vertical .semi-form-field { padding: 0; }
 .eva-file-name-form .semi-form-field-main { width: 100%; }
 
-
-.eva-file-form .eva-tag-editor__control .semi-input-wrapper { height:36px;border:0;border-radius:0;background:transparent;box-shadow:none;outline:0; }
-.eva-file-form .eva-tag-editor__control .semi-input { height:36px; }
-.eva-file-form .eva-tag-editor__option { justify-content:flex-start;height:32px; }
+/* Shared Semi controls own paint and states; file layouts only own geometry. */
+.eva-file-controls-toolbar,.eva-file-controls-tags { display:flex;align-items:center;gap:8px; }
+.eva-file-controls-row { display:flex;align-items:center;gap:4px; }
+.eva-file-controls-actions,.eva-file-controls-management { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+.eva-file-controls-actions { margin-top:20px; }
+.eva-file-controls-actions > :last-child:nth-child(odd) { grid-column:1 / -1; }
+.eva-file-controls-management { margin:12px 0 4px; }
+.eva-file-controls-tags { flex-wrap:wrap; }

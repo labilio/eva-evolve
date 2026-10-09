@@ -20,7 +20,7 @@ test('点击外链行空白处打开原链接，文件夹行进入目录，回�
  function click(resource,scope){
   const state={driveScope:scope};let opened=null;
   const row={dataset:{resourceId:resource.id}};
-  vm.runInNewContext(source.slice(start,end)+';handleDriveClick(event);',{state,event:{target:{closest:selector=>selector==='[data-resource-id]'?row:null}},fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[resource],resolveFile:()=>resource}}),selectedResource:()=>null,closeRowMenu:()=>{},renderDrive:()=>{},openExternalResource:()=>{opened='external';},showToast:()=>{}});
+  vm.runInNewContext(source.slice(start,end)+';handleDriveClick(event);',{state,event:{target:{closest:selector=>selector==='[data-resource-id]'?row:null}},fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[resource],resolveFile:()=>resource}}),selectedResource:()=>null,captureTableScroll:()=>{},renderDrive:()=>{},openExternalResource:()=>{opened='external';},showToast:()=>{}});
   return {opened,preview:state.previewId,parentId:state.parentId};
  }
  assert.deepEqual(click({id:'l',type:'external_link'},'workspace'),{opened:'external',preview:undefined,parentId:undefined});

@@ -1,38 +1,31 @@
-import React, {useEffect, useId, useRef, useState} from 'react';
-import Button from '@douyinfe/semi-ui/lib/es/button';
+import React, {useState,useId} from 'react';
 import {Form, withField, useSubmission, SubmissionError} from './063-forms.jsx';
+import {EvaFormSelect,EvaSelect} from './063-select.jsx';
 import {dialogText} from './063-dialog-theme.js';
 import {Dialog, Actions} from './063-dialog.jsx';
 
 export const fileFormTypes = ['new-folder','rename','external-link','external-folder','edit-external-link','move','create-shortcut','tags'];
-const FileIcon = React.memo(function FileIcon({name}) {
-  return <span className="eva-lucide-host" dangerouslySetInnerHTML={{__html:window.__evaLucide(name,{className:'eva-drive-icon'})}}/>;
-});
+import {EvaLucideIcon as FileIcon} from './063-lucide-icon.jsx';
 const icon = name => <FileIcon name={name}/>;
 
-// Keep the established inline tag-picker layout, with one shared business control.
-// Values and errors belong to Semi; only expansion belongs to this component.
+// Semi owns selection, tags, keyboard navigation and popup lifecycle. The file
+// domain retains its canonical spelling, 20-character limit and duplicate rule.
 const FileTags = withField(function FileTags({value=[],onChange,api,draft='',availableTags,error}) {
-  const [open,setOpen]=useState(true),host=useRef(null),expanded=useRef(open),id=useId();expanded.current=open;
-  useEffect(()=>window.EvaPopupDismiss.watch({id:'file-tags-'+id,isOpen:()=>expanded.current&&!!host.current?.isConnected,keep:()=>host.current,close:()=>setOpen(false)}),[id]);
-  const suggestions=availableTags.filter(tag=>!value.some(selected=>selected.toLowerCase()===tag.toLowerCase())&&tag.toLowerCase().includes(draft.trim().toLowerCase()));
-  const add=raw=>{
-    const input=String(raw??draft).trim().slice(0,20),tag=availableTags.find(item=>item.toLowerCase()===input.toLowerCase())||input;
-    if(!tag){api.setError('tagInput','请输入标签名称');return;}
-    if(value.some(item=>item.toLowerCase()===tag.toLowerCase())){api.setValue('tagInput','');api.setError('tagInput','该标签已选择');return;}
-    if(value.length>=8){api.setError('tagInput','每个文件最多添加 8 个标签');return;}
-    onChange([...value,tag]);api.setValue('tagInput','');api.setError('tagInput',undefined);setOpen(true);
-  };
-  return <div className="eva-tag-editor" ref={host}>
-    <span className="eva-tag-editor__label">自定义标签</span>
-    <div className="eva-tag-editor__selected">{value.length?value.map(tag=><span className="eva-tag-editor__chip" key={tag}><span>{tag}</span><Button htmlType="button" type="tertiary" theme="borderless" aria-label={'移除标签 '+tag} onClick={()=>{onChange(value.filter(item=>item!==tag));api.setError('tagInput',undefined);}}>{icon('x')}</Button></span>):<span className="eva-tag-editor__empty">暂未选择标签</span>}</div>
-    <div className="eva-tag-editor__control">
-      <Form.Input field="tagInput" pure validator={()=>''} autoFocus maxLength={20} placeholder="输入或选择标签" role="combobox" aria-label="输入或选择标签" aria-expanded={open} aria-controls={'file-tag-options-'+id} autoComplete="off"
-        onFocus={()=>setOpen(true)} onChange={()=>{api.setError('tagInput',undefined);setOpen(true);}}
-        onKeyDown={event=>{if(event.key==='Enter'&&!event.nativeEvent.isComposing){event.preventDefault();event.stopPropagation();add();}}}/>
-      <Button className="eva-tag-editor__toggle" htmlType="button" type="tertiary" theme="borderless" aria-label={open?'收起已有标签':'展开已有标签'} onClick={()=>setOpen(!open)}>{icon('chevron-down')}</Button>
-    </div>
-    {open&&<div id={'file-tag-options-'+id} className="eva-tag-editor__dropdown" role="listbox" aria-label="当前文件库已有标签">{suggestions.length?suggestions.map(tag=><Button className="eva-tag-editor__option" htmlType="button" type="tertiary" theme="borderless" role="option" key={tag} onClick={()=>add(tag)}>{tag}</Button>):<span className="eva-tag-editor__empty">没有匹配标签，按回车新建</span>}</div>}
+  const canonical=raw=>{const text=String(raw).trim().slice(0,20);return availableTags.find(tag=>tag.toLowerCase()===text.toLowerCase())||text;};
+  const options=Array.from(new Set([...availableTags,...value])).map(tag=>({value:tag,label:tag}));
+  const labelId=useId();
+  return <div onKeyDownCapture={event=>{
+    if(event.key!=='Enter'||event.nativeEvent.isComposing)return;
+    const tag=canonical(draft);
+    if(tag&&value.some(item=>item.toLowerCase()===tag.toLowerCase())){event.preventDefault();event.stopPropagation();api.setError('tagInput','该标签已选择');}
+  }}>
+    <span id={labelId} hidden>输入或选择标签</span>
+    <EvaSelect multiple filter allowCreate max={8} value={value} optionList={options} style={{width:'100%'}}
+      aria-labelledby={labelId} placeholder="输入或选择标签" motion={false}
+      renderCreateItem={input=>'创建标签 '+input}
+      onSearch={(text,event)=>{if(!text&&event?.type!=='change'&&event?.type!=='input')return;api.setValue('tagInput',text);api.setError('tagInput',undefined);}}
+      onChange={next=>{onChange(Array.from(new Set(next.map(canonical))).filter(Boolean));api.setValue('tagInput','');api.setError('tagInput',undefined);}}
+      />
     <Form.ErrorMessage error={error} errorMessageId="tagInput-errormessage"/>
   </div>;
 });
@@ -74,7 +67,7 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
   const nameId = external ? prefix+'-external-name' : project ? prefix+'-dialog-value' : prefix+'-name';
   const urlId = prefix+'-external-url';
   const field = (label,id,control) => <div className="eva-drive-dialog__field"><span id={id+'-label'} style={dialogText.section}><label htmlFor={id}>{label}</label></span>{control}</div>;
-  const select = (label,id,fieldName,options,onChange) => field(label,id,<Form.Select field={fieldName} id={id} noLabel optionList={options} style={{width:'100%'}} onChange={onChange}/>);
+  const select = (label,id,fieldName,options,onChange) => field(label,id,<EvaFormSelect field={fieldName} id={id} noLabel optionList={options} style={{width:'100%'}} onChange={onChange}/>);
   const noTarget = type==='create-shortcut'&&!spaces.length;
   return <Dialog visible selectInitialText={type==='rename'} size="compact" title={title} className="eva-file-dialog" onCancel={onClose}
     footer={<Actions onCancel={onClose} cancelLabel={noTarget?'关闭':'取消'} submitLabel={noTarget?null:confirmation} form={submission.formProps.id} busy={submission.busy}/> }>
@@ -98,6 +91,7 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
             <p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>快捷方式不复制文件，也不会向目标文件库成员授予源文件权限{project?'':'。'}</p>
           </>)}
           {type==='tags'&&<>
+            <Form.Input field="tagInput" type="hidden" noLabel noErrorMessage fieldStyle={{display:'none'}}/>
             <FileTags field="tags" noLabel api={api} draft={values.tagInput||''} availableTags={availableTags} error={formState.errors?.tagInput}
               rules={[{type:'array',max:8,message:'每个文件最多添加 8 个标签'}]}/>
             <p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>

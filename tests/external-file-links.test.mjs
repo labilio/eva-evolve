@@ -159,10 +159,11 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   const project = fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js', import.meta.url), 'utf8');
   const styles = fs.readFileSync(new URL('../prototype/050-file-library.css', import.meta.url), 'utf8');
   const shared = fs.readFileSync(new URL('../prototype/063-file-form.jsx', import.meta.url), 'utf8');
+  const controls = fs.readFileSync(new URL('../prototype/063-file-controls.jsx', import.meta.url), 'utf8');
   const samples = fs.readFileSync(new URL('../prototype/009-1-data-drive.js', import.meta.url), 'utf8');
 
   for (const source of [drive, project]) {
-    assert.match(source, /添加外部资源/);
+    assert.match(source, /FileToolbar/);assert.match(controls, /添加外部资源/);
     assert.match(source, /外部链接/);
     assert.match(source, /外部文件夹/);
     assert.match(source, /FileForm|showFileForm/);
@@ -174,8 +175,8 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
     assert.match(source, /!isExternal[^\n]*canOpen[^\n]*files\.can\('download'/);
     assert.doesNotMatch(source, /普通外部链接|链接名称/);
   }
-  assert.match(drive, /data-drive-action="add-external-link"[\s\S]*data-drive-action="add-external-folder"/);
-  assert.match(project, /setDialog\(\{type:'external-link'[\s\S]*setDialog\(\{type:'external-folder'/);
+  assert.match(drive, /'external-link':'add-external-link'/);assert.match(drive, /'external-folder':'add-external-folder'/);
+  assert.match(project, /setDialog\(\{type:name/);
   assert.match(shared, /folder\?'文件夹名称':'文件名称'/);
   assert.match(shared, /folder\?'文件夹链接':'文件链接'/);
   assert.match(shared, /field="name"/);
@@ -186,17 +187,11 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   }
   assert.doesNotMatch(styles, /\.eva-external-link-detection/);
   for (const source of [drive, project]) assert.doesNotMatch(source, /个人空间|项目空间|文件空间|目标空间|当前空间|来源空间|空间根目录/);
-  assert.match(drive, /data-drive-action="toggle-external-add"/);
-  assert.match(drive, /data-drive-action="add-external-folder"/);
-  assert.match(drive, /data-drive-action="add-external-link"/);
   assert.match(drive, /#\/collab\?evaProject=/);
   assert.match(drive, /evaTab=files/);
-  assert.match(project, /type:'external-folder'/);
-  assert.match(project, /type:'external-link'/);
   assert.match(styles, /\.eva-drive__file-mark\.is-external-folder/);
-  assert.match(styles, /\.eva-drive__scroll:has\(\.eva-drive__external-add\[open\]\)[\s\S]*overflow:\s*visible/);
-  assert.match(styles, /\.eva-drive__external-add\[open\][\s\S]*z-index/);
-  assert.match(styles, /\.eva-drive__external-add-menu/);
+  assert.match(controls, /<Dropdown[^>]*position="bottomLeft"/);
+  assert.match(controls, /onAction\('external-link'\)/);assert.match(controls, /onAction\('external-folder'\)/);
   assert.match(styles, /\.eva-drive__file-mark\.is-external-link/);
   assert.match(samples, /__EVA_EXTERNAL_LINK_SAMPLES/);
   assert.match(samples, /prod-feishu-docs-link/);

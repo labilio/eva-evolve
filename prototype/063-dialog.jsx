@@ -4,7 +4,7 @@ import Button from '@douyinfe/semi-ui/lib/es/button';
 import {dialogText} from './063-dialog-theme.js';
 import {DialogContent} from './063-dialog-focus.jsx';
 
-export const dialogWidths = Object.freeze({compact:420,standard:480,wide:680,compose:600,preview:760,editor:920});
+export const dialogWidths = Object.freeze({compact:420,standard:480,wide:680,fileDetail:720,compose:600,preview:760,editor:920});
 
 // One native Semi modal policy. Business callers choose a size, content and actions.
 // compose/editor retain their existing custom content composition, not a second modal.
