@@ -14,24 +14,24 @@ try{
  await page.goto(url);await openGroup('合规与合同');
  const missingRecords=await page.evaluate(()=>{const s=window.__topicStore.snapshot();return Object.entries(s.threads).filter(([id,gid])=>s.threadDetails[id]?.name&&!s.threadDetails[id]?.deleted&&(s.messages[gid]||[]).filter(m=>m.kind==='threadcreated'&&m.thread?.id===id).length!==1).map(([id,gid])=>({id,gid}));});
  assert.deepEqual(missingRecords,[],'每个群的每个子区都有唯一创建记录');
- await page.goto(url+'?evaDM=supply-many-topics-demo');await page.waitForFunction(()=>document.querySelectorAll('.wk-thread-created-card').length===24);
+ await page.goto(url+'?evaDM=supply-many-topics-demo');await page.waitForFunction(()=>document.querySelectorAll('.wk-thread-created-card').length===12);
  await page.locator('.wk-thread-created-card').first().click();await page.waitForFunction(()=>document.querySelector('[role=tab][aria-selected=true] [data-eva-topic-id]')?.dataset.evaTopicId!=='supply-many-topics-demo');
  await openGroup('合规与合同');
 
  const nav=page.getByRole('navigation',{name:'群聊子区'}),tabs=nav.getByRole('tab'),plus=nav.getByRole('button',{name:'新建子区',exact:true});
  assert.equal(await page.locator('.wk-thread-created-card').count(),3);
- const firstId=await tabs.nth(1).locator('[data-eva-topic-id]').getAttribute('data-eva-topic-id');
- await page.locator('.wk-thread-created-card').first().click();assert.equal(await tabs.nth(1).getAttribute('aria-selected'),'true');
+ const firstId=await tabs.filter({hasText:'新供应商准入复核'}).locator('[data-eva-topic-id]').getAttribute('data-eva-topic-id');
+ await page.locator('.wk-thread-created-card').first().click();assert.equal(await tabs.filter({hasText:'新供应商准入复核'}).getAttribute('aria-selected'),'true');
  assert.ok((await page.locator('.ch-stream').innerText()).includes('请仅根据本子区'));
  const selected=await tabs.locator('[data-eva-topic-id]').evaluateAll(nodes=>nodes.filter(n=>n.closest('[aria-selected=true]')).map(n=>n.dataset.evaTopicId));
- await tabs.nth(2).click({button:'right'});const menu=page.getByRole('menu').last();
+ await tabs.filter({hasText:'到期采购合同续签'}).click({button:'right'});const menu=page.getByRole('menu').last();
  assert.match(await menu.innerText(),/复制子区链接/);
  assert.deepEqual(await tabs.locator('[data-eva-topic-id]').evaluateAll(nodes=>nodes.filter(n=>n.closest('[aria-selected=true]')).map(n=>n.dataset.evaTopicId)),selected,'右键不切换');
  await menu.getByRole('menuitem',{name:'复制子区链接',exact:true}).click();await page.waitForFunction(()=>!!window.__copiedTopicUrl);const link=await page.evaluate(()=>window.__copiedTopicUrl);assert.ok(link.includes('evaThread='));
  await page.goto(link);await page.waitForFunction(()=>document.querySelector('[role=tab][aria-selected=true] [data-eva-topic-id]')?.dataset.evaTopicId==='th-contract-renewal');
  await plus.click();const modal=page.locator('.eva-topic-create .semi-modal-content'),input=modal.getByRole('textbox');
  await input.fill('新供应商准入复核');assert.equal(await modal.getByRole('button',{name:'创建并进入',exact:true}).isDisabled(),true);
- await modal.getByRole('button',{name:'打开已有子区'}).click();await modal.waitFor({state:'hidden'});assert.equal(await tabs.nth(1).getAttribute('aria-selected'),'true');
+ await modal.getByRole('button',{name:'打开已有子区'}).click();await modal.waitFor({state:'hidden'});assert.equal(await tabs.filter({hasText:'新供应商准入复核'}).getAttribute('aria-selected'),'true');
  await tabs.nth(1).focus();await page.keyboard.press('Shift+F10');await menu.waitFor();await page.keyboard.press('Escape');assert.equal(await tabs.nth(1).evaluate(n=>n===document.activeElement),true);
  await plus.click();await modal.waitFor({state:'visible'});await input.fill('输入法确认');await input.dispatchEvent('keydown',{key:'Enter',code:'Enter',isComposing:true});assert.equal(await modal.isVisible(),true);await input.fill('主聊天');await modal.getByRole('button',{name:'创建并进入',exact:true}).click();assert.match(await modal.innerText(),/保留名称/);
  await input.fill('新增独立讨论');await modal.getByRole('button',{name:'创建并进入',exact:true}).click();await modal.waitFor({state:'hidden'});
@@ -43,7 +43,7 @@ try{
  const confirm=page.locator('.semi-modal').filter({hasText:'归档子区「合同风险补充复核」？'});await confirm.locator('button.semi-button-primary').click();await confirm.waitFor({state:'hidden'});
  assert.equal(await created.count(),0);assert.equal(await tabs.first().getAttribute('aria-selected'),'true');
  await plus.click();await input.fill('合同风险补充复核');assert.match(await modal.innerText(),/同名的已归档子区/);await modal.getByRole('button',{name:'查看已归档子区',exact:true}).click();await modal.waitFor({state:'hidden'});const archived=tabs.filter({hasText:'合同风险补充复核（已归档）'});assert.equal(await archived.getAttribute('aria-selected'),'true');await tabs.first().click();
- await openGroup('供应链专题协同（多子区演示）');assert.equal(await tabs.count(),25);
+ await openGroup('供应链专题协同（多子区演示）');assert.equal(await tabs.count(),13);
  const long=tabs.last();await long.focus();await page.keyboard.press('Enter');await page.waitForTimeout(400);let size=await long.locator('.eva-recent-topic-tabs__name').evaluate(n=>({width:n.clientWidth,full:n.scrollWidth}));assert.ok(size.full<=size.width+1,'宽窗口优先完整显示');await page.setViewportSize({width:900,height:800});await long.scrollIntoViewIfNeeded();await page.waitForTimeout(300);size=await long.locator('.eva-recent-topic-tabs__name').evaluate(n=>({width:n.clientWidth,full:n.scrollWidth}));assert.ok(size.full>size.width,'超出单项可用宽度才省略');const badgeBox=await long.locator('.eva-recent-topic-tabs__unread').boundingBox(),navBox=await nav.boundingBox();assert.ok(badgeBox.x+badgeBox.width<=navBox.x+navBox.width,'长名称保留未读徽标');await page.screenshot({path:'/tmp/eva-topic-long-name.png'});
  await page.setViewportSize({width:1000,height:800});const bounds=await plus.boundingBox();assert.ok(bounds.x+bounds.width<=1000&&bounds.width>=28);
  await plus.click();await input.fill('溢出末尾新建');await modal.getByRole('button',{name:'创建并进入',exact:true}).click();await modal.waitFor({state:'hidden'});
@@ -52,11 +52,11 @@ try{
  await page.waitForTimeout(3500);await page.screenshot({path:'/tmp/eva-topic-created-overflow.png'});
  await page.evaluate(()=>window.EvaTheme.apply('dark'));await page.screenshot({path:'/tmp/eva-topic-create-dark.png'});
  await page.evaluate(()=>window.EvaTheme.apply('light'));
- await openGroup('供应链运营协同');assert.equal(await tabs.count(),1);assert.equal(await plus.isVisible(),true);
+ await openGroup('供应链运营协同');assert.equal(await tabs.count(),0);assert.equal(await page.getByRole('button',{name:'子区',exact:true}).isVisible(),true);
  await page.getByRole('button',{name:'关注',exact:true}).click();assert.equal(await nav.count(),0);
  await openGroup('合规与合同');assert.equal(await page.locator('.wk-thread-created-card').count(),4);
  await page.reload();await openGroup('合规与合同');assert.equal(await page.locator('.wk-thread-created-card').count(),4);
  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('eva:project-members:v1')));assert.equal(state.threadDetails[newId].status,2);assert.equal(state.threadDetails[firstId].name,'新供应商准入复核');
- await page.evaluate(()=>window.__topicStore.setActor('u-linxiao'));await openGroup('合规与合同');await tabs.nth(1).click({button:'right'});assert.equal(await menu.getByRole('menuitem',{name:'重命名',exact:true}).count(),0);await page.keyboard.press('Escape');await plus.click();await input.fill('普通成员独立讨论');await modal.getByRole('button',{name:'创建并进入',exact:true}).click();await modal.waitFor({state:'hidden'});const ordinary=tabs.filter({hasText:'普通成员独立讨论'});assert.equal(await ordinary.getAttribute('aria-selected'),'true');await ordinary.click({button:'right'});assert.equal(await menu.getByRole('menuitem',{name:'重命名',exact:true}).count(),1);await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__topicStore.setActor('u-linxiao'));await openGroup('合规与合同');await tabs.filter({hasText:'新供应商准入复核'}).click({button:'right'});assert.equal(await menu.getByRole('menuitem',{name:'重命名',exact:true}).count(),0);await page.keyboard.press('Escape');await plus.click();await input.fill('普通成员独立讨论');await modal.getByRole('button',{name:'创建并进入',exact:true}).click();await modal.waitFor({state:'hidden'});const ordinary=tabs.filter({hasText:'普通成员独立讨论'});assert.equal(await ordinary.getAttribute('aria-selected'),'true');await ordinary.click({button:'right'});assert.equal(await menu.getByRole('menuitem',{name:'重命名',exact:true}).count(),1);await page.keyboard.press('Escape');
  assert.deepEqual(errors,[]);console.log('PASS: stories, stable links, right-click selection, duplicate and reserved names, create/open, archive, overflow, zero topics, theme, persistence and navigation round trip');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
