@@ -114,6 +114,9 @@ test('左侧导航只有宽窄版切换按钮显示 Tooltip',async()=>{
         await page.waitForTimeout(350);
         assert.equal(await page.locator('.semi-tooltip-wrapper-show').count(),0,`${route}：${selector} 不应显示 Tooltip`);
       }
+      await toggle.click();
+      assert.equal(await toggle.getAttribute('aria-label'),collapsed?'收起':'展开更多',`${route}：切换行为保持可用`);
+      await page.waitForFunction(previous=>![...document.querySelectorAll('.semi-tooltip-wrapper-show')].some(node=>node.textContent?.trim()===previous),expected);
     }
   }
 });
