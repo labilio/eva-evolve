@@ -104,7 +104,7 @@
         source = root.__evaCut(
           source,
           'ir&&React.createElement("button",{type:"button",className:classNames("app-titlebar__button",Pt?.isMobile&&"app-titlebar__button--mobile"),onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1,{size:cn,strokeWidth:Cn}))',
-          'ir&&React.createElement(window.EvaTooltipComponent,{content:pr},React.createElement("button",{type:"button",className:classNames("app-titlebar__button",Pt?.isMobile&&"app-titlebar__button--mobile"),onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1,{size:cn,strokeWidth:Cn})))',
+          'ir&&React.createElement(window.EvaTooltipComponent,{content:Pt?.siderCollapsed?"展开导航栏":"收起导航栏"},React.createElement("button",{type:"button",className:classNames("app-titlebar__button",Pt?.isMobile&&"app-titlebar__button--mobile"),onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1,{size:cn,strokeWidth:Cn})))',
           '仅标题栏宽窄版切换显示 Semi Tooltip'
         );
 

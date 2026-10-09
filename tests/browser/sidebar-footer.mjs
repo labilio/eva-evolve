@@ -89,8 +89,8 @@ test('左侧导航只有宽窄版切换按钮显示 Tooltip',async()=>{
     const toggle=page.locator('.app-titlebar__menu .app-titlebar__button');
     await toggle.waitFor();
     for(const collapsed of [true,false]){
-      const expected=collapsed?'展开更多':'收起';
-      if(await toggle.getAttribute('aria-label')!==expected) await toggle.click();
+      const expected=collapsed?'展开导航栏':'收起导航栏';
+      if(await toggle.getAttribute('aria-label')!==(collapsed?'展开更多':'收起')) await toggle.click();
       await toggle.hover();
       const tip=page.getByRole('tooltip').filter({hasText:expected});
       await tip.waitFor();
