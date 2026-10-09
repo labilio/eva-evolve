@@ -29,7 +29,7 @@
              * 不产生任何中间宽度），双击切换。ut=当前折叠态、pt=setSiderCollapsed。样式见
              * 012-mode-layer.css 的 .eva-sider-edge。 */
             '!mt&&$r({className:"z-20",style:{right:"-4px",width:"8px"},linePlacement:"start"})',
-            '!mt&&React.createElement("div",{className:"eva-sider-edge",role:"separator","aria-orientation":"vertical","data-eva-tooltip":ut?"拖动或双击展开":"拖动或双击折叠",onPointerDown:function(ev){if(ev.button!==0)return;ev.preventDefault();var sx=ev.clientX,wasCollapsed=ut,done=false;document.body.classList.add("eva-sider-edge-dragging");var move=function(e){if(done)return;var dx=e.clientX-sx;if(!wasCollapsed&&dx<=-24){done=true;pt(!0)}else if(wasCollapsed&&dx>=24){done=true;pt(!1)}};var up=function(){document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.body.classList.remove("eva-sider-edge-dragging")};document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)},onDoubleClick:function(){pt(!ut)}},React.createElement("span",{className:"eva-sider-edge__line","aria-hidden":true}))'
+            '!mt&&React.createElement("div",{className:"eva-sider-edge",role:"separator","aria-orientation":"vertical",onPointerDown:function(ev){if(ev.button!==0)return;ev.preventDefault();var sx=ev.clientX,wasCollapsed=ut,done=false;document.body.classList.add("eva-sider-edge-dragging");var move=function(e){if(done)return;var dx=e.clientX-sx;if(!wasCollapsed&&dx<=-24){done=true;pt(!0)}else if(wasCollapsed&&dx>=24){done=true;pt(!1)}};var up=function(){document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",up);document.body.classList.remove("eva-sider-edge-dragging")};document.addEventListener("pointermove",move);document.addEventListener("pointerup",up)},onDoubleClick:function(){pt(!ut)}},React.createElement("span",{className:"eva-sider-edge__line","aria-hidden":true}))'
           ],
           [
             /* 宽度锁死在 180：min=max=defaultWidth。useResizableSplit 初始化时只采用
@@ -101,6 +101,12 @@
           '!1',
           '移除顶栏侧栏折叠按钮'
         );
+        source = root.__evaCut(
+          source,
+          'ir&&React.createElement("button",{type:"button",className:classNames("app-titlebar__button",Pt?.isMobile&&"app-titlebar__button--mobile"),onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1,{size:cn,strokeWidth:Cn}))',
+          'ir&&React.createElement(window.EvaTooltipComponent,{content:pr},React.createElement("button",{type:"button",className:classNames("app-titlebar__button",Pt?.isMobile&&"app-titlebar__button--mobile"),onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1,{size:cn,strokeWidth:Cn})))',
+          '仅标题栏宽窄版切换显示 Semi Tooltip'
+        );
 
         /* 展开态最小宽度固定为 180px；拖到 200px 阈值时切换为 80px
          * 缩略态，避免在两者之间挤压、重排导航内容。折叠态右拖时不再消耗
@@ -171,6 +177,7 @@ EvaSidebarNavigation=rt=>{const ct={isMobile:rt.isMobile,collapsed:rt.collapsed,
           .replace('React.createElement(Earth$2,{theme:"outline",size:"16",fill:"currentColor",className:"block leading-none",style:{lineHeight:0}})', 'React.createElement(Globe,{size:16,strokeWidth:1.8,className:"block leading-none"})')
           .replace('collapsed:rt.collapsed,siderTooltipProps', 'collapsed:rt.isMobile&&rt.collapsed,siderTooltipProps')
           .replace('EvaPersonalEntry,{key:gt,...ct,isActive:', 'EvaPersonalEntry,{key:gt,...ct,collapsed:rt.collapsed,isActive:');
+        siderArchitecture = root.__evaCut(siderArchitecture, ',"data-eva-tooltip":name,"data-eva-tooltip-clamp":""', '', '侧栏账户姓名不显示提示');
         source = root.__evaCut(source, siderComponentAnchor, siderArchitecture + siderComponentAnchor, '标准侧栏组件');
         var evaMyAiNavigationNeedle = 'onClick:()=>{}}));case"projects"';
         var evaMyAiNavigationReplacement = 'onClick:()=>rt.navigate("/messages?evaIM=my-ai")}));case"projects"';

@@ -82,6 +82,42 @@ test('Account footer button opens a menu with settings and logout, expanded and 
   }
 });
 
+test('左侧导航只有宽窄版切换按钮显示 Tooltip',async()=>{
+  await page.setViewportSize({width:1200,height:900});
+  for(const route of ['/guid','/messages?evaIM=my-ai','/collab']){
+    await page.goto(`${origin}/#${route}`);
+    const toggle=page.locator('.app-titlebar__menu .app-titlebar__button');
+    await toggle.waitFor();
+    for(const collapsed of [true,false]){
+      const expected=collapsed?'展开更多':'收起';
+      if(await toggle.getAttribute('aria-label')!==expected) await toggle.click();
+      await toggle.hover();
+      const tip=page.getByRole('tooltip').filter({hasText:expected});
+      await tip.waitFor();
+      assert.equal(await tip.isVisible(),true,`${route}：宽窄版切换按钮显示 ${expected} 提示`);
+      await page.mouse.move(1100,850);
+      await tip.waitFor({state:'hidden'});
+      const entries=page.locator('.eva-sidebar-nav [data-eva-nav-id]:visible');
+      const ids=await entries.evaluateAll(nodes=>nodes.map(node=>node.dataset.evaNavId));
+      assert.ok(ids.length>=5,`${route}：应覆盖可见的一级导航项`);
+      for(const id of ids){
+        const entry=page.locator(`.eva-sidebar-nav [data-eva-nav-id="${id}"]:visible`);
+        await entry.hover();
+        await page.waitForTimeout(350);
+        assert.equal(await page.locator('.semi-tooltip-wrapper-show').count(),0,`${route}：${id} 不应显示 Tooltip`);
+        assert.equal(await entry.locator('[title], [data-eva-tooltip]').count(),0,`${route}：${id} 不应有原生提示入口`);
+      }
+      for(const selector of ['.eva-sider-edge','.eva-sider-footer']){
+        const surface=page.locator(selector);
+        assert.equal(await surface.locator('[title], [data-eva-tooltip]').count(),0,`${route}：${selector} 不应有提示入口`);
+        await surface.hover();
+        await page.waitForTimeout(350);
+        assert.equal(await page.locator('.semi-tooltip-wrapper-show').count(),0,`${route}：${selector} 不应显示 Tooltip`);
+      }
+    }
+  }
+});
+
 test('Left edge aligns topbar collapse, nav icons and the equal-width account button',async()=>{
   await page.setViewportSize({width:1200,height:800});
   await page.goto(`${origin}/#/guid`);
