@@ -10,7 +10,7 @@ export default function PersonalRailForm({request}) {
     initValues={{name: moving ? detail.title : detail.name, folder: detail.folderId || ''}}>
     <label className="eva-t-caption" htmlFor="eva-rail-name">{moving ? '对话名称' : '重命名文件夹'}</label>
     <Form.Input field="name" id="eva-rail-name" noLabel autoFocus autoComplete="off"
-      maxLength={moving ? 120 : 60} placeholder={moving ? '对话名称' : '文件夹名称'}
+      maxLength={moving ? 120 : 60}
       rules={[{required: true, whitespace: true, message: moving ? '请输入对话名称' : '请输入文件夹名称'},
         ...(!moving ? [{validator: (_, value) => {
           const name = String(value || '').trim();

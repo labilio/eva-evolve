@@ -32,7 +32,7 @@ test('个人 Eva 中栏从右上角新建分组，新分组置于最上并保留
     await modal.waitFor();
     assert.equal(await modal.locator('.semi-modal-title').innerText(), '新建分组');
     assert.equal(await page.locator('[data-eva-rail-form]').count(), 0);
-    assert.equal(await modal.getByLabel('分组名称').getAttribute('placeholder'), '请输入分组名称');
+    assert.ok(!await modal.getByLabel('分组名称').getAttribute('placeholder'), '已有字段标签时不重复名称占位提示');
     assert.equal(await modal.getByLabel('分组名称').evaluate(element => document.activeElement === element), true);
     assert.equal(await composer.inputValue(), '浏览器验收草稿');
     const titlebar = page.locator('.app-titlebar');

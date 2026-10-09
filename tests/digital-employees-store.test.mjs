@@ -125,3 +125,13 @@ test('cloud persona application remains pending and private after reload without
  assert.throws(()=>store.submitPersonaRequest('u1',{name:'采购分身',domain:'供应链'}));
  const restored=load(saved()).store;assert.equal(restored.personaRequests('u1')[0].configuration.prompt,'采购协作');assert.equal(restored.personaRequests('u2').length,0);
 });
+
+test('文案迁移更新旧演示说明并保留用户修改',()=>{
+  const seed={agents:[{id:'a_data',kind:'staff',name:'数据整理专家',desc:'按预设流程清洗数据、生成报表。'}]};
+  const legacy={agents:[{...seed.agents[0],desc:'基于 Dify 工作流，承接固定流程的数据处理。'}]};
+  const migrated=load(legacy,seed).saved();
+  assert.equal(migrated.agents[0].desc,seed.agents[0].desc);
+  assert.equal(load(migrated,seed).saved().agents[0].desc,seed.agents[0].desc);
+  legacy.agents[0].desc='用户自定义职责';
+  assert.equal(load(legacy,seed).saved().agents[0].desc,'用户自定义职责');
+});

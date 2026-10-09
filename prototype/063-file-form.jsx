@@ -74,7 +74,7 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
         <Form {...submission.formProps} form={api} initValues={initial} className="eva-file-name-form eva-file-form">
           {(type==='new-folder'||type==='rename'||external)&&field(external?(folder?'文件夹名称':'文件名称'):type==='new-folder'?'文件夹名称':'新名称',nameId,
             <Form.Input field="name" id={nameId} noLabel autoFocus maxLength={external?100:undefined}
-              placeholder={external?(folder?'例如：供应商交付资料':'例如：供应商协作飞书文档'):project?'请输入名称':type==='new-folder'?'请输入文件夹名称':undefined}
+              placeholder={external?(folder?'例如：供应商交付资料':'例如：供应商协作飞书文档'):undefined}
               rules={[{required:true,whitespace:true,message:external?(folder?'请输入文件夹名称':'请输入文件名称'):'请输入名称'}]}/>)}
           {external&&field(folder?'文件夹链接':'文件链接',urlId,<Form.Input field="url" id={urlId} type="url" noLabel placeholder="https://"
             validator={value=>{try{files.inspectExternalLink(value,{kind:folder?'folder':undefined});return '';}catch(error){return error.message;}}}

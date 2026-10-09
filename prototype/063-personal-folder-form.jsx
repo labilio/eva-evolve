@@ -11,7 +11,6 @@ export default function PersonalFolderForm({onReady, onCreate}) {
       label={{text: '分组名称', required: false}}
       autoFocus
       maxLength={60}
-      placeholder="请输入分组名称"
       rules={[
         {required: true, whitespace: true, message: '请输入分组名称'},
         {validator: (_, value) => {

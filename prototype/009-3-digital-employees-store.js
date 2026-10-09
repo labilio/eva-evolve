@@ -31,6 +31,8 @@
   if(hrOnboardingSeed&&!state.agents.some(a=>a.id===hrOnboardingSeed.id))state.agents=[...state.agents,{...hrOnboardingSeed}];
   // Remove the retired employee from existing local demo state as well as the seed.
   state.agents=state.agents.filter(a=>a.id!=='s_AS00139').map(a=>a.kind==='staff'?{...a,name:expertName(a.name)}:a);
+  // Refresh only the shipped description; preserve user-edited employee details.
+  state.agents=state.agents.map(a=>a.id==='a_data'&&a.desc==='基于 Dify 工作流，承接固定流程的数据处理。'?{...a,desc:seed.agents.find(item=>item.id==='a_data')?.desc||a.desc}:a);
   state.teamIds=state.teamIds.filter(id=>id!=='s_AS00139');
   delete state.chats.s_AS00139;
   try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}

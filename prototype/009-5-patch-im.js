@@ -1193,7 +1193,7 @@ function EvaAITeamGroupEditor({visible,record,membersOnly=false,candidates,onClo
     initialSelectedIds:(record?.memberIds||[]).filter(id=>candidates.some(item=>item.id===id)),
     minimumSelection:1,
     memberLabel:'AI 小队成员',
-    nameField:membersOnly?null:{id:'eva-ai-team-name',label:'AI 小队名称',placeholder:'输入 AI 小队名称',initialValue:record?.name||'',required:true,maxLength:50},
+    nameField:membersOnly?null:{id:'eva-ai-team-name',label:'AI 小队名称',initialValue:record?.name||'',required:true,maxLength:50},
     searchLabel:'搜索我的 Agent 成员',
     searchPlaceholder:'搜索我的 Agent 成员',
     emptyTitle:'暂无可用的 AI 成员',
@@ -1227,7 +1227,7 @@ function EvaTopicCreateDialog({visible,group,store,actorId,onSubmit,onCancel,onO
  return h(evaForms.Dialog,{visible,title:'新建子区',className:'eva-members-modal eva-topic-create eva-thread-create-dialog',width:420,onCancel,maskClosable:true,footer:h(evaForms.Actions,{onCancel,submitLabel:'创建并进入',form:submission.formProps.id,busy:submission.busy})},
   h(Form,{...submission.formProps,form:api},
    h('p',{id:'eva-topic-create-description',className:'eva-topic-create__hint'},'本群所有成员均可查看和参与'),
-   h(Form.Input,{field:'name',pure:true,id:'eva-topic-create-name','aria-label':'子区名称','aria-describedby':'eva-topic-create-description',maxLength:30,placeholder:'请用简短清晰的子区名称',validator:value=>{try{store.validateThreadName(group.id,value||'');return '';}catch(e){return e.message;}}}),
+   h(Form.Input,{field:'name',pure:true,id:'eva-topic-create-name','aria-label':'子区名称','aria-describedby':'eva-topic-create-description',maxLength:30,placeholder:'例如：交付进度、问题反馈',validator:value=>{try{store.validateThreadName(group.id,value||'');return '';}catch(e){return e.message;}}}),
    h(Form.ErrorMessage,{error:state.errors?.name,errorMessageId:'eva-topic-create-name-errormessage'}),
    duplicate&&h('div',{className:'eva-topic-create__duplicate'},h('span',null,duplicate.status===2?'本群已有同名的已归档子区':'本群已有同名子区'),h(Button,{htmlType:'button',theme:'borderless',onClick:()=>{onCancel();onOpen(duplicate.id);}},duplicate.status===2?'查看已归档子区':'打开已有子区')),
    h(SubmissionError,{submission})));
@@ -1677,7 +1677,7 @@ function EvaAITeamPage() {
         emptyTitle:'暂无可放入分组的非项目会话',
         emptyDescription:'项目群及子区按项目归属，不能移入自定义分组',
         noResultsText:'没有匹配的会话',
-        nameField:{id:'eva-category-name',label:'分组名称',placeholder:'输入分组名称',initialValue:record.name||'',required:true,maxLength:50,autoFocus:true},
+        nameField:{id:'eva-category-name',label:'分组名称',initialValue:record.name||'',required:true,maxLength:50,autoFocus:true},
         submit:record.id?'保存':'创建',
         onCancel:onClose,
         onSubmit:(chosen,name)=>{store.saveConversationCategory(actorId,{id:record.id,name,channelIds:chosen.map(item=>item.id),availableChannels:available});onSaved();}
