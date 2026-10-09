@@ -650,6 +650,15 @@
       if(index<0)saved.people.push({...p});
       else saved.people[index]={...p,...saved.people[index]};
     }
+    // Refresh approved demo job/path fields once; preserve all other local profile and collaboration data.
+    if(!saved.seededContactPositionsV1&&root.__EVA_PEOPLE){
+      const fixtures=new Map(root.__EVA_PEOPLE.filter(p=>p.title&&p.deptFull).map(p=>[p.id||p.uid,p]));
+      for(const person of saved.people){
+        const fixture=fixtures.get(person.id);
+        if(fixture){person.title=fixture.title;person.deptFull=fixture.deptFull;}
+      }
+      saved.seededContactPositionsV1=true;
+    }
     if(!saved.seededOrgGroups){
       saved.seededOrgGroups=true;
       for(const g of orgChannels){saved.groups[g.id]={id:g.id,name:g.name,projectId:null,ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};for(const t of g.threads||[])saved.threads[t.id]=g.id;}

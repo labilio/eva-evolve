@@ -885,7 +885,7 @@
         h('thead',null,headerRow),
         h('tbody',null,bodyRows));
       const content=built.rows.length===0
-        ?h('div',{className:'eva-task-table__empty'},'当前视图没有匹配的任务。')
+        ?h('div',{className:'eva-task-table__empty'},'当前视图没有匹配的任务')
         :h('div',{className:'eva-task-table__scroll'},grid);
       return h('div',{className:'eva-task-table'},toolbar,
         h(DndContext,{sensors,collisionDetection:closestCenter,modifiers:[restrictToHorizontalAxis],onDragEnd},

@@ -49,9 +49,9 @@ test('资料卡标签列与值列左对齐，部门末级大字、上层链路�
     const orgBox=await metrics(org);
     const leaf=org.locator('.eva-person-card__org-leaf');
     const path=org.locator('.eva-person-card__org-path');
-    assert.equal(await org.locator('.eva-person-card__row-label').innerText(),'部门');
-    assert.equal(await leaf.innerText(),'AI 产品共创');
-    assert.equal(await path.innerText(),'吉利汽车集团/数智化中心/AI 中台');
+    assert.equal(await org.locator('.eva-person-card__row-label').innerText(),'职务');
+    assert.equal(await leaf.innerText(),'人工智能产品总监');
+    assert.equal(await path.innerText(),'吉利汽车集团/数智化中心/人工智能平台部');
     const leafStyle=await style(leaf),pathStyle=await style(path);
     assert.ok(parseFloat(leafStyle.size)>parseFloat(pathStyle.size),'末级组织字号应大于上层链路');
     assert.ok(Number(leafStyle.weight)>Number(pathStyle.weight),'末级组织字重应大于上层链路');

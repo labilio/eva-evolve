@@ -10,26 +10,26 @@
 
   var data = {
     connectors: [
-      { id: 'feishu', name: '飞书', icon: 'link', meta: 'OAuth · 个人账号', desc: '读取云文档、日历和会议信息，并在授权范围内执行操作。', foot: '最近使用：今天', active: true, capabilities: ['读取和整理云文档', '查询日历与会议', '在授权范围内写入内容'] },
-      { id: 'mail', name: '企业邮箱', icon: 'mail', meta: 'IMAP · 个人账号', desc: '收发邮件、搜索往来内容，并按规则辅助整理。', foot: '最近使用：昨天', active: true, capabilities: ['搜索和读取邮件', '创建邮件草稿', '按规则整理邮件'] },
-      { id: 'folder', name: '本地文件夹', icon: 'folder', meta: '本机 · 目录授权', desc: '在你明确授权的目录中读取和整理文件。', foot: '授权范围：1 个目录', active: false, capabilities: ['读取授权目录', '整理文件结构', '生成新文件'] }
+      { id: 'feishu', name: '飞书', icon: 'link', meta: 'OAuth · 个人账号', desc: '读取云文档、日历和会议信息，并在授权范围内执行操作', foot: '最近使用：今天', active: true, capabilities: ['读取和整理云文档', '查询日历与会议', '在授权范围内写入内容'] },
+      { id: 'mail', name: '企业邮箱', icon: 'mail', meta: 'IMAP · 个人账号', desc: '收发邮件、搜索往来内容，并按规则辅助整理', foot: '最近使用：昨天', active: true, capabilities: ['搜索和读取邮件', '创建邮件草稿', '按规则整理邮件'] },
+      { id: 'folder', name: '本地文件夹', icon: 'folder', meta: '本机 · 目录授权', desc: '在你明确授权的目录中读取和整理文件', foot: '授权范围：1 个目录', active: false, capabilities: ['读取授权目录', '整理文件结构', '生成新文件'] }
     ],
     skills: [
-      { id: 'meeting-notes', name: '会议纪要整理', icon: 'sparkles', meta: '内容处理', desc: '把会议录音或文字整理为结论、决定和后续行动。', foot: '2 个助理正在使用', active: true, capabilities: ['提取会议结论', '识别负责人和截止时间', '生成行动清单'] },
-      { id: 'sheet-analysis', name: '数据表分析', icon: 'chart', meta: '数据处理', desc: '分析表格结构、异常数据和关键趋势，生成简洁结论。', foot: '1 个助理正在使用', active: true, capabilities: ['检查表格结构', '发现异常值', '生成趋势摘要'] },
-      { id: 'web-extract', name: '网页信息提取', icon: 'file', meta: '信息获取', desc: '从网页中提取正文、列表和结构化信息。', foot: '有可用更新', active: false, capabilities: ['提取网页正文', '识别列表与表格', '输出结构化结果'] }
+      { id: 'meeting-notes', name: '会议纪要整理', icon: 'sparkles', meta: '内容处理', desc: '把会议录音或文字整理为结论、决定和后续行动', foot: '2 个助理正在使用', active: true, capabilities: ['提取会议结论', '识别负责人和截止时间', '生成行动清单'] },
+      { id: 'sheet-analysis', name: '数据表分析', icon: 'chart', meta: '数据处理', desc: '分析表格结构、异常数据和关键趋势，生成简洁结论', foot: '1 个助理正在使用', active: true, capabilities: ['检查表格结构', '发现异常值', '生成趋势摘要'] },
+      { id: 'web-extract', name: '网页信息提取', icon: 'file', meta: '信息获取', desc: '从网页中提取正文、列表和结构化信息', foot: '有可用更新', active: false, capabilities: ['提取网页正文', '识别列表与表格', '输出结构化结果'] }
     ],
     mcp: [
-      { id: 'browser', name: 'Browser', icon: 'browser', meta: '本地服务', desc: '提供网页访问与自动化操作能力。', foot: '4 个工具', active: true, capabilities: ['打开和读取网页', '执行页面操作', '截取页面内容'] },
-      { id: 'database', name: 'Database', icon: 'database', meta: '服务账号 · 只读', desc: '在授权的数据源中执行查询并读取结果。', foot: '2 个工具', active: true, capabilities: ['执行只读查询', '读取查询结果'] },
-      { id: 'gitlab', name: 'GitLab', icon: 'git', meta: 'Personal Token · 个人账号', desc: '读取代码仓库、合并请求和流水线状态。', foot: '4 个工具', active: false, capabilities: ['读取仓库内容', '查看合并请求', '查询流水线状态'] }
+      { id: 'browser', name: 'Browser', icon: 'browser', meta: '本地服务', desc: '提供网页访问与自动化操作能力', foot: '4 个工具', active: true, capabilities: ['打开和读取网页', '执行页面操作', '截取页面内容'] },
+      { id: 'database', name: 'Database', icon: 'database', meta: '服务账号 · 只读', desc: '在授权的数据源中执行查询并读取结果', foot: '2 个工具', active: true, capabilities: ['执行只读查询', '读取查询结果'] },
+      { id: 'gitlab', name: 'GitLab', icon: 'git', meta: 'Personal Token · 个人账号', desc: '读取代码仓库、合并请求和流水线状态', foot: '4 个工具', active: false, capabilities: ['读取仓库内容', '查看合并请求', '查询流水线状态'] }
     ]
   };
 
   var labels = {
-    connectors: { title: '连接器', desc: '管理需要身份授权的外部系统与本机资源。', create: '添加连接器', active: '已连接', inactive: '未连接', enable: '连接', disable: '断开连接' },
-    skills: { title: '技能', desc: '管理助理可以安装和调用的工作方法。', create: '新建或导入技能', active: '已安装', inactive: '未安装', enable: '安装', disable: '卸载' },
-    mcp: { title: 'MCP', desc: '管理为助理提供工具能力的 MCP 服务。', create: '添加 MCP 服务', active: '已启用', inactive: '未启用', enable: '启用', disable: '停用' }
+    connectors: { title: '连接器', desc: '管理需要身份授权的外部系统与本机资源', create: '添加连接器', active: '已连接', inactive: '未连接', enable: '连接', disable: '断开连接' },
+    skills: { title: '技能', desc: '管理助理可以安装和调用的工作方法', create: '新建或导入技能', active: '已安装', inactive: '未安装', enable: '安装', disable: '卸载' },
+    mcp: { title: 'MCP', desc: '管理为助理提供工具能力的 MCP 服务', create: '添加 MCP 服务', active: '已启用', inactive: '未启用', enable: '启用', disable: '停用' }
   };
 
   function esc(value) {

@@ -65,7 +65,7 @@
       const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
       const footer=h('div',{className:'eva-picker-footer eva-transfer-footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',disabled:chosen.length!==1,onClick:()=>{try{onSubmit(chosen);}catch(e){setError(e.message);}}},submit));
       return h(Modal,{className:'eva-members-modal eva-members-modal--transfer',width:480,title,visible,onCancel,footer,maskClosable:true},
-        h(SelectionBody,{items,selected:ids,onChange:setIds,single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任。'}),
+        h(SelectionBody,{items,selected:ids,onChange:setIds,single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'}),
         error&&h('p',{role:'alert',className:'eva-members-error'},error));
     }
     function useState(){R.useSyncExternalStore(store.subscribe,store.getSnapshot);return store.snapshot();}
@@ -91,7 +91,7 @@
       return h(Modal,{className:'eva-members-modal eva-project-role-modal',width:480,title:'设置项目角色',visible:!!memberId,onCancel:onClose,okText:'保存',cancelText:'取消',onOk:()=>{try{store.setMemberRoles(projectId,s.actorId,memberId,ids);onClose();}catch(e){setError(e.message);}}},member&&h('div',{className:'eva-project-role-form'},
         h('div',{className:'eva-role-field'},h('span',{id:'eva-role-member-label',className:'eva-role-field-label'},'成员'),h(Select,{className:'eva-members-select','aria-labelledby':'eva-role-member-label','aria-label':'选择成员',value:memberId,onChange:onMemberChange,optionList:store.members(projectId).map(m=>({value:m.id,label:m.kind==='human'?h(HumanIdentity,{id:m.id,compact:true}):m.kind==='clone'?h(CloneIdentity,{clone:m}):h(ProjectAgentIdentity,{agent:m})}))})),
         h('div',{className:'eva-role-field'},h('span',{id:'eva-role-selection-label',className:'eva-role-field-label'},'项目角色',h('span',{className:'eva-role-field-hint'},'可多选')),h(Select,{multiple:true,className:'eva-members-select','aria-labelledby':'eva-role-selection-label','aria-label':'成员项目角色',placeholder:'选择项目角色',value:ids,onChange:setIds,optionList:store.projectRoles(projectId).map(r=>({value:r.id,label:r.name})),emptyContent:'暂无项目角色',outerBottomSlot:newRoleMenu,onDropdownVisibleChange:visible=>{if(!visible){setCreating(false);setRoleName('');setCreateError('');}}})),
-        h('p',{className:'eva-members-muted eva-role-help'},'仅调整项目分工，不改变成员权限。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
+        h('p',{className:'eva-members-muted eva-role-help'},'仅调整项目分工，不改变成员权限'),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
     }
     function Members({scopeId}){
       const s=useState(),actor=s.actorId,sid=scopeId.startsWith('all:')?scopeId.slice(4):scopeId;

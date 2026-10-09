@@ -765,7 +765,7 @@ function EvaPresentationPreviewRenderer({file}) {
   const slides=fixture.slides;
   const [active,setActive]=reactExports.useState(0);
   reactExports.useEffect(()=>setActive(0),[file.name]);
-  if(!slides?.length)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容。');
+  if(!slides?.length)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容');
   const slide=slides[Math.min(active,slides.length-1)];
   return h('div',{className:'eva-presentation-preview','aria-label':'PPT 幻灯片内容'},
     h('div',{className:'eva-presentation-preview__stage'},h('article',{className:'eva-presentation-preview__slide is-'+(slide.accent||'violet'),'aria-label':'第 '+(active+1)+' 张幻灯片'},
@@ -780,7 +780,7 @@ function EvaPresentationPreviewRenderer({file}) {
 function EvaArchivePreviewRenderer({file}) {
   const h=React.createElement;
   const archive=evaPreviewFixture(file).archive;
-  if(!archive)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容。');
+  if(!archive)return h('p',{className:'eva-file-preview-sidebar__empty'},'此文件未提供在线预览内容');
   return h('div',{className:'eva-archive-preview','aria-label':'压缩包内容'},
     h('div',{className:'eva-archive-preview__summary'},h('span',null,h('strong',null,archive.entries.length),h('small',null,'项目')),h('span',null,h('strong',null,archive.compressedSize||'—'),h('small',null,'压缩后')),h('span',null,h('strong',null,archive.originalSize||'—'),h('small',null,'原始大小'))),
     h('div',{className:'eva-archive-preview__head'},h('span',null,'名称'),h('span',null,'类型'),h('span',null,'大小')),
@@ -878,7 +878,7 @@ function EvaAssistantEditor({request,host,onClose}) {
           h(Dropdown,{trigger:'click',position:'bottomRight',getPopupContainer:()=>scope.current,clickToHide:true,render:h(Dropdown.Menu,null,snapshot.localAssistants.map(i=>h(Dropdown.Item,{key:i.id,onClick:()=>applyTemplate(i)},i.name)))},h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'outline',type:'tertiary',disabled:busy},'使用模板'))),
           h(Button,{theme:'borderless',type:'tertiary',icon:h(X,{size:20}),'aria-label':'关闭编辑器',disabled:busy,onClick:onClose}))),
       h('nav',{className:'eva-create-assistant-modal__tabs',role:'tablist','aria-label':role+'设置'},tabs.map(([key,label])=>h('button',{type:'button',role:'tab','aria-selected':tab===key,key,className:'eva-create-assistant-modal__tab'+(tab===key?' is-active':''),onClick:()=>setTab(key)},label))),
-      h('div',{className:'eva-create-assistant-modal__body',role:'tabpanel'},h('p',{className:'eva-create-assistant-modal__hint'},tabs.find(t=>t[0]===tab)[2]),tab==='source'?h('div',{className:'eva-editor-source'},h(EvaAssistantSourceCards,{sources:snapshot.localAssistants,value:sourceAssistantId||'__independent__',disabled:busy,onChange:changeSource}),h('p',null,local?'默认自动同步配置；分身名称与 Eva 头像保持固定。更换来源并保存后将使用新助理配置。':'独立维护当前配置，不从助理同步。'),local&&h('span',{role:'status'},sourceAssistantId===existing?.sourceAssistantId?'本地 → 云端 · '+syncLabel:'保存后自动同步')):tab==='identity'?h('div',{className:'eva-editor-identity-fields'},h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:'支持 Markdown 格式，可用中文或英文书写',value:draft.identity,disabled:busy,onChange:e=>update('identity',e.target.value)}),!persona&&h('div',{className:'eva-editor-avatar-help'},h('span',null,'点击顶部头像选择图标替换当前头像；不选择时默认使用 Eva 头像。保存后会在会话、消息、成员与选择器中保持一致。'),draft.avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:busy,onClick:()=>update('avatar','')},'恢复默认头像'))):h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:tab==='skills'?'每行填写一个技能':'支持 Markdown 格式，可用中文或英文书写',value:draft[tab],disabled:busy,onChange:e=>update(tab,e.target.value)})),
+      h('div',{className:'eva-create-assistant-modal__body',role:'tabpanel'},h('p',{className:'eva-create-assistant-modal__hint'},tabs.find(t=>t[0]===tab)[2]),tab==='source'?h('div',{className:'eva-editor-source'},h(EvaAssistantSourceCards,{sources:snapshot.localAssistants,value:sourceAssistantId||'__independent__',disabled:busy,onChange:changeSource}),h('p',null,local?'默认自动同步配置；分身名称与 Eva 头像保持固定。更换来源并保存后将使用新助理配置。':'独立维护当前配置，不从助理同步'),local&&h('span',{role:'status'},sourceAssistantId===existing?.sourceAssistantId?'本地 → 云端 · '+syncLabel:'保存后自动同步')):tab==='identity'?h('div',{className:'eva-editor-identity-fields'},h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:'支持 Markdown 格式，可用中文或英文书写',value:draft.identity,disabled:busy,onChange:e=>update('identity',e.target.value)}),!persona&&h('div',{className:'eva-editor-avatar-help'},h('span',null,'点击顶部头像选择图标替换当前头像；不选择时默认使用 Eva 头像。保存后会在会话、消息、成员与选择器中保持一致。'),draft.avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:busy,onClick:()=>update('avatar','')},'恢复默认头像'))):h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:tab==='skills'?'每行填写一个技能':'支持 Markdown 格式，可用中文或英文书写',value:draft[tab],disabled:busy,onChange:e=>update(tab,e.target.value)})),
       error&&h('p',{className:'eva-ai-team__error',role:'alert'},error),
       h('footer',{className:'eva-create-assistant-modal__footer'},h(Select,{value:draft.model,'aria-label':'模型',getPopupContainer:()=>scope.current,onChange:value=>update('model',value),disabled:busy},h(Select.Option,{value:'Qwen3.7 Plus'},'Qwen3.7 Plus')),
         draft.toolset&&h('span',{className:'eva-create-assistant-modal__chip'},draft.toolset,h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(X,{size:12}),'aria-label':'移除'+draft.toolset,onClick:()=>update('toolset','')})),h('span',{className:'eva-create-assistant-modal__spacer'}),h(Button,{theme:'solid',type:'primary',className:'eva-create-assistant-modal__submit',loading:busy,onClick:save},editing?'保存':'创建')));
@@ -1559,7 +1559,7 @@ function EvaAITeamPage() {
         identity.role==='persona'&&identity.syncStatus==='error'&&h(Button,{theme:'borderless',onClick:()=>store.syncPersona(identity.id).catch(e=>setError(e.message))},'重试同步'),
         error&&h('p',{className:'eva-ai-team__error',role:'alert'},error),
         h(ChannelsView,{key:draftKey,source,onOpenTask:()=>{}})):
-      h('div',{className:'eva-ai-team__empty'},h(Users,{size:32}),h('h2',null,'暂无可用的数字员工'),h('p',null,'接入公司数字员工后，即可在这里使用。'))),
+      h('div',{className:'eva-ai-team__empty'},h(Users,{size:32}),h('h2',null,'暂无可用的数字员工'),h('p',null,'接入公司数字员工后，即可在这里使用'))),
     h('div',{className:'eva-ai-team__modal-host',ref:host}),
     h(EvaAITeamGroupEditor,{visible:!!groupEditor,record:groupEditor?.record||null,membersOnly:groupEditor?.mode==='members',candidates:groupCandidates,onClose:closeGroupEditor,onSubmit:saveGroup,getContainer:()=>host.current}),
     h(Modal,{visible:!!groupToDissolve,title:'解散 AI 小队',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:()=>setGroupToDissolve(null),onOk:confirmDissolveGroup,okText:'解散群',cancelText:'取消',okButtonProps:{type:'danger'},width:420},
@@ -1602,7 +1602,7 @@ function EvaAITeamPage() {
         searchLabel:'搜索会话',
         searchPlaceholder:'搜索会话',
         emptyTitle:'暂无可放入分组的非项目会话',
-        emptyDescription:'项目群及子区按项目归属，不能移入自定义分组。',
+        emptyDescription:'项目群及子区按项目归属，不能移入自定义分组',
         noResultsText:'没有匹配的会话',
         nameField:{id:'eva-category-name',label:'分组名称',placeholder:'输入分组名称',initialValue:record.name||'',required:true,maxLength:50,autoFocus:true},
         submit:record.id?'保存':'创建',

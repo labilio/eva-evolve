@@ -23,8 +23,8 @@ test('本人分身在资料卡内按群开启免 @ 回答，非主人不可见�
     const openMentionFree=async name=>{
       await trigger(name).click();
       await card.waitFor();
-      await card.getByRole('button',{name:/免 @ 回答/}).click();
-      await card.getByRole('heading',{name:'免 @ 回答',exact:true}).waitFor();
+      await card.getByRole('button',{name:/群聊回复/}).click();
+      await card.getByRole('heading',{name:'群聊回复',exact:true}).waitFor();
     };
     const closeCard=async()=>{await page.locator('.eva-person-card-modal .semi-modal-close').click();await card.waitFor({state:'detached'});};
 
@@ -33,30 +33,34 @@ test('本人分身在资料卡内按群开启免 @ 回答，非主人不可见�
     // 他人分身没有 Bot 级免 @ 入口，只有本人分身可以进入。
     await trigger('林晓的 AI 分身').click();
     await card.waitFor();
-    assert.equal(await card.getByRole('button',{name:/免 @ 回答/}).count(),0,'他人分身不提供免 @ 回答');
+    assert.equal(await card.getByRole('button',{name:/群聊回复/}).count(),0,'他人分身不提供免 @ 回答');
     await closeCard();
 
     await openMentionFree('王宜林的 AI 分身');
     const rows=card.locator('.eva-person-card__mention-row');
     assert.ok(await rows.count()>=1,'本人分身至少有一个可配置的群');
+    await card.getByText('AI 默认仅在被 @ 时回复。开启后，在对应群聊及其子区中无需 @ 也可回复。',{exact:true}).waitFor();
+    await card.getByText('未开启（'+await rows.count()+'）',{exact:true}).waitFor();
     // 群级开关已下线，群聊管理不再出现 Bot 回复规则。
     const firstStatus=rows.first().locator('.eva-person-card__mention-status');
-    assert.equal(await firstStatus.innerText(),'需要 @ 才回答','默认需要 @ 才回答');
+    assert.equal(await firstStatus.innerText(),'AI 仅在被 @ 时回复','默认AI 仅在被 @ 时回复');
     const firstSwitch=rows.first().getByRole('switch');
     assert.equal(await firstSwitch.isChecked(),false);
 
     await firstSwitch.click();
     await firstStatus.waitFor();
-    assert.equal(await firstStatus.innerText(),'已开启免 @ 回答');
+    assert.equal(await firstStatus.innerText(),'AI 无需被 @ 即可回复');
     assert.equal(await firstSwitch.isChecked(),true);
     await card.getByText('已开启（1）',{exact:true}).waitFor();
+    const remaining=await rows.count()-1;
+    if(remaining)await card.getByText('未开启（'+remaining+'）',{exact:true}).waitFor();
 
     await closeCard();
     await page.reload();
     await openMentionFree('王宜林的 AI 分身');
     const restored=card.locator('.eva-person-card__mention-row').first();
     assert.equal(await restored.getByRole('switch').isChecked(),true,'刷新后保留免 @ 回答');
-    assert.equal(await restored.locator('.eva-person-card__mention-status').innerText(),'已开启免 @ 回答');
+    assert.equal(await restored.locator('.eva-person-card__mention-status').innerText(),'AI 无需被 @ 即可回复');
 
     assert.deepEqual(pageErrors,[],'页面不应出现未捕获 JavaScript 错误');
   }finally{

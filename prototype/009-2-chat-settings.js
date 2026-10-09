@@ -53,7 +53,7 @@ root.EvaChatSettings={create(ui,store){
   const managementPage=page==='manage'&&manage&&h(R.Fragment,null,
    !all&&owner&&ownerSuccessors.length>0&&section(h(Row,{title:'转让群主',onClick:()=>setPicker('transfer')}))
   );
-  const groupMdPage=page==='groupmd'&&h(R.Fragment,null,h('p',{className:'eva-chat-settings-note'},'记录本群的协作约定，供群成员与 AI 参考。'),section(h('div',{className:'eva-chat-setting-edit'},h('label',{htmlFor:'eva-group-md-preview'},'GROUP.md'),h('textarea',{id:'eva-group-md-preview','aria-label':'GROUP.md 内容',rows:12,placeholder:'尚未配置 GROUP.md',readOnly:!groupMdEditing,value:groupMdEditing?groupMdDraft:governance.groupMd,onChange:e=>setGroupMdDraft(e.target.value)}),manage&&h('div',{className:'eva-chat-setting-edit-actions'},groupMdEditing?h(R.Fragment,null,h(Button,{theme:'borderless',onClick:()=>{setGroupMdEditing(false);setGroupMdDraft(governance.groupMd);}},'取消'),h(Button,{theme:'solid',disabled:groupMdDraft===governance.groupMd,onClick:()=>{if(run(()=>store.setGroupMd(id,actor,groupMdDraft)))setGroupMdEditing(false);}},'保存')):h(Button,{theme:'solid',onClick:()=>{setGroupMdDraft(governance.groupMd);setGroupMdEditing(true);}},'编辑')))));
+  const groupMdPage=page==='groupmd'&&h(R.Fragment,null,h('p',{className:'eva-chat-settings-note'},'记录本群的协作约定，供群成员与 AI 参考'),section(h('div',{className:'eva-chat-setting-edit'},h('label',{htmlFor:'eva-group-md-preview'},'GROUP.md'),h('textarea',{id:'eva-group-md-preview','aria-label':'GROUP.md 内容',rows:12,placeholder:'尚未配置 GROUP.md',readOnly:!groupMdEditing,value:groupMdEditing?groupMdDraft:governance.groupMd,onChange:e=>setGroupMdDraft(e.target.value)}),manage&&h('div',{className:'eva-chat-setting-edit-actions'},groupMdEditing?h(R.Fragment,null,h(Button,{theme:'borderless',onClick:()=>{setGroupMdEditing(false);setGroupMdDraft(governance.groupMd);}},'取消'),h(Button,{theme:'solid',disabled:groupMdDraft===governance.groupMd,onClick:()=>{if(run(()=>store.setGroupMd(id,actor,groupMdDraft)))setGroupMdEditing(false);}},'保存')):h(Button,{theme:'solid',onClick:()=>{setGroupMdDraft(governance.groupMd);setGroupMdEditing(true);}},'编辑')))));
   return h('aside',{className:'eva-chat-settings','aria-label':'聊天信息管理',onKeyDown:e=>{if(e.key==='Escape'&&!picker&&!confirm&&!profile){e.stopPropagation();page==='main'?onClose():setPage('main');}}},
    h('header',{className:'eva-chat-settings-head'},h('button',{ref:closeRef,type:'button','aria-label':page==='main'?'关闭聊天信息':'返回聊天信息',onClick:()=>page==='main'?onClose():setPage('main')},h(page==='main'?CloseIcon:BackIcon,{size:20})),h('h3',null,title)),
    h('div',{className:'eva-chat-settings-body'},error&&h('p',{role:'alert',className:'eva-members-error'},error),
@@ -74,7 +74,7 @@ root.EvaChatSettings={create(ui,store){
      h('div',{className:'eva-chat-member-search-block'},
       h(Input,{className:'eva-chat-member-search','aria-label':'搜索群聊成员',value:memberQuery,onChange:setMemberQuery,showClear:true,prefix:SearchIcon?h(SearchIcon,{size:16}):null,placeholder:'搜索'}),
       !fixed&&h(MemberFilters,{members:ordered,type:memberTypeFilter,setType:setMemberTypeFilter}),
-      all&&h('p',{className:'eva-chat-settings-note eva-chat-member-page-note'},'成员与项目同步，请在项目中管理；全员群不支持单独退出。')
+      all&&h('p',{className:'eva-chat-settings-note eva-chat-member-page-note'},'成员与项目同步，请在项目中管理；全员群不支持单独退出')
      ),
      !visibleMembers.length&&h('p',{className:'eva-chat-settings-note'},'没有符合条件的成员'),
      section(...visibleMembers.map(p=>h(MemberRow,{key:p.id,p,role:role(p),onProfile:()=>setProfile(p),actions:!fixed&&h(R.Fragment,null,owner&&p.kind==='human'&&p.id!==g.ownerId&&h(MemberAction,{label:governance.manualManagerIds.includes(p.id)?'取消群管理员':'设为群管理员',name:p.name,Icon:governance.manualManagerIds.includes(p.id)?UserMinusIcon:UserCogIcon,onClick:()=>run(()=>store.setGroupManager(id,actor,p.id,!governance.manualManagerIds.includes(p.id)))}),manage&&p.kind!=='human'&&h(MemberAction,{label:governance.botAdminIds.includes(p.id)?'取消 AI 管理员':'设为 AI 管理员',name:p.name,Icon:governance.botAdminIds.includes(p.id)?UserMinusIcon:UserCogIcon,onClick:()=>run(()=>store.setGroupBotAdmin(id,actor,p.id,!governance.botAdminIds.includes(p.id)))}),!all&&eligibleRemove(p)&&h(MemberAction,{label:'移出群聊',name:p.name,Icon:TrashIcon,danger:true,onClick:()=>setConfirm({remove:p})}))})))
@@ -110,7 +110,7 @@ root.EvaChatSettings={create(ui,store){
      h('div',{className:'eva-chat-member-search-block'},
       h(Input,{className:'eva-chat-member-search','aria-label':'搜索群聊成员',value:memberQuery,onChange:setMemberQuery,showClear:true,prefix:SearchIcon?h(SearchIcon,{size:16}):null,placeholder:'搜索'}),
       h(MemberFilters,{members:ordered,type:memberTypeFilter,setType:setMemberTypeFilter}),
-      h('p',{className:'eva-chat-settings-note eva-chat-member-page-note'},'子区继承所属群聊的成员与角色，不能单独增删。')),
+      h('p',{className:'eva-chat-settings-note eva-chat-member-page-note'},'子区继承所属群聊的成员与角色，不能单独增删')),
      h('section',{className:'eva-chat-setting-section'},...visibleMembers.map(p=>h(MemberRow,{key:p.id,p,role:threadRole(p),onProfile:()=>setProfile(p)})))),
     h(IdentityCard,{identity:profile,onClose:()=>setProfile(null)}));
   }

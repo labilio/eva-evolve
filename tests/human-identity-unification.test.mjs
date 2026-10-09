@@ -76,3 +76,25 @@ test('构建后的最近、关注、标题使用会话身份；真实消息适�
   assert.equal(rowProps(message,false).isSend,false);
   assert.equal(rowProps(message,false).avatarUrl,window.EvaAvatar.conversationUri({id:'dm-qinshu',personId:'u-qinshu'}));
 });
+
+test('全部联系人展示职务与不同深度组织，旧字段定向迁移且只执行一次',()=>{
+  const first=setup();
+  const depths=new Set();
+  for(const person of first.store.people()){
+    const profile=first.model.resolve(person.id);
+    assert.equal(profile.departmentL2,person.title);
+    assert.equal(profile.deptFull.split('/').at(-1),person.title);
+    depths.add(profile.deptFull.split('/').length-1);
+  }
+  assert.ok(depths.has(1)&&depths.has(5));
+  const saved=JSON.parse(first.storage.get('eva:project-members:v1'));
+  delete saved.seededContactPositionsV1;
+  const target=saved.people.find(p=>p.id==='u-wangyilin');
+  target.title='旧职务';target.deptFull='旧集团/旧部门';target.avatar='keep.png';
+  const migrated=setup(saved);
+  assert.equal(migrated.model.resolve(target.id).departmentL2,'人工智能产品总监');
+  assert.equal(migrated.store.personRecord(target.id).avatar,'keep.png');
+  const migratedSaved=JSON.parse(migrated.storage.get('eva:project-members:v1'));
+  migratedSaved.people.find(p=>p.id===target.id).deptFull='后续组织/后续职务';
+  assert.equal(setup(migratedSaved).model.resolve(target.id).deptFull,'后续组织/后续职务');
+});

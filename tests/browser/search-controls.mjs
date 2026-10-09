@@ -133,7 +133,7 @@ test('表格视图搜索：任务页第四视图的新增入口沿用公共搜�
   await input.blur();
   // 保留搜索行为：输入过滤行，公共清空按钮恢复
   await input.fill('zzz-不存在-zzz');
-  await page.locator('.eva-task-table__empty', { hasText: '当前视图没有匹配的任务。' }).waitFor();
+  await page.locator('.eva-task-table__empty', { hasText: '当前视图没有匹配的任务' }).waitFor();
   await field.locator('.eva-task-table__search-clear').click();
   await page.locator('.eva-task-table__row').first().waitFor();
   assert.equal(await input.inputValue(), '', '清空后查询应恢复为空');

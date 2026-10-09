@@ -227,7 +227,7 @@
             h('option',{value:0},'项目根目录'),
             all.filter(folder=>folder.type==='folder'&&folder.id!==dialog.id).map(folder=>h('option',{key:folder.id,value:folder.id},folder.name))
           )),
-          h('p',{className:'eva-drive-dialog__hint'},'仅允许在当前项目文件库内移动。'),
+          h('p',{className:'eva-drive-dialog__hint'},'仅允许在当前项目文件库内移动'),
           dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
         );
         if(dialog.type==='tags'){
@@ -262,7 +262,7 @@
             h('div',{className:'eva-shortcut-source'},h('span',null,'源文件'),h('strong',null,item.name),h('small',null,'当前项目 · 团队文件')),
             h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件库'),h('select',{value:targetSpaceId,onChange:event=>setDialog({...dialog,targetSpaceId:event.target.value,targetParentId:0})},spaces.map(space=>h('option',{key:space.id,value:space.id},(space.kind==='personal'?'个人文件库':'项目文件库')+' · '+space.name)))),
             h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件夹'),h('select',{value:dialog.targetParentId||0,onChange:event=>setDialog({...dialog,targetParentId:event.target.value==='0'?0:event.target.value})},h('option',{value:0},'根目录'),folders.map(folder=>h('option',{key:folder.id,value:folder.id},folder.name)))),
-            h('p',{className:'eva-drive-dialog__hint'},'快捷方式不复制文件，也不会向目标文件库成员授予源文件权限。'),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
+            h('p',{className:'eva-drive-dialog__hint'},'快捷方式不复制文件，也不会向目标文件库成员授予源文件权限'),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
           ):h('p',null,'没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。');
         }
         if(dialog.type==='trash')body=h('p',null,'将“'+item.name+'”'+(item.type==='folder'?'及其中内容':'')+'移至回收站？Owner 或 Manager 可恢复。');

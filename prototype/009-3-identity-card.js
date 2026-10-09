@@ -66,7 +66,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
    h('div',{className:'eva-avatar-editor__stage'+(pickable?' eva-avatar-editor__stage--pick':''),...stageProps},
     stageNode,
     pickable&&CameraIcon&&h('span',{className:'eva-avatar-editor__overlay','aria-hidden':true},h(CameraIcon,{size:20}),h('span',null,'点击更换'))),
-   h('p',{className:'eva-avatar-editor__hint'},cropping?'拖拽调整位置，拖动滑块缩放，点击保存。':'点击头像上传图片，不超过 5 MB'),
+   h('p',{className:'eva-avatar-editor__hint'},cropping?'拖拽调整位置，拖动滑块缩放，点击保存':'点击头像上传图片，不超过 5 MB'),
    cropping&&h('label',{className:'eva-avatar-editor__zoom'},h('span',null,'缩放'),h('input',{type:'range',min:'1',max:'3',step:'0.01',value:zoom,'aria-label':'头像缩放',onChange:event=>{const next=Number(event.target.value)||1;setZoom(next);if(imageRef.current)setOffset(currentOffset=>clamp(next,currentOffset.x,currentOffset.y,imageRef.current));}})),
    h('input',{ref:fileRef,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择头像图片',onChange:onFile}),
    error&&h('p',{className:'eva-person-card__error',role:'alert'},error),
@@ -130,15 +130,15 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
   const mentionGroups=manageClone&&typeof store.cloneMentionFreeGroups==='function'?store.cloneMentionFreeGroups(profile.owner.id):[];
   const enabledGroups=mentionGroups.filter(group=>group.noMention),otherGroups=mentionGroups.filter(group=>!group.noMention);
   const goBack=()=>{setError('');if(page==='mentionFree')setPage('identity');else setOwnerId(null);};
-  const pageTitle=page==='mentionFree'?'免 @ 回答':'身份资料';
+  const pageTitle=page==='mentionFree'?'群聊回复':'身份资料';
   const canGoBack=page!=='identity'||!!ownerId;
   const hasRows=owner||profile?.deptFull||profile?.description||profile?.ownership||profile?.project||manageClone;
-  // 「部门」沿用企业微信名片的信息层级：最末级组织做大字主值，
+  // 「职务」以路径末级的任职名称做主值，
   // 上层链路做小字灰字副行并完整换行——任意层数都放得下，不需要截断或悬停。
   const orgSegments=profile?.deptFull?String(profile.deptFull).split('/').filter(Boolean):[];
   const orgLeaf=orgSegments.length?orgSegments[orgSegments.length-1]:'';
   const orgParents=orgSegments.slice(0,-1).join('/');
-  const mentionSection=(title,rows)=>h('section',{className:'eva-person-card__mention-section',key:title},title&&h('p',{className:'eva-person-card__mention-section-title'},title),h('div',{className:'eva-person-card__mention-list'},rows.map(group=>h('div',{className:'eva-person-card__mention-row',key:group.groupId},h('div',{className:'eva-person-card__mention-main'},h('span',{className:'eva-person-card__mention-name',title:group.name},group.name),h('span',{className:'eva-person-card__mention-status'},group.noMention?'已开启免 @ 回答':'需要 @ 才回答')),Switch&&h(Switch,{'aria-label':group.name+'：'+(group.noMention?'已开启免 @ 回答':'需要 @ 才回答'),checked:group.noMention,onChange:value=>run(()=>store.setCloneMentionFree(profile.owner.id,actor,group.groupId,value))})))));
+  const mentionSection=(title,rows)=>h('section',{className:'eva-person-card__mention-section',key:title},title&&h('p',{className:'eva-person-card__mention-section-title'},title),h('div',{className:'eva-person-card__mention-list'},rows.map(group=>h('div',{className:'eva-person-card__mention-row',key:group.groupId},h('div',{className:'eva-person-card__mention-main'},h('span',{className:'eva-person-card__mention-name',title:group.name},group.name),h('span',{className:'eva-person-card__mention-status'},group.noMention?'AI 无需被 @ 即可回复':'AI 仅在被 @ 时回复')),Switch&&h(Switch,{'aria-label':group.name+'：'+(group.noMention?'AI 无需被 @ 即可回复':'AI 仅在被 @ 时回复'),checked:group.noMention,onChange:value=>run(()=>store.setCloneMentionFree(profile.owner.id,actor,group.groupId,value))})))));
   return h(R.Fragment,null,id&&(popupHost||!root.document)&&h(Modal,{
    visible:true,centered:true,getPopupContainer:popupContainer,className:'eva-person-card-modal',width:420,title:null,
    'aria-label':profile?profile.name+'的资料':'身份资料',onCancel:onClose,footer:null,maskClosable:true
@@ -152,11 +152,11 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
    :profile?h(R.Fragment,null,
     page==='mentionFree'?h(R.Fragment,null,
      h('div',{className:'eva-person-card__scroll'},
-      h('p',{className:'eva-person-card__mention-hint'},'开启后，这个 AI 在这些群及其子区不需要 @ 也会回答；其他 AI、其他群不受影响。'),
+      h('p',{className:'eva-person-card__mention-hint'},'AI 默认仅在被 @ 时回复。开启后，在对应群聊及其子区中无需 @ 也可回复。'),
       mentionGroups.length?h(R.Fragment,null,
        enabledGroups.length?mentionSection('已开启（'+enabledGroups.length+'）',enabledGroups):null,
-       otherGroups.length?mentionSection(enabledGroups.length?'其他群':'群聊',otherGroups):null)
-      :h('p',{className:'eva-person-card__mention-empty',role:'status'},'这个 AI 暂未加入任何群聊。')),
+       otherGroups.length?mentionSection('未开启（'+otherGroups.length+'）',otherGroups):null)
+      :h('p',{className:'eva-person-card__mention-empty',role:'status'},'这个 AI 暂未加入任何群聊')),
      error&&h('footer',{className:'eva-person-card__actions'},h('p',{role:'alert',className:'eva-person-card__error'},error)))
     :h(R.Fragment,null,
      h('div',{className:'eva-person-card__scroll'},
@@ -171,17 +171,17 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
       hasRows&&h('div',{className:'eva-person-card__details'},
        /* 组织链路按 / 分段：插入 wbr 让换行优先落在段边界，而不是把「应用组」这类词拆开；
           单段本身超长时仍由 .org-path 的 overflow-wrap:anywhere 兜底，不截断。 */
-       profile.deptFull&&h('div',{className:'eva-person-card__row eva-person-card__row--org',key:'部门'},h('span',{className:'eva-person-card__row-label'},'部门'),h('span',{className:'eva-person-card__row-value eva-person-card__row-value--org'},h('span',{className:'eva-person-card__org-leaf'},orgLeaf),orgParents&&h('span',{className:'eva-person-card__org-path'},...orgParents.split('/').flatMap((seg,i,all)=>i<all.length-1?[seg+'/',h('wbr',{key:'w'+i})]:[seg])))),
+       profile.deptFull&&h('div',{className:'eva-person-card__row eva-person-card__row--org',key:'职务'},h('span',{className:'eva-person-card__row-label'},'职务'),h('span',{className:'eva-person-card__row-value eva-person-card__row-value--org'},h('span',{className:'eva-person-card__org-leaf'},orgLeaf),orgParents&&h('span',{className:'eva-person-card__org-path'},...orgParents.split('/').flatMap((seg,i,all)=>i<all.length-1?[seg+'/',h('wbr',{key:'w'+i})]:[seg])))),
        owner&&field('所属人',h(Button,{className:'eva-person-card__person-link',theme:'borderless',type:'tertiary','aria-label':'所属人：'+owner.name,onClick:()=>setOwnerId(owner.id)},h(Appearance,{profile:owner,size:24}),h('span',null,owner.name))),
        profile.description&&field('简介',h('p',null,profile.description),true),
        profile.ownership&&field('归属',profile.ownership),
        profile.project&&field('所属项目',h(Button,{className:'eva-person-card__project-link',theme:'borderless',type:'tertiary',onClick:openProject},h(ProjectIdentity,{project:profile.project}))),
-       manageClone&&h(Button,{className:'eva-person-card__row eva-person-card__row--button',key:'manage',theme:'borderless',type:'tertiary',onClick:()=>setPage('mentionFree')},h('span',{className:'eva-person-card__row-label'},'免 @ 回答'),h('span',{className:'eva-person-card__row-value'},h('span',{className:'eva-person-card__row-desc'},'选择哪些群里 AI 不需要 @ 也会回答')),ChevronRight&&h(ChevronRight,{size:16,className:'eva-person-card__row-chevron','aria-hidden':true})))),
+       manageClone&&h(Button,{className:'eva-person-card__row eva-person-card__row--button',key:'manage',theme:'borderless',type:'tertiary',onClick:()=>setPage('mentionFree')},h('span',{className:'eva-person-card__row-label'},'群聊回复'),h('span',{className:'eva-person-card__row-value'},h('span',{className:'eva-person-card__row-desc'},'设置 AI 是否仅在被 @ 时回复')),ChevronRight&&h(ChevronRight,{size:16,className:'eva-person-card__row-chevron','aria-hidden':true})))),
      (profile.action||profile.hint||error)&&h('footer',{className:'eva-person-card__actions'},
       error&&h('p',{role:'alert',className:'eva-person-card__error'},error),
       profile.action?h(Button,{className:'eva-person-card__cta',theme:'solid',type:'primary',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
    )
-   ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看。'))));
+   ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看'))));
  }
  return {IdentityCard,IdentityAppearance:Appearance,ProjectIdentity,identityModel:model,AvatarEditor,readAvatarFile};
 }};
