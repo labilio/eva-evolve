@@ -955,6 +955,44 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       'React.createElement(AssigneePicker,{size:"small",value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       'React.createElement(AssigneePicker,{size:"small",candidates:evaTaskProjectIdentities(currentSpaceId(),"member"),value:null,valueName:null,onChange:(Kt,nn)=>tn(()=>batchUpdateIssues(xt,{assignee_id:Kt,assignee_type:nn,suppress_run:!0}))})',
       '批量指派候选人只限本项目联系人');
+    // 筛选与编辑共用任务所属项目的候选合同，不能回退到旧 Loop 全局专家目录。
+    source=root.__evaCut(source,'function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){',
+      `function EvaTaskFilterIdentity({person}){return React.createElement("span",{className:"eva-task-filter-identity","data-identity-id":person.id},React.createElement(EvaLoopIdentityAvatar,{person,size:20}),React.createElement(EvaLoopIdentityName,{person}))}
+function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){const evaFilterStore=evaMembers().store,evaFilterSnapshot=reactExports.useSyncExternalStore(evaFilterStore.subscribe,evaFilterStore.getSnapshot),evaFilterProject=currentSpaceId(),evaFilterCandidates=reactExports.useMemo(()=>{const ownFirst=items=>{const me=items.find(item=>item.id===evaFilterStore.snapshot().actorId);return me?[me,...items.filter(item=>item.id!==me.id)]:items};return{assignees:ownFirst(evaTaskProjectIdentities(evaFilterProject,"member")),creators:ownFirst(evaTaskIdentityCandidates(evaFilterProject))}},[evaFilterSnapshot,evaFilterProject]);`,
+      '任务筛选身份由项目父容器提供');
+    source=root.__evaCut(source,'{candidates:hr,loaded:$r,succeeded:Ir,refresh:Ur}=useAssigneeCandidateState(),Qr=reactExports.useMemo(()=>{const $a=WKApp$1.loginInfo.uid;return hr.find(Xa=>Xa.type==="member"&&Xa.octo_uid===$a)?.id},[hr])',
+      'hr=evaFilterCandidates.creators,$r=!0,Ir=!0,Qr=evaFilterStore.snapshot().actorId','筛选不再请求旧全局候选');
+    source=root.__evaCut(source,'issueFilterOptionIds({candidates:hr,candidatesLoaded:$r,candidatesSucceeded:Ir,projects:qr,projectsLoaded:Kr,projectsSucceeded:oa,labels:jr,labelsLoaded:ia,labelsSucceeded:la}),mt)',
+      '{...issueFilterOptionIds({candidates:hr,candidatesLoaded:$r,candidatesSucceeded:Ir,projects:qr,projectsLoaded:Kr,projectsSucceeded:oa,labels:jr,labelsLoaded:ia,labelsSucceeded:la}),assigneeIds:evaFilterCandidates.assignees.map(person=>person.id),creatorIds:evaFilterCandidates.creators.map(person=>person.id)},mt)',
+      '筛选校验与身份候选同源');
+    source=root.__evaCut(source,'[hr,$r,Ir,mt,jr,ia,la,qr,Kr,oa]','[hr,$r,Ir,mt,jr,ia,la,qr,Kr,oa,evaFilterCandidates]','项目成员变化后更新筛选校验');
+    source=root.__evaCut(source,'hr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id},$a.name)),{filter:!0,onOpen:Ur}',
+      'evaFilterCandidates.assignees.map(person=>React.createElement(Select.Option,{key:person.id,value:person.id,person,icon:React.createElement(EvaLoopIdentityAvatar,{person,size:20}),content:React.createElement("span",{"data-identity-id":person.id},React.createElement(EvaLoopIdentityName,{person}))},React.createElement(EvaTaskFilterIdentity,{person}))),{filter:!0,identity:!0}',
+      '负责人筛选复用公共身份渲染');
+    source=root.__evaCut(source,'hr.filter($a=>$a.type==="member").map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id},$a.name)),{filter:!0,onOpen:Ur}',
+      'evaFilterCandidates.creators.map(person=>React.createElement(Select.Option,{key:person.id,value:person.id,person,icon:React.createElement(EvaLoopIdentityAvatar,{person,size:20}),content:React.createElement("span",{"data-identity-id":person.id},React.createElement(EvaLoopIdentityName,{person}))},React.createElement(EvaTaskFilterIdentity,{person}))),{filter:!0,identity:!0}',
+      '创建者筛选复用公共身份渲染');
+    source=root.__evaCut(source,'filter:za?.filter,disabled:Sa,maxTagCount:',
+      'filter:za?.identity?((query,option)=>option.person.name.toLocaleLowerCase().includes(String(query).trim().toLocaleLowerCase())):za?.filter,"aria-label":$a,inputProps:{"aria-label":$a},arrowIcon:React.createElement(ChevronDown,{size:16}),renderOptionItem:option=>window.EvaLoopTaskComponents.selectOption(React,Check,option),renderSelectedItem:option=>({isRenderInTag:true,content:option.person?React.createElement(EvaTaskFilterIdentity,{person:option.person}):React.createElement("span",{className:"eva-task-filter-identity"},option.icon,option.content||option.label)}),disabled:Sa,maxTagCount:',
+      '筛选已选身份与候选使用同一组件');
+    source=root.__evaCut(source,'...FIELD_POPUP,style:{width:"100%"},placeholder:$a},Za)',
+      '...FIELD_POPUP,dropdownClassName:"loop-fields__dropdown eva-task-filter-menu",style:{width:"100%"},placeholder:$a},Za)',
+      '筛选菜单复用公共任务选项行');
+    source=root.__evaCut(source,'Ma=ISSUE_STATUS_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a},pt(`loop.status.${$a}`)))',
+      'Ma=ISSUE_STATUS_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a,icon:React.createElement(ISSUE_STATUS_ICON[$a],{size:14})},pt(`loop.status.${$a}`)))',
+      '筛选状态复用公共图形');
+    source=root.__evaCut(source,'Va=PRIORITY_ORDER.map($a=>React.createElement(Select.Option,{key:$a,value:$a},pt(`loop.priority.${$a}`)))',
+      'Va=window.EvaLoopTaskComponents.priorityDisplayOrder.map($a=>React.createElement(Select.Option,{key:$a,value:$a,icon:React.createElement(PRIORITY_ICON[$a],{size:14})},pt(`loop.priority.${$a}`)))',
+      '筛选优先级复用公共顺序与图形');
+    source=root.__evaCut(source,'da=jr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id,label:$a.name},React.createElement(LabelChips,{labels:[$a]})))',
+      'da=jr.map($a=>React.createElement(Select.Option,{key:$a.id,value:$a.id,label:$a.name,content:window.EvaLoopTaskComponents.labelChip(React,$a)},$a.name))',
+      '筛选标签搜索文本与公共标签呈现分离');
+    source=root.__evaCut(source,'const evaHit=hr.find(evaP=>evaP.id===evaId);','const evaHit=evaFilterCandidates.creators.find(evaP=>evaP.id===evaId);','筛选摘要使用相同身份来源');
+    source=root.__evaCut(source,'style:{width:104}},ISSUE_DATE_FIELDS',
+      '"aria-label":"时间字段",arrowIcon:React.createElement(ChevronDown,{size:16}),style:{width:"100%"}},ISSUE_DATE_FIELDS','时间字段与日期范围各自完整显示');
+    source=root.__evaCut(source,'placeholder:pt("loop.filter.dateRange"),zIndex:FIELD_POPUP.zIndex,style:{flex:1}',
+      'placeholder:["开始日期","结束日期"],showClear:true,zIndex:FIELD_POPUP.zIndex,style:{width:"100%"}',
+      '日期范围使用完整宽度与清空能力');
     source=root.__evaCut(source,'issuesOf=()=>scoped(ISSUES_BY_SPACE);function groupIssuesByAssignee',String.raw`issuesOf=()=>evaNormalizeTaskList(scoped(ISSUES_BY_SPACE));
     function evaNormalizeTaskStatus(status){return status}
     // 任务身份解析：联系人不限项目；AI 分身与数字员工必须已加入所在项目（传入 scope 时校验）。

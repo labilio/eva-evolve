@@ -36,6 +36,17 @@
       React.createElement('span',null,'新建'),
       labelChip(React,{name:name.trim()}));
   }
+  // Select 的自定义行适配公共菜单皮肤，保留 listbox/option 语义和原生事件。
+  // Dropdown.Item 固定输出 menuitem 且使用 mousedown，不能直接嵌入 Select。
+  function selectOption(React,Check,option){
+    const {className,style,disabled,focused,selected,onClick,onMouseEnter,label,icon,content}=option;
+    return React.createElement('div',{
+      className:[className,'semi-dropdown-item','eva-task-select-option',selected?'semi-dropdown-item-active':''].filter(Boolean).join(' '),
+      style,onClick,onMouseEnter,role:'option','aria-selected':!!selected,'aria-disabled':!!disabled,
+      'data-focused':focused?'true':undefined
+    },icon?React.createElement('span',{className:'semi-dropdown-item-icon'},icon):null,
+    content||label,selected?React.createElement(Check,{size:14,className:'eva-task-select-option__check','aria-hidden':true}):null);
+  }
   const enumDropdownCache=new WeakMap();
   function enumMenu(React,Dropdown,{options,value,onChange}){
     return React.createElement(Dropdown.Menu,{className:'eva-task-enum-menu',style:{minWidth:160}},
@@ -131,5 +142,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,selectOption,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);

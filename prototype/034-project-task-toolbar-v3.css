@@ -855,3 +855,34 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
   cursor: pointer;
 }
 .loop-acts__older:hover { color: var(--semi-color-text-0); }
+
+/* Loop 表单皮肤唯一所有者：外框属于 Select / DatePicker，内部 Input 不重复画框。 */
+:is(.loop-page,.loop-sd,.loop-fields,.loop-modal,.loop-apd) :is(.semi-select,.semi-datepicker-range-input,.semi-input-wrapper:not(.semi-select *,.semi-datepicker *,.semi-cascader *)) {
+  background:var(--eva-surface-primary);
+  border:1px solid var(--eva-border-subtle);
+  border-radius:var(--eva-radius-control);
+}
+:is(.loop-page,.loop-sd,.loop-fields,.loop-modal,.loop-apd) :is(.semi-select,.semi-datepicker-range-input,.semi-input-wrapper:not(.semi-select *,.semi-datepicker *,.semi-cascader *)):hover {
+  border-color:var(--eva-border-default);
+}
+:is(.loop-page,.loop-sd,.loop-fields,.loop-modal,.loop-apd) :is(.semi-select-focus,.semi-select-open,.semi-datepicker-range-input-focus,.semi-input-wrapper-focus:not(.semi-select *,.semi-datepicker *,.semi-cascader *)) {
+  border-color:var(--eva-border-focus);
+  box-shadow:none;
+}
+:is(.loop-fields,.loop-modal,.loop-apd) .semi-select { min-height:36px; align-items:center; }
+:is(.loop-page,.loop-sd,.loop-fields,.loop-modal,.loop-apd) :is(.semi-input,.semi-select-selection) { font-size:13px; }
+:is(.loop-page,.loop-sd,.loop-fields,.loop-modal,.loop-apd) :is(.semi-input,textarea.semi-input-textarea)::placeholder { color:var(--eva-text-muted); }
+
+/* 筛选面板只决定布局，Select 负责选择状态，身份组件负责头像与 AI 标。 */
+.loop-filter-panel { box-sizing:border-box; width:332px; max-width:calc(100vw - 32px); gap:12px; }
+.loop-filter-panel .loop-fields__inline { flex-direction:column; align-items:stretch; }
+.loop-filter-panel .semi-select { min-height:32px; }
+.loop-filter-panel .semi-datepicker { min-width:0; }
+.eva-task-filter-identity { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
+
+/* 筛选只适配 Select 的承载层；选项复用公共菜单皮肤，保留 Select 的选项语义。 */
+.eva-task-filter-menu .semi-select-option-list { padding: 6px; }
+.eva-task-select-option__check { margin-left: auto; flex-shrink: 0; }
+.eva-task-filter-menu .eva-task-select-option[data-focused="true"] { background: var(--eva-overlay-hover); }
+.eva-task-filter-menu .eva-task-select-option.semi-dropdown-item-active,
+.eva-task-filter-menu .eva-task-select-option.semi-dropdown-item-active:hover { background: var(--eva-list-option-selected); font-weight: 400; }

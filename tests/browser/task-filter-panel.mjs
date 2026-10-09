@@ -1,0 +1,113 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+
+test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const origin=`http://127.0.0.1:${server.address().port}`;
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try {
+  const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');
+  await page.locator('.loop-board').waitFor();
+  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
+  const panel=page.locator('.loop-filter-panel');
+  const offsets=await panel.locator('.semi-select-multiple').evaluateAll(els=>els.map(el=>{
+   const a=el.getBoundingClientRect(),b=el.querySelector('.semi-select-selection-placeholder').getBoundingClientRect();
+   return Math.abs(a.y+a.height/2-b.y-b.height/2);
+  }));
+  assert.ok(offsets.every(n=>n<1),'全部多选提示应垂直居中：'+offsets);
+  // 展开态必须使用任务业务视觉，而非只有纯文本。
+  for (const [index, texts, glyph] of [[0,['待规划','待办','进行中','审核中','已完成','受阻','已取消'],'svg'],[1,['无','紧急','高','中','低'],'svg'],[4,null,'.eva-task-label-chip']]) {
+   const field=panel.locator('.semi-select').nth(index);
+   await field.click();
+   const rows=page.locator('.semi-select-option-list:visible [role="option"]');
+   await page.waitForFunction(()=>{const el=document.querySelector('.eva-task-select-option');if(!el)return false;let n=el,v=1;while(n){v*=Number(getComputedStyle(n).opacity);n=n.parentElement}return v>0.99},{},{timeout:3000});
+   if(texts) assert.deepEqual((await rows.allTextContents()).map(s=>s.trim()),texts);
+   assert.equal(await rows.locator(glyph).count(),await rows.count(),'每个候选复用任务图形或标签片');
+   await rows.first().click();
+   await panel.locator('.loop-filter-panel__head').click();
+   assert.ok(await field.locator(glyph).count()>0,'已选回填保留业务视觉');
+   await panel.locator('.loop-filter-panel__clear').click();
+  }
+  const assignee=panel.locator('.semi-select').nth(2);
+  await assignee.click();
+  const options=page.locator('.semi-select-option-list:visible [role="option"]');
+  const expected=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot();return s.projects.prod.humans.map(h=>s.people.find(p=>p.id===h.id).name)});
+  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),expected.sort(),'负责人只能是项目联系人');
+  assert.equal(await options.locator('img').count(),expected.length,'每个候选都有头像');
+  const inset=await options.first().evaluate(el=>{
+   const r=el.getBoundingClientRect(),a=el.querySelector('img').getBoundingClientRect();return (a.x-r.x)/(r.width/el.offsetWidth);
+  });
+  assert.ok(inset<=12,'头像只保留标准菜单行内距，不能额外预留勾选槽：'+inset);
+  await options.filter({hasText:'王宜林'}).click();
+  await options.filter({hasText:'苏航'}).click();
+  await panel.locator('.loop-filter-panel__head').click();
+  assert.match(await assignee.innerText(),/王宜林/);
+  assert.ok(await assignee.locator('img').count()>0,'回填同样使用身份头像');
+  assert.match(await page.locator('.eva-task-filter-chips').innerText(),/我.*苏航/);
+  await panel.locator('.loop-filter-panel__clear').click();
+  assert.equal(await page.locator('.eva-task-filter-chip').count(),0);
+  await assignee.click();
+  await assignee.locator('input').fill('何静');
+  await options.filter({hasText:'何静'}).waitFor();
+  assert.equal(await options.count(),1,'中文检索保持真实姓名语义');
+  await assignee.locator('input').press('ArrowDown');
+  await assignee.locator('input').press('Enter');
+  await panel.locator('.loop-filter-panel__head').click();
+  assert.match(await page.locator('.eva-task-filter-chips').innerText(),/何静/);
+  await panel.locator('.loop-filter-panel__clear').click();
+  const creator=panel.locator('.semi-select').nth(3);
+  await creator.click();
+  const expectedCreators=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot(),p=s.projects.prod;return [...s.people.map(p=>p.id),...p.cloneIds,...p.employeeIds]});
+  const creatorIds=await options.locator('[data-identity-id]').evaluateAll(els=>els.map(el=>el.dataset.identityId));
+  assert.deepEqual(creatorIds.sort(),expectedCreators.sort(),'创建者与任务身份合同同源');
+  // 分身与数字员工使用公共单头像及 AI 标。
+  const aiId=await page.evaluate(()=>window.__evaGetFileContext().store.snapshot().projects.prod.cloneIds[0]);
+  const ai=options.filter({has:page.locator(`[data-identity-id="${aiId}"]`)});
+  assert.equal(await ai.locator('img').count(),1);
+  assert.match(await ai.innerText(),/AI/);
+  await ai.click();
+  await panel.locator('.loop-filter-panel__head').click();
+  assert.equal(await creator.locator('img').count(),1);
+  await panel.locator('.loop-filter-panel__clear').click();
+  const range=panel.locator('.semi-datepicker');
+  const backgrounds=await range.locator('.semi-input-wrapper').evaluateAll(els=>els.map(el=>getComputedStyle(el).backgroundColor));
+  assert.ok(backgrounds.every(v=>v==='rgba(0, 0, 0, 0)'),'日期内部输入框必须透明：'+backgrounds);
+  const widths=await range.locator('input').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));
+  assert.ok(widths.every(w=>w>=75),'日期输入不得压缩成省略号：'+widths);
+  await range.locator('input').first().click();
+  const calendar=page.locator('.semi-datepicker-container:visible');
+  await calendar.locator('.semi-datepicker-day[aria-label$="-01"]').first().click();
+  await calendar.locator('.semi-datepicker-day[aria-label$="-15"]').first().click();
+  await panel.locator('.loop-filter-panel__head').click();
+  assert.match(await page.locator('.eva-task-filter-chips').innerText(),/时间范围/);
+  assert.ok((await range.locator('input').first().inputValue()).length>=10);
+  await range.hover();
+  await range.locator('.semi-datepicker-range-input-clearbtn').click();
+  assert.equal(await page.locator('.eva-task-filter-chip').count(),0,'日期范围可独立清除');
+  await page.evaluate(()=>window.EvaTheme.apply('dark'));
+  const darkSurface=await assignee.evaluate(el=>getComputedStyle(el).backgroundColor);
+  assert.notEqual(darkSurface,'rgb(255, 255, 255)','暗色沿用语义表面');
+  await assignee.click();
+  await options.first().waitFor();
+  assert.equal(await options.locator('img').count(),expected.length);
+  await panel.locator('.loop-filter-panel__head').click();
+  await page.evaluate(()=>window.EvaTheme.apply('light'));
+  await page.setViewportSize({width:1000,height:700});
+  const panelBox=await panel.boundingBox();
+  assert.ok(panelBox.x>=0&&panelBox.x+panelBox.width<=1000,'窄窗口面板不横向溢出');
+  await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
+  await page.getByRole('tab',{name:'看板',exact:true}).click();
+  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.locator('.eva-task-table__row').first().waitFor();
+  assert.equal(await page.locator('.loop-filter-panel:visible').count(),0,'视图往返不遗留浮层');
+  assert.deepEqual(errors,[]);
+ } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
