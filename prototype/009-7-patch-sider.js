@@ -102,15 +102,6 @@
           '移除顶栏侧栏折叠按钮'
         );
 
-        /* 顶栏左上角按钮在窄版(80px)/宽版(180px)之间切换：补上统一 Eva 提示，
-         * 文案随折叠态成对变化，比 aria-label 的「展开更多／收起」更明确。 */
-        source = root.__evaCut(
-          source,
-          'onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1',
-          'onClick:ur,"aria-label":pr,"data-eva-tooltip":Pt?.siderCollapsed?"展开导航栏":"收起导航栏"},React.createElement(SidebarIcon$1',
-          '顶栏侧栏宽度切换提示'
-        );
-
         /* 展开态最小宽度固定为 180px；拖到 200px 阈值时切换为 80px
          * 缩略态，避免在两者之间挤压、重排导航内容。折叠态右拖时不再消耗
          * 进入折叠的阈值，第一像素右移便直接恢复标准宽度。 */
@@ -235,7 +226,7 @@ EvaSidebarNavigation=rt=>{const ct={isMobile:rt.isMobile,collapsed:rt.collapsed,
         var legacyFooter = source.slice(footerStart, footerEnd + 1);
         if (!legacyFooter.includes('className:"eva-user-row"') || !legacyFooter.includes('sider-footer-btn-mobile')) throw new Error('EVA 原生底部组件合同变化');
         source = root.__evaCut(source, ',' + legacyFooter, '', '底部只读身份与唯一设置入口');
-        // 当前导航使用的折叠态提示直接委托 Semi Tooltip，保留原有触发节点。
+        // 导航入口保留原按钮与事件；Fragment 不生成 DOM，也不显示旧提示。
         for (const [anchor,count] of [
           ['React.createElement(TooltipComponent,{...ut,content:"搜索会话",position:"right"}',2],
           ['React.createElement(TooltipComponent,{...pt,content:LABEL$2,position:"right"}',2],
@@ -243,12 +234,8 @@ EvaSidebarNavigation=rt=>{const ct={isMobile:rt.isMobile,collapsed:rt.collapsed,
           ['React.createElement(TooltipComponent,{...gt,content:rt,position:"right"}',2]
         ]) {
           if (source.split(anchor).length-1!==count) throw new Error('侧栏 Tooltip 锚点变化: '+anchor);
-          source=source.replaceAll(anchor,anchor.replace('TooltipComponent','window.EvaTooltipComponent').replace(',position:"right"',''));
+          source=source.replaceAll(anchor,'React.createElement(React.Fragment,null');
         }
-        source = root.__evaCut(source,
-          'getSiderTooltipProps=(rt=!1)=>{const ct=!rt||isNoHoverDevice();return{className:SIDER_TOOLTIP_CLASS,trigger:ct?[]:"hover",disabled:ct,unmountOnExit:!0,popupHoverStay:!1,popupVisible:ct?!1:void 0,getPopupContainer:getSiderPopupContainer}}',
-          'getSiderTooltipProps=(rt=!1)=>{const ct=!rt||isNoHoverDevice();return{className:SIDER_TOOLTIP_CLASS,trigger:"hover",condition:!ct,getPopupContainer:getSiderPopupContainer}}',
-          '侧栏提示可访问性合同');
     return source;
   });
 })(window);

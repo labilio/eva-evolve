@@ -33,7 +33,7 @@
     target.addEventListener('mouseleave',reset);
     return()=>{target.removeEventListener('click',dismiss);target.removeEventListener('mouseleave',reset);};
    },[target]);
-   return eligible&&!dismissed?h(Tooltip,{content,trigger:'hover'},h(Target,{target})):null;
+   return eligible&&!dismissed?h(Tooltip,{content,trigger:'hover',className:'eva-passive-tooltip'},h(Target,{target})):null;
   }
   const host=document.createElement('div');host.setAttribute('data-eva-tooltip-adapter','');document.body.append(host);
   const reactRoot=createRoot(host);

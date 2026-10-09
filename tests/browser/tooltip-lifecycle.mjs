@@ -22,6 +22,7 @@ test('共享提示入口：持续悬停、内容更新、隐藏和卸载均由�
  try{const page=await browser.newPage({viewport:{width:1200,height:800}});await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);
  await page.evaluate(()=>{const b=document.createElement('button');b.id='tooltip-fixture';b.textContent='触发';b.setAttribute('data-eva-tooltip','原生控件提示');Object.assign(b.style,{position:'fixed',left:'500px',top:'200px',zIndex:'1000'});document.body.append(b);});
  const target=page.locator('#tooltip-fixture');await target.hover();const tip=page.getByRole('tooltip').filter({hasText:'原生控件提示'});await tip.waitFor();await page.waitForTimeout(500);assert.equal(await tip.isVisible(),true);
+ assert.equal(await tip.evaluate(node=>getComputedStyle(node.parentElement).pointerEvents),'none','文字提示不能拦住页面按钮');
  await target.click();await tip.waitFor({state:'hidden'});await page.mouse.move(10,10);await target.hover();await tip.waitFor();
  await target.evaluate(e=>e.setAttribute('data-eva-tooltip','已更新提示'));await tip.waitFor({state:'hidden',timeout:2000});
  await page.mouse.move(10,10);await target.hover();const updated=page.getByRole('tooltip').filter({hasText:'已更新提示'});await updated.waitFor();await page.waitForTimeout(300);assert.equal(await updated.isVisible(),true);
@@ -33,14 +34,15 @@ test('共享提示入口：持续悬停、内容更新、隐藏和卸载均由�
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
 
-test('我的 Agent 新建菜单与折叠导航只显示 Semi Tooltip',async()=>{
+test('我的 Agent 新建菜单关闭提示，左侧导航不新增提示',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
  try{const page=await browser.newPage({viewport:{width:1200,height:800}});await page.goto(`http://127.0.0.1:${server.address().port}/#/messages?evaIM=my-ai`);
  const create=page.getByRole('button',{name:'新建',exact:true}).first();await create.hover();await page.getByRole('tooltip').filter({hasText:'新建'}).waitFor();await create.click();await page.getByRole('menu').waitFor();
  const visibleCreateTips=()=>page.locator('.semi-tooltip-wrapper-show').evaluateAll(nodes=>nodes.filter(node=>node.textContent?.trim()==='新建').length);
+ await page.waitForFunction(()=>![...document.querySelectorAll('.semi-tooltip-wrapper-show')].some(node=>node.textContent?.trim()==='新建'));
  assert.equal(await visibleCreateTips(),0);await page.keyboard.press('Escape');assert.equal(await visibleCreateTips(),0);
  const toggle=page.getByRole('button',{name:'收起',exact:true});if(await toggle.isVisible())await toggle.click();
- await page.locator('#eva-my-avatar-nav').hover();const siderTip=page.getByRole('tooltip').filter({hasText:'Agent'});await siderTip.waitFor();assert.match(await siderTip.getAttribute('class'),/semi-tooltip/);
+ await page.locator('#eva-my-avatar-nav').hover();await page.waitForTimeout(350);assert.equal(await page.getByRole('tooltip').filter({hasText:'Agent'}).count(),0);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
 

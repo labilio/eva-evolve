@@ -8,7 +8,7 @@ test('Tooltip 显隐归 Semi，禁止恢复全局自写控制器和虚拟锚点'
  assert.doesNotMatch(patch,/EvaTooltipBridge|eva-tooltip-virtual-anchor|trigger:\s*["']custom["']/);
  assert.equal(fs.existsSync(new URL('../prototype/062-tooltip.js',import.meta.url)),false);
  assert.equal(fs.existsSync(new URL('../prototype/062-tooltip.css',import.meta.url)),false);
- assert.match(adapter,/h\(Tooltip,\{content,trigger:'hover'/);
+ assert.match(adapter,/h\(Tooltip,\{content,trigger:'hover',className:'eva-passive-tooltip'/);
  assert.doesNotMatch(adapter,/data-eva-tooltip-position|\{content,position/);
  assert.match(adapter,/R\.useImperativeHandle\(ref,\(\)=>target/);
 });
