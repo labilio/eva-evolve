@@ -13,54 +13,14 @@
     };
   }
   root.__evaPatch('general', function (source) {
-    // Eva 统一 Tooltip：全站唯一实现。
-    // 合规依据：W3C WCAG 2.1 SC 1.4.13（可关闭 / 可悬停 / 持续）与 WAI-ARIA APG Tooltip Pattern、
-    // SC 2.1.1 键盘可达。气泡本体由项目设计系统 Semi 的 Tooltip 渲染，全站共用同一实例与同一组
-    // 鼠标/焦点时机；触发方式只有 DOM 声明式 data-eva-tooltip（见 062-tooltip.js），
-    // React 触发器同样写该属性，不再各自挂载独立气泡造成切换时交叉淡入与位置残留。
-    // 不再沿用脚手架 AionUI 自带的 Arco TooltipComponent：AionUI 只是当年的壳，不是 Eva 的设计系统。
+    // React controls use Semi directly; legacy DOM surfaces only adapt their real nodes.
     var evaTooltipPrimitive = String.raw`var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";
-    var EvaTooltipBridge=(function(){
-      var evaState={visible:!1,content:null,position:"top",target:null,rect:null,revision:0};
-      var evaListeners=new Set();
-      var evaSubscribe=function(evaFn){evaListeners.add(evaFn);return function(){evaListeners.delete(evaFn)}};
-      var evaGet=function(){return evaState};
-      var evaEmit=function(){evaListeners.forEach(function(evaFn){try{evaFn()}catch(evaError){}})};
-      var evaRoot=null;
-      var evaEnsure=function(){
-        if(evaRoot||!document.body)return;
-        var evaHost=document.createElement("div");
-        evaHost.className="eva-tooltip-bridge";
-        evaHost.setAttribute("data-eva-tooltip-bridge","");
-        document.body.appendChild(evaHost);
-        evaRoot=clientExports.createRoot(evaHost);
-        evaRoot.render(reactExports.createElement(function(){
-          var evaNow=reactExports.useSyncExternalStore(evaSubscribe,evaGet,evaGet);
-          var evaRect=evaNow.rect;
-          // 锚点几何在 show() 时固化到 state，用 Semi Tooltip 的 rePosKey 触发重定位：
-          // 同一实例保持挂载，相邻目标之间移动时气泡不会整棵卸载/重挂，入场退场交给
-          // Semi 自己的 motion（semi-tooltip-zoomIn/zoomOut），不再出现硬切与闪烁。
-          var evaAnchorStyle=evaRect?{left:evaRect.left+"px",top:evaRect.top+"px",width:evaRect.width+"px",height:evaRect.height+"px"}:void 0;
-          return reactExports.createElement(Tooltip,{trigger:"custom",visible:evaNow.visible,content:evaNow.content,position:evaNow.position,rePosKey:evaNow.revision,className:"eva-tooltip-surface",mouseEnterDelay:0,mouseLeaveDelay:0,getPopupContainer:function(){return document.body}},reactExports.createElement("span",{id:"eva-tooltip-virtual-anchor",className:"eva-tooltip-virtual-anchor","aria-hidden":"true",style:evaAnchorStyle}));
-        }));
-      };
-      var evaSet=function(evaNext){evaState=Object.assign({},evaState,evaNext);evaEmit()};
-      return{
-        show:function(evaTarget,evaContent,evaPosition){
-          if(!evaTarget||evaContent==null||evaContent==="")return;
-          evaEnsure();
-          var evaRect=evaTarget.getBoundingClientRect();
-          evaSet({visible:!0,content:evaContent,position:evaPosition||"top",target:evaTarget,rect:{left:evaRect.left,top:evaRect.top,width:evaRect.width,height:evaRect.height},revision:evaState.revision+1});
-        },
-        hide:function(){evaSet({visible:!1})},
-        isVisible:function(){return!!evaState.visible}
-      };
-    })();
-    window.EvaTooltip=Object.freeze({show:EvaTooltipBridge.show,hide:EvaTooltipBridge.hide,isVisible:EvaTooltipBridge.isVisible});
+    window.EvaTooltipComponent=function EvaTooltipComponent(props){return reactExports.createElement(Tooltip,props)};
+    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:Tooltip})});
 `;
     source = root.__evaCut(source,
       'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',
-      evaTooltipPrimitive, '统一 Tooltip 原语与 DOM 桥');
+      evaTooltipPrimitive, 'Semi Tooltip 组件与原生节点适配');
     source = root.__evaCut(source,
       'execLog:"执行日志",execEmpty:"暂无执行记录"',
       'execLog:"AI 执行记录",execEmpty:"暂无 AI 执行记录"',
@@ -526,7 +486,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     // 切换 .eva-drawer-expanded（面板铺满），图标随态由 CSS 切换。
     source=root.__evaCut(source,
       'React.createElement(Button,{className:"loop-idp__boardbtn",theme:"borderless",onClick:Qa},St("loop.detail.board")),React.createElement(Dropdown,{trigger:"click",position:"bottomRight",render:mi(),clickToHide:!0},React.createElement(Button,{icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"more"}))',
-      String.raw`React.createElement(Dropdown,{trigger:"click",position:"bottomRight",clickToHide:!0,getPopupContainer:()=>document.querySelector(".collab-route-right.eva-route-drawer .panel")||document.body,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{icon:React.createElement(EvaLinkIcon,{size:13}),onClick:()=>evaOpenParentPicker(xt,Ta)},"关联父任务"),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Item,{type:"danger",icon:React.createElement(Trash2,{size:13}),onClick:Aa},St("loop.menu.deleteIssue")))},React.createElement("span",{className:"loop-idp__morewrap"},React.createElement(Button,{className:"loop-idp__morebtn",icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"更多操作","data-eva-tooltip":"更多操作","data-eva-tooltip-position":"bottom"}))),React.createElement(Button,{className:"loop-idp__copybtn",theme:"borderless","aria-label":"复制任务链接","data-eva-tooltip":"复制任务链接","data-eva-tooltip-position":"bottom",onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(xt.workspace_id||currentSpaceId(),xt.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}},icon:React.createElement(Copy$a,{size:16})}),React.createElement(Button,{className:"loop-idp__fsbtn",theme:"borderless","aria-label":"切换全屏","data-eva-tooltip":"切换全屏","data-eva-tooltip-position":"bottom",onClick:()=>{var el=document.querySelector(".collab-route-right.eva-route-drawer");el&&el.classList.toggle("eva-drawer-expanded")},icon:React.createElement("span",{className:"eva-fs-ico"},React.createElement(EvaExpandIcon,{size:16,className:"eva-fs-ico__enter"}),React.createElement(EvaCollapseIcon,{size:16,className:"eva-fs-ico__exit"}))}),React.createElement(Button,{className:"loop-idp__closebtn",theme:"borderless","aria-label":"关闭任务详情",onClick:Qa,icon:React.createElement(X,{size:18})})`,
+      String.raw`React.createElement(Dropdown,{trigger:"click",position:"bottomRight",clickToHide:!0,getPopupContainer:()=>document.querySelector(".collab-route-right.eva-route-drawer .panel")||document.body,render:React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{icon:React.createElement(EvaLinkIcon,{size:13}),onClick:()=>evaOpenParentPicker(xt,Ta)},"关联父任务"),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Item,{type:"danger",icon:React.createElement(Trash2,{size:13}),onClick:Aa},St("loop.menu.deleteIssue")))},React.createElement("span",{className:"loop-idp__morewrap"},React.createElement(window.EvaTooltipComponent,{content:"更多操作",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__morebtn",icon:React.createElement(Ellipsis,{size:18}),theme:"borderless","aria-label":"更多操作"}))))),React.createElement(window.EvaTooltipComponent,{content:"复制任务链接",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__copybtn",theme:"borderless","aria-label":"复制任务链接",onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(xt.workspace_id||currentSpaceId(),xt.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}},icon:React.createElement(Copy$a,{size:16})}))),React.createElement(window.EvaTooltipComponent,{content:"切换全屏",trigger:"hover",closeOnEsc:true,clickTriggerToHide:true,position:"bottom"},React.createElement("span",{style:{display:"inline-flex"}},React.createElement(Button,{className:"loop-idp__fsbtn",theme:"borderless","aria-label":"切换全屏",onClick:()=>{var el=document.querySelector(".collab-route-right.eva-route-drawer");el&&el.classList.toggle("eva-drawer-expanded")},icon:React.createElement("span",{className:"eva-fs-ico"},React.createElement(EvaExpandIcon,{size:16,className:"eva-fs-ico__enter"}),React.createElement(EvaCollapseIcon,{size:16,className:"eva-fs-ico__exit"}))}))),React.createElement(Button,{className:"loop-idp__closebtn",theme:"borderless","aria-label":"关闭任务详情",onClick:Qa,icon:React.createElement(X,{size:18})})`,
       '任务详情抽屉顶栏恢复链接入口与图标提示');
 
     // 折叠菜单只保留两项：关联父任务、删除（删除沿用既有 confirmDelete 模态 Aa）。
