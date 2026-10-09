@@ -70,10 +70,10 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   assert.deepEqual(await names(),originalOrder,'重新打开后恢复普通成员的原有顺序');
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
   const modal=page.getByRole('dialog').filter({hasText:'确认移除成员'});
-  await modal.getByRole('button',{name:'cancel',exact:true}).click();
+  await modal.getByRole('button',{name:'取消',exact:true}).click();
   assert.equal(await row.count(),1);
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
-  await modal.getByRole('button',{name:'confirm',exact:true}).click();
+  await modal.getByRole('button',{name:'确认',exact:true}).click();
   await row.waitFor({state:'detached'});
   await page.reload();await open();assert.equal(await row.count(),0);
   // Opening settings must preserve the underlying composer and its draft.
