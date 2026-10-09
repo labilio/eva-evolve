@@ -308,9 +308,10 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 
 /* One visual indicator follows the controlled Semi selection; the IM stays mounted. */
 .eva-recent-topic-tabs { position: relative; overflow: hidden; }
-.eva-recent-topic-tabs .semi-tabs-tab-line { border-bottom-color: transparent; }
+.eva-recent-topic-tabs .semi-tabs-bar-line.semi-tabs-bar-top .semi-tabs-tab { border-bottom-color: transparent; }
 .eva-recent-topic-tabs__indicator {
   position: absolute;
+  z-index: 3;
   left: 0;
   height: 2px;
   background: var(--semi-color-primary);
@@ -326,4 +327,54 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 /* Telegram's trailing count: separate from the selected-tab indicator. */
 .eva-recent-topic-tabs__label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 /* Geometry and tonal colors come from the shared IM unread badge rule in 017. */
-.eva-recent-topic-tabs__unread.is-muted { background: var(--eva-unread-surface); color: var(--eva-unread-text); }
+.eva-recent-topic-tabs .eva-recent-topic-tabs__unread.is-muted,
+.eva-thread-list--compact .eva-recent-topic-tabs__unread.is-muted { background:var(--semi-color-fill-1); color:var(--semi-color-text-2); }
+
+/* Natural end position; when full, Semi's scroll area shrinks while create stays visible. */
+.eva-recent-topic-tabs { display: flex; align-items: center; gap: 8px; }
+.eva-topic-scroll { min-width:0; max-width:calc(100% - 48px); flex:0 1 auto; overflow-x:auto; scrollbar-width:none; }
+.eva-topic-scroll::-webkit-scrollbar { display:none; }
+.eva-topic-scroll > .semi-tabs { width:max-content; }
+.eva-topic-scroll .semi-tabs-tab:first-child { position:sticky; left:0; z-index:2; background:var(--semi-color-bg-0); }
+.eva-topic-scroll .semi-tabs-tab:first-child::before { content:''; position:absolute; inset:0 -20px 0 0; background:var(--semi-color-bg-0); z-index:-1; }
+.eva-recent-topic-tabs__create { flex: none; }
+.eva-recent-topic-tabs__list { flex: none; }
+.eva-topic-create__hint { color: var(--semi-color-text-2); font-size: 12px; margin: 0 0 8px; }
+.eva-topic-create__duplicate { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 12px; }
+.eva-topic-create__error { color: var(--semi-color-danger); font-size: 12px; }
+
+/* Telegram keeps natural title widths. Only a label wider than the available
+   strip is truncated; reserve room for the topic list and persistent +. */
+.eva-recent-topic-tabs { container-type: inline-size; }
+.eva-recent-topic-tabs .semi-tabs-tab { max-width: calc(100cqw - 192px); box-sizing: border-box; flex-shrink: 0; }
+.eva-recent-topic-tabs__label { min-width: 0; }
+.eva-recent-topic-tabs__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-recent-topic-tabs__unread { flex: none; }
+
+/* Ordinary topics use readable primary text; muted topics keep secondary gray. */
+.eva-recent-topic-tabs .semi-tabs-tab { color: var(--semi-color-text-0); }
+
+
+
+
+.eva-recent-topic-actions { margin-left:auto; display:flex; align-items:center; gap:8px; flex:none; padding-left:8px; position:relative; }
+.eva-recent-topic-actions::before { content:''; position:absolute; left:0; top:50%; width:1px; height:20px; transform:translateY(-50%); background:var(--eva-border-faint); }
+.eva-thread-list--compact { width:360px; max-width:calc(100vw - 32px); height:auto; max-height:min(520px,calc(100vh - 180px)); background:var(--semi-color-bg-0); border-radius:8px; overflow:hidden; }
+.eva-thread-list--compact .eva-chat-settings-head { height:44px; min-height:44px; padding:0 12px; background:transparent; border:0; }
+.eva-thread-list--compact .eva-chat-settings-head h3 { flex:1; font-size:14px; }
+.eva-thread-list--compact .eva-thread-list-body { padding:0 12px 12px; overflow:hidden; gap:8px; }
+.eva-thread-list--compact .eva-thread-list-tabs { margin:0; }
+.eva-thread-list--compact .eva-thread-list-cards { overflow:auto; min-height:0; gap:2px; }
+.eva-thread-list--compact .eva-thread-list-card { padding:6px 8px; border:0; border-radius:6px; gap:0; }
+.eva-thread-list--compact .eva-thread-list-card-head { min-height:28px; }
+.eva-thread-list--compact .eva-thread-list-open { min-height:28px; }
+.eva-thread-list--compact .eva-thread-list-open strong { font-weight:400; white-space:normal; overflow-wrap:anywhere; }
+.eva-thread-list--compact .eva-thread-list-open > svg { flex:none; }
+.eva-thread-list--compact .eva-thread-list-card.is-muted { color:var(--semi-color-text-0); }
+.eva-thread-list--compact .eva-recent-topic-tabs__unread { margin-left:auto; }
+
+.eva-topic-list-trigger { display:inline-flex; flex:none; }
+.eva-recent-topic-tabs__list .semi-button-content { display:flex; align-items:center; gap:4px; }
+
+.eva-topic-pin { display:inline-flex; align-items:center; flex:none; color:var(--semi-color-text-2); }
+.eva-topic-pin .ctx-icon { width:13px; height:13px; }
