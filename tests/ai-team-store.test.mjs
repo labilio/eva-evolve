@@ -7,6 +7,13 @@ const context = { window: {}, setTimeout, clearTimeout, console };
 if (existsSync(file)) vm.runInNewContext(readFileSync(file, 'utf8'), context);
 const make = (options = {}) => { assert.equal(typeof context.window.EvaAITeam?.createStore, 'function'); return context.window.EvaAITeam.createStore({ storage: null, delay: 0, profile:'review', ...options }); };
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
+const waitFor = async (predicate, timeout = 2000) => {
+ const deadline = Date.now() + timeout;
+ while (!predicate()) {
+  if (Date.now() >= deadline) throw new Error('等待助理配置同步超时');
+  await tick();
+ }
+};
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return {promise,resolve,reject}; };
 const memory = () => { let value = null; return { getItem: () => value, setItem: (_, v) => { value = v; } }; };
 test('snapshots are immutable, stable, and notify only mutations', () => {
@@ -152,7 +159,8 @@ test('product copy migration preserves user text, identities and drafts', () => 
 test('complete editor fields persist and local updates sync to personas without losing tabs', async()=>{
  const storage=memory(), s=make({storage});
  const configuration={identity:'角色',personality:'风格',about:'背景',skills:['整理'],collaboration:'协作说明',description:'简介',model:'Qwen3.7 Plus',toolset:'四两的产品脑袋',avatar:'https://example.test/local.png'};
- s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration}); await tick();
+ const saved=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration});
+ await waitFor(()=>{const p=s.getSnapshot().identities.find(i=>i.id==='persona-initial');return p.configVersion===saved.version&&p.syncStatus==='synced';});
  const p=s.getSnapshot().identities.find(i=>i.id==='persona-initial'); assert.equal(p.configuration.about,'背景'); assert.equal(p.configuration.collaboration,'协作说明');
  const restored=make({storage}); assert.equal(restored.getSnapshot().localAssistants[0].configuration.toolset,'四两的产品脑袋'); assert.equal(restored.getSnapshot().localAssistants[0].configuration.avatar,'https://example.test/local.png');
  assert.throws(()=>restored.savePersona({id:p.id,name:p.name,configuration:{...configuration,avatar:'https://example.test/persona.png'}}),/头像不可修改/);
@@ -160,7 +168,8 @@ test('complete editor fields persist and local updates sync to personas without 
  assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.about,'云端背景');
  assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.avatar,'');
  assert.equal(restored.getSnapshot().localAssistants[0].configuration.about,'背景');
- restored.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{avatar:'https://example.test/local-next.png'}}); await tick();
+ const updated=restored.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{avatar:'https://example.test/local-next.png'}});
+ await waitFor(()=>{const p=restored.getSnapshot().identities.find(i=>i.id==='persona-initial');return p.configVersion===updated.version&&p.syncStatus==='synced';});
  assert.equal(restored.getSnapshot().identities.find(i=>i.id===p.id).configuration.avatar,'');
  const fresh=make({profile:'new-user'});
  const created=await fresh.createPersona('assistant-general',{configuration:{...configuration,avatar:''}}); assert.equal(created.name,'王宜林的 AI 分身'); assert.equal(created.configuration.description,'简介');
