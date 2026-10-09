@@ -11,8 +11,8 @@
     const roleNames={owner:'负责人',admin:'管理员',member:'成员'};
     const PickerPreview=root.EvaPickerPreview.create({React:R,MarkdownView,TextArea,Card,PermissionList,FileTextIcon,SettingsIcon,Button,Select,Modal,Input,Tag,Checkbox,Radio},store);
     const SelectionBody=PickerPreview.SelectionBody;
-    function humanItems(people,pid){const s=store.snapshot(),p=s.projects[pid],rank={owner:0,admin:1,member:2};return people.filter(person=>store.person(person.id)).map(person=>{const role=p?.humans.find(m=>m.id===person.id)?.role,projectRoles=pid?store.memberRoles(pid,person.id).map(item=>item.name):[];return {...person,kind:'human',projectRole:role,detail:projectRoles.join('、')};}).sort((a,b)=>(rank[a.projectRole]??3)-(rank[b.projectRole]??3));}
-    function cloneItems(actorId,pid,scopeId){const s=store.snapshot(),scope=s.projects[scopeId]||s.groups[scopeId];return s.clones.filter(c=>c.ownerId===actorId&&c.active!==false&&(!pid||s.projects[pid]?.cloneIds.includes(c.id))&&!scope?.cloneIds.includes(c.id)).map(c=>({...c,kind:'clone'}));}
+    function humanItems(people,pid){const p=store.projectRecord(pid),rank={owner:0,admin:1,member:2};return people.filter(person=>store.person(person.id)).map(person=>{const role=p?.humans.find(m=>m.id===person.id)?.role,projectRoles=pid?store.memberRoles(pid,person.id).map(item=>item.name):[];return {...person,kind:'human',projectRole:role,detail:projectRoles.join('、')};}).sort((a,b)=>(rank[a.projectRole]??3)-(rank[b.projectRole]??3));}
+    function cloneItems(actorId,pid,scopeId){const project=store.projectRecord(pid),scope=store.projectRecord(scopeId)||store.groupRecord(scopeId);return store.cloneRecords().filter(c=>c.ownerId===actorId&&c.active!==false&&(!pid||project?.cloneIds.includes(c.id))&&!scope?.cloneIds.includes(c.id)).map(c=>({...c,kind:'clone'}));}
     // 新建项目还没有项目范围，候选等价于「新建非项目群聊」：除本人外的可用联系人 + 本人的可用 AI 分身；本人分身置顶便于选择。
     function projectCreateCandidates(actorId){return {items:[...cloneItems(actorId),...humanItems(store.people().filter(person=>person.id!==actorId))],groups:[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:'联系人'}]};}
     // 身份渲染是选择器家族共用的唯一实现：候选与已选、拉人与选人都走这里。
@@ -78,7 +78,7 @@
             h(SelectionBody,{items,selected:ids,onChange:next=>formApi.setValue('memberIds',next),single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'})),
           h(SubmissionError,{submission})));
     }
-    function useState(){R.useSyncExternalStore(store.subscribe,store.getSnapshot);return store.snapshot();}
+    function useState(){R.useSyncExternalStore(store.subscribe,store.getSnapshot);return {actorId:store.actorId()};}
     function ActorPicker(){const s=useState();return h('div',{className:'eva-members-actor'},h('span',null,'演示身份'),h(Select,{value:s.actorId,optionList:store.people().map(p=>({value:p.id,label:h(HumanIdentity,{id:p.id,compact:true})})),onChange:id=>store.setActor(id)}));}
     function RoleCreator({projectId,actor,onCreated,onCancel}){
       const submission=useSubmission({onSubmit:values=>{
@@ -111,14 +111,14 @@
     }
     function Members({scopeId}){
       const s=useState(),actor=s.actorId,sid=scopeId.startsWith('all:')?scopeId.slice(4):scopeId;
-      const scope=s.projects[sid]||s.groups[sid];
+      const project=store.projectRecord(sid),scope=project||store.groupRecord(sid);
       const [addOpen,setAddOpen]=R.useState(false),[error,setError]=R.useState(''),[action,setAction]=R.useState(null),[details,setDetails]=R.useState(null),[identityProfile,setIdentityProfile]=R.useState(null),[roleMember,setRoleMember]=R.useState(null);
       const [removalApi]=Form.useForm();
       const removal=useSubmission({active:action?.type==='remove',resetKey:[sid,actor,action?.id].join(':'),onSubmit:values=>{store.remove(sid,actor,action.id,values.successors||{});setAction(null);}});
       R.useEffect(()=>{if(action?.type==='remove'){removalApi.reset();removalApi.setValues({successors:{}});}},[sid,actor,action?.type,action?.id]);
       R.useEffect(()=>{setAddOpen(false);setError('');setAction(null);setDetails(null);setIdentityProfile(null);setRoleMember(null);},[sid,actor]);
       if(!scope)return h('p',null,'该范围已不存在');
-      const joined=store.canRead(sid,actor),manage=joined&&store.manager(sid,actor),all=scopeId.startsWith('all:'),isProject=!!s.projects[sid];
+      const joined=store.canRead(sid,actor),manage=joined&&store.manager(sid,actor),all=scopeId.startsWith('all:'),isProject=!!project;
       const run=fn=>{try{fn();setError('');return true;}catch(e){setError(e.message);return false;}};
       const name=id=>store.person(id)?.name||id;
       const humanRows=scope.humans.map(m=>({...store.person(m.id),...m}));
@@ -144,13 +144,13 @@
         action?.type==='remove'&&h(Modal,{className:'eva-members-modal',title:'确认移除成员',visible:true,onCancel:()=>setAction(null),onOk:removal.submit,okButtonProps:{type:'danger'},confirmLoading:removal.busy,okText:'确认',cancelText:'取消'},
           h(Form,{...removal.formProps,form:removalApi,initValues:{successors:{}},className:'eva-member-removal-form'},
             h(HumanIdentity,{id:action.id}),h('p',null,`确认${action.id===actor?'退出':'移除 '+name(action.id)}？${isProject?'其分身及项目内群聊关系将一并移除。':'其分身也会离开本群。'}历史内容保留。负责人或群主须先转让。`),
-            isProject&&Object.values(s.groups).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',{id:'eva-member-successor-'+g.id+'-label'},g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群及子区'):h(Form.Select,{field:'successors['+JSON.stringify(g.id)+']',id:'eva-member-successor-'+g.id,noLabel:true,className:'eva-members-select','aria-label':g.name+'的群主接任者',placeholder:'选择群主接任者',rules:[{required:true,message:'请选择群主接任者'}],optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),h(SubmissionError,{submission:removal}))),
+            isProject&&Object.values(store.groupRecords()).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',{id:'eva-member-successor-'+g.id+'-label'},g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群及子区'):h(Form.Select,{field:'successors['+JSON.stringify(g.id)+']',id:'eva-member-successor-'+g.id,noLabel:true,className:'eva-members-select','aria-label':g.name+'的群主接任者',placeholder:'选择群主接任者',rules:[{required:true,message:'请选择群主接任者'}],optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),h(SubmissionError,{submission:removal}))),
         h(Modal,{className:'eva-members-modal',title:action?.type==='removeEmployee'?'确认移除数字员工':'解散群聊',visible:action?.type==='removeEmployee'||action?.type==='dissolve',onCancel:()=>setAction(null),onOk:confirm,okButtonProps:{type:'danger'},okText:'确认',cancelText:'取消'},action?.type==='removeEmployee'&&h(ProjectAgentIdentity,{agent:store.employee(action.id)}),action?.type==='removeEmployee'&&h('p',null,'移除后将不能在该范围内提及此数字员工，历史内容保留。'),action?.type==='dissolve'&&h('p',null,'群聊及子区将不再可访问。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)),
         h(Modal,{className:'eva-members-modal',title:details?name(details)+'的分身':'分身',visible:!!details&&!identityProfile,onCancel:()=>setDetails(null),footer:null},details&&rowClones(details).map(c=>h('div',{className:'eva-members-clone-row',key:c.id},h(Button,{theme:'borderless',type:'tertiary',onClick:()=>setIdentityProfile(c.id)},h(CloneIdentity,{clone:c})),canEdit&&(actor===details||manage)&&h(Button,{type:'danger',theme:'light',onClick:()=>run(()=>store.removeClone(sid,actor,c.id))},'移除分身')))));
     }
     // title / submitLabel / zIndex 只在「入口文案或层叠环境不同、创建链路相同」时覆盖，默认值保持群聊管理原有入口不变。
     function CreateGroup({projectId,visible,onClose,onCreated,title='新建群聊',submitLabel='创建群聊',zIndex}){
-      const s=useState(),people=store.people().filter(p=>p.id!==s.actorId&&(!projectId||s.projects[projectId]?.humans.some(m=>m.id===p.id)));
+      const s=useState(),project=store.projectRecord(projectId),people=store.people().filter(p=>p.id!==s.actorId&&(!projectId||project?.humans.some(m=>m.id===p.id)));
       return h(MemberPicker,{key:projectId+':'+s.actorId,title,visible,zIndex,withName:true,memberLabel:'群成员',submit:submitLabel,items:[...humanItems(people),...cloneItems(s.actorId,projectId)],emptyTitle:projectId?'项目内暂无其他可选成员':'暂无可选成员',onCancel:onClose,onSubmit:(chosen,name)=>{const id='group-'+Date.now().toString(36);store.transaction(staged=>{staged.createGroup(id,name,projectId,s.actorId,chosen.filter(p=>p.kind==='clone').map(p=>p.id));chosen.filter(p=>p.kind==='human').forEach(p=>staged.addMember(id,s.actorId,p.id));});onCreated(id);onClose();}});
     }
     function FileLibrarySave({file,source,onClose,onSaved,allowedKinds}){

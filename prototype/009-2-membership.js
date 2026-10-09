@@ -152,6 +152,8 @@
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
       // Narrow detached reads: UI metadata queries must not copy message history.
       projectRecord:id=>state.projects[id]?JSON.parse(JSON.stringify(state.projects[id])):null,
+      groupRecord:id=>state.groups[id]?JSON.parse(JSON.stringify(state.groups[id])):null,
+      groupRecords:()=>JSON.parse(JSON.stringify(state.groups)),
       projectRecords:()=>JSON.parse(JSON.stringify(state.projects)),
       cloneRecords:()=>JSON.parse(JSON.stringify(state.clones.map(cloneView))),
       identityRecords:()=>JSON.parse(JSON.stringify({people:state.people,clones:state.clones.map(cloneView)})),

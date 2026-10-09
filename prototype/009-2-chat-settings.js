@@ -53,7 +53,7 @@ root.EvaChatSettings={create(ui,store){
   return h(R.Fragment,null,h(Row,{title:'GROUP.md',value:store.groupMd(id,actor).content?'已配置':'未配置',onClick:()=>setOpen(true)}),open&&h('div',{className:'eva-chat-settings eva-thread-members-page',role:'dialog','aria-label':'子区 GROUP.md',onKeyDown:e=>{if(e.key==='Escape'){e.stopPropagation();setOpen(false);}}},h('header',{className:'eva-chat-settings-head'},h('button',{type:'button','aria-label':'返回子区信息',onClick:()=>setOpen(false)},h(BackIcon,{size:20})),h('h3',null,'GROUP.md')),h('div',{className:'eva-chat-settings-body'},h(GroupMdEditor,{key:id+':'+actor,id,actor,thread:true}))));
  }
  function ChatSettings({channel,onClose,onManageProject,onClear,sessionInfoOnly=false,conversationActions,fixedGroupActions,projectScoped=false}){
-  const s=useState(),actor=s.actorId,id=channel.id,all=id.startsWith('all:'),sid=all?id.slice(4):id,g=s.groups[sid]||s.projects[sid],fixed=Array.isArray(channel.fixedMembers),group=fixed||!sessionInfoOnly&&!!g&&!channel.chatType?.includes('direct')&&!id.startsWith('dm-'),allowed=group&&store.canRead(id,actor),manage=allowed&&store.manager(id,actor),owner=allowed&&g.ownerId===actor;
+  const s=useState(),actor=s.actorId,id=channel.id,all=id.startsWith('all:'),sid=all?id.slice(4):id,g=store.groupRecord(sid)||store.projectRecord(sid),fixed=Array.isArray(channel.fixedMembers),group=fixed||!sessionInfoOnly&&!!g&&!channel.chatType?.includes('direct')&&!id.startsWith('dm-'),allowed=group&&store.canRead(id,actor),manage=allowed&&store.manager(id,actor),owner=allowed&&g.ownerId===actor;
   const settings=store.chatSettings(id),prefs=store.chatPreferences(id,actor),governance=group&&!fixed&&typeof store.groupGovernance==='function'?store.groupGovernance(id):{manualManagerIds:[],managerIds:[],botAdminIds:[],groupMd:''},editableFixed=!!fixed&&!!fixedGroupActions?.onEditMembers,[page,setPage]=R.useState('main'),[picker,setPicker]=R.useState(null),[confirm,setConfirm]=R.useState(null),[error,setError]=R.useState(''),[profile,setProfile]=R.useState(null),[memberQuery,setMemberQuery]=R.useState(''),[memberOrderIds,setMemberOrderIds]=R.useState([]),[memberTypeFilter,setMemberTypeFilter]=R.useState(-1),[avatarSource,setAvatarSource]=R.useState(null);
   const closeRef=R.useRef(null);
   R.useLayoutEffect(()=>{const previous=document.activeElement;closeRef.current?.focus({preventScroll:true});return()=>{if(previous?.isConnected)previous.focus({preventScroll:true});};},[]);
@@ -118,7 +118,7 @@ root.EvaChatSettings={create(ui,store){
  function ThreadMembers({groupId,actorId}){
   const s=useState(),[profile,setProfile]=R.useState(null),[allOpen,setAllOpen]=R.useState(false),[memberQuery,setMemberQuery]=R.useState(''),[memberOrderIds,setMemberOrderIds]=R.useState([]),[memberTypeFilter,setMemberTypeFilter]=R.useState(-1);
   R.useEffect(()=>{setAllOpen(false);setMemberQuery('');setMemberTypeFilter(-1);setMemberOrderIds([]);setProfile(null);},[groupId,actorId]);
-  const sid=groupId.startsWith('all:')?groupId.slice(4):groupId,g=s.projects[sid]||s.groups[sid];
+  const sid=groupId.startsWith('all:')?groupId.slice(4):groupId,g=store.projectRecord(sid)||store.groupRecord(sid);
   if(!g||!store.canRead(groupId,actorId))return null;
   const governance=typeof store.groupGovernance==='function'?store.groupGovernance(groupId):{managerIds:[],botAdminIds:[]};
   const humans=humanItems(g.humans.map(m=>({...store.person(m.id),...m})),undefined);
