@@ -9,7 +9,7 @@
 .eva-chat-setting-row:last-child { border-bottom:0; }
 button.eva-chat-setting-row { cursor:pointer; }
 button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { background:var(--wk-bg-hover,#e9eaec); }
-.eva-chat-setting-value { color:var(--wk-text-secondary,#666b73); max-width:65%; text-align:right; overflow-wrap:anywhere; white-space:pre-wrap; }
+.eva-chat-setting-value { display:flex; align-items:center; justify-content:flex-end; min-width:0; color:var(--wk-text-secondary,#666b73); max-width:65%; text-align:right; overflow-wrap:anywhere; white-space:pre-wrap; }
 .eva-chat-setting-row.is-danger { color:var(--semi-color-danger); }
 .eva-chat-setting-edit { padding:16px; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); }
 .eva-chat-setting-edit label { display:block; margin-bottom:8px; font-weight:500; }
@@ -138,3 +138,30 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-member-chips .semi-button { flex:none; height:28px; min-height:28px; padding:0 8px; border:1px solid var(--eva-border-faint); border-radius:8px; font:400 12px/18px var(--eva-font-sans); color:var(--eva-text-secondary-accessible); background:var(--eva-surface-primary); }
 .eva-chat-member-chips .semi-button.semi-button-borderless:not(.semi-button-disabled):is(:hover,:active) { border:1px solid var(--eva-border-faint); background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover)); }
 .eva-chat-member-chips .semi-button[aria-pressed="true"],.eva-chat-member-chips .semi-button[aria-pressed="true"]:hover { border:1px solid var(--eva-border-focus); color:var(--eva-action-primary); background:color-mix(in srgb,var(--eva-action-primary) 8%,var(--eva-surface-primary)); }
+
+.eva-chat-management-setting { display:flex; align-items:flex-start; gap:16px; padding:16px; }
+.eva-chat-management-setting-copy { flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.eva-chat-management-setting-copy small { font-size:12px; line-height:18px; color:var(--eva-text-secondary-accessible); }
+.eva-chat-management-setting > .semi-switch { flex:none; margin-top:2px; }
+
+/* GROUP.md uses Eva controls; edit/preview behavior follows Octo. */
+.eva-group-md-editor{display:flex;flex-direction:column;gap:12px;min-width:0}
+.eva-group-md-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eva-group-md-tabs,.eva-group-md-actions{display:flex;gap:4px;align-items:center}
+.eva-group-md-count{display:flex;gap:12px;font-size:12px;color:var(--semi-color-text-2)}
+.eva-group-md-count.is-over{color:var(--semi-color-danger)}
+.eva-group-md-input textarea{min-height:320px;font-family:monospace;line-height:1.6}
+.eva-group-md-preview{min-height:320px;padding:12px;background:var(--semi-color-bg-2);border-radius:var(--semi-border-radius-medium);overflow-wrap:anywhere}
+.eva-group-md-preview img{max-width:100%}
+.eva-group-md-empty{text-align:center;color:var(--semi-color-text-2);padding:40px 0}
+
+.eva-ai-admin-grant{display:flex;flex-direction:column;gap:20px}
+.eva-ai-admin-grant-identity{background:var(--semi-color-fill-0);border:0;border-radius:8px}
+.eva-ai-admin-grant-identity .semi-card-body{padding:16px}
+.eva-ai-admin-grant-label{font-size:12px;line-height:18px;color:var(--semi-color-text-2);margin-bottom:-8px}
+.eva-ai-admin-permissions{display:flex;flex-direction:column;gap:20px}
+.eva-ai-admin-permission{display:flex;align-items:center;gap:12px}
+.eva-ai-admin-permission-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;flex:none;color:var(--semi-color-text-2);background:var(--semi-color-fill-0);border-radius:8px}
+.eva-ai-admin-permission strong{display:block;font-size:14px;font-weight:500;line-height:20px}
+.eva-ai-admin-permission p{margin:4px 0 0;font-size:13px;line-height:20px;color:var(--semi-color-text-1)}
+.eva-ai-admin-grant-modal .semi-modal-footer{margin-top:24px}

@@ -1773,7 +1773,7 @@ function EvaAITeamPage() {
     const evaThreadStart=evaOldInfo.indexOf('fa?React.createElement("div",{className:"ch-right-panel__body"}');
     const evaThreadEnd=evaOldInfo.indexOf(':React.createElement("div",{className:"ch-right-panel__body"},React.createElement("div",{className:"ch-info-members"}');
     if(evaThreadStart<0||evaThreadEnd<0)throw new Error('Thread settings boundary changed');
-    let evaThreadBody=root.__evaCut(evaOldInfo.slice(evaThreadStart+3,evaThreadEnd),',React.createElement(InfoRow,{label:"GROUP.md",value:"未配置"})','','Remove unsupported thread GROUP.md placeholder');
+    let evaThreadBody=root.__evaCut(evaOldInfo.slice(evaThreadStart+3,evaThreadEnd),',React.createElement(InfoRow,{label:"GROUP.md",value:"未配置"})',',React.createElement(evaMembers().ui.ChatSettings.ThreadGroupMd,{key:fa.id+":"+evaActorId,id:fa.id,actor:evaActorId})','子区 GROUP.md 独立编辑入口');
     evaThreadBody=root.__evaCut(evaThreadBody,'React.createElement(InfoRow,{label:"参与人数",value:`${fa.member_count} 人`}),','','子区信息移除参与人数');
     // Use the same Octo settings rows and card shell as group/direct settings.
     evaThreadBody=evaThreadBody.replaceAll('className:"ch-right-panel__body"','className:"eva-chat-settings-body"')
