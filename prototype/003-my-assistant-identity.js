@@ -34,14 +34,14 @@ window.EvaAIIdentity = (() => {
     const children=[icon
       ?render('span',{className:'eva-identity-avatar__icon','aria-hidden':'true'},render===html?escape(icon):icon)
       :render('img',{className:'eva-identity-avatar__logo',src:image,alt:'',draggable:false})];
-    return render('span',{className:'eva-identity-avatar',role:'img','aria-label':label,title:label,style:{'--eva-identity-avatar-size':size+'px',...(appearance.project?{'--eva-identity-avatar-background':window.EvaProjectAppearance.css(appearance.project).surface}:{})}},...children);
+    return render('span',{className:'eva-identity-avatar',role:'img','aria-label':label,style:{'--eva-identity-avatar-size':size+'px',...(appearance.project?{'--eva-identity-avatar-background':window.EvaProjectAppearance.css(appearance.project).surface}:{})}},...children);
   }
   function badge(render=html,className='') {return render('span',{className:'ai-badge ai-badge-small'+(className?' '+className:'')},'AI');}
   // Fixed clone identity comes from its owner; detail retains the navigable relationship.
   function ownerLabel(profile, render=html) {
     if(profile?.kind!=='clone'||!profile.owner?.name)return null;
     const text='所属人：'+profile.owner.name;
-    return render('span',{className:'eva-identity-owner',title:text},render===html?escape(text):text);
+    return render('span',{className:'eva-identity-owner'},render===html?escape(text):text);
   }
   // Owned AI defaults to the Eva logo main image; picking an icon or uploading an image
   // replaces it. Legacy records that stored the logo as a custom image are treated as

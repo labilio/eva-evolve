@@ -1,6 +1,10 @@
 (function (root) {
   'use strict';
   root.__evaPatch('sidebar', function (source) {
+        source = root.__evaCut(source,
+          '"aria-label":Pt?.isMobile?gt:ut,title:Pt?.isMobile?gt:ut',
+          '"aria-label":Pt?.isMobile?gt:ut',
+          '标题栏品牌保留可访问名称并移除浏览器原生提示');
         /* Keep desktop sidebar sizing in the native layout state instead of a visual overlay.
          * 当前产品要求展开态默认 180px；折叠宽保持 80px。中间栏仍独立使用
          * 260px 默认宽度，不复用此处的全局导航尺寸。 */
@@ -103,7 +107,7 @@
         source = root.__evaCut(
           source,
           'onClick:ur,"aria-label":pr},React.createElement(SidebarIcon$1',
-          'onClick:ur,"aria-label":pr,"data-eva-tooltip":Pt?.siderCollapsed?"展开导航栏":"收起导航栏","data-eva-tooltip-position":"bottom"},React.createElement(SidebarIcon$1',
+          'onClick:ur,"aria-label":pr,"data-eva-tooltip":Pt?.siderCollapsed?"展开导航栏":"收起导航栏"},React.createElement(SidebarIcon$1',
           '顶栏侧栏宽度切换提示'
         );
 
@@ -231,11 +235,19 @@ EvaSidebarNavigation=rt=>{const ct={isMobile:rt.isMobile,collapsed:rt.collapsed,
         var legacyFooter = source.slice(footerStart, footerEnd + 1);
         if (!legacyFooter.includes('className:"eva-user-row"') || !legacyFooter.includes('sider-footer-btn-mobile')) throw new Error('EVA 原生底部组件合同变化');
         source = root.__evaCut(source, ',' + legacyFooter, '', '底部只读身份与唯一设置入口');
-        // 侧栏折叠态图标提示统一遵循悬停+聚焦触发、可悬停、Esc 可关（WCAG 1.4.13 / 2.1.1），
-        // 不再只支持 hover 且 Esc 无效，避免与全局 Tooltip 合同不一致。
+        // 当前导航使用的折叠态提示直接委托 Semi Tooltip，保留原有触发节点。
+        for (const [anchor,count] of [
+          ['React.createElement(TooltipComponent,{...ut,content:"搜索会话",position:"right"}',2],
+          ['React.createElement(TooltipComponent,{...pt,content:LABEL$2,position:"right"}',2],
+          ['React.createElement(TooltipComponent,{...pt,content:LABEL$1,position:"right"}',2],
+          ['React.createElement(TooltipComponent,{...gt,content:rt,position:"right"}',2]
+        ]) {
+          if (source.split(anchor).length-1!==count) throw new Error('侧栏 Tooltip 锚点变化: '+anchor);
+          source=source.replaceAll(anchor,anchor.replace('TooltipComponent','window.EvaTooltipComponent').replace(',position:"right"',''));
+        }
         source = root.__evaCut(source,
           'getSiderTooltipProps=(rt=!1)=>{const ct=!rt||isNoHoverDevice();return{className:SIDER_TOOLTIP_CLASS,trigger:ct?[]:"hover",disabled:ct,unmountOnExit:!0,popupHoverStay:!1,popupVisible:ct?!1:void 0,getPopupContainer:getSiderPopupContainer}}',
-          'getSiderTooltipProps=(rt=!1)=>{const ct=!rt||isNoHoverDevice();return{className:SIDER_TOOLTIP_CLASS,trigger:ct?[]:["hover","focus"],escToClose:!0,disabled:ct,unmountOnExit:!0,popupHoverStay:!0,popupVisible:ct?!1:void 0,getPopupContainer:getSiderPopupContainer}}',
+          'getSiderTooltipProps=(rt=!1)=>{const ct=!rt||isNoHoverDevice();return{className:SIDER_TOOLTIP_CLASS,trigger:"hover",condition:!ct,getPopupContainer:getSiderPopupContainer}}',
           '侧栏提示可访问性合同');
     return source;
   });

@@ -20,13 +20,20 @@
    });
    return null;
   });
-  function Tip({target,content,position,clamp}){
+  function Tip({target,content,clamp}){
    const [eligible,setEligible]=R.useState(false);
+   const [dismissed,setDismissed]=R.useState(false);
    R.useLayoutEffect(()=>{
     const measure=()=>setEligible(target.isConnected&&target.getClientRects().length>0&&(!clamp||target.scrollWidth>target.clientWidth+1||target.scrollHeight>target.clientHeight+1));
     measure();const resize=new ResizeObserver(measure);resize.observe(target);return()=>resize.disconnect();
    },[target,content,clamp]);
-   return eligible?h(Tooltip,{content,position,trigger:'hover',closeOnEsc:true,clickTriggerToHide:true},h(Target,{target})):null;
+   R.useLayoutEffect(()=>{
+    const dismiss=()=>setDismissed(true),reset=()=>setDismissed(false);
+    target.addEventListener('click',dismiss);
+    target.addEventListener('mouseleave',reset);
+    return()=>{target.removeEventListener('click',dismiss);target.removeEventListener('mouseleave',reset);};
+   },[target]);
+   return eligible&&!dismissed?h(Tooltip,{content,trigger:'hover'},h(Target,{target})):null;
   }
   const host=document.createElement('div');host.setAttribute('data-eva-tooltip-adapter','');document.body.append(host);
   const reactRoot=createRoot(host);
@@ -36,15 +43,15 @@
    for(const target of document.querySelectorAll(selector)){
     const content=target.getAttribute('data-eva-tooltip');
     if(!content){if(records.delete(target))changed=true;continue;}
-    const position=target.getAttribute('data-eva-tooltip-position')||'top',clamp=target.hasAttribute('data-eva-tooltip-clamp');
+    const clamp=target.hasAttribute('data-eva-tooltip-clamp');
     const previous=records.get(target);
-    if(!previous||previous.content!==content||previous.position!==position||previous.clamp!==clamp){records.set(target,{target,content,position,clamp,key:++serial});changed=true;}
+    if(!previous||previous.content!==content||previous.clamp!==clamp){records.set(target,{target,content,clamp,key:++serial});changed=true;}
    }
    if(changed)reactRoot.render(h(R.Fragment,null,...Array.from(records.values(),record=>h(Tip,record))));
   }
   // This observes DOM ownership only. It never derives or writes product state.
   const observer=new MutationObserver(reconcile);
-  observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-eva-tooltip','data-eva-tooltip-position','data-eva-tooltip-clamp']});
+  observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-eva-tooltip','data-eva-tooltip-clamp']});
   reconcile();
  }};
 })(window);
