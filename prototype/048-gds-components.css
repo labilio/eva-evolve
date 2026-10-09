@@ -742,10 +742,6 @@
   backdrop-filter: blur(var(--eva-blur-floating));
   box-shadow: var(--eva-shadow-floating),var(--eva-shadow-hairline);
 }
-.semi-select-option-list {
-  background: var(--eva-surface-primary);
-  border-radius: var(--eva-radius-panel);
-}
 :where(.app-shell) :is(button,a,[role="button"],[role="tab"]):focus-visible,
 :is(.semi-modal,.semi-popover) :is(button,a,[role="button"],[role="option"]):focus-visible {
   outline: var(--eva-border-focus-w) solid var(--eva-border-focus);

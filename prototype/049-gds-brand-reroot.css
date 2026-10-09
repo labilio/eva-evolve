@@ -197,12 +197,12 @@ body .semi-dropdown-wrapper {
   backdrop-filter: none;
 }
 body .semi-dropdown-wrapper .semi-dropdown-menu { padding: 6px; }
-body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
-body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item-active:hover,
-body :is(.semi-dropdown-wrapper, .eva-task-filter-menu) .semi-dropdown-item-active:focus-visible { background: var(--eva-overlay-hover); }
+body :is(.semi-dropdown-wrapper, .eva-select-menu) .semi-dropdown-item { border-radius: var(--eva-radius-key); padding: 8px 10px; }
+body :is(.semi-dropdown-wrapper, .eva-select-menu) .semi-dropdown-item-active:hover,
+body :is(.semi-dropdown-wrapper, .eva-select-menu) .semi-dropdown-item-active:focus-visible { background: var(--eva-overlay-hover); }
 /* 日期选择同属操作浮层：沿用王岩确立的 Dropdown 面板表面与抬升层级。
    Semi DatePicker 用 Popover 承载；这里仅替换外壳，不改日历内部行为。 */
-body .semi-popover-wrapper:has(.semi-datepicker) {
+body .semi-popover-wrapper:has(.semi-datepicker, .semi-select-option-list-wrapper) {
   background: var(--eva-surface-primary);
   border-radius: var(--eva-radius-chip);
   box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
@@ -222,3 +222,15 @@ body .semi-popover-wrapper:has(.semi-datepicker) {
 .wk-contextmenus li { padding: 0 10px; border-radius: var(--eva-radius-key); }
 .wk-contextmenus li:hover, .wk-contextmenus li:focus-visible { background-color: var(--eva-overlay-hover); }
 .wk-contextmenus .wk-ctx-sep { margin: 4px 6px; }
+
+/* 所有 Eva Select 与 Dropdown 共用菜单行皮肤，不继承 Dropdown 外壳的动画状态。 */
+/* 外层 Popover 是唯一表面，内部只保留列表留白。 */
+.semi-select-option-list-wrapper { padding: 0; }
+.eva-select-menu .semi-select-option-list { padding: 6px; }
+.eva-select-menu .eva-select-option { max-width: none; width: 100%; box-sizing: border-box; }
+.eva-select-option__content { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-select-option__check { margin-left: auto; flex-shrink: 0; }
+.eva-select-value { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+.eva-select-menu .eva-select-option[data-focused="true"] { background: var(--eva-overlay-hover); }
+.eva-select-menu .eva-select-option.semi-dropdown-item-active,
+.eva-select-menu .eva-select-option.semi-dropdown-item-active:hover { background: var(--eva-list-option-selected); font-weight: 400; }

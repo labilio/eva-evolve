@@ -28,7 +28,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
    const field=panel.locator('.semi-select').nth(index);
    await field.click();
    const rows=page.locator('.semi-select-option-list:visible [role="option"]');
-   await page.waitForFunction(()=>{const el=document.querySelector('.eva-task-select-option');if(!el)return false;let n=el,v=1;while(n){v*=Number(getComputedStyle(n).opacity);n=n.parentElement}return v>0.99},{},{timeout:3000});
+   await page.waitForFunction(()=>{const el=document.querySelector('.eva-select-option');if(!el)return false;let n=el,v=1;while(n){v*=Number(getComputedStyle(n).opacity);n=n.parentElement}return v>0.99},{},{timeout:3000});
    if(texts) assert.deepEqual((await rows.allTextContents()).map(s=>s.trim()),texts);
    assert.equal(await rows.locator(glyph).count(),await rows.count(),'每个候选复用任务图形或标签片');
    await rows.first().click();
@@ -59,6 +59,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await options.filter({hasText:'何静'}).waitFor();
   assert.equal(await options.count(),1,'中文检索保持真实姓名语义');
   await assignee.locator('input').press('ArrowDown');
+  await page.locator('.eva-select-option[data-focused="true"]').filter({hasText:'何静'}).waitFor();
   await assignee.locator('input').press('Enter');
   await panel.locator('.loop-filter-panel__head').click();
   assert.match(await page.locator('.eva-task-filter-chips').innerText(),/何静/);
