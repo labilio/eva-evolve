@@ -44,7 +44,7 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
   const targetSpaceId = values.targetSpaceId || initial.targetSpaceId;
   const targetFolders = targetSpaceId ? files.list(targetSpaceId,actor).filter(item=>item.type==='folder') : [];
   const title = type==='new-folder'?'新建文件夹':type==='rename'?'重命名':type==='external-folder'?'添加外部文件夹':type==='external-link'?'添加外部链接':type==='edit-external-link'?(folder?'编辑外部文件夹':'编辑外部链接'):type==='move'?'移动到':type==='tags'?'编辑标签':'创建快捷方式';
-  const confirmation = type==='new-folder'?(project?'创建':'确认'):type==='rename'?(project?'保存':'确认'):type==='external-folder'?'添加文件夹':type==='external-link'?'添加链接':type==='edit-external-link'?(confirmedURL===values.url?'确认更换并保存':'保存'):type==='move'?(project?'移动':'确认'):type==='tags'?'保存':'创建快捷方式';
+  const confirmation = type==='new-folder'?'创建':type==='rename'?'保存':type==='external-folder'?'添加文件夹':type==='external-link'?'添加链接':type==='edit-external-link'?(confirmedURL===values.url?'确认更换并保存':'保存'):type==='move'?'移动':type==='tags'?'保存':'创建快捷方式';
   const submission = useSubmission({onSubmit: data => {
     let id = resource?.id;
     if(type==='new-folder')id=files.createFolder(actor,spaceId,data.name.trim(),parentId);

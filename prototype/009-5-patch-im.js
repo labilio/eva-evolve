@@ -146,7 +146,7 @@ function EvaSharedContextMenus({menus=[],onHide},forwardedRef){
 function evaConversationRailMenus({store,actorId,channel,thread,recent,onEditCategory}){
  const id=thread?.id||channel.id,prefs=store.chatPreferences(id,actorId),mute=store.conversationMuted(id,actorId),menus=[];
  const item=(title,icon,onClick)=>({title,icon:evaRailIcon(icon),onClick});
- const run=fn=>{try{fn();}catch(error){if(typeof Toast!=="undefined")Toast.error(error.message||'操作失败');}};
+ const run=fn=>{try{fn();}catch(error){if(typeof Toast!=="undefined")Toast.error(error.message||'操作未完成，请重试');}};
  if(recent)menus.push(evaPinMenuItem(store,actorId,id));
  if((thread?.unread??channel.unread)>0)menus.push(item('清除未读','BrushCleaning',()=>store.clearConversationUnread(id,actorId)));
  if(store.conversationFollowed(id,actorId)){
@@ -453,8 +453,8 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
     // 子区只在群卡片的「发送至」里选择，但搜索要覆盖全部群（含消息数据源里的演示群）的子区。
     Object.values(catalog.groupById).forEach(group=>(group.threads||[]).forEach(collect));
     conversations.forEach(row=>add(row,score(row.name)||fuzzy(row)));
-    // 分组顺序：关注 → 联系人 → 我的 AI → 群聊与子区；关注组内沿用消息-关注的排序。
-    const labels={follow:'关注',contacts:'联系人',ai:'我的 AI',conversations:'群聊与子区'};
+    // 分组顺序：关注 → 联系人 → 我的 Agent → 群聊与子区；关注组内沿用消息-关注的排序。
+    const labels={follow:'关注',contacts:'联系人',ai:'我的 Agent',conversations:'群聊与子区'};
     return ['follow','contacts','ai','conversations'].filter(id=>buckets[id].length).map(id=>({id,label:labels[id],
       results:buckets[id].sort((a,b)=>b.score-a.score||rankOf(a.row)-rankOf(b.row)||String(b.row.updatedAt||'').localeCompare(String(a.row.updatedAt||''))).map(item=>item.row)}));
   },[query,catalog,store,actorId]);
@@ -579,7 +579,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
         }
       }
       onSent();
-    }catch(error){Toast.error(error.message||'转发失败');}
+    }catch(error){Toast.error(error.message||'消息未能转发，请重试');}
   };
   const entries=Object.entries(chosen);
   // 蒙版覆盖标题栏下方的整个客户端内容区（含会话列表栏），与设计确认稿 .veil{position:fixed;inset:44px 0 0} 一致；
@@ -1194,8 +1194,8 @@ function EvaAITeamGroupEditor({visible,record,membersOnly=false,candidates,onClo
     minimumSelection:1,
     memberLabel:'AI 小队成员',
     nameField:membersOnly?null:{id:'eva-ai-team-name',label:'AI 小队名称',placeholder:'输入 AI 小队名称',initialValue:record?.name||'',required:true,maxLength:50},
-    searchLabel:'搜索我的 AI 成员',
-    searchPlaceholder:'搜索我的 AI 成员',
+    searchLabel:'搜索我的 Agent 成员',
+    searchPlaceholder:'搜索我的 Agent 成员',
     emptyTitle:'暂无可用的 AI 成员',
     emptyDescription:'请先创建或接入 AI 成员',
     submit:record?'保存':'创建',
@@ -1335,7 +1335,7 @@ function EvaAITeamPage() {
   reactExports.useSyncExternalStore(digitalStore.subscribe,digitalStore.getSnapshot,digitalStore.getSnapshot);
   const digitalEmployees=digitalStore.teamIds().map(id=>digitalStore.get(id)).filter(Boolean);
   const {search:teamSearch}=useLocation(),teamParams=new URLSearchParams(teamSearch),requestedIdentityId=snapshot.identityAliases?.[teamParams.get('evaIdentity')]||teamParams.get('evaIdentity'),requestedSessionId=teamParams.get('evaSession'),requestedMessageId=teamParams.get('evaMessage');
-  // 本地助理、云端分身和数字员工都是“我的 AI”的独立对话入口；
+  // 本地助理、云端分身和数字员工都是“我的 Agent”的独立对话入口；
   // 它们各自维护会话，不能借用另一个身份的当前会话。
   const teamIdentities = snapshot.identities.filter(i=>i.role==='assistant'||i.role==='persona'||i.role==='employee');
   const availableIdentities=[...teamIdentities,...digitalEmployees];
@@ -1398,7 +1398,7 @@ function EvaAITeamPage() {
     identityMenuOpener.current=event.target.closest?.('button')||event.currentTarget;
     const menus=[{title:'新建会话',icon:h(Plus$c,{size:16,strokeWidth:1.75,'aria-hidden':true}),onClick:()=>newConversation(item.id)}];
     if(item.role==='assistant')menus.push({title:'编辑配置',icon:h(Settings,{size:16,strokeWidth:1.75,'aria-hidden':true}),onClick:()=>openAssistantConfig(item,identityMenuOpener.current)});
-    if(digital)menus.push({separator:true},{title:'从我的 AI 移除',onClick:()=>removeDigitalEmployee(item)});
+    if(digital)menus.push({separator:true},{title:'从我的 Agent 移除',onClick:()=>removeDigitalEmployee(item)});
     setIdentityMenus(menus);identityMenuRef.current?.show(event);
   };
   const identityMenuKey=(event,item,digital=false)=>{if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10'))openIdentityMenu(event,item,digital);};
@@ -1610,7 +1610,7 @@ function EvaAITeamPage() {
   const searchResultView=h('div',{className:'eva-ai-team__search-results'},searchBody);
   const searchEmptyView=h('div',{className:'eva-task-assignee-empty'},'没有找到匹配的会话');
   return h('div',{className:'eva-ai-team'},
-    h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 AI',ref:rail},
+    h('aside',{className:'eva-ai-team__sidebar','aria-label':'我的 Agent',ref:rail},
       h('div',{className:'eva-conversation-rail-resizer',role:'separator','aria-label':'调整中间栏宽度','aria-orientation':'vertical',tabIndex:0,'data-eva-conversation-rail-resizer':true}),
       h('header',{className:'eva-ai-team__sidebar-header eva-rail-header'},h('h1',null,'我的 Agent'),h('button',{type:'button',ref:searchToggle,className:'eva-ai-team__search-toggle'+(searchOpen?' is-active':''),'aria-label':'搜索会话','aria-pressed':searchOpen,'data-eva-tooltip':'搜索会话',onClick:()=>searchOpen?closeSearch():setSearchOpen(true)},h(Search$1,{size:16,'aria-hidden':true})),h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,onVisibleChange:setCreateMenuOpen,getPopupContainer:()=>rail.current,render:h(Dropdown.Menu,null,
         h(Dropdown.Item,{icon:h(Users,{size:16}),onClick:()=>setGroupEditor({mode:'create'})},'新建 AI 小队'),
@@ -1716,7 +1716,7 @@ function EvaAITeamPage() {
     function cut(needle,replacement,label){source=root.__evaCut(source,needle,replacement,'IM '+label);}
     cut('"module.createThread.nameLabel":"话题名称"','"module.createThread.nameLabel":"子区名称"','创建子区字段名称');
     cut('"module.createThread.namePlaceholder":"输入讨论话题..."','"module.createThread.namePlaceholder":"输入子区名称"','创建子区输入提示');
-    cut('"module.createThread.nameRequired":"话题名称不能为空"','"module.createThread.nameRequired":"子区名称不能为空"','创建子区必填提示');
+    cut('"module.createThread.nameRequired":"话题名称不能为空"','"module.createThread.nameRequired":"请输入子区名称"','创建子区必填提示');
     cut('"threadCreate.nameMaxLength":"子区名称不能超过100个字符"','"threadCreate.nameMaxLength":"子区名称不能超过30个字符"','创建子区长度提示');
     cut('THREAD_NAME_MAX_LENGTH=100','THREAD_NAME_MAX_LENGTH=30','子区名称长度限制');
     const evaThreadIconStart=source.indexOf('ThreadIcon=({size:');

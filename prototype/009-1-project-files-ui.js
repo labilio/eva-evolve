@@ -155,7 +155,7 @@
           if(dialog.type==='trash'){context.files.trash(actor,item.id);setSelectedId(null);}
           if(dialog.type==='delete'){context.files.removeForever(actor,item.id);setSelectedId(null);}
           setDialog(null);
-        }catch(error){const message=error.message||'操作失败';setDialog({...dialog,error:message});}
+        }catch(error){const message=error.message||(dialog.type==='trash'?'文件未能移至回收站，请重试':'文件未能永久删除，请重试');setDialog({...dialog,error:message});}
       };
 
       const renderDialog=()=>{

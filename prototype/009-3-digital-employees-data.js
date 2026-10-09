@@ -67,7 +67,7 @@ window.__EVA_DIGITAL_EMPLOYEES_DATA = {
         "数据清洗",
         "报表生成"
       ],
-      "desc": "基于 Dify 工作流，承接固定流程的数据处理。",
+      "desc": "按预设流程清洗数据、生成报表。",
       "deptFull": "吉利汽车集团/数智化中心/AI 中台/数据中台组",
       "path": [
         "吉利汽车集团",

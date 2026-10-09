@@ -444,7 +444,7 @@
           else await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,labelId);
           const next=has?attached.filter(item=>item.id!==labelId):[...attached,labels.find(item=>item.id===labelId)].filter(Boolean);
           issue.labels=next;notifyLabelChange();
-        }catch(error){Toast.error(error?.message||'标签保存失败');}
+        }catch(error){Toast.error(error?.message||'标签未能保存，请重试');}
       };
       const create=async()=>{
         const name=creating.trim();
@@ -458,7 +458,7 @@
             await evaAttachTaskLabel(project,evaTaskProjectId(project),issue.id,label.id);
             issue.labels=[...attached,label];notifyLabelChange();
           }
-        }catch(error){Toast.error(error?.message||'标签创建失败');}
+        }catch(error){Toast.error(error?.message||'标签未能创建，请重试');}
       };
       const needle=creating.trim().toLowerCase();
       const filtered=labels.filter(label=>!needle||label.name.toLowerCase().includes(needle));
@@ -573,7 +573,7 @@
 
       const applyUpdate=React.useCallback(async(issue,updates)=>{
         try{await updateIssue(issue.id,updates);onChanged&&onChanged();}
-        catch(error){Toast.error(error?.message||'保存失败');}
+        catch(error){Toast.error(error?.message||'任务未能保存，请重试');}
       },[onChanged]);
       const changeStatus=React.useCallback((issue,status)=>{
         requestStatus(issue,status,async extra=>{
@@ -674,7 +674,7 @@
             }
           });
           setSelection([]);onChanged&&onChanged();
-        }catch(error){Toast.error(error&&error.message?error.message:'保存失败');}
+        }catch(error){Toast.error(error&&error.message?error.message:'任务未能保存，请重试');}
         finally{setBatchBusy(false);}
       };
       const handleBatchDelete=()=>{
@@ -743,7 +743,7 @@
           const prefix=mode==='selected'?'issues-selected':'issues';
           downloadCsv(prefix+'-'+new Date().toISOString().slice(0,10)+'.csv',csv);
           Toast.success('已导出 '+rows.length+' 个任务');
-        }catch(error){Toast.error(error?.message||'导出任务失败');}
+        }catch(error){Toast.error(error?.message||'任务未能导出，请重试');}
       };
 
       const allChecked=visibleIssueIds.length>0&&selection.length===visibleIssueIds.length;

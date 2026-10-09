@@ -436,12 +436,12 @@
         return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
       },
       setGroupMd(id,uid,value){
-        requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');
-        value=String(value||'');if(unescape(encodeURIComponent(value)).length>10240)fail('内容超出 10240 bytes 限制');
+        requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');
+        value=String(value||'');if(unescape(encodeURIComponent(value)).length>10240)fail('内容超过 10 KB，请精简后保存');
         const record=state.threads[id]?(state.threadDetails[id]||={id}):ensureGovernance(id);
         record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify();
       },
-      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('无 GROUP.md 编辑权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify();},
+      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify();},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify();},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},

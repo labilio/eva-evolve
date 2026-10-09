@@ -179,12 +179,12 @@ function modalContent(){const a=dialog?.a;if(!a)return null;
 
   if(dialog.kind==='detail'){
     const joined=store.hasInTeam(a.id);
-    const publisher=a.publisher||'官方发布',creator=a.creatorName||a.byName||'官方维护',department=a.dept||a.deptFull?.split('/').slice(-1)[0]||'Eva 平台组',version=a.version||'v1.0.0',publishedAt=a.publishedAt||'2026-09-18',scope=a.scope==='org'?'全公司':a.scope==='project'?'项目内':'仅创建者';
+    const publisher=a.publisher||'未设置',creator=a.creatorName||a.byName||'未设置',department=a.dept||a.deptFull?.split('/').slice(-1)[0]||'Eva 平台组',version=a.version||'v1.0.0',publishedAt=a.publishedAt||'2026-09-18',scope=a.scope==='org'?'全公司':a.scope==='project'?'项目内':'仅创建者';
     const versions=a.versions||[{version,at:publishedAt,by:creator,note:'完善身份说明、工具权限和输出格式。'},{version:'v1.2.0',at:'2026-08-28',by:publisher,note:'增加业务域知识和失败重试策略。'},{version:'v1.1.0',at:'2026-08-12',by:publisher,note:'首次发布并上线。'}];
     const audit=a.audit||[{at:publishedAt+' 16:20',actor:creator,action:'发布 '+version,note:'发布到'+scope},{at:publishedAt+' 15:42',actor:publisher,action:'审核通过',note:'完成上线前试跑和责任确认。'},{at:publishedAt+' 10:05',actor:creator,action:'创建数字员工',note:'完成身份、提示词、技能和工具配置。'}];
     const governance={publisher,creator,department,version,publishedAt,scope,uses:a.uses||128,users:a.users||46,versions,audit};
     const attributes=[['发布主体',publisher],['负责部门',department],['业务负责人',creator],['可见范围',scope],['版本',version+' · '+publishedAt+' 发布']];
-    const statCards=[['近30天使用',governance.uses+' 次'],['服务人数',governance.users+' 人']];
+    const statCards=[['近 30 天使用次数',governance.uses+' 次'],['累计服务人数',governance.users+' 人']];
     return h(R.Fragment,null,
       h('header',{className:'eva-detail-head'},
         h('div',{className:'eva-detail-head__identity'},identity(a,true)),

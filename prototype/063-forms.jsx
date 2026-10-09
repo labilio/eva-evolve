@@ -71,7 +71,7 @@ export function useSubmission({onSubmit, resetKey, active = true}) {
       if (reason?.fieldErrors) {
         for (const [field, message] of Object.entries(reason.fieldErrors)) api.current?.setError(field, message);
         focusError();
-      } else setError(reason?.message || '保存失败，请重试');
+      } else setError(reason?.message || '未能保存，请重试');
     } finally {
       if (mounted.current && gate.current.current(token)) {
         gate.current.finish(token);

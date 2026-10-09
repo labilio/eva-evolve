@@ -29,7 +29,7 @@ test('文件库使用与项目文件一致的单行工具栏并在两个入口�
   const driveHTMLStart=drive.indexOf('  function driveHTML('),driveHTMLEnd=drive.indexOf('  function renderDrive()',driveHTMLStart);
   const driveHTML=drive.slice(driveHTMLStart,driveHTMLEnd);
   assert.doesNotMatch(driveHTML,/data-drive-search="side"|搜索当前范围/);
-  assert.match(driveHTML,/data-drive-search="main"[^>]*搜索置顶文件[^>]*搜索当前位置/);
+  assert.match(driveHTML,/data-drive-search="main"[^>]*搜索置顶文件[^>]*搜索回收站[^>]*搜索此文件库/);
   assert.match(driveHTML,/<div class="eva-drive__toolbar">/);
   assert.doesNotMatch(driveHTML,/eva-drive__section-head|<h1>/);
   assert.ok(driveHTML.indexOf('eva-drive__actions')<driveHTML.indexOf('data-drive-search="main"'));

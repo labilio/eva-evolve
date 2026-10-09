@@ -409,8 +409,8 @@
         const target={ownerId:source.ownerId||null,conversationKind:source.conversationKind||source.type,identityId:source.identityId||null,sessionId:source.sessionId||conversationId,messageId:source.messageId,groupId:source.groupId||null,threadId:source.threadId||null};
         let sourceRecord,systemRelations;
         if(source.type==='ai-conversation'){
-          sourceRecord={type:'ai-conversation-copy',label:'从我的 AI 保存',ownerId:source.ownerId,conversationId,identityId:source.identityId||null,identityName:source.identityName||'AI'};
-          systemRelations=[{...relation('ai-conversation',conversationId,source.conversationTitle||'AI 会话',(source.identityName||'AI')+' · 我的 AI'),target,navigable:true}];
+          sourceRecord={type:'ai-conversation-copy',label:'从我的 Agent 保存',ownerId:source.ownerId,conversationId,identityId:source.identityId||null,identityName:source.identityName||'AI'};
+          systemRelations=[{...relation('ai-conversation',conversationId,source.conversationTitle||'AI 会话',(source.identityName||'AI')+' · 我的 Agent'),target,navigable:true}];
         }else if(source.type==='chat'){
           sourceRecord={type:'chat-copy',label:'从私聊保存',conversationId,senderId:source.senderId||null,senderName:source.senderName||null};
           systemRelations=[{...relation('chat',conversationId,source.conversationTitle||'来源私聊',(source.senderName||'会话成员')+' · 来源文件'),target,navigable:true}];

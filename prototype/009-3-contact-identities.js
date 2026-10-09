@@ -31,7 +31,7 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
    const allowed=actor===ownerId&&(!personal||employee.by===actor)&&digital.hasInTeam(id);
    const pid=employee.projectId,project=pid&&store.canRead(pid,actor)?store.projectRecord(pid):null;
    if(employee.ownership==='project'&&!project)return null;
-   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 AI':'当前账号未开放个人对话'};
+   return {id,name:employee.name,kind:'employee',subtitle:'数字员工',description:employee.desc?.trim()||employee.one?.trim()||'',appearance:digital.appearance(employee),owner:null,ownership:personal?'个人创建':employee.ownership==='project'?'项目专属':'公共数字员工',project,action:allowed?link('进入对话','/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(id)):null,hint:allowed?'':actor===ownerId&&!digital.hasInTeam(id)?'可先在数字员工市场添加到我的 Agent':'当前账号未开放个人对话'};
   }
   if(id.startsWith('project-agent:')){
    const pid=id.slice('project-agent:'.length),agent=store.projectAgent(pid);

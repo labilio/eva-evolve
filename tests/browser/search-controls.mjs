@@ -264,7 +264,7 @@ test('文件库工具栏与项目文件按钮一致，项目回收站位于搜�
   });
   assert.ok(Math.abs(driveGeometry.searchCenter - driveGeometry.actionCenter) <= 1, '按钮与搜索框应垂直居中在同一行');
   assert.ok(Math.abs(driveGeometry.searchRight - driveGeometry.tableRight) <= 1, '搜索框应与表格右边缘对齐');
-  assert.equal(await search.locator('input').getAttribute('placeholder'), '搜索当前位置');
+  assert.equal(await search.locator('input').getAttribute('placeholder'), '搜索此文件库');
 
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();

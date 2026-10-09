@@ -685,7 +685,7 @@
     }).filter(Boolean);
     if (!projects.length) return '<div class="eva-drive__empty">你还没有加入任何项目文件库</div>';
     return '<div class="eva-drive-projects">' + projects.map(function (item) {
-      var roleLabel = item.role === 'owner' ? 'Owner' : item.role === 'manager' ? 'Manager' : 'Editor';
+      var roleLabel = item.role === 'owner' ? '项目负责人' : item.role === 'manager' ? '项目管理员' : '项目成员';
       return '<button type="button" class="eva-drive-project-card" data-drive-scope="workspace" data-workspace-id="' + escapeHTML(item.workspace.id) + '"><span class="eva-drive-project-card__mark">' + escapeHTML(item.workspace.mark || item.workspace.name.slice(0, 1)) + '</span><span class="eva-drive-project-card__copy"><strong>' + escapeHTML(item.workspace.name) + '</strong><small>' + escapeHTML(item.workspace.description || '项目团队文件') + '</small><span>' + item.folderCount + ' 个文件夹 · ' + item.fileCount + ' 个文件</span></span><span class="eva-drive-project-card__role">' + roleLabel + '</span>' + icon('chevron') + '</button>';
     }).join('') + '</div>';
   }
@@ -694,7 +694,7 @@
     var copy = scopeCopy();
     var context = fileContext(), actor = fileActor(), currentSpace = scopeSpaceId();
     var role = currentSpace ? context.files.role(currentSpace, actor) : null;
-    var roleLabel = role === 'owner' ? 'Owner' : role === 'manager' ? 'Manager' : role === 'editor' ? 'Editor' : '';
+    var roleLabel = state.driveScope === 'personal' ? '本人' : role === 'owner' ? '项目负责人' : role === 'manager' ? '项目管理员' : role === 'editor' ? '项目成员' : '';
     var crumbs = currentSpace && state.crumbs.length ? [{ id: 0, name: copy.section }].concat(state.crumbs) : [];
     return [
       '<aside class="eva-drive__side" aria-label="文件导航">',
@@ -719,7 +719,7 @@
       '<div class="eva-drive__scroll">',
       '<div class="eva-drive__toolbar">',
       currentSpace && state.driveScope !== 'trash' ? '<div data-eva-file-toolbar-host></div>' : '',
-      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="' + (state.driveScope === 'pinned' ? '搜索置顶文件' : '搜索当前位置') + '"></label>',
+      '<label class="eva-drive__side-search">' + icon('search') + '<input type="search" data-drive-search="main" value="' + escapeHTML(state.query) + '" placeholder="' + (state.driveScope === 'pinned' ? '搜索置顶文件' : state.driveScope === 'trash' ? '搜索回收站' : '搜索此文件库') + '"></label>',
       '</div>',
       crumbs.length ? '<div data-eva-file-path-host></div>' : '',
       '</div>',
@@ -856,7 +856,7 @@
       if(dialog.type==='trash')context.files.trash(actor,resource.id);
       if(dialog.type==='delete-forever')context.files.removeForever(actor,resource.id);
       state.selectedId=null;state.dialog=null;renderDrive();
-    }catch(error){showToast(error.message||'操作失败');}
+    }catch(error){showToast(error.message||(dialog.type==='trash'?'文件未能移至回收站，请重试':'文件未能永久删除，请重试'));}
   }
 
   function bridgeSelectedResource() {
