@@ -3,7 +3,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import * as sass from 'sass';
 import postcss from 'postcss';
-import {modalTheme} from '../prototype/063-dialog-theme.js';
+import {modalTheme,dialogText} from '../prototype/063-dialog-theme.js';
 
 // Compile the locked Semi source twice and retain only configured differences.
 // This avoids hand-copying Semi's anatomy, and leaves Eva's existing colors,
@@ -30,4 +30,14 @@ export function buildDialogTheme(root=process.cwd()) {
   changed.forEach(n=>copy.append(n.clone()));output.append(copy);
  });
  return '/* Generated from official Semi Modal Sass tokens; edit 063-dialog-theme.js. */\n'+output.toString()+'\n';
+}
+
+// Semi exposes per-field label.style, but no Form-wide label style default.
+// Scope the shared typography parameters to migrated Eva forms; leave native
+// error messages, optional hints and non-form labels untouched.
+export function buildFormLabelTheme() {
+ const {fontSize,fontWeight,lineHeight}=dialogText.fieldLabel;
+ const rule=postcss.rule({selector:'.semi-form[id^="eva-form-"] .semi-form-field-label'});
+ for(const [prop,value] of Object.entries({'font-size':fontSize+'px','font-weight':String(fontWeight),'line-height':lineHeight}))rule.append({prop,value});
+ return '\n/* Generated from shared fieldLabel typography parameters. */\n'+rule.toString()+'\n';
 }

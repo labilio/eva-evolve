@@ -17,6 +17,7 @@ export const modalTheme = Object.freeze({
 });
 export const dialogText = Object.freeze({
  title:Object.freeze({fontSize:16,fontWeight:500,lineHeight:'25.144px'}),
+ fieldLabel:Object.freeze({fontSize:14,fontWeight:500,lineHeight:'22px'}),
  section:Object.freeze({fontSize:14,fontWeight:500,lineHeight:'22px'}),
  body:Object.freeze({fontSize:14,fontWeight:400,lineHeight:'22px'}),
  auxiliary:Object.freeze({fontSize:12,fontWeight:400,lineHeight:'18px'}),

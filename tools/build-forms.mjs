@@ -1,7 +1,7 @@
 import { build } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
-import {buildDialogTheme} from './build-dialog-theme.mjs';
+import {buildDialogTheme,buildFormLabelTheme} from './build-dialog-theme.mjs';
 
 // Compile the official Semi Form; React/ReactDOM are supplied by Eva's existing
 // runtime. Never bundle a second renderer or run a compiler in the browser.
@@ -25,4 +25,4 @@ if (Object.keys(result.metafile.inputs).some(file => /node_modules\/react(?:-dom
 fs.writeFileSync(path.join(output,'eva-forms.module.js'),
   `// Official Semi Form, sharing Eva's React instance. Built from the locked npm dependency.\nlet instance;\nexport function createForms(React, ReactDOM) {\nif (instance) return instance;\n${result.outputFiles[0].text}\nreturn instance = evaFormsModule;\n}\n`);
 
-fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildDialogTheme());
+fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildDialogTheme()+buildFormLabelTheme());

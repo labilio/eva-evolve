@@ -20,6 +20,12 @@ test('新建分组统一校验空值、重名和键盘提交，取消重置且�
     const submit=modal.getByRole('button',{name:'新建',exact:true});
     await field.waitFor();
     await page.waitForTimeout(350); // Semi entrance animation scales the content before it settles
+    const type=await modal.evaluate(el=>{
+      const read=selector=>{const s=getComputedStyle(el.querySelector(selector));return [s.fontSize,s.fontWeight,s.lineHeight];};
+      return {title:read('.semi-modal-title'),label:read('.semi-form-field-label')};
+    });
+    assert.deepEqual(type.title,['16px','500','25.144px']);
+    assert.deepEqual(type.label,['14px','500','22px'],'公共字段标签不能比弹窗标题更粗');
     const spacing=await modal.evaluate(el=>{
       const body=el.querySelector('.semi-modal-body'),label=el.querySelector('.semi-form-field-label'),input=el.querySelector('.semi-input-wrapper');
       return {top:label.getBoundingClientRect().top-body.getBoundingClientRect().top,bottom:body.getBoundingClientRect().bottom-input.getBoundingClientRect().bottom};
