@@ -6,15 +6,35 @@
 (function(root){
 'use strict';
 root.EvaChatSettings={create(ui,store){
- const {React:R,Button,Modal,Input,Switch,Tag,PlusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard,ProjectIdentity,AvatarEditor,readAvatarFile,useNavigate,Toast}=ui,h=R.createElement;
+ const {React:R,forms,Button,Modal,Input,Switch,Tag,PlusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard,ProjectIdentity,AvatarEditor,readAvatarFile,useNavigate,Toast}=ui,h=R.createElement;
  function Row({title,value,onClick,danger=false}){return h(onClick?'button':'div',{type:onClick?'button':undefined,className:'eva-chat-setting-row'+(danger?' is-danger':''),onClick},h('span',null,title),value!==undefined&&h('span',{className:'eva-chat-setting-value'},value));}
  // 项目归属行的唯一实现：群聊信息与子区信息共用，项目由业务对象推导、点击统一走项目路由。
  function ProjectRow({context,scoped=false}){const navigate=useNavigate();if(!context||scoped)return null;return h(Row,{title:'所属项目',value:h(ProjectIdentity,{project:context,name:context.projectName}),onClick:()=>navigate('/collab?evaProject='+encodeURIComponent(context.projectId))});}
  function Toggle({title,value,onChange,disabled=false}){return h('div',{className:'eva-chat-setting-row'},h('span',null,title),h(Switch,{'aria-label':title,checked:!!value,onChange,size:'small',disabled}));}
  function EditRow({title,value='',maxLength=50,multiline=false,allowEmpty=true,onSave,readOnly=false}){
-  const [editing,setEditing]=R.useState(false),[draft,setDraft]=R.useState(''),[error,setError]=R.useState('');
-  if(!editing)return h(Row,{title,value:value||'未设置',onClick:readOnly?undefined:()=>{setDraft(value);setError('');setEditing(true);}});
-  return h('div',{className:'eva-chat-setting-edit'},h('label',null,title),multiline?h('textarea',{'aria-label':title,value:draft,maxLength,onChange:e=>setDraft(e.target.value),rows:5}):h(Input,{'aria-label':title,value:draft,maxLength,onChange:setDraft}),h('div',{className:'eva-chat-setting-edit-actions'},h('small',null,draft.length+' / '+maxLength),h(Button,{size:'small',theme:'borderless',onClick:()=>setEditing(false)},'取消'),h(Button,{size:'small',theme:'solid',disabled:draft===value||(!allowEmpty&&!draft.trim()),onClick:()=>{try{onSave(draft.trim());setEditing(false);}catch(e){setError(e.message);}}},'保存')),error&&h('p',{role:'alert'},error));
+  const [editing,setEditing]=R.useState(false);
+  return editing?h(EditValue,{title,value,maxLength,multiline,allowEmpty,onSave,onClose:()=>setEditing(false)}):h(Row,{title,value:value||'未设置',onClick:readOnly?undefined:()=>setEditing(true)});
+ }
+ function EditValue({title,value,maxLength,multiline,allowEmpty,onSave,onClose}){
+  const {Form,useSubmission,SubmissionError}=forms;
+  const [api,,values]=Form.useForm(),draft=values.value??'';
+  const submission=useSubmission({onSubmit:async(values,{isCurrent})=>{await onSave(String(values.value||'').trim());if(isCurrent())onClose();}});
+  return h(Form,{...submission.formProps,form:api,initValues:{value},className:'eva-chat-setting-edit'},
+    h(multiline?Form.TextArea:Form.Input,{field:'value',label:{text:title,required:false},'aria-label':title,maxLength,rows:multiline?5:undefined,disabled:submission.busy,rules:[...(!allowEmpty?[{required:true,whitespace:true,message:'请输入'+title}]:[]),{max:maxLength,message:title+'最多 '+maxLength+' 个字符'}]}),
+    h('div',{className:'eva-chat-setting-edit-actions'},h('small',null,draft.length+' / '+maxLength),h(forms.Actions,{compact:true,onCancel:onClose,form:submission.formProps.id,disabled:draft===value,busy:submission.busy})),
+    h(SubmissionError,{submission}));
+ }
+ function GroupMarkdown({value,editable,onSave}){
+  const {Form,useSubmission,SubmissionError}=forms,[api,,values]=Form.useForm(),[editing,setEditing]=R.useState(false);
+  const submission=useSubmission({active:editing&&editable,onSubmit:async(data,{isCurrent})=>{await onSave(data.markdown||'');if(isCurrent())setEditing(false);}});
+  R.useEffect(()=>{if(!editing)api.setValue('markdown',value);},[value,editing]);
+  R.useEffect(()=>{if(!editable)setEditing(false);},[editable]);
+  return h(Form,{...submission.formProps,form:api,initValues:{markdown:value},className:'eva-chat-setting-edit'},
+    h('label',{htmlFor:'eva-group-md-preview'},'GROUP.md'),
+    h(Form.TextArea,{pure:true,field:'markdown',id:'eva-group-md-preview','aria-label':'GROUP.md 内容',rows:12,placeholder:'尚未配置 GROUP.md',readonly:!editing}),
+    editable&&h('div',{className:'eva-chat-setting-edit-actions'},editing?h(forms.Actions,{onCancel:()=>setEditing(false),form:submission.formProps.id,busy:submission.busy,disabled:(values.markdown||'')===value}):
+      h(Button,{theme:'solid',htmlType:'button',onClick:()=>setEditing(true)},'编辑')),
+    h(SubmissionError,{submission}));
  }
  // Shared identity renderer and member tile for every member grid (group settings,
  // thread settings and the read-only full member list). One implementation only.
@@ -31,10 +51,10 @@ root.EvaChatSettings={create(ui,store){
  function MemberTile({p,onClick}){return h('button',{type:'button',className:'eva-chat-member-tile',onClick},(p.identityAppearance||p.kind!=='human')?h(R.Fragment,null,root.EvaAIIdentity.avatar(p.identityAppearance||(p.kind==='clone'?root.EvaAIIdentity.cloneAppearance(store.person(p.ownerId)):{name:p.name,sourceName:'Eva',avatar:p.avatar||root.__EVA_COLLEAGUE_PORTRAIT,logo:root.__EVA_COLLEAGUE_PORTRAIT}),48,h),h('span',{className:'eva-chat-tile-caption'},h('span',null,p.name),root.EvaAIIdentity.badge(h))):memberIdentity(p));}
  function ChatSettings({channel,onClose,onManageProject,onClear,sessionInfoOnly=false,conversationActions,fixedGroupActions,projectScoped=false}){
   const s=useState(),actor=s.actorId,id=channel.id,all=id.startsWith('all:'),sid=all?id.slice(4):id,g=s.groups[sid]||s.projects[sid],fixed=Array.isArray(channel.fixedMembers),group=fixed||!sessionInfoOnly&&!!g&&!channel.chatType?.includes('direct')&&!id.startsWith('dm-'),allowed=group&&store.canRead(id,actor),manage=allowed&&store.manager(id,actor),owner=allowed&&g.ownerId===actor;
-  const settings=store.chatSettings(id),prefs=store.chatPreferences(id,actor),governance=group&&!fixed&&typeof store.groupGovernance==='function'?store.groupGovernance(id):{manualManagerIds:[],managerIds:[],botAdminIds:[],groupMd:''},editableFixed=!!fixed&&!!fixedGroupActions?.onEditMembers,[page,setPage]=R.useState('main'),[picker,setPicker]=R.useState(null),[confirm,setConfirm]=R.useState(null),[error,setError]=R.useState(''),[profile,setProfile]=R.useState(null),[memberQuery,setMemberQuery]=R.useState(''),[memberOrderIds,setMemberOrderIds]=R.useState([]),[memberTypeFilter,setMemberTypeFilter]=R.useState(-1),[groupMdEditing,setGroupMdEditing]=R.useState(false),[groupMdDraft,setGroupMdDraft]=R.useState(''),[avatarSource,setAvatarSource]=R.useState(null);
+  const settings=store.chatSettings(id),prefs=store.chatPreferences(id,actor),governance=group&&!fixed&&typeof store.groupGovernance==='function'?store.groupGovernance(id):{manualManagerIds:[],managerIds:[],botAdminIds:[],groupMd:''},editableFixed=!!fixed&&!!fixedGroupActions?.onEditMembers,[page,setPage]=R.useState('main'),[picker,setPicker]=R.useState(null),[confirm,setConfirm]=R.useState(null),[error,setError]=R.useState(''),[profile,setProfile]=R.useState(null),[memberQuery,setMemberQuery]=R.useState(''),[memberOrderIds,setMemberOrderIds]=R.useState([]),[memberTypeFilter,setMemberTypeFilter]=R.useState(-1),[avatarSource,setAvatarSource]=R.useState(null);
   const closeRef=R.useRef(null);
   R.useLayoutEffect(()=>{const previous=document.activeElement;closeRef.current?.focus({preventScroll:true});return()=>{if(previous?.isConnected)previous.focus({preventScroll:true});};},[]);
-  R.useEffect(()=>{setPage('main');setPicker(null);setConfirm(null);setError('');setProfile(null);setMemberQuery('');setMemberTypeFilter(-1);setMemberOrderIds([]);setGroupMdEditing(false);setGroupMdDraft('');setAvatarSource(null);},[id,actor]);
+  R.useEffect(()=>{setPage('main');setPicker(null);setConfirm(null);setError('');setProfile(null);setMemberQuery('');setMemberTypeFilter(-1);setMemberOrderIds([]);setAvatarSource(null);},[id,actor]);
   const run=fn=>{try{fn();setError('');return true;}catch(e){setError(e.message);return false;}};
   const update=patch=>store.setChatSettings(id,actor,patch),personal=patch=>store.setChatPreferences(id,actor,patch);
   const updateAvatar=avatar=>update({avatar});
@@ -53,7 +73,7 @@ root.EvaChatSettings={create(ui,store){
   const managementPage=page==='manage'&&manage&&h(R.Fragment,null,
    !all&&owner&&ownerSuccessors.length>0&&section(h(Row,{title:'转让群主',onClick:()=>setPicker('transfer')}))
   );
-  const groupMdPage=page==='groupmd'&&h(R.Fragment,null,h('p',{className:'eva-chat-settings-note'},'记录本群的协作约定，供群成员与 AI 参考'),section(h('div',{className:'eva-chat-setting-edit'},h('label',{htmlFor:'eva-group-md-preview'},'GROUP.md'),h('textarea',{id:'eva-group-md-preview','aria-label':'GROUP.md 内容',rows:12,placeholder:'尚未配置 GROUP.md',readOnly:!groupMdEditing,value:groupMdEditing?groupMdDraft:governance.groupMd,onChange:e=>setGroupMdDraft(e.target.value)}),manage&&h('div',{className:'eva-chat-setting-edit-actions'},groupMdEditing?h(R.Fragment,null,h(Button,{theme:'borderless',onClick:()=>{setGroupMdEditing(false);setGroupMdDraft(governance.groupMd);}},'取消'),h(Button,{theme:'solid',disabled:groupMdDraft===governance.groupMd,onClick:()=>{if(run(()=>store.setGroupMd(id,actor,groupMdDraft)))setGroupMdEditing(false);}},'保存')):h(Button,{theme:'solid',onClick:()=>{setGroupMdDraft(governance.groupMd);setGroupMdEditing(true);}},'编辑')))));
+  const groupMdPage=page==='groupmd'&&h(R.Fragment,null,h('p',{className:'eva-chat-settings-note'},'记录本群的协作约定，供群成员与 AI 参考'),section(h(GroupMarkdown,{key:id+':'+actor,value:governance.groupMd,editable:manage,onSave:value=>store.setGroupMd(id,actor,value)})));
   return h('aside',{className:'eva-chat-settings','aria-label':'聊天信息管理',onKeyDown:e=>{if(e.key==='Escape'&&!picker&&!confirm&&!profile){e.stopPropagation();page==='main'?onClose():setPage('main');}}},
    h('header',{className:'eva-chat-settings-head'},h('button',{ref:closeRef,type:'button','aria-label':page==='main'?'关闭聊天信息':'返回聊天信息',onClick:()=>page==='main'?onClose():setPage('main')},h(page==='main'?CloseIcon:BackIcon,{size:20})),h('h3',null,title)),
    h('div',{className:'eva-chat-settings-body'},error&&h('p',{role:'alert',className:'eva-members-error'},error),

@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+
+test('共用成员表单：全部错误、修正反馈、焦点、选择及取消重置',async()=>{
+ const server=createServer(new URL('../../dist',import.meta.url).pathname);
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await chromium.launch({channel:'msedge'});
+ const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ const origin=`http://127.0.0.1:${server.address().port}`;
+ try{
+  await page.goto(origin+'/?picker-preview=create#/collab?evaProject=prod&evaTab=settings');
+  const dialog=page.getByRole('dialog').filter({hasText:'新建群聊'});
+  const name=dialog.getByRole('textbox',{name:'群聊名称',exact:true});
+  assert.equal(await dialog.locator('.semi-form-field-label-required').count(),0,'全必填的简单群聊表单不显示星号');
+  await name.fill('');
+  const mask=await page.locator('.eva-member-picker-modal > .semi-modal-mask').evaluate(el=>({top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom,bar:document.querySelector('.app-titlebar').getBoundingClientRect().bottom,viewport:innerHeight}));
+  assert.ok(Math.abs(mask.top-mask.bar)<=1,'成员弹窗遮罩仅避让一次标题栏（允许内容区1px边框）');
+  assert.equal(mask.bottom,mask.viewport,'遮罩覆盖到底部');
+  const submit=dialog.getByRole('button',{name:'创建群聊',exact:true});
+  assert.equal(await submit.isEnabled(),true);
+  await submit.click();
+  await dialog.getByText('请输入群聊名称',{exact:true}).waitFor();
+  await dialog.getByText('请至少选择 1 位成员',{exact:true}).waitFor();
+  await page.waitForFunction(() => document.activeElement?.id === 'eva-member-picker-name');
+  assert.equal(await name.evaluate(el=>el===document.activeElement),true);
+  await name.fill('   ');
+  await dialog.getByText('请输入群聊名称',{exact:true}).waitFor();
+  await name.fill('统一表单测试');
+  await dialog.getByText('请输入群聊名称',{exact:true}).waitFor({state:'hidden'});
+  assert.equal(await dialog.getByText('请至少选择 1 位成员',{exact:true}).isVisible(),true);
+  await dialog.locator('.eva-member-picker__candidate').first().click();
+  await dialog.getByText('请至少选择 1 位成员',{exact:true}).waitFor({state:'hidden'});
+  assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),1);
+  await dialog.getByRole('button',{name:'取消',exact:true}).click();
+  await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
+  await page.getByRole('tab',{name:'成员管理',exact:true}).click();
+  await page.getByRole('button',{name:'添加成员',exact:true}).click();
+  const add=page.getByRole('dialog').filter({hasText:'添加项目成员'});
+  assert.equal(await add.locator('.eva-member-picker__selected-item').count(),0);
+  assert.equal(await add.getByText('请至少选择 1 位成员',{exact:true}).count(),0);
+  await add.getByRole('button',{name:'确认添加',exact:true}).click();
+  await add.getByText('请至少选择 1 位成员',{exact:true}).waitFor();
+  await add.locator('.eva-member-picker__candidate').first().click();
+  await add.getByRole('button',{name:'确认添加',exact:true}).click();
+  await add.waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'添加成员',exact:true}).click();
+  assert.equal(await add.locator('.eva-member-picker__selected-item').count(),0);
+  assert.equal(await add.getByText('请至少选择 1 位成员',{exact:true}).count(),0);
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

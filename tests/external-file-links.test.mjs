@@ -1,3 +1,4 @@
+import {fileFormHarness} from './helpers/file-form-harness.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -157,13 +158,14 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
   const drive = fs.readFileSync(new URL('../prototype/020-mode-layer.js', import.meta.url), 'utf8');
   const project = fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js', import.meta.url), 'utf8');
   const styles = fs.readFileSync(new URL('../prototype/050-file-library.css', import.meta.url), 'utf8');
+  const shared = fs.readFileSync(new URL('../prototype/063-file-form.jsx', import.meta.url), 'utf8');
   const samples = fs.readFileSync(new URL('../prototype/009-1-data-drive.js', import.meta.url), 'utf8');
 
   for (const source of [drive, project]) {
     assert.match(source, /添加外部资源/);
     assert.match(source, /外部链接/);
     assert.match(source, /外部文件夹/);
-    assert.match(source, /添加外部链接/);
+    assert.match(source, /FileForm|showFileForm/);
     assert.match(source, /打开原链接/);
     assert.match(source, /复制外部链接/);
     assert.match(source, /编辑链接/);
@@ -173,13 +175,11 @@ test('两个文件入口提供创建、打开、复制和编辑外链交互，�
     assert.doesNotMatch(source, /普通外部链接|链接名称/);
   }
   assert.match(drive, /data-drive-action="add-external-link"[\s\S]*data-drive-action="add-external-folder"/);
-  assert.match(drive, /externalFolderDialog \? '文件夹名称' : '文件名称'/);
-  assert.match(drive, /externalFolderDialog \? '文件夹链接' : '文件链接'/);
-  assert.match(drive, /content = nameField \+ urlField/);
   assert.match(project, /setDialog\(\{type:'external-link'[\s\S]*setDialog\(\{type:'external-folder'/);
-  assert.match(project, /externalFolderDialog\?'文件夹名称':'文件名称'/);
-  assert.match(project, /externalFolderDialog\?'文件夹链接':'文件链接'/);
-  assert.match(project, /body=h\(R\.Fragment,null,\s*nameField,\s*urlField,/);
+  assert.match(shared, /folder\?'文件夹名称':'文件名称'/);
+  assert.match(shared, /folder\?'文件夹链接':'文件链接'/);
+  assert.match(shared, /field="name"/);
+  assert.match(shared, /field="url"/);
   for (const source of [drive, project]) {
     assert.doesNotMatch(source, /eva-external-link-detection|externalFolderDetectionHTML|等待识别|粘贴链接后识别来源平台/);
     assert.doesNotMatch(source, /仅保存访问入口，不复制/);
@@ -295,12 +295,15 @@ test('恢复外链不会在原目录生成重复 URL', () => {
 });
 
 test('文件库更改待确认 URL 后必须重新确认，不能沿用前一个地址的确认',()=>{
-  const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
-  const start=source.indexOf('  function confirmDialog()'),end=source.indexOf('  function bridgeSelectedResource()',start);
-  let submitted;
-  const state={dialog:{type:'edit-external-link',id:'link',url:'https://second.example/',confirmHostChange:true}};
-  vm.runInNewContext(source.slice(start,end)+';confirmDialog();',{state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[{id:'link'}],updateExternalLink:(actor,id,draft)=>{submitted=draft;}}}),document:{getElementById:id=>id==='eva-drive-dialog-external-url'?{value:'https://third.example/'}:null},renderDrive:()=>{},showToast:()=>{}});
-  assert.equal(submitted.confirmHostChange,false);
+  const submitted=[];
+  const harness=fileFormHarness({type:'edit-external-link',actor:'a',resource:{id:'link',external:{url:'https://first.example/'}},onClose(){},files:{writableSpaces:()=>[],list:()=>[],updateExternalLink(actor,id,draft){submitted.push({...draft});if(!draft.confirmHostChange)throw new Error('域名已变更');}}});
+  harness.change('url','https://second.example/');
+  assert.throws(()=>harness.submit(),/域名已变更/);harness.render();
+  harness.change('url','https://third.example/');
+  assert.throws(()=>harness.submit(),/域名已变更/);harness.render();
+  assert.equal(submitted[1].url,'https://third.example/');
+  assert.equal(submitted[1].confirmHostChange,false);
+  harness.submit();assert.equal(submitted[2].confirmHostChange,true);
 });
 
 test('Evolve v6 升级保留自建外部文件夹且不复活已删除示例', () => {

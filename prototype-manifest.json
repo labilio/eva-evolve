@@ -880,6 +880,87 @@
       "file": "prototype/062-tooltip.js",
       "bytes": 4982,
       "role": "prototype"
+    },
+    {
+      "order": 111,
+      "tag": "script",
+      "name": "shared-semi-forms",
+      "file": "prototype/063-forms-entry.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js",
+      "description": "统一原生 Semi Form 配置与提交 Hook，由 tools/build-forms.mjs 构建；复用运行时 React。"
+    },
+    {
+      "order": 112,
+      "tag": "script",
+      "name": "063-forms",
+      "file": "prototype/063-forms.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 113,
+      "tag": "script",
+      "name": "063-form-policy",
+      "file": "prototype/063-form-policy.js",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 114,
+      "tag": "script",
+      "name": "063-personal-folder-form",
+      "file": "prototype/063-personal-folder-form.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 115,
+      "tag": "script",
+      "name": "063-personal-rail-form",
+      "file": "prototype/063-personal-rail-form.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 116,
+      "tag": "script",
+      "name": "063-file-form",
+      "file": "prototype/063-file-form.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 117,
+      "tag": "link",
+      "name": "dialog-layout",
+      "file": "prototype/063-dialog.css",
+      "role": "prototype",
+      "bytes": 1888
+    },
+    {
+      "order": 118,
+      "tag": "script",
+      "name": "shared-dialog",
+      "file": "prototype/063-dialog.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 119,
+      "tag": "script",
+      "name": "063-dialog-theme",
+      "file": "prototype/063-dialog-theme.js",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "order": 120,
+      "tag": "script",
+      "name": "063-dialog-focus",
+      "file": "prototype/063-dialog-focus.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js"
     }
   ]
 }

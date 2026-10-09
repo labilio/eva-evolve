@@ -15,7 +15,7 @@
 .eva-members-select{width:100%}
 .eva-members-notice{padding:12px;background:var(--semi-color-fill-0);border-radius:8px}
 .eva-members-error{color:var(--semi-color-danger);font-size:13px}
-body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)),.semi-modal-wrap:has(.eva-members-modal):not(:where(.eva-identity-portal *)){top:var(--topbar-height);height:calc(100% - var(--topbar-height))}
+.eva-members-modal:not(.eva-dialog):not(:where(.eva-identity-portal *)) > :is(.semi-modal-mask,.semi-modal-wrap){top:var(--topbar-height);height:calc(100% - var(--topbar-height))}
 .eva-members-group-panel{padding:12px 0}
 .eva-members-group-panel h4{margin:0 0 12px}
 .eva-file-name-content{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -75,15 +75,16 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-project-settings-info{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:14px 20px 24px;color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
 .eva-project-settings-info .eva-project-info-field{width:100%;display:flex;flex-direction:column;gap:8px}
 .eva-project-settings-info .eva-project-info-field label{font-size:14px;font-weight:500;line-height:22px;color:var(--semi-color-text-0)}
-.eva-project-settings-info .eva-project-info-field textarea{box-sizing:border-box;width:100%;min-height:88px;resize:none;padding:10px 12px;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
-.eva-project-settings-info .eva-project-info-field textarea:hover{border-color:var(--semi-color-primary)}
+.eva-project-settings-info .eva-project-info-field .semi-input-textarea-wrapper{border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0)}
+.eva-project-settings-info .eva-project-info-field textarea.semi-input-textarea{box-sizing:border-box;width:100%;min-height:86px;resize:none;padding:10px 12px;border:0;border-radius:inherit;background:transparent;color:var(--semi-color-text-0);font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info .eva-project-info-field .semi-input-textarea-wrapper:hover{border-color:var(--semi-color-primary)}
 /* P1·暗色行 hover：vendor :hover 走 fill-0(=subtle)，暗色下变暗（#242424→#1a1a1a），
  * 与通讯录/IM 行的白 6% 变亮相反。按 057 遮罩翻转原则改为白 6%；浅色不动
  * （subtle 与 6% 黑在白底上等值）。固定列的 hover 变体一并覆盖。 */
 :root[data-theme="dark"] .eva-members-table .semi-table-row:hover>.semi-table-row-cell,
 :root[data-theme="dark"] .eva-members-table .semi-table-tbody>.semi-table-row:hover>.semi-table-row-cell.semi-table-cell-fixed-left,
 :root[data-theme="dark"] .eva-members-table .semi-table-tbody>.semi-table-row:hover>.semi-table-row-cell.semi-table-cell-fixed-right{background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover));background-color:var(--eva-surface-primary)}
-.eva-project-settings-info .eva-project-info-field textarea:focus-visible{border-color:var(--semi-color-primary);outline:0}
+.eva-project-settings-info .eva-project-info-field textarea.semi-input-textarea:focus-visible{border-color:var(--semi-color-primary);outline:0}
 .eva-project-settings-info .eva-project-info-field p{margin:0}
 .eva-project-settings-info > .eva-project-settings-info__hero{align-items:start;grid-template-columns:1fr;gap:20px;padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:end}
@@ -118,7 +119,7 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:112px minmax(0,1fr) auto;min-height:48px}
 .eva-project-settings-info__timeline .semi-input-wrapper{min-width:0;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__milestone-copy{display:grid;min-width:0;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
-.eva-project-settings-info__milestone-copy select{height:32px;padding:0 24px 0 8px;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-1);font:400 14px/22px var(--eva-font-sans)}
+.eva-project-settings-info__milestone-copy .semi-select{height:32px;width:96px;padding:0;border:1px solid var(--semi-color-border);border-radius:var(--eva-radius-control);background:var(--semi-color-bg-0);color:var(--semi-color-text-1);font:400 14px/22px var(--eva-font-sans)}
 .eva-project-settings-info__empty{margin:0;color:var(--semi-color-text-2);font-size:14px;line-height:22px}
 .eva-project-settings-info__advanced{margin-top:16px;padding:20px;border:1px solid var(--semi-color-border);border-radius:10px;background:var(--semi-color-bg-0)}
 .eva-project-settings-info__advanced .eva-project-info-field{max-width:440px}
@@ -127,11 +128,11 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 @media (max-width:900px){.eva-project-settings-info{padding-inline:20px}.eva-project-settings-info__hero .eva-project-info__eyebrow{align-items:start}.eva-project-settings-info .eva-project-settings-info__facts{min-width:0}.eva-project-settings-info__timeline .eva-project-info__milestone{grid-template-columns:76px minmax(0,1fr) auto}.eva-project-settings-info__milestone-copy{grid-template-columns:1fr}.eva-project-settings-info__actions{align-items:flex-start;flex-direction:column}}
 
 /* GDS form and member-management states. AI avatar geometry stays in 003. */
-.eva-project-settings-info .eva-project-info-field textarea { font-size:14px;line-height:22px;padding:10px 12px; }
+.eva-project-settings-info .eva-project-info-field textarea.semi-input-textarea { font-size:14px;line-height:22px;padding:10px 12px; }
 .eva-project-settings-info__hero .eva-project-info__eyebrow { flex-wrap:wrap;gap:16px; }
 .eva-project-settings-info__actions { position:sticky;bottom:0;padding:16px 0;background:var(--eva-surface-primary);border-top:1px solid var(--eva-border-subtle); }
-.eva-project-settings-info__milestone-copy select:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
-.eva-project-settings-info__milestone-copy select { font-size:14px;line-height:22px; }
+.eva-project-settings-info__milestone-copy .semi-select:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
+.eva-project-settings-info__milestone-copy .semi-select { font-size:14px;line-height:normal; }
 .eva-members { font:400 14px/22px var(--eva-font-sans); }
 .eva-members h3,.eva-members h4 { font-size:16px;line-height:24px;font-weight:500; }
 .eva-members-toolbar p { line-height:22px; }
@@ -139,24 +140,30 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 .eva-members-table .semi-table-row-head { padding:12px 16px;line-height:16px; }
 .eva-members-table .semi-button { min-height:32px;font-size:14px;line-height:22px; }
 .eva-members-modal .semi-modal-content { padding:0;border-radius:20px;box-shadow:var(--eva-shadow-floating); }
-.eva-members-modal .semi-modal-header { margin:0;padding:20px 24px 16px; }
+.eva-members-modal:not(.eva-dialog) .semi-modal-header { margin:0;padding:20px 24px 16px; }
 /* 通用成员弹窗（确认移除、分身详情）保持旧的外壳；拉人模板 A 由 009-2-picker-preview.css 自己声明外壳，不再继承这条上限与滚动。 */
-.eva-members-modal:not(.eva-member-picker-modal) .semi-modal-body { margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px; }
-.eva-members-modal .semi-modal-footer { margin:0;padding:16px 24px 24px; }
+.eva-members-modal:not(.eva-dialog):not(.eva-member-picker-modal) .semi-modal-body { margin:0;max-height:calc(100vh - var(--topbar-height) - 200px);overflow:auto;padding:0 24px; }
+.eva-members-modal:not(.eva-dialog) .semi-modal-footer { margin:0;padding:16px 24px 24px; }
 .eva-members-modal .eva-members-field + .eva-members-field { margin-top:24px; }
 .eva-members-notice { border-radius:12px;padding:12px 16px;line-height:22px; }
 @media(max-width:900px) { .eva-project-settings-info__facts { grid-template-columns:1fr; } }
 
 .eva-project-role-form{display:flex;flex-direction:column;gap:var(--eva-space-5)}
+.eva-project-role-form.semi-form-vertical .semi-form-field,.eva-role-create.semi-form-vertical .semi-form-field{padding:0}
+.eva-file-save-form.semi-form-vertical .semi-form-field{padding:0}
+.eva-member-removal-form.semi-form-vertical .semi-form-field{padding:0}
 .eva-role-field{display:flex;flex-direction:column;gap:var(--eva-space-2)}
 .eva-role-field-label{display:flex;align-items:center;gap:var(--eva-space-2);color:var(--gds-color-text-primary);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height);font-weight:var(--gds-font-weight-medium)}
 .eva-role-field-hint{font-size:var(--gds-type-caption-font-size);color:var(--gds-color-text-secondary-accessible);font-weight:var(--gds-font-weight-regular)}
 .eva-project-role-form .eva-role-help{margin:0;font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-caption-line-height)}
-.eva-role-menu-footer{border-top:var(--gds-border-standard) solid var(--gds-color-border-subtle);padding:var(--eva-space-2)}
-.eva-role-menu-footer .eva-role-menu-new{width:100%;justify-content:flex-start;min-height:32px}
-.eva-role-menu-create{display:flex;flex-direction:column;gap:var(--eva-space-2);padding:var(--eva-space-2)}
-.eva-role-menu-actions{display:flex;justify-content:flex-end;gap:var(--eva-space-2)}
-.eva-role-menu-create .eva-members-error{margin:0}
+.eva-project-role-content{display:flex;flex-direction:column;gap:var(--eva-space-4)}
+.eva-role-options{max-height:240px;overflow-y:auto}
+.eva-role-create-area{border-top:var(--gds-border-standard) solid var(--gds-color-border-subtle);padding-top:var(--eva-space-3)}
+.eva-role-create-heading,.eva-role-create-row{display:flex;align-items:flex-start;gap:var(--eva-space-2)}
+.eva-role-create-heading{align-items:center;justify-content:space-between}
+.eva-role-create{display:flex;flex-direction:column;gap:var(--eva-space-2)}
+.eva-role-create-row>.semi-form-field{flex:1;min-width:0}
+.eva-role-create-row>.semi-button{flex-shrink:0}
 
 .eva-chat-task-list{display:flex;flex-direction:column;height:100%;min-height:0;color:var(--semi-color-text-0)}
 
@@ -174,12 +181,17 @@ body:has(.eva-members-modal) .semi-modal-mask:not(:where(.eva-identity-portal *)
 
 /* 转移族（转让群主 / 转让项目负责人）：拉人模板的单栏单选配置。
    行高、头像、字体、搜索栏与拉人同源（家族契约 token），只去掉右栏并改为单选。 */
-.eva-members-modal--transfer .semi-modal-content{padding:0;border-radius:16px}
-.eva-members-modal--transfer .semi-modal-header{margin:0;padding:20px 24px 12px;border-bottom:0}
-.eva-members-modal--transfer .semi-modal-title{font:600 18px/26px var(--eva-font-sans);color:var(--gds-color-text-primary)}
-.eva-members-modal--transfer .semi-modal-body{margin:0;max-height:calc(100vh - var(--topbar-height) - 220px);overflow:auto;padding:0 24px}
-.eva-members-modal--transfer .semi-modal-footer{margin:0;padding:12px 24px 20px;border-top:1px solid var(--semi-color-border)}
+.eva-members-modal--transfer .semi-modal-content{border-radius:16px}
+.eva-members-modal--transfer .semi-modal-title{color:var(--gds-color-text-primary)}
+.eva-members-modal--transfer .semi-modal-body{max-height:calc(100vh - var(--topbar-height) - 220px);overflow:auto}
 .eva-members-modal--transfer .eva-picker-body{padding:0;--picker-list-pad:var(--gds-space-1);--picker-row-gap:2px;--picker-toolbar-pad:0 0 var(--gds-space-3)}
 .eva-members-modal--transfer .eva-picker-list{max-height:min(320px,calc(100vh - 400px))}
 .eva-members-modal--transfer .eva-picker-empty{padding:24px 0}
 .eva-members-modal--transfer .eva-transfer-footer{margin:0;padding:0;border-top:0}
+
+/* Single-field file naming: retain the pre-migration input spacing. */
+
+.eva-project-settings-info__period > .semi-form-field-error-message { grid-column: 1 / -1; }
+
+.eva-project-settings-info__milestone-copy .semi-select-selection { margin-left:8px;font:inherit; }
+.eva-project-settings-info__milestone-copy .semi-select-arrow { padding-inline:2px; }

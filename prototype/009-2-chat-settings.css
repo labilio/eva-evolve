@@ -13,7 +13,8 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-setting-row.is-danger { color:var(--semi-color-danger); }
 .eva-chat-setting-edit { padding:16px; border-bottom:1px solid var(--wk-border-subtle,#e4e5e7); }
 .eva-chat-setting-edit label { display:block; margin-bottom:8px; font-weight:500; }
-.eva-chat-setting-edit textarea { box-sizing:border-box; width:100%; resize:vertical; min-height:100px; max-height:360px; background:var(--wk-bg-base,#fff); color:inherit; border:1px solid var(--wk-border-subtle,#ddd); border-radius:8px; padding:12px; font:inherit; }
+.eva-chat-setting-edit .semi-input-textarea-wrapper { margin-bottom:6px; background:var(--wk-bg-base,#fff);color:inherit;border:1px solid var(--wk-border-subtle,#ddd);border-radius:8px; }
+.eva-chat-setting-edit textarea { box-sizing:border-box; width:100%; resize:vertical; min-height:98px; max-height:358px; background:transparent; color:inherit; border:0; border-radius:inherit; padding:12px; font:inherit; }
 .eva-chat-setting-edit-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:10px 0 0; }
 .eva-chat-setting-edit-actions small { margin-right:auto; color:var(--wk-text-secondary,#767a80); }
 .eva-chat-member-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px 8px; padding:16px; }
@@ -72,7 +73,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-settings-head { background:var(--eva-surface-primary); }
 .eva-chat-setting-section { background:var(--eva-surface-primary); }
 .eva-chat-setting-edit textarea { font-size:15px;line-height:24px; }
-.eva-chat-setting-edit textarea:focus-visible { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
+.eva-chat-setting-edit .semi-input-textarea-wrapper-focus { outline:2px solid var(--eva-action-primary);outline-offset:2px; }
 .eva-chat-settings-note { color:var(--gds-color-text-secondary-accessible);line-height:16px; }
 .eva-chat-member-tile { border-radius:8px; }
 
@@ -138,3 +139,13 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-member-chips .semi-button { flex:none; height:28px; min-height:28px; padding:0 8px; border:1px solid var(--eva-border-faint); border-radius:8px; font:400 12px/18px var(--eva-font-sans); color:var(--eva-text-secondary-accessible); background:var(--eva-surface-primary); }
 .eva-chat-member-chips .semi-button.semi-button-borderless:not(.semi-button-disabled):is(:hover,:active) { border:1px solid var(--eva-border-faint); background-image:linear-gradient(0deg,var(--eva-overlay-hover),var(--eva-overlay-hover)); }
 .eva-chat-member-chips .semi-button[aria-pressed="true"],.eva-chat-member-chips .semi-button[aria-pressed="true"]:hover { border:1px solid var(--eva-border-focus); color:var(--eva-action-primary); background:color-mix(in srgb,var(--eva-action-primary) 8%,var(--eva-surface-primary)); }
+
+/* Form owns validation; the established chat-settings typography remains unchanged. */
+.eva-chat-setting-edit.semi-form-vertical .semi-form-field{padding:0}
+.eva-chat-setting-edit.semi-form .semi-form-field-label{font-family:inherit;font-size:inherit;line-height:inherit;font-weight:500;padding:0;margin:0 0 8px}
+/* Preserve Octo's established create-subarea geometry with native Semi fields. */
+.wk-thread-create-form .semi-input-wrapper.wk-thread-create-form__input { height:auto; padding:0; background:var(--wk-bg-base); }
+.wk-thread-create-form .wk-thread-create-form__input input.semi-input { height:auto; padding:10px 12px; font-size:14px; line-height:1.15; color:var(--wk-text-primary); }
+.wk-thread-create-form .semi-button.wk-thread-create-form__button { height:auto; line-height:1.15; }
+
+/* 子区表单改用公共弹窗，保留原有正文与标题文字层级。 */

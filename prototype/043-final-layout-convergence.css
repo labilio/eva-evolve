@@ -138,7 +138,11 @@
   .eva-personal-rail-more { display: block; padding: var(--eva-space-2); border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
   .eva-personal-rail-empty { padding: var(--eva-space-2); color: var(--eva-text-muted); }
   .eva-personal-rail-form { display: flex; flex-direction: column; gap: var(--eva-space-2); margin: var(--eva-space-1) 0 var(--eva-space-3); padding: var(--eva-space-3); background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); }
-  .eva-personal-rail-form input, .eva-personal-rail-form select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; border: 1px solid var(--eva-border-default); border-radius: var(--eva-radius-key); background: var(--eva-surface-primary); color: var(--eva-text-primary); padding: 0 var(--eva-space-2); font: inherit; }
+  .eva-personal-rail-form .semi-input-wrapper, .eva-personal-rail-form .semi-select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; border: 1px solid var(--eva-border-default); border-radius: var(--eva-radius-key); background: var(--eva-surface-primary); color: var(--eva-text-primary); padding: 0 var(--eva-space-2); font: inherit; }
+  .eva-personal-rail-form.semi-form-vertical .semi-form-field { padding: 0; }
+  .eva-personal-rail-form .semi-input-wrapper { padding: 0; }
+  .eva-personal-rail-form .semi-input { height: 30px; padding: 0 var(--eva-space-2); font: inherit; }
+  .eva-personal-rail-form .semi-select-selection { margin-left: 0; font: inherit; }
   .eva-personal-rail-form__actions { display: flex; justify-content: flex-end; gap: var(--eva-space-2); }
   .eva-personal-rail-form__actions button { min-height: 32px; padding: 0 var(--eva-space-3); border: 0; border-radius: var(--eva-radius-key); background: var(--eva-overlay-hover); color: var(--eva-text-primary); font: inherit; cursor: pointer; }
   .eva-personal-rail-form__actions button[type="submit"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }

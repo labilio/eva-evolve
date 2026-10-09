@@ -37,7 +37,7 @@ test('Edge：前缀变更同步编号，旧编号链接与稳定 ID 链接仍打
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
 
-test('Edge：新项目默认拼音前缀，撞名延长且输入拒绝数字与连字符',async()=>{
+test('Edge：创建项目不填写前缀，保存时自动生成且撞名延长',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const origin=`http://127.0.0.1:${server.address().port}`;
@@ -49,12 +49,10 @@ test('Edge：新项目默认拼音前缀，撞名延长且输入拒绝数字与�
    await page.getByRole('button',{name:'新建项目'}).click();
    const dialog=page.getByRole('dialog').filter({hasText:'新建项目'});
    await dialog.getByRole('textbox',{name:'项目名称'}).fill('供应链运营协同');
-   const input=dialog.getByRole('textbox',{name:'任务前缀'});
-   assert.equal(await input.inputValue(),expected);
-   await input.fill(expected+'-9');
-   assert.equal(await input.inputValue(),expected);
+   assert.equal(await dialog.getByRole('textbox',{name:'任务前缀'}).count(),0,'创建时不暴露前缀输入');
    await dialog.locator('.eva-member-picker__candidate').first().click();
    await dialog.getByRole('button',{name:'创建并进入项目'}).click();
+   await dialog.waitFor({state:'hidden'});
    const current=await page.evaluate(()=>JSON.parse(localStorage.getItem('eva-collab-spaces')).at(-1));
    assert.equal(current.issue_prefix,expected);
    await page.goto(origin+'/#/collab');

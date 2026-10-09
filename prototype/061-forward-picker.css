@@ -499,3 +499,7 @@ html[data-theme="dark"] .eva-fp-note,
 html[data-theme="dark"] .eva-fp-picker-new-input { background: var(--semi-color-bg-2, #1c1f23); }
 html[data-theme="dark"] .eva-fp-preview { background: var(--semi-color-fill-0, #2a2e33); }
 html[data-theme="dark"] .eva-fp-row-head.is-checked { background: var(--semi-color-primary-light-default, rgba(21, 99, 235, 0.25)); }
+/* Native Semi controls keep the inline create-subarea row's original metrics. */
+.eva-fp-thread-form .semi-input-wrapper.eva-fp-picker-new-input { padding:0; height:30px; }
+.eva-fp-thread-form .eva-fp-picker-new-input input.semi-input { height:28px; padding:0 7px; font:inherit; }
+.eva-fp-thread-form .semi-button { min-width:0; font-weight:400; line-height:1.15; }

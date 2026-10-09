@@ -374,8 +374,8 @@ test('项目与文件库的外部资源弹窗统一为名称在前、链接在�
       await toolbar.locator('.eva-drive__external-add-menu button').filter({ hasText: kind }).click();
       const dialog = page.getByRole('dialog', { name: `添加${kind}` });
       await dialog.waitFor();
-      const fields = dialog.locator('.eva-drive-dialog__body > .eva-drive-dialog__field');
-      assert.deepEqual(await fields.locator(':scope > span').allTextContents(), kind === '外部文件夹'
+      const fields = dialog.locator('.eva-file-form > .eva-drive-dialog__field');
+      assert.deepEqual(await fields.locator(':scope > span > label').allTextContents(), kind === '外部文件夹'
         ? ['文件夹名称', '文件夹链接']
         : ['文件名称', '文件链接']);
       assert.equal(await fields.count(), 2, '弹窗正文只保留名称和链接两个字段');

@@ -1,3 +1,4 @@
+import {fileFormHarness} from './helpers/file-form-harness.mjs';
 import {loadIdentityEnvironment} from './helpers/identity-environment.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,28 +12,15 @@ test('不在来源群或目标项目不能转存，移出项目后失去共享�
 test('项目文件列表适配保留结构化来源与共享版本',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();const start=source.indexOf('toEntry=rt=>('),end=source.indexOf(',FilesView=',start);assert.ok(start>=0&&end>start);const adapt=vm.runInNewContext('('+source.slice(start+'toEntry='.length,end)+')');const entry=adapt({id:'shared-1',name:'报告.pdf',source:{groupId:'g',groupName:'质量群'},sourceVersion:2,sharedVersion:true});assert.equal(entry.source.groupName,'质量群');assert.equal(entry.sourceVersion,2);assert.equal(entry.sharedVersion,true);});
 test('项目团队文件复用文件库组件并移除旧筛选和旧上传文案',async()=>{const {createPatchedRuntime}=await import('../tools/build-runtime.mjs');const {source}=createPatchedRuntime();assert.match(source,/FilesView=\(\)=>window\.EvaProjectFilesUI\.render/);const ui=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');assert.match(ui,/搜索当前项目/);assert.match(ui,/上传本地文件/);assert.match(ui,/eva-file-detail-dialog/);assert.match(ui,/'aria-labelledby':titleId/);assert.doesNotMatch(ui,/eva-project-files__inspector|TYPE_PILLS|搜索云盘文件|Owner · 项目负责人/);const entry=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(entry.indexOf('prototype\/009-1-project-files-ui.js')<entry.indexOf('vendor\/eva-runtime.module.js'));});
 test('文件库在当前文件库新建文件夹时不再选择所属文件库',()=>{
-  const source=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
-  const dialogStart=source.indexOf('  function dialogHTML()'),dialogEnd=source.indexOf('  function filePreviewFixture(',dialogStart);
-  const state={dialog:{type:'new-folder',spaceId:'p'},parentId:'folder-a',selectedId:null};
-  const sandbox={state,fileActor:()=> 'a',fileContext:()=>({files:{snapshot:()=>[]}}),icon:()=>'<svg class="lucide"></svg>'};
-  const html=vm.runInNewContext(source.slice(dialogStart,dialogEnd)+';dialogHTML();',sandbox);
-  assert.match(html,/文件夹名称/);
-  assert.doesNotMatch(html,/所属空间|所属文件库|eva-drive-dialog-space/);
-
-  const confirmStart=source.indexOf('  function confirmDialog()'),confirmEnd=source.indexOf('  function bridgeSelectedResource()',confirmStart);
-  let created;
-  vm.runInNewContext(source.slice(confirmStart,confirmEnd)+';confirmDialog();',{
-    state,
-    fileActor:()=> 'a',
-    scopeSpaceId:()=> 'p',
-    fileContext:()=>({files:{snapshot:()=>[],createFolder:(...args)=>{created=args;return 'folder-new';}}}),
-    document:{getElementById:id=>id==='eva-drive-dialog-name'?{value:'项目资料'}:id==='eva-drive-dialog-space'?{value:'other'}:null},
-    renderDrive:()=>{},
-    showToast:()=>{}
-  });
+  let created,saved;
+  const harness=fileFormHarness({type:'new-folder',entry:'drive',actor:'a',spaceId:'p',parentId:'folder-a',onClose(){},onSaved:value=>saved=value,files:{writableSpaces:()=>[{id:'other'}],list:()=>[],createFolder(...args){created=args;return 'folder-new';}}});
+  assert.equal(harness.nodes().filter(n=>n.type==='Select').length,0);
+  assert.ok(harness.nodes().some(n=>n.children.includes('文件夹名称')));
+  harness.change('name','项目资料');harness.submit();
   assert.deepEqual(created,['a','p','项目资料','folder-a']);
-  assert.equal(state.selectedId,'folder-new');
+  assert.equal(saved.id,'folder-new');
 });
+
 test('文件库使用与项目文件一致的单行工具栏并在两个入口展示完整创建时间',()=>{
   const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');
   const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');
@@ -283,7 +271,17 @@ test('个人文件根目录提供五种可直接演示的文档类型',()=>{cons
 test('文件信息只能从三点菜单的查看文件信息入口打开',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');assert.doesNotMatch(project,/item\.type==='folder'&&!trashMode\?enterFolder\(item\):openDetails\(item\)/);assert.doesNotMatch(project,/catch\{setPreview\(null\);setSelectedId\(item\.id\);\}/);assert.doesNotMatch(drive,/if \(!action && row\) \{[\s\S]{0,180}state\.selectedId/);assert.doesNotMatch(drive,/catch \(error\) \{[\s\S]{0,160}state\.selectedId = resource\.id/);assert.match(drive,/function closeDrive\(\) \{[\s\S]{0,260}state\.selectedId = null;[\s\S]{0,180}state\.dialog = null;/);for(const source of [drive,project]){assert.match(source,/更多操作/);assert.match(source,/查看文件信息/);}});
 test('详情弹窗将复制内部链接收纳为文件标题旁的紧凑图标按钮',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');assert.match(drive,/class="eva-file-detail__copy-link"[^>]*data-drive-action="copy-link"/);assert.match(project,/className:'eva-file-detail__copy-link'[^}]*aria-label':'复制内部链接'/);assert.doesNotMatch(drive,/class="eva-drive__ghost-button"[^>]*data-drive-action="copy-link"/);assert.doesNotMatch(project,/className:'eva-drive__ghost-button'[^}]*onClick:\(\)=>copyLink/);assert.match(styles,/\.eva-file-detail__copy-link\s*\{[\s\S]*?width:\s*32px;[\s\S]*?height:\s*32px;/);assert.match(styles,/\.eva-file-detail__identity--with-action\s*\{[\s\S]*?grid-template-columns:\s*42px minmax\(0, 1fr\) 32px;/);});
 test('三点操作菜单脱离列表滚动层并根据可用空间上下展开',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');assert.match(drive,/rowMenuAnchor\(action/);assert.match(drive,/visualViewport/);assert.match(project,/setMenuAnchor/);assert.match(project,/roomBelow<menuHeight/);assert.match(styles,/\.eva-drive__row-menu\s*\{[\s\S]*position:\s*fixed/);assert.match(styles,/max-height:\s*calc\(100vh - 24px\)/);});
-test('两个文件入口使用可输入下拉框选择已有标签或新建标签',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/从下拉框选择已有标签/);assert.match(source,/没有匹配标签，按回车新建/);assert.match(source,/toLowerCase\(\)\s*===\s*input\.toLowerCase\(\)/);assert.match(source,/tagDropdownOpen/);assert.doesNotMatch(source,/多个标签用逗号分隔/);}assert.match(drive,/data-drive-action="tag-option"/);assert.match(drive,/role="combobox"/);assert.match(project,/role:'listbox'/);assert.match(styles,/\.eva-tag-editor__dropdown/);assert.match(styles,/\.eva-tag-editor__chip/);});
+test('两个文件入口共用可输入下拉框选择已有标签或新建标签',()=>{
+  const read=file=>fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8');
+  for(const source of [read('020-mode-layer.js'),read('009-1-project-files-ui.js')]){
+    assert.match(source,/FileForm|showFileForm/);assert.doesNotMatch(source,/tagDropdownOpen|多个标签用逗号分隔/);
+  }
+  const shared=read('063-file-form.jsx');
+  for(const text of ['从下拉框选择已有标签','没有匹配标签，按回车新建','role="combobox"','role="listbox"','Form.Input','FileTags field="tags"'])assert.ok(shared.includes(text),text);
+  assert.match(shared,/toLowerCase\(\)===input\.toLowerCase\(\)/);
+  const styles=read('050-file-library.css');assert.match(styles,/\.eva-tag-editor__dropdown/);assert.match(styles,/\.eva-tag-editor__chip/);
+});
+
 test('两个文件入口按文件夹删除单元提示，并反馈恢复到文件库根目录',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/及其中内容/);assert.match(source,/trashedItemCount/);assert.match(source,/restoredToRoot/);assert.match(source,/原位置不存在，已恢复到文件库根目录/);}});
 test('两个文件详情入口按实时角色隐藏恢复和永久删除动作',()=>{const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/canRestore/);assert.match(source,/canDeleteForever/);assert.match(source,/can\('restore'/);assert.match(source,/can\('delete-forever'/);}});
 test('两个文件入口共用置顶状态，文件库提供跨个人和项目文件库的聚合视图且不恢复共享空间',()=>{const store=fs.readFileSync(new URL('../prototype/009-1-file-sharing.js',import.meta.url),'utf8');const drive=fs.readFileSync(new URL('../prototype/020-mode-layer.js',import.meta.url),'utf8');const project=fs.readFileSync(new URL('../prototype/009-1-project-files-ui.js',import.meta.url),'utf8');const hierarchy=fs.readFileSync(new URL('../prototype/021-message-hierarchy.js',import.meta.url),'utf8');const styles=fs.readFileSync(new URL('../prototype/050-file-library.css',import.meta.url),'utf8');const hierarchyStyles=fs.readFileSync(new URL('../prototype/016-message-hierarchy.css',import.meta.url),'utf8');for(const source of [drive,project]){assert.match(source,/togglePin|togglePinned/);assert.match(source,/aria-pressed/);assert.match(source,/eva-drive__pin-button/);assert.match(source,/取消置顶/);}assert.match(store,/pinnedFiles\(/);assert.match(store,/setPinned\(/);assert.match(drive,/treeButton\('pinned', '置顶文件', 'pin'/);assert.match(drive,/pinnedFiles\(actor\)/);assert.match(drive,/eva-drive__table--pinned/);assert.match(drive,/openResourceLocation\(resource, true\)/);assert.match(drive,/打开所在位置/);assert.match(styles,/\.eva-drive__pin-button\.is-pinned/);assert.match(styles,/\.eva-drive__row:focus-within \.eva-drive__pin-button/);assert.doesNotMatch(drive,/共享空间|shared-space|new-shared-space|shared-manage|data-shared-space-id/);assert.doesNotMatch(hierarchy,/buildDriveScopebar|shared-all|私聊分享|来自共享的文件来源/);assert.doesNotMatch(styles,/eva-drive-project-card--shared|eva-drive-member-list|eva-drive-governance/);assert.doesNotMatch(hierarchyStyles,/eva-drive-scopebar|eva-drive-sourcebar/);assert.doesNotMatch(store,/DEFAULT_SHARED_SPACES|createSharedSpace/);assert.match(drive,/treeButton\('personal', '个人文件库'/);assert.match(drive,/treeButton\('projects', '项目文件库'/);});

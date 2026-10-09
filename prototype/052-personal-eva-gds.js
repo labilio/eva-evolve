@@ -128,14 +128,34 @@
   }
 
   function railFormHTML() {
-    if (!railForm) return '';
-    var moving = railForm.type === 'conversation';
-    var detail = moving ? conversationForId(railForm.id) : personalSnapshot().folders.find(function (f) { return f.id === railForm.id; });
-    return '<form class="eva-personal-rail-form" data-eva-rail-form>'
-      + '<label class="eva-t-caption" for="eva-rail-name">' + (moving ? '对话名称' : '重命名文件夹') + '</label>'
-      + '<input id="eva-rail-name" name="name" autocomplete="off" maxlength="' + (moving ? '120' : '60') + '" placeholder="' + (moving ? '对话名称' : '文件夹名称') + '" value="' + escapeHTML(detail ? (moving ? detail.title : detail.name) : '') + '" required>'
-      + (moving ? '<label class="eva-t-caption" for="eva-rail-folder">移至文件夹</label><select id="eva-rail-folder" name="folder"><option value="">最近</option>' + personalSnapshot().folders.map(function (f) { return '<option value="' + escapeHTML(f.id) + '"' + (detail.folderId === f.id ? ' selected' : '') + '>' + escapeHTML(f.name) + '</option>'; }).join('') + '</select>' : '')
-      + '<p class="eva-t-caption" role="alert" data-eva-rail-error></p><div class="eva-personal-rail-form__actions"><button type="button" data-eva-cancel-rail>取消</button><button type="submit">保存</button></div></form>';
+    return railForm ? '<div data-eva-rail-form-host></div>' : '';
+  }
+
+  function syncRailForm() {
+    if (!pageServices?.showRailForm) return;
+    var container = root && root.querySelector('[data-eva-rail-form-host]');
+    if (!railForm || !container) { pageServices.showRailForm(null); return; }
+    var current = railForm;
+    var moving = current.type === 'conversation';
+    var detail = moving ? conversationForId(current.id) : personalSnapshot().folders.find(function (f) { return f.id === current.id; });
+    if (!detail) { railForm = null; pageServices.showRailForm(null); return; }
+    pageServices.showRailForm({container:container, moving:moving, detail:detail, folders:personalSnapshot().folders,
+      onClose:function () { railForm = null; renderRail(); },
+      onSave:function (values) {
+        if (railForm !== current) return;
+        if (!moving) window.EvaPersonal.renameFolder(current.id, values.name);
+        else {
+          window.EvaPersonal.renameConversation(current.id, values.name);
+          window.EvaPersonal.moveConversation(current.id, values.folder || '');
+          if (activeConversationId === current.id) {
+            var latest = conversationForId(activeConversationId); selectedFolderId = latest.folderId; selectedConversation = latest.title;
+            var title = root.querySelector('.eva-personal-workspace__topbar .ttl'); if (title) title.textContent = latest.title;
+          }
+        }
+        railForm = null; renderRail();
+        var picker = root.querySelector('.eva-personal-folder-picker'); if (picker) picker.outerHTML = folderPickerHTML();
+      }
+    });
   }
 
   function conversationRowsHTML(items, folderId) {
@@ -185,7 +205,7 @@
   // Rail actions update only the rail; composition, selection and scroll stay intact.
   function renderRail() {
     var rail = root && root.querySelector('.eva-personal-sider-panel');
-    if (rail) { var scroll = rail.querySelector('.eva-personal-sider-panel__body').scrollTop; rail.outerHTML = assistantRailHTML(); root.querySelector('.eva-personal-sider-panel__body').scrollTop = scroll; }
+    if (rail) { var scroll = rail.querySelector('.eva-personal-sider-panel__body').scrollTop; rail.outerHTML = assistantRailHTML(); root.querySelector('.eva-personal-sider-panel__body').scrollTop = scroll; syncRailForm(); }
   }
 
   /* ---- hero ------------------------------------------------ */
@@ -513,6 +533,7 @@
     var caret = input ? input.selectionStart : 0;
     root.setAttribute('data-eva-state', state);
     root.innerHTML = workspaceHTML();
+    syncRailForm();
     if (state === 'completed') syncEditor();
     if (focused) {
       input = root.querySelector('.eva-composer-prompt');
@@ -711,7 +732,7 @@
     var pinFolder = event.target.closest('[data-eva-pin-folder]');
     if (pinFolder) { window.EvaPersonal.toggleFolderPin(pinFolder.dataset.evaPinFolder); folderMenu = null; renderRail(); return; }
     var renameFolder = event.target.closest('[data-eva-rename-folder]');
-    if (renameFolder) { railForm = {type:'rename-folder', id:renameFolder.dataset.evaRenameFolder}; folderMenu = null; renderRail(); root.querySelector('#eva-rail-name').focus(); return; }
+    if (renameFolder) { railForm = {type:'rename-folder', id:renameFolder.dataset.evaRenameFolder}; folderMenu = null; renderRail(); return; }
     var deleteFolder = event.target.closest('[data-eva-delete-folder]');
     if (deleteFolder) {
       if (!window.confirm('删除这个文件夹？其中的对话会移回「最近」。')) return;
@@ -929,30 +950,12 @@
     if (!root || !root.contains(event.target)) return;
     var row = event.target.closest('[data-eva-personal-conversation-id]');
     if (!row) return;
-    event.preventDefault(); railForm = {type:'conversation', id:row.dataset.evaPersonalConversationId}; renderRail(); root.querySelector('#eva-rail-name').focus();
+    event.preventDefault(); railForm = {type:'conversation', id:row.dataset.evaPersonalConversationId}; renderRail();
   });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && folderMenu !== null) { folderMenu = null; renderRail(); }
   });
 
-  document.addEventListener('submit', function (event) {
-    if (!root || !root.contains(event.target) || !event.target.matches('[data-eva-rail-form]')) return;
-    event.preventDefault();
-    var name = event.target.querySelector('[name="name"]').value;
-    try {
-      if (railForm.type === 'rename-folder') window.EvaPersonal.renameFolder(railForm.id, name);
-      else {
-        window.EvaPersonal.renameConversation(railForm.id, name);
-        window.EvaPersonal.moveConversation(railForm.id, event.target.querySelector('[name="folder"]').value);
-        if (activeConversationId === railForm.id) {
-          var detail = conversationForId(activeConversationId); selectedFolderId = detail.folderId; selectedConversation = detail.title;
-          var title = root.querySelector('.eva-personal-workspace__topbar .ttl'); if (title) title.textContent = detail.title;
-        }
-      }
-      railForm = null; renderRail();
-      var picker = root.querySelector('.eva-personal-folder-picker'); if (picker) picker.outerHTML = folderPickerHTML();
-    } catch (error) { event.target.querySelector('[data-eva-rail-error]').textContent = error.message; }
-  });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && root && root.contains(event.target) && railForm) { railForm = null; renderRail(); }
   });
@@ -991,6 +994,7 @@
     render();
     return function () {
       personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      pageServices?.showRailForm?.(null);
       pageServices = null;
       railForm = null;
       conversationPickerOpen = false;

@@ -1,6 +1,37 @@
 (function (root) {
   'use strict';
   root.__evaPatch('im', function (source) {
+function ThreadCreateForm({label,placeholder,initialValue='',maxLength=THREAD_NAME_MAX_LENGTH,loading=false,error,labels,showVoiceInput=false,showCounter=false,formVariant='modal',modalTitle,resetKey,onSubmit,onCancel,onChange}) {
+ const h=React.createElement,{Form,useSubmission,SubmissionError}=evaForms,[api,state,values]=Form.useForm(),input=reactExports.useRef(null);
+ const submission=useSubmission({resetKey,onSubmit:data=>onSubmit(data.name.trim())});
+ reactExports.useEffect(()=>{api.setValues({name:initialValue},{isOverride:true});},[initialValue,resetKey]);
+ const name=values.name??'',id=submission.formProps.id+'-name';
+ const change=value=>{api.setValue('name',value);onChange?.(value);};
+ const actions=h(evaForms.Actions,{onCancel,cancelLabel:labels.cancel,submitLabel:loading?labels.creating:labels.create,form:submission.formProps.id,busy:loading||submission.busy});
+ const form=h(Form,{...submission.formProps,form:api,initValues:{name:initialValue},className:'wk-thread-create-form'+(formVariant==='confirm'?' wk-thread-create-form--confirm':'')},
+  label&&h('label',{className:'wk-thread-create-form__label',htmlFor:id,id:id+'-label'},label),
+  h('div',{className:'wk-thread-create-form__input-row'},
+   h(Form.Input,{pure:true,field:'name',id,ref:input,className:'wk-thread-create-form__input',placeholder,maxLength,autoFocus:true,disabled:loading||submission.busy,onChange,
+    validator:value=>getNameError(value||'',maxLength,labels)||'', 'aria-describedby':id+'-error'}),
+   showVoiceInput&&h(VoiceInputButton,{inputRef:{get current(){return input.current?.inputElement||input.current;}},onTranscribed:(text,mode,selection)=>{let next=text;if(mode==='selection'&&selection)next=name.slice(0,selection.from)+text+name.slice(selection.to);else if(mode!=='all'){const at=selection?.from??name.length;next=name.slice(0,at)+text+name.slice(at);}change(next);},size:'sm'})),
+  (state.errors?.name||error||showCounter)&&h('div',{className:'wk-thread-create-form__meta'},h(Form.ErrorMessage,{error:state.errors?.name||error,errorMessageId:id+'-error'}),showCounter&&h('span',{className:'wk-thread-create-form__counter'},name.length+' / '+maxLength)),
+  h(SubmissionError,{submission}),
+  !modalTitle&&actions);
+ return modalTitle?h(evaForms.Dialog,{visible:true,title:modalTitle,onCancel,size:'compact',selectInitialText:!!initialValue,footer:actions,className:'eva-thread-create-dialog'},form):form;
+}
+function ThreadCreateDialog({visible,title,onCancel,...props}) {
+ const [resetKey,setResetKey]=reactExports.useState(0);
+ reactExports.useEffect(()=>{if(visible)setResetKey(key=>key+1);},[visible]);
+ return visible&&React.createElement(ThreadCreateForm,{...props,resetKey,onCancel,modalTitle:title});
+}
+function EvaForwardThreadForm({maxLength,onSubmit,onCancel}) {
+ const h=React.createElement,{Form,useSubmission,SubmissionError}=evaForms,[api,state]=Form.useForm(),submission=useSubmission({onSubmit:values=>onSubmit(values.name.trim())});
+ return h(Form,{...submission.formProps,form:api,className:'eva-fp-thread-form'},
+  h('div',{className:'eva-fp-picker-new'},
+   h(Form.Input,{field:'name',pure:true,className:'eva-fp-picker-new-input',autoFocus:true,placeholder:'输入子区名称',maxLength,'aria-label':'新子区名称',rules:[{required:true,whitespace:true,message:'请输入子区名称'},{max:maxLength,message:'子区名称不能超过'+maxLength+'个字符'}],onKeyDown:event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();onCancel();}}}),
+   h(evaForms.Actions,{compact:true,onCancel,submitLabel:'确定',form:submission.formProps.id,busy:submission.busy})),
+  h(Form.ErrorMessage,{error:state.errors?.name,errorMessageId:'name-errormessage'}),h(SubmissionError,{submission}));
+}
 function evaRailIcon(name){
  const nodes={'Pin':[
   ["path", { d: "M12 17v5", key: "bb1du9" }],
@@ -481,12 +512,7 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
               option.id==='self'?null:evaForwardIcon('corner-down-right',{size:14,className:'eva-fp-picker-option-icon'}),
               h('span',null,option.name))),
             creatable?(draftThread&&draftThread.groupId===group.id
-              ?h('div',{className:'eva-fp-picker-new'},
-                h('input',{className:'eva-fp-picker-new-input',autoFocus:true,value:draftThread.name,placeholder:'输入子区名称',maxLength:threadNameMax,'aria-label':'新子区名称',
-                  onChange:event=>setDraftThread({groupId:group.id,name:event.target.value}),
-                  onKeyDown:event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();createThreadFromForward(group);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setDraftThread(null);}}}),
-                h('button',{type:'button',className:'eva-fp-picker-new-ok',onClick:()=>createThreadFromForward(group)},'确定'),
-                h('button',{type:'button',className:'eva-fp-picker-new-cancel',onClick:()=>setDraftThread(null)},'取消'))
+              ?h(EvaForwardThreadForm,{key:group.id,maxLength:threadNameMax,onSubmit:name=>createThreadFromForward(group,name),onCancel:()=>setDraftThread(null)})
               :h('button',{type:'button',className:'eva-fp-picker-new-btn',onClick:()=>setDraftThread({groupId:group.id,name:''})},evaForwardIcon('plus',{size:14}),'新建子区'))
               :null):null):null);
     }
@@ -518,12 +544,9 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
     const sessionId=window.EvaAITeam.createThread(agent.id);
     return window.EvaAIPrivateConversations.threadRecord(agent.id,{id:sessionId}).channel_id;
   };
-  const createThreadFromForward=group=>{
-    const name=String((draftThread&&draftThread.name)||'').trim();
+  const createThreadFromForward=(group,name)=>{
     const teamGroup=group.type==='ai-team';
-    if(!name){Toast.warning('子区名称不能为空');return;}
-    if(name.length>(teamGroup?100:30)){Toast.warning('子区名称不能超过'+(teamGroup?100:30)+'个字符');return;}
-    try{
+
       // 与群内「新建子区」同一数据链路：真实登记子区并继承父群项目与权限。
       let threadId;
       if(teamGroup){
@@ -535,7 +558,6 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
       }
       setDraftThread(null);
       toggleGroupDestination(groupById(group.id)||group,threadId);
-    }catch(error){Toast.error(error.message||'创建子区失败');}
   };
   const submit=()=>{
     const text=note.trim();
@@ -835,53 +857,54 @@ function EvaAssistantEditor({request,host,onClose}) {
   const h=React.createElement, store=window.EvaAITeam, snapshot=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot,store.getSnapshot);
   const persona=request.role==='persona', editing=request.mode==='edit';
   const existing=persona?snapshot.identities.find(i=>i.id===request.id):snapshot.localAssistants.find(i=>i.id===request.id);
-  const [sourceAssistantId,setSourceAssistantId]=reactExports.useState(editing?existing?.sourceAssistantId??null:request.sourceId??null);
+  const {Form,useSubmission,SubmissionError}=evaForms;
+  const [api,formState,formValues]=Form.useForm();
+  const initialSource=editing?existing?.sourceAssistantId??null:request.sourceId??null;
+  const sourceAssistantId=formValues.sourceAssistantId??null;
+  const setSourceAssistantId=value=>api.setValue('sourceAssistantId',value);
   const local=snapshot.localAssistants.find(i=>i.id===sourceAssistantId);
-  const config=(editing?existing?.configuration:local?.configuration)||{};
-  const [draft,setDraft]=reactExports.useState(()=>({name:persona?store.personaName():editing?existing?.name||'':'',description:config.description||'',identity:config.identity||'',personality:config.personality||'',about:config.about||'',skills:(config.skills||[]).join('\n'),collaboration:config.collaboration||'',model:config.model||'Qwen3.7 Plus',toolset:config.toolset??'四两的产品脑袋',avatar:persona?'':config.avatar||''}));
-  const [tab,setTab]=reactExports.useState('identity'),[busy,setBusy]=reactExports.useState(false),[error,setError]=reactExports.useState(''),[iconOpen,setIconOpen]=reactExports.useState(false);
-  const scope=reactExports.useRef(null), alive=reactExports.useRef(true);
-  reactExports.useEffect(()=>()=>{alive.current=false;},[]);
+  const config=(editing?existing?.configuration:snapshot.localAssistants.find(i=>i.id===initialSource)?.configuration)||{};
+  const [initial]=reactExports.useState(()=>({sourceAssistantId:initialSource,name:persona?store.personaName():editing?existing?.name||'':'',description:config.description||'',identity:config.identity||'',personality:config.personality||'',about:config.about||'',skills:(config.skills||[]).join('\n'),collaboration:config.collaboration||'',model:config.model||'Qwen3.7 Plus',toolset:config.toolset??'四两的产品脑袋',avatar:persona?'':config.avatar||''}));
+  const draft={name:'',description:'',identity:'',personality:'',about:'',skills:'',collaboration:'',model:'',toolset:'',avatar:'',...formValues};
+  const setDraft=change=>api.setValues(change({...draft,...api.getValues()}));
+  const submission=useSubmission({onSubmit:save}),busy=submission.busy;
+  const [tab,setTab]=reactExports.useState('identity'),[iconOpen,setIconOpen]=reactExports.useState(false);
+  const scope=reactExports.useRef(null);
   reactExports.useEffect(()=>{if(!iconOpen)return;const close=event=>{const field=scope.current?.querySelector('.eva-editor-avatar-upload');if(field&&!field.contains(event.target))setIconOpen(false);};document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[iconOpen]);
-  const update=(key,value)=>{setDraft(d=>({...d,[key]:value}));setError('');};
+  const update=(key,value)=>api.setValue(key,value);
   const role=persona?'分身':'助理';
   const editorTitle=(editing?'编辑':'创建')+(persona?'云端分身':'个人助理');
   const syncLabel=editing?({synced:'已同步',syncing:'正在同步',waiting:'等待记忆同步',error:'同步失败'}[existing?.syncStatus]||'等待记忆同步'):'创建后同步';
   const tabs=[['identity',role+'身份',persona?'分身名称与 Eva 头像固定，可配置角色定位和能力范围。':'定义'+role+'是谁，包括名字、头像、角色定位和能力范围。'],['personality',role+'性格','描述表达方式、判断风格和协作习惯。'],['about','关于你','补充需要了解的个人背景与偏好。'],['skills','技能','配置可以使用的技能，每行一个。']];
   if(persona)tabs.push(['collaboration','协作','设置参与协作时的职责和规则。'],['source','来源与同步','选择来源助理后，配置与已授权记忆将自动同步到云端分身。']);
-  function changeSource(value){const next=value==='__independent__'?null:value;setSourceAssistantId(next);const selected=snapshot.localAssistants.find(i=>i.id===next);if(selected)setDraft(d=>({...d,...selected.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:(selected.configuration.skills||[]).join('\n')}));setError('');}
-  function applyTemplate(item){setDraft(d=>({...d,name:d.name||item.name, ...item.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:item.configuration.skills.join('\n')}));setError('');}
-  function quickCreate(){if(!draft.name.trim()){setError('请先填写'+role+'名称');return;}setDraft(d=>({...d,identity:d.identity||('你是'+d.name+'，协助主人处理工作事项。'),personality:d.personality||'清晰、友善；关键决策由主人确认。'}));}
+  function changeSource(value){const next=value==='__independent__'?null:value;setSourceAssistantId(next);const selected=snapshot.localAssistants.find(i=>i.id===next);if(selected)setDraft(d=>({...d,...selected.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:(selected.configuration.skills||[]).join('\n')}));}
+  function applyTemplate(item){setDraft(d=>({...d,name:d.name||item.name, ...item.configuration,...(persona?{name:store.personaName(),avatar:''}:{}),skills:item.configuration.skills.join('\n')}));}
+  async function quickCreate(){try{await submission.validate(['name']);setDraft(d=>({...d,identity:d.identity||('你是'+d.name+'，协助主人处理工作事项。'),personality:d.personality||'清晰、友善；关键决策由主人确认。'}));}catch{}}
   function chooseIcon(icon){update('avatar',icon);setIconOpen(false);}
-  async function save(){
-    if(!draft.name.trim()){setError('请填写'+role+'名称');return;}
-    const avatarValue=draft.avatar.trim();
-    if(!persona&&avatarValue&&!window.EvaAIIdentity.isAssistantIcon(avatarValue)&&!window.EvaAIIdentity.isAvatarImage(avatarValue)){setError('头像数据无效，请重新选择图标');return;}
-    setBusy(true);setError('');
-    const configuration={...draft,skills:draft.skills.split('\n').map(x=>x.trim()).filter(Boolean)};delete configuration.name;
-    try{
-      let result;
-      if(persona) result=editing?store.savePersona({id:request.id,name:draft.name,configuration,sourceAssistantId}):await store.createPersona(sourceAssistantId,{name:draft.name,configuration});
-      else {result=store.saveLocalAssistant({mode:editing?'edit':'create',id:request.id,name:draft.name,configuration});if(request.connect)result=await store.connectAssistant(result.id);}
-      if(alive.current){request.onSaved?.(result);onClose();}
-    }catch(e){if(alive.current)setError(e.message||'保存失败，请重试');}
-    finally{if(alive.current)setBusy(false);}
+  async function save(values,{isCurrent}){
+    const next={...draft,...values},avatarValue=next.avatar.trim();
+    if(!persona&&avatarValue&&!window.EvaAIIdentity.isAssistantIcon(avatarValue)&&!window.EvaAIIdentity.isAvatarImage(avatarValue))throw new Error('头像数据无效，请重新选择图标');
+    const configuration={...next,skills:next.skills.split('\n').map(x=>x.trim()).filter(Boolean)};delete configuration.name;delete configuration.sourceAssistantId;
+    let result;
+    if(persona)result=editing?store.savePersona({id:request.id,name:next.name,configuration,sourceAssistantId}):await store.createPersona(sourceAssistantId,{name:next.name,configuration});
+    else{result=store.saveLocalAssistant({mode:editing?'edit':'create',id:request.id,name:next.name,configuration});if(request.connect)result=await store.connectAssistant(result.id);}
+    if(isCurrent()){request.onSaved?.(result);onClose();}
   }
   const previewAppearance=persona?window.EvaAIIdentity.cloneAppearance({name:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerName,id:window.__EVA_MY_ASSISTANT_IDENTITY?.ownerId}):window.EvaAIIdentity.assistantAppearance({name:draft.name||role,configuration:{avatar:draft.avatar}});
-  const editor=h('section',{className:'eva-create-assistant-modal',ref:scope,'aria-label':editorTitle},
+  const editor=h('section',{className:'eva-create-assistant-modal',ref:scope,'aria-label':editorTitle},h(Form,{...submission.formProps,form:api,initValues:initial,className:'eva-assistant-form'},
       h('header',{className:'eva-create-assistant-modal__head'},persona?h(EvaAIIdentityAvatar,{appearance:previewAppearance,size:34}):h('div',{className:'eva-editor-avatar-upload'},
         h('button',{type:'button',className:'eva-editor-avatar-button','data-eva-tooltip':'选择头像图标','aria-label':draft.avatar?'更换助理头像':'选择助理头像图标',disabled:busy,'aria-expanded':iconOpen,onClick:()=>setIconOpen(v=>!v)},h(EvaAIIdentityAvatar,{appearance:previewAppearance,size:34}),h('span',{className:'eva-editor-avatar-action','aria-hidden':true},h(Plus$c,{size:12,strokeWidth:1.75}))),
         iconOpen&&h('div',{className:'eva-editor-avatar-picker',role:'listbox','aria-label':'助理头像图标'},window.EvaAIIdentity.assistantIcons().map(icon=>h('button',{key:icon,type:'button',role:'option','aria-selected':draft.avatar===icon,className:'eva-editor-avatar-option'+(draft.avatar===icon?' is-selected':''),disabled:busy,onClick:()=>chooseIcon(icon)},icon)))),
-        h('div',{className:'eva-create-assistant-modal__identity'},h('span',{className:'eva-editor-kind'},editorTitle),h('div',{className:'eva-editor-title-row'},h('input',{'aria-label':role+'名称',placeholder:role+'名称',value:draft.name,readOnly:persona||existing?.isDefault,disabled:busy,onChange:e=>update('name',e.target.value)})),h('input',{className:'eva-editor-description','aria-label':'简短描述',placeholder:'简短描述',value:draft.description,disabled:busy,onChange:e=>update('description',e.target.value)}),persona&&h('span',null,local?'同步自：'+local.name:'独立配置')),
+        h('div',{className:'eva-create-assistant-modal__identity'},h('span',{className:'eva-editor-kind'},editorTitle),h('div',{className:'eva-editor-title-row'},h(Form.Input,{field:'name',id:'eva-assistant-name',pure:true,rules:[{required:true,whitespace:true,message:'请填写'+role+'名称'}],'aria-label':role+'名称',placeholder:role+'名称',readonly:persona||existing?.isDefault,disabled:busy})),h(Form.ErrorMessage,{error:formState.errors?.name,errorMessageId:'eva-assistant-name-errormessage'}),h(Form.Input,{field:'description',pure:true,className:'eva-editor-description','aria-label':'简短描述',placeholder:'简短描述',disabled:busy}),persona&&h('span',null,local?'同步自：'+local.name:'独立配置')),
         h('div',{className:'eva-create-assistant-modal__head-actions'},
           h(Button,{theme:'outline',type:'tertiary',onClick:quickCreate,disabled:busy},'快速创建'),
           h(Dropdown,{trigger:'click',position:'bottomRight',getPopupContainer:()=>scope.current,clickToHide:true,render:h(Dropdown.Menu,null,snapshot.localAssistants.map(i=>h(Dropdown.Item,{key:i.id,onClick:()=>applyTemplate(i)},i.name)))},h('span',{className:'eva-ai-team__menu-anchor'},h(Button,{theme:'outline',type:'tertiary',disabled:busy},'使用模板'))),
-          h(Button,{theme:'borderless',type:'tertiary',icon:h(X,{size:20}),'aria-label':'关闭编辑器',disabled:busy,onClick:onClose}))),
+          h(Button,{theme:'borderless',type:'tertiary',icon:h(X,{size:20}),'aria-label':'关闭编辑器',onClick:onClose}))),
       h('nav',{className:'eva-create-assistant-modal__tabs',role:'tablist','aria-label':role+'设置'},tabs.map(([key,label])=>h('button',{type:'button',role:'tab','aria-selected':tab===key,key,className:'eva-create-assistant-modal__tab'+(tab===key?' is-active':''),onClick:()=>setTab(key)},label))),
-      h('div',{className:'eva-create-assistant-modal__body',role:'tabpanel'},h('p',{className:'eva-create-assistant-modal__hint'},tabs.find(t=>t[0]===tab)[2]),tab==='source'?h('div',{className:'eva-editor-source'},h(EvaAssistantSourceCards,{sources:snapshot.localAssistants,value:sourceAssistantId||'__independent__',disabled:busy,onChange:changeSource}),h('p',null,local?'默认自动同步配置；分身名称与 Eva 头像保持固定。更换来源并保存后将使用新助理配置。':'独立维护当前配置，不从助理同步'),local&&h('span',{role:'status'},sourceAssistantId===existing?.sourceAssistantId?'本地 → 云端 · '+syncLabel:'保存后自动同步')):tab==='identity'?h('div',{className:'eva-editor-identity-fields'},h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:'支持 Markdown 格式，可用中文或英文书写',value:draft.identity,disabled:busy,onChange:e=>update('identity',e.target.value)}),!persona&&h('div',{className:'eva-editor-avatar-help'},h('span',null,'点击顶部头像选择图标替换当前头像；不选择时默认使用 Eva 头像。保存后会在会话、消息、成员与选择器中保持一致。'),draft.avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:busy,onClick:()=>update('avatar','')},'恢复默认头像'))):h('textarea',{className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:tab==='skills'?'每行填写一个技能':'支持 Markdown 格式，可用中文或英文书写',value:draft[tab],disabled:busy,onChange:e=>update(tab,e.target.value)})),
-      error&&h('p',{className:'eva-ai-team__error',role:'alert'},error),
-      h('footer',{className:'eva-create-assistant-modal__footer'},h(Select,{value:draft.model,'aria-label':'模型',getPopupContainer:()=>scope.current,onChange:value=>update('model',value),disabled:busy},h(Select.Option,{value:'Qwen3.7 Plus'},'Qwen3.7 Plus')),
-        draft.toolset&&h('span',{className:'eva-create-assistant-modal__chip'},draft.toolset,h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(X,{size:12}),'aria-label':'移除'+draft.toolset,onClick:()=>update('toolset','')})),h('span',{className:'eva-create-assistant-modal__spacer'}),h(Button,{theme:'solid',type:'primary',className:'eva-create-assistant-modal__submit',loading:busy,onClick:save},editing?'保存':'创建')));
+      h('div',{className:'eva-create-assistant-modal__body',role:'tabpanel'},h('p',{className:'eva-create-assistant-modal__hint'},tabs.find(t=>t[0]===tab)[2]),tab==='source'?h('div',{className:'eva-editor-source'},h(EvaAssistantSourceCards,{sources:snapshot.localAssistants,value:sourceAssistantId||'__independent__',disabled:busy,onChange:changeSource}),h('p',null,local?'默认自动同步配置；分身名称与 Eva 头像保持固定。更换来源并保存后将使用新助理配置。':'独立维护当前配置，不从助理同步'),local&&h('span',{role:'status'},sourceAssistantId===existing?.sourceAssistantId?'本地 → 云端 · '+syncLabel:'保存后自动同步')):tab==='identity'?h('div',{className:'eva-editor-identity-fields'},h(Form.TextArea,{field:tab,key:tab,pure:true,keepState:true,className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:'支持 Markdown 格式，可用中文或英文书写',disabled:busy}),!persona&&h('div',{className:'eva-editor-avatar-help'},h('span',null,'点击顶部头像选择图标替换当前头像；不选择时默认使用 Eva 头像。保存后会在会话、消息、成员与选择器中保持一致。'),draft.avatar&&h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:busy,onClick:()=>update('avatar','')},'恢复默认头像'))):h(Form.TextArea,{field:tab,key:tab,pure:true,keepState:true,className:'eva-create-assistant-modal__editor','aria-label':tabs.find(t=>t[0]===tab)[1],placeholder:tab==='skills'?'每行填写一个技能':'支持 Markdown 格式，可用中文或英文书写',disabled:busy})),
+      h(SubmissionError,{submission}),
+      h('footer',{className:'eva-create-assistant-modal__footer'},h(React.Fragment,null,h('span',{hidden:true,id:'eva-assistant-model-label'},'模型'),h(Form.Select,{pure:true,field:'model',id:'eva-assistant-model',getPopupContainer:()=>scope.current,disabled:busy,optionList:[{value:'Qwen3.7 Plus',label:'Qwen3.7 Plus'}]})),
+        draft.toolset&&h('span',{className:'eva-create-assistant-modal__chip'},draft.toolset,h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(X,{size:12}),'aria-label':'移除'+draft.toolset,onClick:()=>update('toolset','')})),h('span',{className:'eva-create-assistant-modal__spacer'}),h(Button,{theme:'solid',type:'primary',className:'eva-create-assistant-modal__submit',loading:busy,onClick:submission.submit},editing?'保存':'创建'))));
   const inlineTarget=request.presentation==='personal-workspace'
     ? document.querySelector('.eva-personal-workspace__stage')
     : request.presentation==='ai-team-workspace'
@@ -889,7 +912,7 @@ function EvaAssistantEditor({request,host,onClose}) {
       : null;
   return inlineTarget
     ? ReactDOM.createPortal(h('div',{className:'eva-assistant-editor-inline'},editor),inlineTarget)
-    : h(Modal,{visible:true,title:null,footer:null,closable:false,closeOnEsc:!busy,maskClosable:!busy,onCancel:()=>!busy&&onClose(),width:920,className:'eva-editor-dialog',getPopupContainer:()=>host.current},editor);
+    : h(evaForms.Dialog,{visible:true,accessibleName:persona?'配置 AI 分身':'配置个人助理',title:null,footer:null,closable:false,onCancel:onClose,size:'editor',className:'eva-editor-dialog',getPopupContainer:()=>host.current},editor);
 }
 // Mirrors Octo ChatComposer.buildPlaceholder and its zh-CN translation keys.
 function evaIMPlaceholder(name) {
@@ -897,7 +920,7 @@ function evaIMPlaceholder(name) {
 }
 function EvaDeleteMessagesDialog({count,onCancel,onDelete}){
  const h=React.createElement,[host,setHost]=reactExports.useState(null),[error,setError]=reactExports.useState('');
- return ReactDOM.createPortal(h('div',{ref:setHost,className:'eva-im-delete-portal'},host&&h(Modal,{visible:true,title:'确定删除消息？',className:'eva-im-delete-dialog',width:400,getPopupContainer:()=>host,maskClosable:true,onCancel,footer:h(React.Fragment,null,h(Button,{onClick:onCancel},'取消'),h(Button,{type:'danger',theme:'solid',onClick:()=>{try{onDelete();}catch(e){setError(e.message);}}},'删除'))},h('p',null,'删除的消息将从你的会话记录中消失，但仍对会话内其他人可见'),error&&h('p',{role:'alert'},error))),document.body);
+ return ReactDOM.createPortal(h('div',{ref:setHost,className:'eva-im-delete-portal'},host&&h(evaForms.Dialog,{visible:true,title:'确定删除消息？',initialFocus:'cancel',className:'eva-im-delete-dialog',size:'compact',getPopupContainer:()=>host,maskClosable:true,onCancel,footer:h(evaForms.Actions,{onCancel,submitLabel:'删除',danger:true,onSubmit:()=>{try{onDelete();}catch(e){setError(e.message);}}})},h('p',null,'删除的消息将从你的会话记录中消失，但仍对会话内其他人可见'),error&&h('p',{role:'alert'},error))),document.body);
 }
 function EvaIMSelectionToolbar({count,onForward,onDelete,onExit}) {
   const h=React.createElement;
@@ -1152,6 +1175,12 @@ function EvaConversationSearch({conversationId,conversationName,messages,onClose
         h('span',{className:'eva-conversation-search__result-main'},h('span',{className:'eva-conversation-search__result-meta'},h('span',{className:'eva-conversation-search__sender'},record.senderName),record.sender.ai&&h(AiBadge,{size:'small'}),h('time',null,record.message.time||'')),h('span',{className:'eva-conversation-search__snippet'},highlight(record.displayText)),h('span',{className:'eva-conversation-search__kind'},record.type==='media'?(record.mediaKind==='video'?'视频':'图片'):'消息')),h('span',{className:'eva-conversation-search__locate'},'定位')])))),results.length>limit&&h('button',{type:'button',className:'eva-conversation-search__more',onClick:()=>setLimit(value=>value+20)},'加载更多'))));
 }
 
+function EvaAIThreadRenameForm({request,onClose,onSave,getContainer}) {
+ const h=React.createElement,{Form,Dialog,useSubmission,SubmissionError}=evaForms;
+ const submission=useSubmission({onSubmit:values=>onSave(values.name.trim())});
+ return h(Dialog,{visible:true,title:'重命名会话',selectInitialText:true,className:'eva-ai-team__modal',size:'compact',getPopupContainer:getContainer,onCancel:onClose,onOk:submission.submit,okText:'保存',cancelText:'取消',confirmLoading:submission.busy},
+  h(Form,{...submission.formProps,initValues:{name:request.title}},h(Form.Input,{field:'name',noLabel:true,maxLength:50,'aria-label':'会话名称',autoFocus:true,rules:[{required:true,whitespace:true,message:'请输入会话名称'}]}),h(SubmissionError,{submission})));
+}
 function EvaAITeamGroupEditor({visible,record,membersOnly=false,candidates,onClose,onSubmit,getContainer}) {
   const h=React.createElement;
   return h(evaMembers().ui.MemberPicker,{
@@ -1281,9 +1310,9 @@ function EvaAITeamPage() {
   const sessionsFor=id=>groupIds.has(id)?orderedTeamThreads(groupStore.source(id,fixedMembers).channels[0].threads):snapshot.sessions.filter(session=>session.identityId===id).concat(digitalStore.sessions(id));
   const requestedSelection=id=>{const sessions=sessionsFor(id),explicit=requestedSessionId&&!groupIds.has(requestedSessionId)?sessions.find(session=>session.id===requestedSessionId):null;return{identityId:id,sessionId:explicit?.id||(requestedSessionId?null:sessions[0]?.id)}};
   const [selection, setSelection] = reactExports.useState(() => requestedSelection(requestedIdentity?.id||groupStore.id));
-  const [rename,setRename]=reactExports.useState(null),[renameTitle,setRenameTitle]=reactExports.useState(''),[renameError,setRenameError]=reactExports.useState('');
-  const openRename=(identityId,record)=>{setRename({identityId,id:record.id});setRenameTitle(record.title||record.name);setRenameError('');};
-  const saveRename=()=>{try{if(groupIds.has(rename.identityId))groupStore.updateThread(rename.identityId,rename.id,{name:renameTitle});else (digitalEmployees.some(i=>i.id===rename.identityId)?digitalStore:store).renameThread(rename.identityId,rename.id,renameTitle);setRename(null);}catch(e){setRenameError(e.message);}};
+  const [rename,setRename]=reactExports.useState(null);
+  const openRename=(identityId,record)=>setRename({identityId,id:record.id,title:record.title||record.name});
+  const saveRename=name=>{if(groupIds.has(rename.identityId))groupStore.updateThread(rename.identityId,rename.id,{name});else (digitalEmployees.some(i=>i.id===rename.identityId)?digitalStore:store).renameThread(rename.identityId,rename.id,name);setRename(null);};
   const [collapsed,setCollapsed] = reactExports.useState(()=>Object.fromEntries([...teamGroups.map(group=>[group.id,!group.system]),...(requestedIdentity&&groupIds.has(requestedIdentity.id)?[[requestedIdentity.id,false]]:[])]));
   const [showAllTeamThreads,setShowAllTeamThreads]=reactExports.useState(()=>requestedIdentity&&groupIds.has(requestedIdentity.id)&&requestedSessionId?{[requestedIdentity.id]:true}:{});
   const [collapsedIdentitySessions,setCollapsedIdentitySessions]=reactExports.useState({});
@@ -1564,8 +1593,7 @@ function EvaAITeamPage() {
     h(EvaAITeamGroupEditor,{visible:!!groupEditor,record:groupEditor?.record||null,membersOnly:groupEditor?.mode==='members',candidates:groupCandidates,onClose:closeGroupEditor,onSubmit:saveGroup,getContainer:()=>host.current}),
     h(Modal,{visible:!!groupToDissolve,title:'解散 AI 小队',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:()=>setGroupToDissolve(null),onOk:confirmDissolveGroup,okText:'解散群',cancelText:'取消',okButtonProps:{type:'danger'},width:420},
       h('p',null,'确认解散“'+(groupToDissolve?.name||'')+'”？AI 小队消息、草稿和子区将被删除且无法恢复；AI 单聊不受影响。')),
-    h(Modal,{visible:!!rename,title:'重命名会话',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:()=>setRename(null),onOk:saveRename,okText:'保存',cancelText:'取消',width:420},
-      h(ForwardInput,{value:renameTitle,onChange:setRenameTitle,maxLength:50,'aria-label':'会话名称',autoFocus:true}),renameError&&h('p',{role:'alert',className:'eva-ai-team__error'},renameError)));
+    rename&&h(EvaAIThreadRenameForm,{key:rename.identityId+':'+rename.id,request:rename,onClose:()=>setRename(null),onSave:saveRename,getContainer:()=>host.current}));
 }
 
     // Octo-Web ConversationListGrouped: handle-only PointerSensor (6px),
@@ -2238,6 +2266,12 @@ function EvaAITeamPage() {
     source=source.replaceAll('title:"新建群聊","aria-label":"新建群聊"','"data-eva-tooltip":"新建群聊","aria-label":"新建群聊"');
     source=source.replaceAll('title:"新建","aria-label":"新建"','"data-eva-tooltip":"新建","aria-label":"新建"');
     source=source.replaceAll('title:fa&&ct?.presentation!=="ai-direct"?"子区信息":"聊天信息",','');
-    return EvaSharedContextMenus.toString()+'\n'+evaConversationRailMenus.toString()+'\n'+evaCategoryRailMenus.toString()+'\n'+evaRailIcon.toString()+'\n'+EvaOverlayListScroll.toString()+'\n'+evaRecentUnread.toString()+'\n'+EvaRecentTopicNavigation.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+evaEmojiRecentRead.toString()+'\n'+evaEmojiRecentWrite.toString()+'\n'+evaEmojiGroups.toString()+'\n'+evaEmojiAll.toString()+'\n'+evaEmojiRecordFromText.toString()+'\n'+evaInsertComposerEmoji.toString()+'\n'+EvaEmojiPicker.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardIcon.toString()+'\n'+evaRecentActivity.toString()+'\n'+evaForwardCatalog.toString()+'\n'+evaForwardFollowRank.toString()+'\n'+evaForwardNoopSubscribe.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    const threadFormStart=source.indexOf('function ThreadCreateForm('),threadFormEnd=source.indexOf('function ThreadCreateDialog(',threadFormStart);
+    if(threadFormStart<0||threadFormEnd<=threadFormStart)throw new Error('子区创建表单锚点不匹配');
+    source=root.__evaCut(source,source.slice(threadFormStart,threadFormEnd),ThreadCreateForm.toString(),'子区创建使用统一 Semi Form');
+    const threadDialogStart=source.indexOf('function ThreadCreateDialog('),threadDialogEnd=source.indexOf('const FALLBACK_PALETTE=',threadDialogStart);
+    if(threadDialogStart<0||threadDialogEnd<=threadDialogStart)throw new Error('子区弹窗锚点不匹配');
+    source=root.__evaCut(source,source.slice(threadDialogStart,threadDialogEnd),ThreadCreateDialog.toString(),'子区创建接入公共弹窗');
+    return EvaAIThreadRenameForm.toString()+'\n'+EvaForwardThreadForm.toString()+'\n'+EvaSharedContextMenus.toString()+'\n'+evaConversationRailMenus.toString()+'\n'+evaCategoryRailMenus.toString()+'\n'+evaRailIcon.toString()+'\n'+EvaOverlayListScroll.toString()+'\n'+evaRecentUnread.toString()+'\n'+EvaRecentTopicNavigation.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+evaEmojiRecentRead.toString()+'\n'+evaEmojiRecentWrite.toString()+'\n'+evaEmojiGroups.toString()+'\n'+evaEmojiAll.toString()+'\n'+evaEmojiRecordFromText.toString()+'\n'+evaInsertComposerEmoji.toString()+'\n'+EvaEmojiPicker.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardIcon.toString()+'\n'+evaRecentActivity.toString()+'\n'+evaForwardCatalog.toString()+'\n'+evaForwardFollowRank.toString()+'\n'+evaForwardNoopSubscribe.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

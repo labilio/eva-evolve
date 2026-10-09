@@ -456,7 +456,7 @@
   .eva-create-assistant-modal__identity { min-width: 0; flex: 1; }
   .eva-create-assistant-modal__identity input { display: block; width: 100%; border: 0; outline: 0; background: transparent; color: var(--gds-color-text-primary); font: inherit; font-size: 20px; font-weight: var(--gds-font-weight-semibold); }
   .eva-create-assistant-modal__identity input::placeholder { color: var(--gds-color-text-placeholder); }
-  .eva-create-assistant-modal__identity span { color: var(--semi-color-text-2); font-size: 13px; }
+  .eva-create-assistant-modal__identity > span { color: var(--semi-color-text-2); font-size: 13px; }
   .eva-create-assistant-modal__head-actions { display: flex; align-items: center; gap: 8px; }
   .eva-create-assistant-modal__head-actions button { height: 34px; padding: 0 13px; border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-control); background: var(--gds-color-surface-primary); color: var(--gds-color-text-secondary); font: inherit; cursor: pointer; }
   .eva-create-assistant-modal__close { width: 34px; padding: 0 !important; border-color: transparent !important; font-size: 22px !important; }
@@ -525,8 +525,7 @@
 .eva-ai-team__employee-options .eva-identity-name-row { display: inline-flex; min-width: 0; align-items: center; gap: var(--gds-space-1); }
 .eva-ai-team__employee-options .eva-identity-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 普通 AI 小队弹窗的标题间距；拉人模板 A 的标题间距由 009-2-picker-preview.css 拥有。 */
-.eva-ai-team__modal .semi-modal-header { align-items: center; margin: 24px 0 16px; }
-.eva-ai-team__modal .semi-modal-title { line-height: 24px; }
+.eva-ai-team__modal .semi-modal-header { align-items: center; }
 .eva-ai-team__modal .semi-modal-close { flex-shrink: 0; width: 24px; height: 24px; min-height: 24px; }
 .eva-editor-source { display: flex; flex-direction: column; gap: 12px; max-width: 560px; width: 100%; font-size: 13px; color: var(--semi-color-text-1); }
 .eva-editor-source p { margin: 0; line-height: 20px; }
@@ -668,3 +667,13 @@ body.eva-message-hierarchy-ready .eva-ai-team__team-thread-row.is-selected .wk-c
 .eva-ai-team__search-more:focus-visible { outline: var(--gds-border-focus) solid var(--gds-color-action-primary); outline-offset: -2px; }
 /* 命中词着色高亮：与仓库既有的会话内搜索命中同源（琥珀底），继承所在行文字色。 */
 .eva-ai-team__search-hit { padding: 0 1px; border-radius: 2px; color: inherit; background: var(--semi-color-warning-light-default); }
+
+/* Form manages editor values without changing its approved flex layout. */
+.eva-assistant-form { display: contents; }
+.eva-editor-dialog .eva-create-assistant-modal__identity .semi-input-wrapper { display:block;border:0;border-radius:0;background:transparent;box-shadow:none;height:30px;font:600 20px/20px var(--eva-font-sans); }
+.eva-editor-dialog .eva-editor-title-row .semi-input-wrapper { flex:0 1 calc(16em + 4px);min-width:0; }
+.eva-editor-dialog .eva-create-assistant-modal__identity .semi-input { width:100%;height:30px;padding:1px 2px;font:inherit; }
+.eva-editor-dialog .eva-create-assistant-modal__identity .eva-editor-description { width:calc(100% + 4px);height:22px;font:400 13px/20px var(--eva-font-sans); }
+.eva-editor-dialog .eva-editor-description .semi-input { height:22px; }
+.eva-editor-dialog .eva-create-assistant-modal__editor .semi-input-textarea { box-sizing:border-box;width:100%;height:100%;min-height:0;padding:2px;border:0;resize:none;background:transparent;color:inherit;font:inherit; }
+.eva-editor-dialog .eva-create-assistant-modal__editor .semi-input-textarea::placeholder { color:var(--gds-color-text-placeholder); }

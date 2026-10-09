@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+test('助理 Form：空提交、快速创建、跨页签草稿及保存回显',async()=>{
+ const server=createServer(new URL('../../dist',import.meta.url).pathname);await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await chromium.launch({channel:'msedge'}),page=await browser.newPage({viewport:{width:1200,height:800}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ try{
+  await page.goto(`http://127.0.0.1:${server.address().port}/#/messages?evaIM=my-ai`);
+  await page.locator('.eva-ai-team__sidebar-header').getByRole('button',{name:'新建',exact:true}).click();
+  await page.getByText('新建个人助理',{exact:true}).click();
+  const editor=page.locator('.eva-editor-dialog'),name=editor.getByRole('textbox',{name:'助理名称',exact:true});
+  await name.focus();
+  const normalFocusShadow=await name.evaluate(el=>getComputedStyle(el).boxShadow);
+  await editor.getByRole('button',{name:'创建',exact:true}).click();
+  await editor.getByText('请填写助理名称',{exact:true}).waitFor();
+  assert.equal(await name.getAttribute('aria-invalid'),'true');
+  assert.equal(await name.evaluate(el=>getComputedStyle(el).boxShadow),normalFocusShadow);
+  await name.fill('表单验收助理');
+  await editor.getByText('请填写助理名称',{exact:true}).waitFor({state:'hidden'});
+  await editor.getByRole('textbox',{name:'简短描述',exact:true}).fill('应被模板的空简介替换');
+  await editor.getByRole('button',{name:'使用模板',exact:true}).click();
+  await editor.getByText('Eva 研发助理',{exact:true}).click();
+  assert.equal(await editor.getByRole('textbox',{name:'简短描述',exact:true}).inputValue(),'');
+  await editor.getByRole('textbox',{name:'助理身份',exact:true}).fill('');
+  await editor.getByRole('button',{name:'快速创建',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('textarea[aria-label="助理身份"]')?.value.includes('表单验收助理'));
+  await editor.getByRole('tab',{name:'助理性格',exact:true}).click();
+  await editor.getByRole('textbox',{name:'助理性格',exact:true}).fill('表达清晰，保留判断');
+  await editor.getByRole('tab',{name:'技能',exact:true}).click();
+  await editor.getByRole('textbox',{name:'技能',exact:true}).fill('分析\n校对');
+  await editor.getByRole('tab',{name:'助理性格',exact:true}).click();
+  assert.equal(await editor.getByRole('textbox',{name:'助理性格',exact:true}).inputValue(),'表达清晰，保留判断');
+  await editor.getByRole('button',{name:'创建',exact:true}).click();await editor.waitFor({state:'hidden'});
+  await page.reload();await page.getByText('表单验收助理',{exact:true}).waitFor();
+  const saved=await page.evaluate(()=>window.EvaAITeam.getSnapshot().localAssistants.find(i=>i.name==='表单验收助理'));
+  assert.equal(saved.configuration.personality,'表达清晰，保留判断');assert.deepEqual(saved.configuration.skills,['分析','校对']);
+  const row=page.locator('.eva-ai-team__identity').filter({hasText:'表单验收助理'});
+  await row.locator('.eva-ai-team__identity-button').click({button:'right'});
+  await page.getByRole('menuitem',{name:'编辑配置',exact:true}).click();
+  assert.equal(await name.inputValue(),'表单验收助理');
+  await editor.getByRole('tab',{name:'技能',exact:true}).click();
+  assert.equal(await editor.getByRole('textbox',{name:'技能',exact:true}).inputValue(),'分析\n校对');
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

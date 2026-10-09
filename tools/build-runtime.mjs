@@ -45,6 +45,7 @@ export function buildSite(root = process.cwd()) {
   fs.copyFileSync(path.join(projectRoot, 'node_modules/pinyin-pro/dist/index.js'), path.join(outputRoot, 'vendor/pinyin-pro.js'));
   fs.copyFileSync(path.join(projectRoot, 'node_modules/pinyin-pro/LICENSE'), path.join(outputRoot, 'vendor/pinyin-pro.LICENSE'));
 
+  execFileSync(process.execPath, ['tools/build-forms.mjs', path.join(outputRoot, 'vendor')], { cwd: projectRoot, stdio: 'pipe' });
   const result = createPatchedRuntime(projectRoot);
   const git = (...args) => { try { return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
   fs.writeFileSync(path.join(outputRoot, 'review/build-context.json'), JSON.stringify({

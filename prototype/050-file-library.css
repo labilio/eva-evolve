@@ -1923,12 +1923,12 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   margin-top: 24px;
 }
 
-.eva-drive-dialog__field span {
+.eva-drive-dialog__field > span {
   color: var(--gds-color-text-secondary, #4a4a4a);
   font-size: var(--gds-type-caption-font-size, 12px);
 }
 
-.eva-drive-dialog__field input,
+.eva-drive-dialog__field input:not(.semi-input),
 .eva-drive-dialog__field select,
 .eva-drive-dialog__field textarea {
   box-sizing: border-box;
@@ -2388,7 +2388,16 @@ body.eva-message-hierarchy-ready .eva-project-files__table {
 .eva-drive__row { font: 400 14px/22px var(--eva-font-sans); }
 .eva-drive__table:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
 .eva-drive-dialog__panel header h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 16px/24px var(--eva-font-sans); }
-.eva-drive-dialog__field span { font: 500 14px/22px var(--eva-font-sans); color: var(--eva-text-primary); }
-.eva-drive-dialog__field :is(input,select,textarea):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
+.eva-drive-dialog__field > span { font: 500 14px/22px var(--eva-font-sans); color: var(--eva-text-primary); }
+.eva-drive-dialog__field :is(input:not(.semi-input),select,textarea):focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: 2px; }
 .eva-drive__meta :is(dt,dd) { font: 400 12px/16px var(--eva-font-sans); }
 @media (prefers-reduced-motion: reduce) { .eva-drive__inspector, .eva-drive__pin-button { transition: none; } }
+
+/* Native Form owns validation; preserve the existing file dialog geometry. */
+.eva-file-name-form.semi-form-vertical .semi-form-field { padding: 0; }
+.eva-file-name-form .semi-form-field-main { width: 100%; }
+
+
+.eva-file-form .eva-tag-editor__control .semi-input-wrapper { height:36px;border:0;border-radius:0;background:transparent;box-shadow:none;outline:0; }
+.eva-file-form .eva-tag-editor__control .semi-input { height:36px; }
+.eva-file-form .eva-tag-editor__option { justify-content:flex-start;height:32px; }

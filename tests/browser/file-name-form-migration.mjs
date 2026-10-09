@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+
+test('项目文件名称：空提交、修正、Enter 保存、重开与刷新读取',async()=>{
+ const server=createServer(new URL('../../dist',import.meta.url).pathname);
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch({channel:'msedge'});
+ const page=await browser.newPage({viewport:{width:1200,height:800}});
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ try{
+  await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=files`);
+  const open=page.getByRole('button',{name:'新建文件夹',exact:true});
+  await open.click();
+  const dialog=page.getByRole('dialog').filter({hasText:'新建文件夹'});
+  const input=dialog.getByRole('textbox');
+  await dialog.getByRole('button',{name:'创建',exact:true}).click();
+  await dialog.getByText('请输入名称',{exact:true}).waitFor();
+  await page.waitForFunction(()=>document.querySelector('#eva-project-files-dialog-value')===document.activeElement);
+  assert.equal(await input.getAttribute('aria-invalid'),'true');
+  await input.fill('   ');
+  await dialog.getByRole('button',{name:'创建',exact:true}).click();
+  await dialog.getByText('请输入名称',{exact:true}).waitFor();
+  await input.fill('文件夹表单验收');
+  await dialog.getByText('请输入名称',{exact:true}).waitFor({state:'hidden'});
+  await input.press('Enter');
+  await dialog.waitFor({state:'hidden'});
+  await page.getByText('文件夹表单验收',{exact:true}).first().waitFor();
+  await open.click();
+  assert.equal(await input.inputValue(),'');
+  assert.equal(await dialog.getByText('请输入名称',{exact:true}).count(),0);
+  await dialog.getByRole('button',{name:'取消',exact:true}).click();
+  await page.reload();
+  await page.getByText('文件夹表单验收',{exact:true}).first().waitFor();
+  await page.getByRole('button',{name:'更多操作：文件夹表单验收',exact:true}).click();
+  await page.getByRole('menuitem',{name:'重命名',exact:true}).click();
+  const rename=page.getByRole('dialog').filter({hasText:'重命名'});
+  assert.equal(await rename.getByRole('textbox').inputValue(),'文件夹表单验收');
+  await rename.getByRole('textbox').fill('');
+  await rename.getByRole('button',{name:'保存',exact:true}).click();
+  await rename.getByText('请输入名称',{exact:true}).waitFor();
+  await rename.getByRole('textbox').fill('文件夹重命名验收');
+  await rename.getByRole('button',{name:'保存',exact:true}).click();
+  await rename.waitFor({state:'hidden'});
+  await page.reload();
+  await page.getByText('文件夹重命名验收',{exact:true}).first().waitFor();
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

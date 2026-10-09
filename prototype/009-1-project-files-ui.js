@@ -29,7 +29,7 @@
       return new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(date).replace(/\//g,'-');
     };
 
-    function Dialog({title,children,confirmLabel,onConfirm,onClose,danger,wide,detail}){
+    function Dialog({title,children,confirmLabel,onConfirm,onClose,danger,wide,detail,formId,busy}){
       const titleId=detail?'eva-project-file-detail-title':'eva-project-files-dialog-title';
       return h('div',{className:'eva-drive-dialog eva-project-files-dialog'+(detail?' eva-file-detail-dialog':''),role:'dialog','aria-modal':'true','aria-labelledby':titleId},
         h('button',{className:'eva-drive-dialog__mask',type:'button',onClick:onClose,'aria-label':'关闭'}),
@@ -37,8 +37,8 @@
           h('header',null,h('h2',{id:titleId},title),h('button',{type:'button',onClick:onClose,'aria-label':'关闭'},icon('x'))),
           h('div',{className:'eva-drive-dialog__body'},children),
           confirmLabel?h('footer',null,
-            h('button',{type:'button',onClick:onClose},'取消'),
-            h('button',{className:danger?'is-danger':'is-primary',type:'button',onClick:onConfirm},confirmLabel)
+            h(deps.Button,{htmlType:'button',theme:'borderless',type:'tertiary',onClick:onClose,disabled:busy},'取消'),
+            h(deps.Button,{className:danger?'is-danger':'is-primary',theme:'solid',type:danger?'danger':'primary',htmlType:formId?'submit':'button',form:formId,onClick:formId?undefined:onConfirm,loading:busy},confirmLabel)
           ):null
         )
       );
@@ -102,7 +102,6 @@
         return context.files.sortEntries(actor,list,{pinnedFirst:!trashMode});
       },[all,trash,trashMode,parentId,query,revision]);
       const selected=useMemo(()=>(trashMode?trash:snapshot).find(item=>item.id===selectedId)||null,[snapshot,trash,trashMode,selectedId]);
-      const availableTags=useMemo(()=>Array.from(new Set(all.flatMap(item=>item.tags||[]))),[all]);
 
       useEffect(()=>{if(selectedId&&!shown.some(item=>item.id===selectedId))setSelectedId(null);},[shown,selectedId]);
 
@@ -184,91 +183,22 @@
         if(!dialog)return;
         const item=dialog.id?snapshot.find(entry=>entry.id===dialog.id):null;
         try{
-          if(dialog.type==='new-folder')context.files.createFolder(actor,projectId,dialog.value||'',parentId);
-          if(dialog.type==='external-link'){const id=context.files.createExternalLink(actor,projectId,{name:dialog.name||'',url:dialog.url||''},parentId);setSelectedId(id);}
-          if(dialog.type==='external-folder'){const id=context.files.createExternalLink(actor,projectId,{name:dialog.name||'',url:dialog.url||'',kind:'folder'},parentId);setSelectedId(id);showNotice('外部文件夹已添加');}
-          if(dialog.type==='edit-external-link'){context.files.updateExternalLink(actor,item.id,{name:dialog.name||'',url:dialog.url||'',kind:item.external?.kind==='folder'?'folder':undefined,confirmHostChange:Boolean(dialog.confirmHostChange)});setSelectedId(item.id);}
-          if(dialog.type==='rename')context.files.rename(actor,item.id,dialog.value||'');
-          if(dialog.type==='move')context.files.move(actor,item.id,dialog.parentId||0);
-          if(dialog.type==='tags'){
-            const tags=Array.isArray(dialog.tags)?[...dialog.tags]:[];
-            const input=String(dialog.tagInput||'').trim().slice(0,20);
-            const pending=availableTags.find(existing=>existing.toLowerCase()===input.toLowerCase())||input;
-            if(pending&&!tags.some(tag=>tag.toLowerCase()===pending.toLowerCase())&&tags.length<8)tags.push(pending);
-            context.files.updateTags(actor,item.id,tags);
-          }
-          if(dialog.type==='create-shortcut'){const targetSpaceId=dialog.targetSpaceId||context.files.writableSpaces(actor,item.spaceId)[0]?.id;context.files.createShortcut(actor,item.id,targetSpaceId,dialog.targetParentId||0);}
           if(dialog.type==='trash'){context.files.trash(actor,item.id);setSelectedId(null);}
           if(dialog.type==='delete'){context.files.removeForever(actor,item.id);setSelectedId(null);}
           setDialog(null);
-        }catch(error){const message=error.message||'操作失败';setDialog({...dialog,error:message,confirmHostChange:dialog.confirmHostChange||message.includes('域名已变更')});}
+        }catch(error){const message=error.message||'操作失败';setDialog({...dialog,error:message});}
       };
 
       const renderDialog=()=>{
         if(!dialog)return null;
+        if(deps.forms.fileFormTypes.includes(dialog.type))return h(deps.forms.FileForm,{key:dialog.type+':'+(dialog.id||''),type:dialog.type,files:context.files,actor,spaceId:projectId,parentId,resource:dialog.id?snapshot.find(item=>item.id===dialog.id):null,onClose:()=>setDialog(null),onSaved:result=>{if(['external-link','external-folder','edit-external-link'].includes(result.type))setSelectedId(result.id);if(result.type==='external-folder')showNotice('外部文件夹已添加');}});
         const item=dialog.id?snapshot.find(entry=>entry.id===dialog.id):null;
-        const externalFolderDialog=dialog.type==='external-folder'||(dialog.type==='edit-external-link'&&item?.external?.kind==='folder');
-        const title=dialog.type==='new-folder'?'新建文件夹':dialog.type==='external-folder'?'添加外部文件夹':dialog.type==='external-link'?'添加外部链接':dialog.type==='edit-external-link'?(externalFolderDialog?'编辑外部文件夹':'编辑外部链接'):dialog.type==='rename'?'重命名':dialog.type==='move'?'移动到':dialog.type==='tags'?'编辑标签':dialog.type==='create-shortcut'?'创建快捷方式':dialog.type==='trash'?'移至回收站':'永久删除';
-        const confirm=dialog.type==='new-folder'?'创建':dialog.type==='external-folder'?'添加文件夹':dialog.type==='external-link'?'添加链接':dialog.type==='edit-external-link'?(dialog.confirmHostChange?'确认更换并保存':'保存'):dialog.type==='move'?'移动':dialog.type==='tags'?'保存':dialog.type==='create-shortcut'?'创建快捷方式':dialog.type==='trash'?'移至回收站':dialog.type==='delete'?'永久删除':'保存';
+        const title=dialog.type==='trash'?'移至回收站':'永久删除',confirm=title;
         let body=null;
-        if(dialog.type==='new-folder'||dialog.type==='rename')body=h('label',{className:'eva-drive-dialog__field'},h('span',null,dialog.type==='new-folder'?'文件夹名称':'新名称'),h('input',{id:'eva-project-files-dialog-value',name:'projectFileName',autoFocus:true,value:dialog.value||'',placeholder:'请输入名称',onChange:event=>setDialog({...dialog,value:event.target.value})}),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null);
-        if(dialog.type==='external-folder'||dialog.type==='external-link'||dialog.type==='edit-external-link'){
-          const nameField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹名称':'文件名称'),h('input',{id:'eva-project-files-external-name',name:'externalLinkName',autoFocus:true,maxLength:100,value:dialog.name||'',placeholder:externalFolderDialog?'例如：供应商交付资料':'例如：供应商协作飞书文档',onChange:event=>setDialog({...dialog,name:event.target.value,error:null})}));
-          const urlField=h('label',{className:'eva-drive-dialog__field'},h('span',null,externalFolderDialog?'文件夹链接':'文件链接'),h('input',{id:'eva-project-files-external-url',name:'externalLinkUrl',type:'url',value:dialog.url||'',placeholder:'https://',onChange:event=>setDialog({...dialog,url:event.target.value,error:null,confirmHostChange:false})}));
-          body=h(R.Fragment,null,
-          nameField,
-          urlField,
-          dialog.confirmHostChange?h('div',{className:'eva-external-link-warning'},icon('external'),h('span',null,'链接域名发生变化。请确认新地址可信后再保存。')):null,
-          dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
-          );
-        }
-        if(dialog.type==='move')body=h(R.Fragment,null,
-          h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件夹'),h('select',{value:dialog.parentId||0,onChange:event=>setDialog({...dialog,parentId:event.target.value==='0'?0:event.target.value})},
-            h('option',{value:0},'项目根目录'),
-            all.filter(folder=>folder.type==='folder'&&folder.id!==dialog.id).map(folder=>h('option',{key:folder.id,value:folder.id},folder.name))
-          )),
-          h('p',{className:'eva-drive-dialog__hint'},'仅允许在当前项目文件库内移动'),
-          dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
-        );
-        if(dialog.type==='tags'){
-          const tags=Array.isArray(dialog.tags)?dialog.tags:[];
-          const query=String(dialog.tagInput||'').trim().toLowerCase();
-          const suggestions=availableTags.filter(tag=>!tags.some(selected=>selected.toLowerCase()===tag.toLowerCase())&&(!query||tag.toLowerCase().includes(query)));
-          const addTag=value=>{
-            const input=String(value??dialog.tagInput??'').trim().slice(0,20);
-            const tag=availableTags.find(existing=>existing.toLowerCase()===input.toLowerCase())||input;
-            if(!tag){setDialog({...dialog,error:'请输入标签名称'});return;}
-            if(tags.some(selected=>selected.toLowerCase()===tag.toLowerCase())){setDialog({...dialog,tagInput:'',error:'该标签已选择'});return;}
-            if(tags.length>=8){setDialog({...dialog,error:'每个文件最多添加 8 个标签'});return;}
-            setDialog({...dialog,tags:[...tags,tag],tagInput:'',tagDropdownOpen:true,error:null});
-          };
-          body=h(R.Fragment,null,
-            h('div',{className:'eva-tag-editor'},
-              h('span',{className:'eva-tag-editor__label'},'自定义标签'),
-              h('div',{className:'eva-tag-editor__selected'},tags.length?tags.map(tag=>h('span',{className:'eva-tag-editor__chip',key:tag},h('span',null,tag),h('button',{type:'button','aria-label':'移除标签 '+tag,onClick:()=>setDialog({...dialog,tags:tags.filter(value=>value!==tag),error:null})},icon('x')))):h('span',{className:'eva-tag-editor__empty'},'暂未选择标签')),
-              h('div',{className:'eva-tag-editor__control'},
-                h('input',{autoFocus:true,value:dialog.tagInput||'',maxLength:20,placeholder:'输入或选择标签',role:'combobox','aria-label':'输入或选择标签','aria-expanded':dialog.tagDropdownOpen!==false,'aria-controls':'eva-project-tag-options',autoComplete:'off',onFocus:()=>{if(dialog.tagDropdownOpen===false)setDialog({...dialog,tagDropdownOpen:true});},onChange:event=>setDialog({...dialog,tagInput:event.target.value,tagDropdownOpen:true,error:null}),onKeyDown:event=>{if(event.key==='Enter'){event.preventDefault();addTag();}}}),
-                h('button',{className:'eva-tag-editor__toggle',type:'button','aria-label':dialog.tagDropdownOpen===false?'展开已有标签':'收起已有标签',onClick:()=>setDialog({...dialog,tagDropdownOpen:dialog.tagDropdownOpen===false})},icon('arrow'))
-              ),
-              dialog.tagDropdownOpen===false?null:h('div',{id:'eva-project-tag-options',className:'eva-tag-editor__dropdown',role:'listbox','aria-label':'当前文件库已有标签'},suggestions.length?suggestions.map(tag=>h('button',{className:'eva-tag-editor__option',type:'button',role:'option',key:tag,onClick:()=>addTag(tag)},tag)):h('span',{className:'eva-tag-editor__empty'},'没有匹配标签，按回车新建')),
-              dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
-            ),
-            h('p',{className:'eva-drive-dialog__hint'},'从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。')
-          );
-        }
-        if(dialog.type==='create-shortcut'){
-          const spaces=context.files.writableSpaces(actor,item.spaceId),targetSpaceId=dialog.targetSpaceId||spaces[0]?.id,folders=targetSpaceId?context.files.list(targetSpaceId,actor).filter(entry=>entry.type==='folder'):[];
-          body=spaces.length?h(R.Fragment,null,
-            h('div',{className:'eva-shortcut-source'},h('span',null,'源文件'),h('strong',null,item.name),h('small',null,'当前项目 · 团队文件')),
-            h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件库'),h('select',{value:targetSpaceId,onChange:event=>setDialog({...dialog,targetSpaceId:event.target.value,targetParentId:0})},spaces.map(space=>h('option',{key:space.id,value:space.id},(space.kind==='personal'?'个人文件库':'项目文件库')+' · '+space.name)))),
-            h('label',{className:'eva-drive-dialog__field'},h('span',null,'目标文件夹'),h('select',{value:dialog.targetParentId||0,onChange:event=>setDialog({...dialog,targetParentId:event.target.value==='0'?0:event.target.value})},h('option',{value:0},'根目录'),folders.map(folder=>h('option',{key:folder.id,value:folder.id},folder.name)))),
-            h('p',{className:'eva-drive-dialog__hint'},'快捷方式不复制文件，也不会向目标文件库成员授予源文件权限'),dialog.error?h('small',{className:'eva-project-files__error'},dialog.error):null
-          ):h('p',null,'没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。');
-        }
+
         if(dialog.type==='trash')body=h('p',null,'将“'+item.name+'”'+(item.type==='folder'?'及其中内容':'')+'移至回收站？Owner 或 Manager 可恢复。');
         if(dialog.type==='delete')body=h('p',null,'永久删除“'+item.name+'”'+(item.type==='folder'?'及其中内容':'')+'后不可恢复。');
-        const noTarget=dialog.type==='create-shortcut'&&!context.files.writableSpaces(actor,item.spaceId).length;
-        return h(Dialog,{title,confirmLabel:noTarget?null:confirm,onConfirm:completeDialog,onClose:()=>setDialog(null),danger:['trash','delete'].includes(dialog.type)},body);
+        return h(Dialog,{title,confirmLabel:confirm,onConfirm:completeDialog,onClose:()=>setDialog(null),danger:['trash','delete'].includes(dialog.type)},body);
       };
 
       const renderTags=item=>{
@@ -315,7 +245,7 @@
           if(context.files.can('move',item.spaceId,actor))items.push(menuButton('移动',()=>setDialog({type:'move',id:item.id,parentId:item.parent_id||0})));
           if(item.type!=='shortcut'&&!isExternal&&context.files.can('copy',item.spaceId,actor))items.push(menuButton('创建副本',()=>context.files.copy(actor,item.id)));
           if(item.type!=='shortcut'&&item.type!=='folder'&&context.files.can('create-shortcut',item.spaceId,actor))items.push(menuButton('创建快捷方式',()=>setDialog({type:'create-shortcut',id:item.id,targetSpaceId:context.files.writableSpaces(actor,item.spaceId)[0]?.id,targetParentId:0})));
-          if(item.type!=='folder'&&context.files.can('edit-tags',item.spaceId,actor))items.push(menuButton('编辑标签',()=>setDialog({type:'tags',id:item.id,tags:[...(item.tags||[])],tagInput:'',tagDropdownOpen:true})));
+          if(item.type!=='folder'&&context.files.can('edit-tags',item.spaceId,actor))items.push(menuButton('编辑标签',()=>setDialog({type:'tags',id:item.id})));
           if(context.files.can('trash',item.spaceId,actor))items.push(menuButton('移至回收站',()=>setDialog({type:'trash',id:item.id}),true));
         }
         const open=menuId===item.id;
@@ -356,7 +286,7 @@
             canTrash?h('button',{className:'is-danger',type:'button',onClick:()=>setDialog({type:'trash',id:selected.id})},'移至回收站'):null
           ):null,
           selected.type!=='folder'?h('section',{className:'eva-file-detail__section'},
-            h('div',{className:'eva-file-detail__section-head'},h('h3',null,'标签'),canEditTags?h('button',{type:'button',onClick:()=>setDialog({type:'tags',id:selected.id,tags:[...(selected.tags||[])],tagInput:'',tagDropdownOpen:true})},'编辑'):null),
+            h('div',{className:'eva-file-detail__section-head'},h('h3',null,'标签'),canEditTags?h('button',{type:'button',onClick:()=>setDialog({type:'tags',id:selected.id})},'编辑'):null),
             h('div',{className:'eva-file-detail__classification'},renderTags(selected)||h('span',{className:'eva-file-muted'},'暂无标签'))
           ):null,
           selected.type!=='folder'?h('section',{className:'eva-file-detail__section'},

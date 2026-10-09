@@ -1,8 +1,10 @@
 (function(root){
   'use strict';
   // Components receive the runtime's existing React and Semi instances.
-  root.EvaMembersUI={create({React:R,Button,Select,Modal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ChevronRight,ProjectIcon,useNavigate,Toast},store,files){
+  root.EvaMembersUI={create({React:R,forms,Button,Select,Modal:LegacyModal,Table,Input,Tag,Checkbox,Radio,Switch,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CameraIcon,CloseIcon,BackIcon,SearchIcon,ChevronRight,ProjectIcon,useNavigate,Toast},store,files){
     const h=R.createElement;
+    const {Form,withField,useSubmission,SubmissionError,Dialog:Modal,Actions,requiredLabelPolicy}=forms;
+    const SelectionField=withField(function SelectionField({children,...props}){return h('div',{'aria-invalid':props['aria-invalid'],'aria-describedby':props['aria-describedby'],tabIndex:-1},children);});
     function HumanIdentity({id,detail,compact=false}){const person=store.person(id);return h('span',{className:'eva-members-human-identity'+(compact?' is-compact':'')},h('img',{className:'eva-members-human-avatar',alt:'',src:root.EvaAvatar.personUri(id),draggable:false}),h('span',{className:'eva-members-human-copy'},h('span',{className:'eva-members-human-name'},person?.name||id),detail&&h('span',{className:'eva-members-human-role'},detail)));}
     function CloneIdentity({clone}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(root.EvaAIIdentity.cloneAppearance(store.person(clone.ownerId)),32,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},clone.name),root.EvaAIIdentity.badge(h))));}
     function ProjectAgentIdentity({agent,size=32}){return h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(agent.identityAppearance||root.EvaAIIdentity.projectAgentAppearance(),size,h),h('span',null,agent.name),root.EvaAIIdentity.badge(h));}
@@ -19,9 +21,18 @@
       const legacyField=nameField||(withName?{label:'群聊名称',placeholder:'输入群聊名称',maxLength:50,required:true}:null),configuredFields=Array.isArray(fields)&&fields.length?fields:(legacyField?[legacyField]:[]);
       // 创建形态既可只有一个名称字段（新建群聊），也可承载「名称 + 附加字段」（新建项目的共同目标），仍复用同一套双栏选择区与同一提交校验。
       const fieldList=configuredFields.map((field,index)=>({...field,key:field.key||(index===0?'name':'field-'+index),id:field.id||(index===0?'eva-member-picker-name':'eva-member-picker-'+index)})),hasFields=fieldList.length>0,primaryKey=fieldList[0]?.key,fieldSignature=fieldList.map(field=>String(field.initialValue||'')).join('|'),searchEnabled=search??!single;
-      const [ids,setIds]=R.useState([]),[form,setForm]=R.useState({}),[query,setQuery]=R.useState(''),[error,setError]=R.useState(''),[invalid,setInvalid]=R.useState(null),[groupId]=R.useState(()=>'eva-member-picker-'+Math.random().toString(36).slice(2,8)),touched=R.useRef(new Set());
-      R.useEffect(()=>{if(!visible)return;touched.current.clear();setIds(initialSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled)));const next={};fieldList.forEach(field=>{next[field.key]=field.initialValue||'';});setForm(next);setQuery('');setError('');setInvalid(null);},[visible,title,fieldSignature,initialSelectedIds.join('|')]);
-      const toggle=id=>{setIds(value=>single?[id]:value.includes(id)?value.filter(item=>item!==id):[...value,id]);setError('');setInvalid(null);};
+      const [formApi,formState,form]=Form.useForm();
+      const ids=form.memberIds||[];
+      const setIds=next=>formApi.setValue('memberIds',typeof next==='function'?next(ids):next);
+      const [query,setQuery]=R.useState(''),[groupId]=R.useState(()=>'eva-member-picker-'+Math.random().toString(36).slice(2,8));
+      const initialValues={memberIds:initialSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled))};
+      fieldList.forEach(field=>{initialValues[field.key]=field.initialValue||'';});
+      const submission=useSubmission({active:visible,resetKey:title+fieldSignature+initialSelectedIds.join('|'),onSubmit:values=>{
+        const clean={};fieldList.forEach(field=>{clean[field.key]=String(values[field.key]||'').trim();});
+        return onSubmit(chosen,primaryKey?clean[primaryKey]:'',clean);
+      }});
+      R.useEffect(()=>{if(visible){setQuery('');formApi.reset();formApi.setValues(initialValues);}},[visible,title,fieldSignature,initialSelectedIds.join('|')]);
+      const toggle=id=>setIds(value=>single?[id]:value.includes(id)?value.filter(item=>item!==id):[...value,id]);
       const normalized=query.trim().normalize('NFKC').toLocaleLowerCase();
       const visibleItems=items.filter(item=>!normalized||item.name.normalize('NFKC').toLocaleLowerCase().includes(normalized));
       const declaredGroups=groups||[{kind:'human',label:'联系人'},{kind:'clone',label:'我的 AI 分身'}];
@@ -29,26 +40,22 @@
       // 已选栏与左侧候选保持同一分组顺序，配置「我的 AI 分身」置顶时两栏都会置顶。
       const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled).sort((a,b)=>{const rankA=groupRank.has(a.kind)?groupRank.get(a.kind):declaredGroups.length,rankB=groupRank.has(b.kind)?groupRank.get(b.kind):declaredGroups.length;return rankA-rankB||(itemRank.get(a.id)??0)-(itemRank.get(b.id)??0);});
       const required=minimumSelection??(allowEmpty?0:1);
-      // 提交时校验：按钮保持可点，点击后在出错字段旁给出行内错误并聚焦缺失字段，避免「点了没反应」被当成 bug。
-      const invalidReason=()=>{
-        for(const field of fieldList){const value=String(form[field.key]||'').trim();if(field.required&&!value)return {scope:'field',key:field.key,text:'请输入'+field.label};if(field.maxLength&&value.length>field.maxLength)return {scope:'field',key:field.key,text:field.label+'最多 '+field.maxLength+' 个字符'};const reason=field.validate?.(value,form);if(reason)return {scope:'field',key:field.key,text:reason};}
-        // 中文与拉丁字母之间留一个半角空格：memberLabel 可能是中文（群成员），也可能以 AI 开头（AI 小队成员）。
-        if(chosen.length<required)return {scope:'members',text:'请至少选择 '+required+' 位'+(/^[A-Za-z]/.test(memberLabel)?' ':'')+memberLabel};
-        return null;
-      };
+      const memberField={label:memberLabel,required:required>0};
+      const fieldLabel=requiredLabelPolicy([...fieldList,memberField]);
       const selectionNoun=itemNoun||(items[0]?.kind==='project'?'项目':'成员');
       // 两个网格共用同一标签列宽：附加字段（如共同目标）标签更长时仍与成员面板左边缘对齐。
       const labelWidth=(hasFields?Math.max(80,Math.max(...fieldList.map(field=>String(field.label||'').length))*15):80)+'px';
       // 只有一个分组类别时不渲染分组头：该入口设定上不可能出现第二类身份，分组层没有区分作用。
       const groupless=declaredGroups.length<2;
       const pickerGroups=groupless?[{kind:declaredGroups[0]?.kind||'human',label:declaredGroups[0]?.label||'成员',items:declaredGroups[0]?.items}]:declaredGroups;
-      const fieldNode=field=>h('div',{key:field.key,className:'eva-member-picker__field'},h('label',{htmlFor:field.id},field.label),h(Input,{id:field.id,'aria-label':field.label,value:form[field.key]||'',onChange:value=>{touched.current.add(field.key);setForm(old=>{const next={...old,[field.key]:field.normalize?field.normalize(value):value};for(const derived of fieldList)if(derived.deriveFrom===field.key&&!touched.current.has(derived.key))next[derived.key]=derived.derive(value,old);return next});setError('');setInvalid(null);},placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus===true||(field.autoFocus===undefined&&fieldList.length===1),...(invalid&&invalid.scope==='field'&&invalid.key===field.key?{'aria-invalid':true,'aria-describedby':field.id+'-error'}:{})}),invalid&&invalid.scope==='field'&&invalid.key===field.key&&h('p',{role:'alert',className:'eva-member-picker__field-error',id:field.id+'-error'},invalid.text));
-      const footer=h('div',{className:'eva-picker-footer eva-member-picker__footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',onClick:()=>{const reason=invalidReason();if(reason){setInvalid(reason);setError('');if(reason.scope==='field'){const target=fieldList.find(field=>field.key===reason.key),node=target&&document.getElementById(target.id);node&&node.focus();}return;}try{const values={};fieldList.forEach(field=>{values[field.key]=String(form[field.key]||'').trim();});onSubmit(chosen,primaryKey?values[primaryKey]:'',values);}catch(e){setError(e.message);}}},typeof submit==='function'?submit(chosen):submit));
+      const fieldNode=field=>h(Form.Input,{key:field.key,field:field.key,id:field.id,'aria-label':field.label,label:fieldLabel(field),labelPosition:'left',labelWidth,fieldClassName:'eva-member-picker__field',
+        rules:[...(field.required?[{required:true,whitespace:true,message:'请输入'+field.label}]:[]),...(field.maxLength?[{max:field.maxLength,message:field.label+'最多 '+field.maxLength+' 个字符'}]:[])],
+        placeholder:field.placeholder,maxLength:field.maxLength,autoFocus:field.autoFocus===true||(field.autoFocus===undefined&&fieldList.length===1)});
+      const footer=h(Actions,{onCancel,onSubmit:submission.submit,busy:submission.busy,submitLabel:typeof submit==='function'?submit(chosen):submit});
       return h(Modal,{className:('eva-members-modal eva-picker-modal eva-member-picker-modal '+className).trim(),width:680,title,visible,zIndex,onCancel,footer,getPopupContainer,maskClosable:true},
-        h('div',{className:'eva-member-picker'+(hasFields?'':' eva-member-picker--selection-only'),style:{'--eva-member-picker-label-w':labelWidth,'--eva-member-picker-extra-fields':(Math.max(0,fieldList.length-1)*52)+'px'}},
+        h(Form,{...submission.formProps,form:formApi,initValues:initialValues,className:'eva-member-picker'+(hasFields?'':' eva-member-picker--selection-only'),style:{'--eva-member-picker-label-w':labelWidth,'--eva-member-picker-extra-fields':(Math.max(0,fieldList.length-1)*52)+'px','--eva-member-picker-error-height':(Object.values(formState.errors||{}).filter(Boolean).length*24)+'px'}},
           hasFields&&fieldList.map(fieldNode),
-          h('div',{className:'eva-member-picker__members'+(hasFields?'':' eva-member-picker__members--selection-only')},
-            hasFields&&h('span',{className:'eva-member-picker__label',id:'eva-member-picker-members-label'},memberLabel),
+          h(SelectionField,{field:'memberIds',noLabel:!hasFields,label:fieldLabel(memberField),labelPosition:'left',labelWidth,fieldClassName:'eva-member-picker__members'+(hasFields?'':' eva-member-picker__members--selection-only'),rules:[{validator:(_,value)=>items.filter(item=>(value||[]).includes(item.id)&&!item.disabled).length>=required,message:'请至少选择 '+required+' 位'+(/^[A-Za-z]/.test(memberLabel)?' ':'')+memberLabel}]},
             h('div',{className:'eva-member-picker__panel',...(hasFields?{'aria-labelledby':'eva-member-picker-members-label'}:{'aria-label':memberLabel})},
               h('div',{className:'eva-member-picker__available'},
                 searchEnabled&&h('div',{className:'eva-member-picker__toolbar'},h(Input,{value:query,onChange:setQuery,showClear:true,prefix:SearchIcon?h(SearchIcon,{size:16}):null,placeholder:searchPlaceholder,'aria-label':searchLabel})),
@@ -56,47 +63,59 @@
               h('aside',{className:'eva-member-picker__selected','aria-label':'已选'+selectionNoun},
                 h('div',{className:'eva-member-picker__selected-head'},h('strong',null,'已选 '+chosen.length),h(Button,{theme:'borderless',type:'tertiary',size:'small',disabled:!chosen.length,onClick:()=>setIds([])},'清空')),
                 h('div',{className:'eva-member-picker__selected-list'},chosen.map(item=>h('div',{key:item.id,className:'eva-member-picker__selected-item'},h('span',{className:'eva-member-picker__selected-avatar'},identity(item,true)),h('span',{className:'eva-member-picker__selected-name','data-eva-tooltip':item.name,'data-eva-tooltip-clamp':''},h('span',{className:'eva-member-picker__selected-name-text'},item.name),(item.kind==='channel'?item.ai:item.kind!=='human'&&item.kind!=='project')&&root.EvaAIIdentity.badge(h)),h(Button,{theme:'borderless',type:'tertiary',size:'small',icon:h(CloseIcon,{size:16}),'aria-label':'移除 '+item.name,onClick:()=>toggle(item.id)}))),!chosen.length&&h('p',null,'从左侧选择'+selectionNoun)))),
-            invalid&&invalid.scope==='members'&&h('p',{role:'alert',className:'eva-member-picker__field-error eva-member-picker__members-error',id:'eva-member-picker-members-error'},invalid.text)),
-          error&&h('p',{role:'alert',className:'eva-members-error'},error)));
+            null),
+          h(SubmissionError,{submission})));
     }
     function SinglePersonPicker({visible,title,items,onCancel,onSubmit,submit='确认'}){
-      const [ids,setIds]=R.useState([]),[error,setError]=R.useState('');
-      R.useEffect(()=>{if(visible){setIds([]);setError('');}},[visible,title]);
-      const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
-      const footer=h('div',{className:'eva-picker-footer eva-transfer-footer'},h(Button,{onClick:onCancel},'取消'),h(Button,{theme:'solid',type:'primary',disabled:chosen.length!==1,onClick:()=>{try{onSubmit(chosen);}catch(e){setError(e.message);}}},submit));
+      const [formApi,,values]=Form.useForm();
+      const ids=values.memberIds||[],chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
+      const submission=useSubmission({active:visible,resetKey:title,onSubmit:()=>onSubmit(chosen)});
+      R.useEffect(()=>{if(visible)formApi.reset();},[visible,title]);
+      const footer=h(Actions,{onCancel,onSubmit:submission.submit,busy:submission.busy,submitLabel:submit});
       return h(Modal,{className:'eva-members-modal eva-members-modal--transfer',width:480,title,visible,onCancel,footer,maskClosable:true},
-        h(SelectionBody,{items,selected:ids,onChange:setIds,single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'}),
-        error&&h('p',{role:'alert',className:'eva-members-error'},error));
+        h(Form,{...submission.formProps,form:formApi,initValues:{memberIds:[]}},
+          h(SelectionField,{field:'memberIds',noLabel:true,rules:[{validator:(_,value)=>items.filter(item=>(value||[]).includes(item.id)&&!item.disabled).length===1,message:'请选择 1 位接任者'}]},
+            h(SelectionBody,{items,selected:ids,onChange:next=>formApi.setValue('memberIds',next),single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'})),
+          h(SubmissionError,{submission})));
     }
     function useState(){R.useSyncExternalStore(store.subscribe,store.getSnapshot);return store.snapshot();}
     function ActorPicker(){const s=useState();return h('div',{className:'eva-members-actor'},h('span',null,'演示身份'),h(Select,{value:s.actorId,optionList:store.people().map(p=>({value:p.id,label:h(HumanIdentity,{id:p.id,compact:true})})),onChange:id=>store.setActor(id)}));}
+    function RoleCreator({projectId,actor,onCreated,onCancel}){
+      const submission=useSubmission({onSubmit:values=>{
+        const name=values.name.trim(),existing=store.projectRoles(projectId).find(r=>r.name===name);
+        const role=existing||store.saveProjectRole(projectId,actor,{name});
+        onCreated(role);
+      }});
+      return h(Form,{...submission.formProps,className:'eva-role-create'},
+        h('div',{className:'eva-role-create-heading'},h('label',{htmlFor:'eva-new-project-role',className:'eva-role-field-label'},'新建角色'),h(Button,{theme:'borderless',size:'small',onClick:onCancel},'取消新建')),
+        h('div',{className:'eva-role-create-row'},
+        h(Form.Input,{field:'name',noLabel:true,id:'eva-new-project-role',autoFocus:true,'aria-label':'新角色名称',maxLength:20,placeholder:'例如：产品、前端',rules:[{required:true,whitespace:true,message:'请输入角色名称'}],onKeyDown:e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();onCancel();}}}),
+        h(Button,{theme:'solid',htmlType:'submit',loading:submission.busy},'创建并选中')),
+        h(SubmissionError,{submission}));
+    }
     function RoleAssignment({projectId,memberId,onMemberChange,onClose}){
-      const s=useState(),[ids,setIds]=R.useState([]),[error,setError]=R.useState(''),[roleName,setRoleName]=R.useState(''),[creating,setCreating]=R.useState(false),[createError,setCreateError]=R.useState('');
-      R.useEffect(()=>{setIds(store.memberRoles(projectId,memberId).map(r=>r.id));setError('');setRoleName('');setCreating(false);setCreateError('');},[projectId,memberId,s.actorId]);
+      const s=useState(),[formApi]=Form.useForm(),[creating,setCreating]=R.useState(false);
+      const initialValues={roleIds:store.memberRoles(projectId,memberId).map(r=>r.id)};
+      const submission=useSubmission({active:!!memberId,resetKey:projectId+':'+memberId+':'+s.actorId,onSubmit:values=>{
+        store.setMemberRoles(projectId,s.actorId,memberId,values.roleIds||[]);onClose();
+      }});
+      R.useEffect(()=>{if(memberId){formApi.reset();formApi.setValues(initialValues);}setCreating(false);},[projectId,memberId,s.actorId]);
       const member=memberId&&store.members(projectId).find(m=>m.id===memberId);
-      const createRole=()=>{
-        if(!roleName.trim())return;
-        try{
-          const existing=store.projectRoles(projectId).find(r=>r.name===roleName.trim()),role=existing||store.saveProjectRole(projectId,s.actorId,{name:roleName});
-          setIds(old=>[...new Set([...old,role.id])]);setRoleName('');setCreating(false);setCreateError('');setError('');
-        }catch(e){setCreateError(e.message);}
-      };
-      const newRoleMenu=h('div',{className:'eva-role-menu-footer'},creating?
-        h('div',{className:'eva-role-menu-create'},
-          h('label',{htmlFor:'eva-new-project-role',className:'eva-role-field-label'},'新建角色'),
-          h(Input,{id:'eva-new-project-role',autoFocus:true,'aria-label':'新角色名称',value:roleName,maxLength:20,placeholder:'例如：产品、前端',onChange:value=>{setRoleName(value);setCreateError('');},onKeyDown:e=>{e.stopPropagation();if(e.key==='Enter'&&!e.nativeEvent?.isComposing){e.preventDefault();createRole();}if(e.key==='Escape'){setCreating(false);setRoleName('');setCreateError('');}}}),
-          createError&&h('p',{role:'alert',className:'eva-members-error'},createError),
-          h('div',{className:'eva-role-menu-actions'},h(Button,{size:'small',type:'tertiary',theme:'borderless',onClick:()=>{setCreating(false);setRoleName('');setCreateError('');}},'取消'),h(Button,{size:'small',theme:'solid',disabled:!roleName.trim(),onClick:createRole},'创建并选中'))):
-        h(Button,{className:'eva-role-menu-new',theme:'borderless',icon:h(PlusIcon,{size:16}),onClick:()=>setCreating(true)},'新建角色'));
-      return h(Modal,{className:'eva-members-modal eva-project-role-modal',width:480,title:'设置项目角色',visible:!!memberId,onCancel:onClose,okText:'保存',cancelText:'取消',onOk:()=>{try{store.setMemberRoles(projectId,s.actorId,memberId,ids);onClose();}catch(e){setError(e.message);}}},member&&h('div',{className:'eva-project-role-form'},
+      const newRoleMenu=h('div',{className:'eva-role-create-area'},creating?
+        h(RoleCreator,{projectId,actor:s.actorId,onCancel:()=>setCreating(false),onCreated:role=>{formApi.setValue('roleIds',[...new Set([...(formApi.getValue('roleIds')||[]),role.id])]);setCreating(false);}}):
+        h(Button,{className:'eva-role-new',theme:'borderless',icon:h(PlusIcon,{size:16}),onClick:()=>setCreating(true)},'新建角色'));
+      return h(Modal,{className:'eva-members-modal eva-project-role-modal',width:480,title:'设置项目角色',visible:!!memberId,onCancel:onClose,okText:'保存',cancelText:'取消',confirmLoading:submission.busy,onOk:submission.submit},member&&h('div',{className:'eva-project-role-content'},h(Form,{...submission.formProps,form:formApi,initValues:initialValues,className:'eva-project-role-form'},
         h('div',{className:'eva-role-field'},h('span',{id:'eva-role-member-label',className:'eva-role-field-label'},'成员'),h(Select,{className:'eva-members-select','aria-labelledby':'eva-role-member-label','aria-label':'选择成员',value:memberId,onChange:onMemberChange,optionList:store.members(projectId).map(m=>({value:m.id,label:m.kind==='human'?h(HumanIdentity,{id:m.id,compact:true}):m.kind==='clone'?h(CloneIdentity,{clone:m}):h(ProjectAgentIdentity,{agent:m})}))})),
-        h('div',{className:'eva-role-field'},h('span',{id:'eva-role-selection-label',className:'eva-role-field-label'},'项目角色',h('span',{className:'eva-role-field-hint'},'可多选')),h(Select,{multiple:true,className:'eva-members-select','aria-labelledby':'eva-role-selection-label','aria-label':'成员项目角色',placeholder:'选择项目角色',value:ids,onChange:setIds,optionList:store.projectRoles(projectId).map(r=>({value:r.id,label:r.name})),emptyContent:'暂无项目角色',outerBottomSlot:newRoleMenu,onDropdownVisibleChange:visible=>{if(!visible){setCreating(false);setRoleName('');setCreateError('');}}})),
-        h('p',{className:'eva-members-muted eva-role-help'},'仅调整项目分工，不改变成员权限'),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
+        h('div',{className:'eva-role-field'},h('span',{id:'eva-role-selection-label',className:'eva-role-field-label'},'项目角色',h('span',{className:'eva-role-field-hint'},'可多选')),h('div',{className:'eva-role-options'},store.projectRoles(projectId).length?h(Form.CheckboxGroup,{field:'roleIds',id:'eva-role-selection',noLabel:true,direction:'vertical','aria-labelledby':'eva-role-selection-label','aria-label':'成员项目角色',options:store.projectRoles(projectId).map(r=>({value:r.id,label:r.name}))}):h('p',{className:'eva-members-muted'},'暂无项目角色'))),
+        h('p',{className:'eva-members-muted eva-role-help'},'仅调整项目分工，不改变成员权限'),h(SubmissionError,{submission})),newRoleMenu));
     }
     function Members({scopeId}){
       const s=useState(),actor=s.actorId,sid=scopeId.startsWith('all:')?scopeId.slice(4):scopeId;
       const scope=s.projects[sid]||s.groups[sid];
-      const [addOpen,setAddOpen]=R.useState(false),[error,setError]=R.useState(''),[action,setAction]=R.useState(null),[details,setDetails]=R.useState(null),[identityProfile,setIdentityProfile]=R.useState(null),[successors,setSuccessors]=R.useState({}),[roleMember,setRoleMember]=R.useState(null);
+      const [addOpen,setAddOpen]=R.useState(false),[error,setError]=R.useState(''),[action,setAction]=R.useState(null),[details,setDetails]=R.useState(null),[identityProfile,setIdentityProfile]=R.useState(null),[roleMember,setRoleMember]=R.useState(null);
+      const [removalApi]=Form.useForm();
+      const removal=useSubmission({active:action?.type==='remove',resetKey:[sid,actor,action?.id].join(':'),onSubmit:values=>{store.remove(sid,actor,action.id,values.successors||{});setAction(null);}});
+      R.useEffect(()=>{if(action?.type==='remove'){removalApi.reset();removalApi.setValues({successors:{}});}},[sid,actor,action?.type,action?.id]);
       R.useEffect(()=>{setAddOpen(false);setError('');setAction(null);setDetails(null);setIdentityProfile(null);setRoleMember(null);},[sid,actor]);
       if(!scope)return h('p',null,'该范围已不存在');
       const joined=store.canRead(sid,actor),manage=joined&&store.manager(sid,actor),all=scopeId.startsWith('all:'),isProject=!!s.projects[sid];
@@ -105,10 +124,9 @@
       const humanRows=scope.humans.map(m=>({...store.person(m.id),...m}));
       const rowClones=id=>scope.cloneIds.map(id=>store.clone(id)).filter(c=>c?.ownerId===id);
       const canEdit=!all&&joined;
-      const openAction=(type,data)=>{setError('');setSuccessors({});setAction({type,...data});};
+      const openAction=(type,data)=>{setError('');setAction({type,...data});};
       const confirm=()=>{if(run(()=>{
         if(action.type==='removeEmployee')store.removeEmployee(sid,actor,action.id);
-        if(action.type==='remove')store.remove(sid,actor,action.id,successors);
         if(action.type==='dissolve'){store.dissolveGroup(sid,actor);Toast&&Toast.success('群聊已解散');}
       }))setAction(null);};
       const columns=[{title:h('span',null,'成员'),width:'26%',dataIndex:'name',render:(v,row)=>h(Button,{className:'eva-members-identity-button',theme:'borderless',type:'tertiary',onClick:()=>setIdentityProfile(row.id)},['project-agent','employee'].includes(row.kind)?h(ProjectAgentIdentity,{agent:row}):h(HumanIdentity,{id:row.id,detail:isProject?roleNames[row.projectRole||row.role]:scope.ownerId===row.id?'群主':store.manager(sid,row.id)?'管理员':'成员'}))},
@@ -123,7 +141,11 @@
         h(cards.IdentityCard,{identity:identityProfile,onClose:()=>setIdentityProfile(null)}),
         h(MemberPicker,{key:sid+actor,visible:addOpen,title:isProject?'添加项目成员':'添加群聊成员',submit:'确认添加',items:joined&&!all?[...humanItems(store.candidates(sid,actor),isProject?sid:undefined),...cloneItems(actor,scope.projectId,sid)]:[],emptyTitle:isProject?'所有可添加成员均已加入项目':scope.projectId?'项目内可选成员均已加入当前群聊':'所有可选成员均已加入当前群聊',emptyDescription:!isProject&&scope.projectId?'如需添加其他人，请先将其加入项目':'',onCancel:()=>setAddOpen(false),onSubmit:chosen=>{store.transaction(staged=>{chosen.forEach(p=>p.kind==='clone'?staged.addClone(sid,actor,p.id):staged.addMember(sid,actor,p.id));});setAddOpen(false);}}),
         h(SinglePersonPicker,{key:'transfer'+sid+actor,visible:action?.type==='transfer',title:isProject?'转让项目负责人':'转让群主',submit:'确认转让',items:humanItems(humanRows.filter(p=>p.id!==actor),isProject?sid:undefined),onCancel:()=>setAction(null),onSubmit:chosen=>{store.transfer(sid,actor,chosen[0].id);setAction(null);}}),
-        h(Modal,{className:'eva-members-modal',title:({remove:'确认移除成员',removeEmployee:'确认移除数字员工',transfer:isProject?'转让负责人':'转让群主',dissolve:'解散群聊'})[action?.type]||'',visible:!!action&&action.type!=='transfer',onCancel:()=>setAction(null),onOk:confirm,okText:'确认',cancelText:'取消'},action?.type==='removeEmployee'&&h(ProjectAgentIdentity,{agent:store.employee(action.id)}),action?.type==='removeEmployee'&&h('p',null,'移除后将不能在该范围内提及此数字员工，历史内容保留。'),action?.type==='remove'&&h(HumanIdentity,{id:action.id}),action?.type==='remove'&&h('p',null,`确认${action.id===actor?'退出':'移除 '+name(action.id)}？${isProject?'其分身及项目内群聊关系将一并移除。':'其分身也会离开本群。'}历史内容保留。负责人或群主须先转让。`),action?.type==='remove'&&isProject&&Object.values(s.groups).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',null,g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群及子区'):h(Select,{className:'eva-members-select',placeholder:'选择群主接任者',value:successors[g.id],onChange:id=>setSuccessors({...successors,[g.id]:id}),optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),action?.type==='dissolve'&&h('p',null,'群聊及子区将不再可访问。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)),
+        action?.type==='remove'&&h(Modal,{className:'eva-members-modal',title:'确认移除成员',visible:true,onCancel:()=>setAction(null),onOk:removal.submit,okButtonProps:{type:'danger'},confirmLoading:removal.busy,okText:'确认',cancelText:'取消'},
+          h(Form,{...removal.formProps,form:removalApi,initValues:{successors:{}},className:'eva-member-removal-form'},
+            h(HumanIdentity,{id:action.id}),h('p',null,`确认${action.id===actor?'退出':'移除 '+name(action.id)}？${isProject?'其分身及项目内群聊关系将一并移除。':'其分身也会离开本群。'}历史内容保留。负责人或群主须先转让。`),
+            isProject&&Object.values(s.groups).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',{id:'eva-member-successor-'+g.id+'-label'},g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群及子区'):h(Form.Select,{field:'successors['+JSON.stringify(g.id)+']',id:'eva-member-successor-'+g.id,noLabel:true,className:'eva-members-select','aria-label':g.name+'的群主接任者',placeholder:'选择群主接任者',rules:[{required:true,message:'请选择群主接任者'}],optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),h(SubmissionError,{submission:removal}))),
+        h(Modal,{className:'eva-members-modal',title:action?.type==='removeEmployee'?'确认移除数字员工':'解散群聊',visible:action?.type==='removeEmployee'||action?.type==='dissolve',onCancel:()=>setAction(null),onOk:confirm,okButtonProps:{type:'danger'},okText:'确认',cancelText:'取消'},action?.type==='removeEmployee'&&h(ProjectAgentIdentity,{agent:store.employee(action.id)}),action?.type==='removeEmployee'&&h('p',null,'移除后将不能在该范围内提及此数字员工，历史内容保留。'),action?.type==='dissolve'&&h('p',null,'群聊及子区将不再可访问。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)),
         h(Modal,{className:'eva-members-modal',title:details?name(details)+'的分身':'分身',visible:!!details&&!identityProfile,onCancel:()=>setDetails(null),footer:null},details&&rowClones(details).map(c=>h('div',{className:'eva-members-clone-row',key:c.id},h(Button,{theme:'borderless',type:'tertiary',onClick:()=>setIdentityProfile(c.id)},h(CloneIdentity,{clone:c})),canEdit&&(actor===details||manage)&&h(Button,{type:'danger',theme:'light',onClick:()=>run(()=>store.removeClone(sid,actor,c.id))},'移除分身')))));
     }
     // title / submitLabel / zIndex 只在「入口文案或层叠环境不同、创建链路相同」时覆盖，默认值保持群聊管理原有入口不变。
@@ -136,24 +158,25 @@
       R.useSyncExternalStore(files.subscribe,files.getSnapshot);
       const allTargets=files.writableSpaces(actor),targets=allowedKinds?.length?allTargets.filter(item=>allowedKinds.includes(item.kind)):allTargets;
       const defaultTarget=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);
-      const [target,setTarget]=R.useState(defaultTarget),[parentId,setParentId]=R.useState(0),[error,setError]=R.useState(''),[savedId,setSavedId]=R.useState(null);
-      R.useEffect(()=>{const next=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);setTarget(next);setParentId(0);setError('');setSavedId(null);},[file?.id,file?.name,source?.messageId,actor]);
+      const [formApi,,values]=Form.useForm(),target=values.target??defaultTarget;
+      const [savedId,setSavedId]=R.useState(null);
+      const submission=useSubmission({active:!!file&&!savedId,resetKey:[file?.id,file?.name,source?.messageId,actor].join(':'),onSubmit:save});
+      R.useEffect(()=>{const next=source?.projectId&&targets.some(item=>item.id===source.projectId)?source.projectId:files.personalSpace(actor);if(file){formApi.reset();formApi.setValues({target:next,parentId:0});}setSavedId(null);},[file?.id,file?.name,source?.messageId,actor]);
       const targetInfo=targets.find(item=>item.id===target),folders=target?files.list(target,actor).filter(item=>item.type==='folder'&&!item.deletedAt):[];
       const folderName=id=>{const names=[];let current=folders.find(item=>item.id===id),guard=0;while(current&&guard++<20){names.unshift(current.name);current=folders.find(item=>item.id===current.parent_id);}return names.join(' / ');};
       const folderOptions=[{value:0,label:'文件库根目录'},...folders.map(item=>({value:item.id,label:folderName(item.id)}))];
       const sourceLabel=source?.type==='ai-conversation'?'我的 AI · '+(source.identityName||'AI'):source?.type==='chat'?'私聊 · '+(source.senderName||source.conversationTitle||'会话成员'):'群聊 · '+(source?.groupName||source?.conversationTitle||'来源群');
-      const save=()=>{try{if(!target)throw Error('请选择目标文件库');const id=files.saveConversationFile(actor,target,parentId,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);setError('');onSaved?.(record);}catch(e){setError(e.message||'保存失败');}};
+      function save(values){const id=files.saveConversationFile(actor,values.target,values.parentId??0,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);onSaved?.(record);}
       const open=()=>{if(savedId&&typeof root.__evaOpenDriveFile==='function')root.__evaOpenDriveFile(savedId);onClose();};
-      return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:null,width:520},file&&h(R.Fragment,null,
+      return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:h(Actions,{onCancel:onClose,cancelLabel:savedId?'关闭':'取消',form:savedId?undefined:submission.formProps.id,onSubmit:savedId?open:undefined,busy:submission.busy,submitLabel:savedId?'打开所在位置':'确认保存'}),width:520},file&&h(Form,{...submission.formProps,form:formApi,initValues:{target:defaultTarget,parentId:0},className:'eva-file-save-form'},
         h('div',{className:'eva-file-save-modal__file'},h('strong',{'data-eva-tooltip':file.name,'data-eva-tooltip-clamp':''},file.name),h('span',null,sourceLabel)),
         !savedId&&h(R.Fragment,null,
-          h('div',{className:'eva-members-field'},h('label',null,'目标文件库'),h(Select,{className:'eva-members-select',value:target,onChange:value=>{setTarget(value);setParentId(0);setError('');},optionList:targets.map(item=>({value:item.id,label:item.name}))})),
-          h('div',{className:'eva-members-field'},h('label',null,'目标文件夹'),h(Select,{className:'eva-members-select',value:parentId,onChange:setParentId,optionList:folderOptions})),
+          h('div',{className:'eva-members-field'},h('label',{id:'eva-file-save-target-label',htmlFor:'eva-file-save-target'},'目标文件库'),h(Form.Select,{field:'target',noLabel:true,id:'eva-file-save-target','aria-label':'目标文件库',className:'eva-members-select',onChange:()=>formApi.setValue('parentId',0),rules:[{required:true,message:'请选择目标文件库'}],optionList:targets.map(item=>({value:item.id,label:item.name}))})),
+          h('div',{className:'eva-members-field'},h('label',{id:'eva-file-save-folder-label',htmlFor:'eva-file-save-folder'},'目标文件夹'),h(Form.Select,{field:'parentId',noLabel:true,id:'eva-file-save-folder','aria-label':'目标文件夹',className:'eva-members-select',optionList:folderOptions})),
           targetInfo&&targetInfo.kind!=='personal'&&h('div',{className:'eva-members-notice'},h('strong',null,'保存后，目标文件库成员可访问该文件'),h('p',null,'不会因此获得原会话、其他消息或其他附件的访问权限。')),
           h('p',{className:'eva-members-muted'},'文件只有在你确认后才会存入文件库，系统关联由来源自动生成。')),
         savedId&&h('div',{className:'eva-members-notice'},h('strong',null,'保存成功'),h('p',null,'已生成独立文件，并保留只读的来源关联。')),
-        error&&h('p',{role:'alert',className:'eva-members-error'},error),
-        h('div',{className:'eva-picker-footer'},h(Button,{onClick:onClose},savedId?'关闭':'取消'),h(Button,{theme:'solid',type:'primary',onClick:savedId?open:save},savedId?'打开所在位置':'确认保存'))));
+        h(SubmissionError,{submission})));
     }
     function FileTransfer({file,source,onClose}){
       return h(FileLibrarySave,{file,source:{...source,type:'group',conversationId:source?.threadId||source?.groupId,messageId:source?.messageId||((source?.threadId||source?.groupId)+':'+(file?.id||file?.name)),projectId:source?.projectId},allowedKinds:['project'],onClose});
@@ -238,8 +261,8 @@
           rowBody,
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
-    const cards=root.EvaIdentityCard.create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store);
-    const ChatSettings=root.EvaChatSettings.create({React:R,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
+    const cards=root.EvaIdentityCard.create({React:R,Modal:LegacyModal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store);
+    const ChatSettings=root.EvaChatSettings.create({React:R,forms,Button,Modal,Input,Switch,Tag,PlusIcon,CircleMinusIcon,UserCogIcon,UserMinusIcon,TrashIcon,CloseIcon,BackIcon,SearchIcon,HumanIdentity,CloneIdentity,ProjectAgentIdentity,MemberPicker,SinglePersonPicker,humanItems,cloneItems,useState,IdentityCard:cards.IdentityCard,ProjectIdentity:cards.ProjectIdentity,AvatarEditor:cards.AvatarEditor,readAvatarFile:cards.readAvatarFile,useNavigate,Toast},store);
     return {...cards,HumanIdentity,ChatSettings,Members,ActorPicker,useState,MemberPicker,SinglePersonPicker,CreateGroup,FileLibrarySave,FileTransfer,MentionPicker,projectCreateCandidates};
   }};
 })(window);

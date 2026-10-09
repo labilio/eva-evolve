@@ -16,6 +16,7 @@
     };
   });
 
+  var pageServices = null;
   var state = {
     mode: config.defaultMode || 'collaboration',
     workspaceId: config.defaultWorkspaceId || 'prod',
@@ -585,108 +586,42 @@
     return '<button type="button" class="' + (child ? 'is-child' : '') + '" data-drive-scope="' + scope + '"' + spaceAttribute + ' aria-current="' + (current ? 'page' : 'false') + '">' + icon(iconName, 'eva-drive-icon ' + (iconName === 'folder' ? 'is-folder' : '')) + '<span>' + escapeHTML(label) + '</span></button>';
   }
 
-  function targetOptionsHTML(selectedSpaceId) {
-    var context = fileContext(), actor = fileActor();
-    var personal = [{ id: personalSpaceId(), label: '个人文件库' }];
-    var projects = [];
-    WORKSPACES.forEach(function (workspace) {
-      var role = context.files.role(workspace.id, actor);
-      if (role) projects.push({ id: workspace.id, label: workspace.name });
+  function sharedFileFormType() {
+    if (!state.dialog) return null;
+    var type = state.dialog.type;
+    if (type === 'add-external-link') return 'external-link';
+    if (type === 'add-external-folder') return 'external-folder';
+    return ['new-folder','rename','edit-external-link','move','create-shortcut','tags'].includes(type) ? type : null;
+  }
+
+  function syncFileForm() {
+    if (!pageServices?.showFileForm) return;
+    var type = sharedFileFormType(),container = document.querySelector('#eva-drive-root [data-eva-file-form-host]');
+    if (!type || !container) { pageServices.showFileForm(null); return; }
+    var dialog = state.dialog, context = fileContext(), actor = fileActor();
+    var resource = dialog.id ? context.files.snapshot(actor).find(function(item){return item.id===dialog.id;}) : null;
+    var spaceId = dialog.spaceId || scopeSpaceId() || personalSpaceId();
+    pageServices.showFileForm({container:container,type:type,files:context.files,actor:actor,spaceId:spaceId,
+      parentId:spaceId===scopeSpaceId()?state.parentId:0,resource:resource,entry:'drive',sourceLabel:resource?spaceRootLabel(resource):'',
+      onClose:closeDialog,
+      onSaved:function(result){
+        if (['new-folder','external-link','external-folder','edit-external-link'].includes(result.type)) { state.selectedId=result.id;renderDrive(); }
+        if(result.type==='create-shortcut')showToast('快捷方式已创建，源文件权限保持不变');
+        if(result.type==='external-folder')showToast('外部文件夹已添加');
+        if(result.type==='external-link')showToast('外部链接已添加');
+        if(result.type==='edit-external-link')showToast(resource.external?.kind==='folder'?'外部文件夹已更新':'外部链接已更新');
+      },
     });
-    function options(label, spaces) {
-      return '<optgroup label="' + label + '">' + spaces.map(function (space) { return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(space.label) + '</option>'; }).join('') + '</optgroup>';
-    }
-    return options('个人文件库', personal) + options('项目文件库', projects);
-  }
-
-  function shortcutTargetOptionsHTML(sourceSpaceId, selectedSpaceId) {
-    return fileContext().files.writableSpaces(fileActor(), sourceSpaceId).map(function (space) {
-      var prefix = space.kind === 'personal' ? '个人文件库' : '项目文件库';
-      return '<option value="' + escapeHTML(space.id) + '"' + (space.id === selectedSpaceId ? ' selected' : '') + '>' + escapeHTML(prefix + ' · ' + space.name) + '</option>';
-    }).join('');
-  }
-
-  function shortcutFolderOptionsHTML(spaceId, selectedParentId) {
-    if (!spaceId) return '<option value="0">根目录</option>';
-    var folders = fileContext().files.list(spaceId, fileActor()).filter(function (item) { return item.type === 'folder'; });
-    return '<option value="0">根目录</option>' + folders.map(function (folder) {
-      return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedParentId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';
-    }).join('');
-  }
-
-  function tagSuggestions(resource) {
-    var selected = state.dialog && Array.isArray(state.dialog.tags) ? state.dialog.tags : [];
-    var seen = {};
-    return fileContext().files.list(resource.spaceId, fileActor()).reduce(function (tags, item) {
-      (item.tags || []).forEach(function (tag) {
-        if (!seen[tag] && !selected.includes(tag)) { seen[tag] = true; tags.push(tag); }
-      });
-      return tags;
-    }, []);
-  }
-
-  function tagEditorHTML(resource) {
-    var tags = Array.isArray(state.dialog.tags) ? state.dialog.tags : [];
-    var query = String(state.dialog.tagInput || '').trim().toLowerCase();
-    var suggestions = tagSuggestions(resource).filter(function (tag) { return !query || tag.toLowerCase().includes(query); });
-    var selected = tags.length ? tags.map(function (tag) {
-      return '<span class="eva-tag-editor__chip"><span>' + escapeHTML(tag) + '</span><button type="button" data-drive-action="tag-remove" data-drive-tag-value="' + escapeHTML(tag) + '" aria-label="移除标签 ' + escapeHTML(tag) + '">' + icon('x') + '</button></span>';
-    }).join('') : '<span class="eva-tag-editor__empty">暂未选择标签</span>';
-    var options = suggestions.length ? suggestions.map(function (tag) {
-      return '<button class="eva-tag-editor__option" type="button" role="option" data-drive-action="tag-option" data-drive-tag-value="' + escapeHTML(tag) + '">' + escapeHTML(tag) + '</button>';
-    }).join('') : '<span class="eva-tag-editor__empty">没有匹配标签，按回车新建</span>';
-    var dropdown = state.dialog.tagDropdownOpen === false ? '' : '<div id="eva-drive-tag-options" class="eva-tag-editor__dropdown" role="listbox" aria-label="当前文件库已有标签">' + options + '</div>';
-    return '<div class="eva-tag-editor"><span class="eva-tag-editor__label">自定义标签</span><div class="eva-tag-editor__selected">' + selected + '</div><div class="eva-tag-editor__control"><input id="eva-drive-dialog-tags" data-drive-tag-input type="text" value="' + escapeHTML(state.dialog.tagInput || '') + '" maxlength="20" placeholder="输入或选择标签" role="combobox" aria-label="输入或选择标签" aria-expanded="' + (state.dialog.tagDropdownOpen === false ? 'false' : 'true') + '" aria-controls="eva-drive-tag-options" autocomplete="off"><button class="eva-tag-editor__toggle" type="button" data-drive-action="tag-dropdown-toggle" aria-label="' + (state.dialog.tagDropdownOpen === false ? '展开已有标签' : '收起已有标签') + '">' + icon('arrow') + '</button></div>' + dropdown + (state.dialog.tagError ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.tagError) + '</small>' : '') + '</div>';
-  }
-
-  function addDialogTag(value) {
-    if (!state.dialog || state.dialog.type !== 'tags') return;
-    var input = String(value == null ? state.dialog.tagInput || '' : value).trim().slice(0, 20);
-    var tags = Array.isArray(state.dialog.tags) ? state.dialog.tags.slice() : [];
-    var resource = fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; });
-    var existing = resource ? tagSuggestions(resource).find(function (tag) { return tag.toLowerCase() === input.toLowerCase(); }) : null;
-    var tag = existing || input;
-    if (!tag) { state.dialog.tagError = '请输入标签名称'; return; }
-    if (tags.some(function (selected) { return selected.toLowerCase() === tag.toLowerCase(); })) { state.dialog.tagInput = ''; state.dialog.tagError = '该标签已选择'; return; }
-    if (tags.length >= 8) { state.dialog.tagError = '每个文件最多添加 8 个标签'; return; }
-    tags.push(tag);
-    state.dialog.tags = tags;
-    state.dialog.tagInput = '';
-    state.dialog.tagError = '';
   }
 
   function dialogHTML() {
     if (!state.dialog) return '';
-    var type = state.dialog.type, resource = state.dialog.id ? fileContext().files.snapshot(fileActor()).find(function (item) { return item.id === state.dialog.id; }) : null;
-    var externalFolderDialog = type === 'add-external-folder' || (type === 'edit-external-link' && resource && resource.external && resource.external.kind === 'folder');
-    var title = type === 'new-folder' ? '新建文件夹' : type === 'add-external-folder' ? '添加外部文件夹' : type === 'add-external-link' ? '添加外部链接' : type === 'edit-external-link' ? (externalFolderDialog ? '编辑外部文件夹' : '编辑外部链接') : type === 'target-upload' ? '选择上传位置' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '编辑标签' : type === 'rename' ? '重命名' : type === 'move' ? '移动到' : type === 'trash' ? '移至回收站' : '永久删除';
-    var content = '';
-    if (type === 'new-folder') content = '<label class="eva-drive-dialog__field"><span>文件夹名称</span><input id="eva-drive-dialog-name" value="" placeholder="请输入文件夹名称" autofocus></label>';
-    if (type === 'add-external-folder' || type === 'add-external-link' || type === 'edit-external-link') {
-      var linkInfo = resource ? fileContext().files.externalLinkInfo(resource, fileActor()) : null;
-      var externalName = state.dialog.name == null ? resource ? resource.name : '' : state.dialog.name;
-      var externalURL = state.dialog.url == null ? linkInfo ? linkInfo.url : '' : state.dialog.url;
-      var nameField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹名称' : '文件名称') + '</span><input id="eva-drive-dialog-external-name" value="' + escapeHTML(externalName) + '" maxlength="100" placeholder="' + (externalFolderDialog ? '例如：供应商交付资料' : '例如：供应商协作飞书文档') + '" autofocus></label>';
-      var urlField = '<label class="eva-drive-dialog__field"><span>' + (externalFolderDialog ? '文件夹链接' : '文件链接') + '</span><input id="eva-drive-dialog-external-url" type="url" value="' + escapeHTML(externalURL) + '" placeholder="https://"></label>';
-      content = nameField + urlField + (state.dialog.confirmHostChange ? '<div class="eva-external-link-warning">' + icon('external') + '<span>链接域名发生变化。请确认新地址可信后再保存。</span></div>' : '') + (state.dialog.error ? '<small class="eva-project-files__error">' + escapeHTML(state.dialog.error) + '</small>' : '');
-    }
-    if (type === 'target-upload') content = '<label class="eva-drive-dialog__field"><span>上传到</span><select id="eva-drive-dialog-space">' + targetOptionsHTML(state.dialog.spaceId || personalSpaceId()) + '</select></label><p class="eva-drive-dialog__hint">上传后文件继承目标文件库的角色权限。</p>';
-    if (type === 'rename') content = '<label class="eva-drive-dialog__field"><span>新名称</span><input id="eva-drive-dialog-name" value="' + escapeHTML(resource ? resource.name : '') + '" autofocus></label>';
-    if (type === 'tags' && resource) content = tagEditorHTML(resource) + '<p class="eva-drive-dialog__hint">从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>';
-    if (type === 'create-shortcut' && resource) {
-      var shortcutSpaces = fileContext().files.writableSpaces(fileActor(), resource.spaceId);
-      content = shortcutSpaces.length ? '<div class="eva-shortcut-source"><span>源文件</span><strong>' + escapeHTML(resource.name) + '</strong><small>' + escapeHTML(spaceRootLabel(resource)) + '</small></div><label class="eva-drive-dialog__field"><span>目标文件库</span><select id="eva-drive-dialog-shortcut-space">' + shortcutTargetOptionsHTML(resource.spaceId, state.dialog.targetSpaceId) + '</select></label><label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-shortcut-parent">' + shortcutFolderOptionsHTML(state.dialog.targetSpaceId, state.dialog.targetParentId || 0) + '</select></label><p class="eva-drive-dialog__hint">快捷方式不复制文件，也不会向目标文件库成员授予源文件权限。</p>' : '<p>没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。</p>';
-    }
-    if (type === 'move') {
-      var folders = fileContext().files.list(resource.spaceId, fileActor()).filter(function (item) { return item.type === 'folder' && item.id !== resource.id; });
-      content = '<label class="eva-drive-dialog__field"><span>目标文件夹</span><select id="eva-drive-dialog-parent"><option value="0">根目录</option>' + folders.map(function (item) { return '<option value="' + escapeHTML(item.id) + '">' + escapeHTML(item.name) + '</option>'; }).join('') + '</select></label><p class="eva-drive-dialog__hint">仅允许在当前文件库内移动。</p>';
-    }
-    if (type === 'trash') content = '<p>将“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '移至回收站？Owner 或 Manager 可恢复。</p>';
-    if (type === 'delete-forever') content = '<p>永久删除“' + escapeHTML(resource.name) + '”' + (resource.type === 'folder' ? '及其中内容' : '') + '后不可恢复。</p>';
-    var confirmLabel = type === 'add-external-folder' ? '添加文件夹' : type === 'add-external-link' ? '添加链接' : type === 'edit-external-link' ? (state.dialog.confirmHostChange ? '确认更换并保存' : '保存') : type === 'target-upload' ? '选择文件' : type === 'create-shortcut' ? '创建快捷方式' : type === 'tags' ? '保存' : type === 'trash' ? '移至回收站' : type === 'delete-forever' ? '永久删除' : '确认';
-    var noShortcutTarget = type === 'create-shortcut' && !fileContext().files.writableSpaces(fileActor(), resource.spaceId).length;
-    var confirm = noShortcutTarget ? '' : '<button class="' + (type === 'delete-forever' || type === 'trash' ? 'is-danger' : 'is-primary') + '" type="button" data-drive-action="dialog-confirm">' + confirmLabel + '</button>';
-    return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">' + title + '</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">' + icon('x') + '</button></header><div class="eva-drive-dialog__body">' + content + '</div><footer><button type="button" data-drive-action="dialog-close">' + (confirm ? '取消' : '关闭') + '</button>' + confirm + '</footer></section></div>';
+    if (sharedFileFormType()) return '<div data-eva-file-form-host></div>';
+    var type=state.dialog.type,resource=fileContext().files.snapshot(fileActor()).find(function(item){return item.id===state.dialog.id;});
+    if(!resource) return '';
+    var title=type==='trash'?'移至回收站':'永久删除';
+    var content=type==='trash'?'<p>将“'+escapeHTML(resource.name)+'”'+(resource.type==='folder'?'及其中内容':'')+'移至回收站？Owner 或 Manager 可恢复。</p>':'<p>永久删除“'+escapeHTML(resource.name)+'”'+(resource.type==='folder'?'及其中内容':'')+'后不可恢复。</p>';
+    return '<div class="eva-drive-dialog" role="dialog" aria-modal="true" aria-labelledby="eva-drive-dialog-title"><button class="eva-drive-dialog__mask" type="button" data-drive-action="dialog-close" aria-label="关闭"></button><section class="eva-drive-dialog__panel"><header><h2 id="eva-drive-dialog-title">'+title+'</h2><button type="button" data-drive-action="dialog-close" aria-label="关闭">'+icon('x')+'</button></header><div class="eva-drive-dialog__body">'+content+'</div><footer><button type="button" data-drive-action="dialog-close">取消</button><button class="is-danger" type="button" data-drive-action="dialog-confirm">'+title+'</button></footer></section></div>';
   }
 
   function filePreviewFixture(resource) {
@@ -868,6 +803,7 @@
     var context = fileContext();
     var selected = context ? context.files.snapshot(fileActor()).find(function (resource) { return resource.id === state.selectedId; }) || null : null;
     root.innerHTML = driveHTML(list, selected);
+    syncFileForm();
     var table = root.querySelector('.eva-drive__table');
     if (table && state.tableScroll) {
       table.scrollLeft = state.tableScroll.left;
@@ -928,6 +864,7 @@
   }
 
   function closeDrive() {
+    pageServices?.showFileForm?.(null);
     var root = document.getElementById('eva-drive-root');
     state.previewId = null;
     state.previewFullscreen = false;
@@ -961,26 +898,8 @@
   }
 
   function openDialog(type, resource, spaceId) {
-    state.dialog = { type: type, id: resource ? resource.id : null, spaceId: spaceId || null };
-    if (type === 'edit-external-link' && resource) {
-      var linkInfo = fileContext().files.externalLinkInfo(resource, fileActor());
-      state.dialog.name = resource.name;
-      state.dialog.url = linkInfo ? linkInfo.url : '';
-    }
-    if (type === 'tags' && resource) {
-      state.dialog.tags = (resource.tags || []).slice();
-      state.dialog.tagInput = '';
-      state.dialog.tagDropdownOpen = true;
-    }
-    if (type === 'create-shortcut' && resource) {
-      var target = fileContext().files.writableSpaces(fileActor(), resource.spaceId)[0];
-      state.dialog.targetSpaceId = target ? target.id : null;
-      state.dialog.targetParentId = 0;
-    }
+    state.dialog={type:type,id:resource?resource.id:null,spaceId:spaceId||null};
     renderDrive();
-    requestAnimationFrame(function () {
-      document.querySelector('#eva-drive-root [autofocus]')?.focus();
-    });
   }
 
   function closeDialog() {
@@ -989,58 +908,14 @@
   }
 
   function confirmDialog() {
-    if (!state.dialog) return;
-    var dialog = state.dialog, context = fileContext(), actor = fileActor();
-    var resource = dialog.id ? context.files.snapshot(actor).find(function (item) { return item.id === dialog.id; }) : null;
-    var nameInput = document.getElementById('eva-drive-dialog-name');
-    var spaceInput = document.getElementById('eva-drive-dialog-space');
-    var parentInput = document.getElementById('eva-drive-dialog-parent');
-    var shortcutSpaceInput = document.getElementById('eva-drive-dialog-shortcut-space');
-    var shortcutParentInput = document.getElementById('eva-drive-dialog-shortcut-parent');
-    var externalNameInput = document.getElementById('eva-drive-dialog-external-name');
-    var externalURLInput = document.getElementById('eva-drive-dialog-external-url');
+    if(!state.dialog||sharedFileFormType())return;
+    var dialog=state.dialog,context=fileContext(),actor=fileActor();
+    var resource=context.files.snapshot(actor).find(function(item){return item.id===dialog.id;});
     try {
-      if (externalNameInput) dialog.name = externalNameInput.value;
-      if (externalURLInput) { if (dialog.url !== externalURLInput.value) dialog.confirmHostChange = false; dialog.url = externalURLInput.value; }
-      state.dialog = null;
-      if (dialog.type === 'new-folder') {
-        var targetSpace = dialog.spaceId || scopeSpaceId();
-        state.selectedId = context.files.createFolder(actor, targetSpace, nameInput ? nameInput.value : '', targetSpace === scopeSpaceId() ? state.parentId : 0);
-      }
-      if (dialog.type === 'target-upload') {
-        state.uploadTarget = spaceInput.value;
-        renderDrive();
-        setTimeout(function () { var input = document.getElementById('eva-file-upload'); if (input) input.click(); }, 0);
-        return;
-      }
-      if (dialog.type === 'add-external-folder') state.selectedId = context.files.createExternalLink(actor, dialog.spaceId || scopeSpaceId(), { name: dialog.name, url: dialog.url, kind: 'folder' }, (dialog.spaceId || scopeSpaceId()) === scopeSpaceId() ? state.parentId : 0);
-      if (dialog.type === 'add-external-link') state.selectedId = context.files.createExternalLink(actor, dialog.spaceId || scopeSpaceId(), { name: dialog.name, url: dialog.url }, (dialog.spaceId || scopeSpaceId()) === scopeSpaceId() ? state.parentId : 0);
-      if (dialog.type === 'edit-external-link') { context.files.updateExternalLink(actor, resource.id, { name: dialog.name, url: dialog.url, kind: resource && resource.external && resource.external.kind === 'folder' ? 'folder' : undefined, confirmHostChange: Boolean(dialog.confirmHostChange) }); state.selectedId = resource.id; }
-      if (dialog.type === 'tags') {
-        var nextTags = Array.isArray(dialog.tags) ? dialog.tags.slice() : [];
-        var pendingTag = String(dialog.tagInput || '').trim().slice(0, 20);
-        var matchedTag = pendingTag && tagSuggestions(resource).find(function (tag) { return tag.toLowerCase() === pendingTag.toLowerCase(); });
-        pendingTag = matchedTag || pendingTag;
-        if (pendingTag && !nextTags.some(function (tag) { return tag.toLowerCase() === pendingTag.toLowerCase(); }) && nextTags.length < 8) nextTags.push(pendingTag);
-        context.files.updateTags(actor, resource.id, nextTags);
-      }
-      if (dialog.type === 'create-shortcut') context.files.createShortcut(actor, resource.id, shortcutSpaceInput.value, shortcutParentInput.value === '0' ? 0 : shortcutParentInput.value);
-      if (dialog.type === 'rename') context.files.rename(actor, resource.id, nameInput.value);
-      if (dialog.type === 'move') context.files.move(actor, resource.id, parentInput.value === '0' ? 0 : parentInput.value);
-      if (dialog.type === 'trash') { context.files.trash(actor, resource.id); state.selectedId = null; }
-      if (dialog.type === 'delete-forever') { context.files.removeForever(actor, resource.id); state.selectedId = null; }
-      renderDrive();
-      if (dialog.type === 'create-shortcut') showToast('快捷方式已创建，源文件权限保持不变');
-      if (dialog.type === 'add-external-folder') showToast('外部文件夹已添加');
-      if (dialog.type === 'add-external-link') showToast('外部链接已添加');
-      if (dialog.type === 'edit-external-link') showToast(resource && resource.external && resource.external.kind === 'folder' ? '外部文件夹已更新' : '外部链接已更新');
-    } catch (error) {
-      state.dialog = dialog;
-      state.dialog.error = error.message || '操作失败';
-      if (state.dialog.error.indexOf('域名已变更') >= 0) state.dialog.confirmHostChange = true;
-      renderDrive();
-      showToast(error.message || '操作失败');
-    }
+      if(dialog.type==='trash')context.files.trash(actor,resource.id);
+      if(dialog.type==='delete-forever')context.files.removeForever(actor,resource.id);
+      state.selectedId=null;state.dialog=null;renderDrive();
+    }catch(error){showToast(error.message||'操作失败');}
   }
 
   function bridgeSelectedResource() {
@@ -1160,23 +1035,6 @@
       renderDrive();
       return;
     }
-    if (name === 'tag-dropdown-toggle') {
-      state.dialog.tagDropdownOpen = state.dialog.tagDropdownOpen === false;
-      renderDrive();
-      return;
-    }
-    if (name === 'tag-option') {
-      addDialogTag(action.dataset.driveTagValue);
-      state.dialog.tagDropdownOpen = true;
-      renderDrive();
-      return;
-    }
-    if (name === 'tag-remove') {
-      state.dialog.tags = state.dialog.tags.filter(function (tag) { return tag !== action.dataset.driveTagValue; });
-      state.dialog.tagError = '';
-      renderDrive();
-      return;
-    }
     if (name === 'row-menu') {
       if (state.menuId === String(resource.id)) closeRowMenu();
       else {
@@ -1267,7 +1125,7 @@
     if (name === 'upload-file') {
       var spaceId = scopeSpaceId();
       if (spaceId) { state.uploadTarget = spaceId; document.getElementById('eva-file-upload').click(); }
-      else openDialog('target-upload');
+
     }
     if (name === 'copy-link') {
       var internalLink = location.origin + location.pathname + '#/drive?file=' + encodeURIComponent(resource.id);
@@ -1302,25 +1160,6 @@
   }
 
   function handleDriveInput(event) {
-    if (event.type === 'input' && event.target.id === 'eva-drive-dialog-external-url' && state.dialog && ['add-external-folder', 'add-external-link', 'edit-external-link'].includes(state.dialog.type)) {
-      var externalNameInput = document.getElementById('eva-drive-dialog-external-name');
-      state.dialog.name = externalNameInput ? externalNameInput.value : state.dialog.name;
-      state.dialog.url = event.target.value;
-      state.dialog.error = '';
-      state.dialog.confirmHostChange = false;
-      return;
-    }
-    if (event.type === 'input' && event.target.matches('[data-drive-tag-input]')) {
-      state.dialog.tagInput = event.target.value;
-      state.dialog.tagError = '';
-      state.dialog.tagDropdownOpen = true;
-      renderDrive();
-      var editorInput = document.querySelector('[data-drive-tag-input]');
-      if (editorInput) {
-        editorInput.focus();
-        editorInput.setSelectionRange(editorInput.value.length, editorInput.value.length);
-      }
-    }
     if (event.type === 'input' && event.target.matches('[data-drive-search]')) {
       state.query = event.target.value;
       renderDrive();
@@ -1339,11 +1178,7 @@
       renderDrive();
       showToast('文件已上传到' + spaceName(targetSpace));
     }
-    if (event.type === 'change' && event.target.id === 'eva-drive-dialog-shortcut-space') {
-      state.dialog.targetSpaceId = event.target.value;
-      state.dialog.targetParentId = 0;
-      renderDrive();
-    }
+
   }
 
   function handleCustomNavigation(event) {
@@ -1435,33 +1270,17 @@
     document.addEventListener('input', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveInput(event);
     });
-    document.addEventListener('focusin', function (event) {
-      if (state.dialog && state.dialog.type === 'tags' && event.target.matches('[data-drive-tag-input]') && state.dialog.tagDropdownOpen === false) {
-        state.dialog.tagDropdownOpen = true;
-        renderDrive();
-        var input = document.querySelector('[data-drive-tag-input]');
-        if (input) input.focus();
-      }
-    });
     document.addEventListener('change', function (event) {
       if (event.target.closest('#eva-drive-root')) handleDriveInput(event);
     });
     document.addEventListener('keydown', function (event) {
-      if (state.dialog && state.dialog.type === 'tags' && event.target.matches('[data-drive-tag-input]') && event.key === 'Enter') {
-        event.preventDefault();
-        addDialogTag();
-        renderDrive();
-        var tagInput = document.querySelector('[data-drive-tag-input]');
-        if (tagInput) tagInput.focus();
-        return;
-      }
       if (event.key === 'Escape') {
         var menu = document.querySelector('.eva-space-picker__menu:not([hidden])');
         if (menu) menu.hidden = true;
         var externalAddMenu = document.querySelector('#eva-drive-root .eva-drive__external-add[open]');
         if (externalAddMenu) { externalAddMenu.open = false; externalAddMenu.querySelector('summary').focus(); }
         if (state.menuId) { closeRowMenu(); renderDrive(); }
-        if (state.dialog) closeDialog();
+        if (state.dialog) { if (!sharedFileFormType()) closeDialog(); }
         else if (state.selectedId) { state.selectedId = null; renderDrive(); }
         else if (state.previewId && state.previewFullscreen) {
           event.preventDefault();
@@ -1495,13 +1314,6 @@
       token: function () { return state.menuId; },
       close: function () { closeRowMenu(false); var driveRoot = document.getElementById('eva-drive-root'); if (driveRoot && !driveRoot.hidden) renderDrive(); }
     });
-    window.EvaPopupDismiss.watch({
-      id: 'eva-drive-tag-dropdown',
-      isOpen: function () { return Boolean(state.dialog && state.dialog.type === 'tags' && state.dialog.tagDropdownOpen !== false); },
-      keep: function () { return document.querySelector('#eva-drive-root .eva-tag-editor'); },
-      token: function () { return state.dialog; },
-      close: function () { state.dialog.tagDropdownOpen = false; renderDrive(); }
-    });
   }
 
   function initialize() {
@@ -1509,13 +1321,15 @@
     registerPopupDismiss();
     window.__evaOpenDrive = openDrive;
     window.__evaOpenDriveFile = openDriveFile;
-    window.__evaNativePages.register('drive', function (host) {
+    window.__evaNativePages.register('drive', function (host,services) {
+      pageServices=services;
       var root = ensureDriveRoot(host);
       root.hidden = false;
       renderDrive();
       syncShellGeometry();
       return function () {
         closeDrive();
+        pageServices?.showFileForm?.(null);pageServices=null;
         if (root.parentElement === host) root.remove();
       };
     });

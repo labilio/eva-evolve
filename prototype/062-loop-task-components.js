@@ -73,21 +73,21 @@
   function dateField(React,DatePicker,props){
     let Field=dateFieldCache.get(DatePicker);
     if(!Field){
-      Field=function TaskDateField({value,label='截止日期',onChange,icon,overdue=false,className='',triggerClassName='',textClassName='',iconClassName='',...pickerProps}){
+      Field=function TaskDateField({value,label='截止日期',onChange,icon,overdue=false,className='',triggerClassName='',textClassName='',iconClassName='',triggerRender,topSlot,...pickerProps}){
         const [open,setOpen]=React.useState(false);
         React.useEffect(()=>{
           if(!open)return;
-          const dismiss=event=>{if(event.key==='Escape')setOpen(false);};
+          const dismiss=event=>{if(event.key==='Escape'&&!event.isComposing){event.preventDefault();event.stopPropagation();setOpen(false);}};
           document.addEventListener('keydown',dismiss,true);
           return()=>document.removeEventListener('keydown',dismiss,true);
         },[open]);
         const commit=next=>{setOpen(false);onChange(next);};
         return datePicker(React,DatePicker,{
           ...pickerProps,className:['eva-task-date-field',className].filter(Boolean).join(' '),
-          value,open,onOpenChange:setOpen,showClear:false,placeholder:label,'aria-label':label,
+          value,open,onOpenChange:setOpen,showClear:pickerProps.showClear??false,placeholder:label,'aria-label':label,
           onChange:(_,next)=>commit(next||null),
-          topSlot:React.createElement('button',{type:'button',className:'eva-task-date-clear',onClick:()=>commit(null)},'无'+label),
-          triggerRender:()=>dateTrigger(React,{label,value,icon,open,overdue,className:triggerClassName,textClassName,iconClassName})
+          topSlot:topSlot!==undefined?topSlot:React.createElement('button',{type:'button',className:'eva-task-date-clear',onClick:()=>commit(null)},'无'+label),
+          triggerRender:triggerRender||(()=>dateTrigger(React,{label,value,icon,open,overdue,className:triggerClassName,textClassName,iconClassName}))
         });
       };
       dateFieldCache.set(DatePicker,Field);

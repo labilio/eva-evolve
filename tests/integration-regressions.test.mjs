@@ -33,7 +33,7 @@ test('项目设置与概览使用独立根类，设置字段样式可以命中',
   const css=read('prototype/009-2-members.css');
   assert.match(css,/\.eva-project-settings-info\s*\{/);
   assert.match(css,/\.eva-project-settings-info \.eva-project-info-field\s*\{[^}]*flex-direction:column/);
-  assert.match(css,/\.eva-project-settings-info \.eva-project-info-field textarea\s*\{[^}]*width:100%/);
+  assert.match(css,/\.eva-project-settings-info \.eva-project-info-field textarea\.semi-input-textarea\s*\{[^}]*width:100%/);
 });
 
 test('项目成员表头复用通讯录的圆角浅灰视觉合同', () => {

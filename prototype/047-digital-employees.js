@@ -15,7 +15,7 @@ const field=(label,content,hint)=>h(Field,{label,content,hint});
 return function DigitalCenter({view='market',navigate,employeeId}){
 const employeeRevision=R.useSyncExternalStore(store.subscribe,store.getSnapshot),memberRevision=R.useSyncExternalStore(members.subscribe,members.getSnapshot);
 const projects=R.useMemo(()=>members.projectRecords(),[memberRevision]),actor=members.actorId();
-const [domain,setDomain]=R.useState(null),[dialog,setDialog]=R.useState(null),[chosen,setChosen]=R.useState([]),[projectQuery,setProjectQuery]=R.useState(''),[error,setError]=R.useState('');
+const [domain,setDomain]=R.useState(null),[dialog,setDialog]=R.useState(null),[error,setError]=R.useState('');
 const [panel,setPanel]=R.useState(false),[query,setQuery]=R.useState('');
 const [searchOpen,setSearchOpen]=R.useState(false),[expand,setExpand]=R.useState({}),[activeIndex,setActiveIndex]=R.useState(-1);
 const barRef=R.useRef(null),searchRowsRef=R.useRef([]),searchWrapRef=R.useRef(null);
@@ -64,9 +64,9 @@ const refreshFit=()=>{const el=barRef.current;if(!el)return;
 R.useLayoutEffect(()=>{refreshFit();});
 R.useEffect(()=>{const el=barRef.current;if(!el)return;const ro=new ResizeObserver(()=>refreshFit());ro.observe(el);return()=>ro.disconnect();},[view]);
 const host=R.useRef(null);const popup=()=>host.current;
-R.useEffect(()=>{setDialog(null);setChosen([]);setProjectQuery('');setError('');setPanel(false);setQuery('');setSearchOpen(false);setExpand({});},[view,actor,employeeId]);
+R.useEffect(()=>{setDialog(null);setError('');setPanel(false);setQuery('');setSearchOpen(false);setExpand({});},[view,actor,employeeId]);
 const run=fn=>{try{fn();setError('');}catch(e){setError(e.message);}};
-const open=(kind,a)=>{setDialog({kind,a});setChosen([]);setProjectQuery('');setError('');};
+const open=(kind,a)=>{setDialog({kind,a});setError('');};
 const allProjects=Object.values(projects).filter(p=>members.canRead(p.id,actor));
 const projectName=p=>p.name|| (p.id==='prod'?'供应链运营协同':p.id);
 const select=(key,options,extra={})=>h(Select,{...extra,value:draft[key]||undefined,onChange:v=>update(key,v),optionList:options.map(o=>typeof o==='string'?{value:o,label:o}:o),getPopupContainer:popup});
@@ -173,7 +173,7 @@ function modalContent(){const a=dialog?.a;if(!a)return null;
     const eligible=allProjects.filter(p=>members.manager(p.id,actor)&&(!(a.ownership==='personal'||a.scope==='self')||a.by===actor)&&(a.ownership!=='project'||a.projectId===p.id));
     const items=eligible.map(p=>({id:p.id,name:projectName(p),kind:'project',project:p,disabled:(p.employeeIds||[]).includes(a.id),selectionHint:(p.employeeIds||[]).includes(a.id)?'已加入':''}));
     const PickerUI=(window.__evaGetFileContext&&window.__evaGetFileContext().ui&&window.__evaGetFileContext().ui.MemberPicker)||null;
-    return h('div',{className:'eva-project-picker-launch'},PickerUI?h(PickerUI,{visible:true,title:'加入项目',items,groups:[{kind:'project',label:'项目'}],emptyTitle:'暂无可加入的项目',emptyDescription:'仅你负责或管理的项目可添加；已加入的项目不会重复计入',searchPlaceholder:'搜索项目',searchLabel:'搜索项目',noResultsText:'没有匹配的项目',submit:chosen=>'加入项目'+(chosen.length?'（'+chosen.length+'）':''),onCancel:()=>setDialog(null),onSubmit:chosen=>{try{members.transaction(staged=>chosen.forEach(p=>staged.addEmployee(p.id,actor,a.id)));setDialog(null);Toast.success('已加入所选项目');}catch(e){Toast.error(e.message);}}}):h('p',{role:'alert','className':'eva-project-picker__fallback'},'项目选择组件暂不可用，请刷新后重试。'));
+    return h('div',{className:'eva-project-picker-launch'},PickerUI?h(PickerUI,{visible:true,title:'加入项目',items,groups:[{kind:'project',label:'项目'}],emptyTitle:'暂无可加入的项目',emptyDescription:'仅你负责或管理的项目可添加；已加入的项目不会重复计入',searchPlaceholder:'搜索项目',searchLabel:'搜索项目',noResultsText:'没有匹配的项目',submit:chosen=>'加入项目'+(chosen.length?'（'+chosen.length+'）':''),onCancel:()=>setDialog(null),onSubmit:chosen=>{members.transaction(staged=>chosen.forEach(p=>staged.addEmployee(p.id,actor,a.id)));setDialog(null);Toast.success('已加入所选项目');}}):h('p',{role:'alert','className':'eva-project-picker__fallback'},'项目选择组件暂不可用，请刷新后重试。'));
   }
 
 
@@ -222,7 +222,7 @@ function conversation(){const a=store.get(employeeId);if(!a)return h('p',null,'�
 return h('div',{className:'eva-digital-center__chat'},h('header',{className:'eva-digital-center__head'},btn('数字员工市场',()=>navigate('/eva-stub/数字员工'),{theme:'borderless',icon:h(icons.ArrowLeft,{size:16})}),h('div',{className:'eva-digital-center__actions'},btn('资料',()=>open('detail',a)),store.hasInTeam(a.id)?h('span',{className:'eva-digital-center__joined-status'},'已加入我的 Agent'):btn('加入我的 Agent',()=>run(()=>{store.addToTeam(a.id);Toast.success('已加入我的 Agent');})),btn('加入项目',()=>open('project',a)))),h('div',{className:'eva-msg eva-channel-surface'},h(ChannelsView,{key:id,source,onOpenTask:()=>{}})));
 }
 const isPick=dialog?.kind==='project';
-return h('section',{className:'eva-digital-center'+(view==='market'?' eva-market-workspace':'')},view==='chat'?conversation():market(),h('div',{className:'eva-digital-center__modal',ref:host}),h(Modal,{visible:!!dialog,getPopupContainer:popup,className:'eva-digital-dialog'+(isPick?' eva-picker-modal':'')+(dialog?.kind==='detail'?' eva-detail-modal':''),width:dialog?.kind==='project'?680:720,title:dialog?.kind==='project'?'加入项目':dialog?.kind==='detail'?undefined:dialog?.a?.name||'',onCancel:()=>setDialog(null),footer:isPick?h('div',{className:'eva-picker-footer'},btn('取消',()=>setDialog(null)),btn('加入项目'+(chosen.length?'（'+chosen.length+'）':''),()=>run(()=>{members.transaction(staged=>chosen.forEach(id=>{if(!staged.manager(id,actor))throw new Error('仅项目负责人或管理员可添加');staged.addEmployee(id,actor,dialog.a.id);}));setDialog(null);Toast.success('已加入所选项目');}),{theme:'solid',disabled:!chosen.length})):null,okText:'加入项目'+(chosen.length?'（'+chosen.length+'）':''),cancelText:'取消',okButtonProps:{disabled:!chosen.length},onOk:()=>run(()=>{members.transaction(staged=>chosen.forEach(id=>{if(!staged.manager(id,actor))throw new Error('仅项目负责人或管理员可添加');staged.addEmployee(id,actor,dialog.a.id);}));setDialog(null);Toast.success('已加入');})},modalContent()));
+return h('section',{className:'eva-digital-center'+(view==='market'?' eva-market-workspace':'')},view==='chat'?conversation():market(),h('div',{className:'eva-digital-center__modal',ref:host}),isPick?modalContent():h(Modal,{visible:!!dialog,getPopupContainer:popup,className:'eva-digital-dialog'+(dialog?.kind==='detail'?' eva-detail-modal':''),width:720,title:dialog?.kind==='detail'?undefined:dialog?.a?.name||'',onCancel:()=>setDialog(null),footer:null},modalContent()));
 };
 }
 })(window);

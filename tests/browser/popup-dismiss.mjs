@@ -107,7 +107,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
       blank: streamPoint
     });
     await closesOnBlank('消息·聊天信息面板', {
-      open: () => page.getByRole('button', { name: '聊天信息', exact: true }).first().click(),
+      open: () => page.getByRole('button', { name: '打开聊天信息', exact: true }).first().click(),
       visible: '.ch-right-panel--overlay',
       blank: streamPoint
     });
@@ -198,8 +198,8 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     await forwardCreateDialog.waitFor({ timeout: 5000 });
     // 空名点击「创建并发送」必须有行内反馈，而不是静默失败
     await forwardCreateDialog.getByRole('button',{ name: '创建并发送', exact: true }).click();
-    await forwardCreateDialog.locator('.eva-member-picker__field-error').waitFor({ timeout: 5000 });
-    assert.equal((await forwardCreateDialog.locator('.eva-member-picker__field-error').innerText()).trim(),'请输入群聊名称','消息·转发「创建并发送」：空名点击应有行内报错');
+    await forwardCreateDialog.locator('.semi-form-field-error-message').first().waitFor({ timeout: 5000 });
+    assert.equal((await forwardCreateDialog.locator('.semi-form-field-error-message').first().innerText()).trim(),'请输入群聊名称','消息·转发「创建并发送」：空名点击应有行内报错');
     assert.ok(await forwardCreateDialog.count(),'消息·转发「创建并发送」：校验失败不应关闭弹窗');
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
@@ -219,7 +219,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
 
     // ---- 群聊：转让群主弹窗（遮罩） ----
     await page.locator('.wk-conv-compact-item').filter({ hasText: '采购与招投标' }).first().click();
-    const chatInfo = page.getByRole('button', { name: '聊天信息', exact: true });
+    const chatInfo = page.locator('.ch-head .op[aria-label="打开聊天信息"]');
     await chatInfo.waitFor({ timeout: 10000 });
     await chatInfo.click();
     const settings = page.locator('.eva-chat-settings');

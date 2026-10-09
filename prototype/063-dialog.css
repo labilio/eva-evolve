@@ -1,0 +1,22 @@
+/* Only Eva integration geometry lives here. Header/body/footer spacing and
+   borders are generated from Semi's public theme parameters at build time. */
+:root { --eva-dialog-section-gap:24px; --eva-dialog-action-gap:12px; }
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-content {
+  max-height:calc(100dvh - var(--topbar-height,36px) - 48px);
+}
+.eva-dialog .semi-modal-header,.eva-dialog .semi-modal-footer { flex-shrink:0; }
+.eva-dialog .semi-modal-header { align-items:center; }
+.eva-dialog .semi-modal-close { flex-shrink:0; }
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body { min-height:0; overflow:auto; }
+.eva-dialog.eva-member-picker-modal .semi-modal-body { overflow:hidden; }
+.eva-dialog-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--eva-dialog-action-gap);flex-shrink:0; }
+.eva-dialog-actions>.semi-button { margin:0; }
+.eva-dialog .semi-modal-body > .semi-form > .eva-dialog-actions { margin-top:var(--eva-dialog-section-gap); }
+.eva-dialog-actions--compact { --eva-dialog-section-gap:12px; }
+@media(max-width:560px) { .eva-dialog > .semi-modal-wrap > .semi-modal { max-width:calc(100vw - 32px); } }
+.eva-dialog-portal { position:fixed;inset:var(--topbar-height,36px) 0 0;pointer-events:none;z-index:1000; }
+.eva-dialog-portal .semi-modal-mask,.eva-dialog-portal .semi-modal-wrap { position:absolute;inset:0;height:100%;pointer-events:auto; }
+/* Modal body owns the outer spacing. Keep Semi's inter-field padding, but do
+   not add it again at the edges of a direct form inside a standard dialog. */
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:first-child { padding-top:0; }
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:last-child { padding-bottom:0; }
