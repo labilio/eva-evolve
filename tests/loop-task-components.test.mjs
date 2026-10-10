@@ -62,3 +62,37 @@ test('项目任务标签片在各视图共用中性外观与名称',()=>{
   assert.equal(chip.children[0],label.name);
   assert.equal(api.formatDate('2026-09-25'),'09-25');
 });
+
+test('看板按状态和位置排序，缺少位置的旧任务保持原顺序',()=>{
+  const {api}=setup(),issues=[
+    {id:'a',status:'todo',position:5},{id:'b',status:'done',position:1},
+    {id:'c',status:'todo',position:2},{id:'d',status:'todo'}
+  ];
+  assert.deepEqual(Array.from(api.boardOrdered(issues,'todo'),item=>item.id),['c','a','d']);
+});
+
+test('看板跨列和列内移动只重排受影响的列',()=>{
+  const {api}=setup(),issues=[
+    {id:'a',status:'todo',position:1},{id:'b',status:'todo',position:2},
+    {id:'c',status:'todo',position:3},{id:'d',status:'done',position:1}
+  ];
+  const within=api.boardMovePlan(issues,'c','todo','a',false);
+  assert.deepEqual(Array.from(within.todo,item=>item.id),['c','a','b']);
+  assert.equal(within.done,undefined);
+  const across=api.boardMovePlan(issues,'b','done','d',true);
+  assert.deepEqual(Array.from(across.todo,item=>item.id),['a','c']);
+  assert.deepEqual(Array.from(across.done,item=>item.id),['d','b']);
+  assert.equal(api.boardMovePlan(issues,'a','todo','a',false),null);
+});
+
+test('看板分页和大列虚拟窗口保留总数与滚动高度',()=>{
+  const {api}=setup();
+  assert.equal(api.boardPageCount(95,30),30);
+  assert.equal(api.boardPageCount(95,60),60);
+  assert.equal(api.boardPageCount(95,120),95);
+  const heights=Array(60).fill(120);
+  const window=api.boardWindow(heights,2400,600,4);
+  assert.ok(window.start>0);
+  assert.ok(window.end<60);
+  assert.equal(window.top+window.visibleHeight+window.bottom,7200);
+});

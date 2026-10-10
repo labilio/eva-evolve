@@ -4,24 +4,24 @@
   root.EvaLoopTaskCreateUI={render(props,deps){Component||=create(deps.React);return deps.React.createElement(Component,{...props,deps});}};
   function create(R){
     const h=R.createElement;
-    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,deps}){
+    return function LoopTaskCreate({visible,onClose,onCreated,parentIssueId,parentIssue,defaultStatus='todo',deps}){
       const {forms,Modal,Button,Input,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions,priorityOptions,icons,members,createIssue,uploadAttachment,listLabels,createLabel,attachLabel}=deps;
       const project=typeof deps.project==='function'?deps.project():deps.project;
       R.useSyncExternalStore(members.subscribe,members.getSnapshot,members.getSnapshot);
       const actor=members.actorId(),pid=project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id),scope=members.projectRecord(pid);
-      const empty=()=>({title:'',description:'',status:'todo',priority:'none',assignee:'',dueDate:'',labels:[]});
+      const empty=()=>({title:'',description:'',status:defaultStatus,priority:'none',assignee:'',dueDate:'',labels:[]});
       const {Form,useSubmission,SubmissionError,Actions}=forms;
       const [formApi,,values]=Form.useForm(),form={...empty(),...values};
       const [labels,setLabels]=R.useState([]),[tagQuery,setTagQuery]=R.useState(''),[tagMenuOpen,setTagMenuOpen]=R.useState(false),[files,setFiles]=R.useState([]),[error,setError]=R.useState('');
       const host=R.useRef(null),fileInput=R.useRef(null),generation=R.useRef(0),created=R.useRef(null),uploaded=R.useRef(new Map()),attached=R.useRef(new Set());
-      const submission=useSubmission({active:visible,resetKey:[project?.id,parentIssueId,actor].join(':'),onSubmit:save});
+      const submission=useSubmission({active:visible,resetKey:[project?.id,parentIssueId,defaultStatus,actor].join(':'),onSubmit:save});
       const busy=submission.busy;
       R.useEffect(()=>{
         const token=++generation.current;
         if(visible){formApi.reset();formApi.setValues(empty());}setTagQuery('');setTagMenuOpen(false);setFiles([]);setError('');created.current=null;uploaded.current.clear();attached.current.clear();setLabels([]);
         if(visible)Promise.resolve().then(()=>listLabels()).then(rows=>{if(generation.current===token)setLabels(Array.isArray(rows)?rows:rows?.items||[]);}).catch(()=>{if(generation.current===token)setError('标签暂时无法加载，其他内容仍可填写。');});
         return()=>{generation.current++;};
-      },[visible,project?.id,parentIssueId,actor]);
+      },[visible,project?.id,parentIssueId,defaultStatus,actor]);
       // 负责人只能是本项目联系人；来源者与创建者不提供选项，提交时固定为当前操作人本人。
       const humans=(scope?.humans||[]).map(row=>members.personRecord(row.id)).filter(Boolean);
       const candidates=humans.map(p=>({...p,type:'member'}));

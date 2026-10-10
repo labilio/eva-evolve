@@ -63,6 +63,13 @@
       const dateNumber = parts.year * 10000 + parts.month * 100 + parts.day;
       const todayNumber = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
       return dateNumber < todayNumber;
+    },
+    daysPastDate(value, now = referenceNow()) {
+      const parts = parseDateOnly(value);
+      if (!parts) return 0;
+      const due = Date.UTC(parts.year, parts.month - 1, parts.day);
+      const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      return Math.max(0, Math.round((today - due) / 86400000));
     }
   });
 })(window);

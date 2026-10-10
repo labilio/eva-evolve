@@ -68,6 +68,12 @@ test('creates project-bound task with original fields and only current project c
   const h=harness();h.fill();const candidates=Array.from(h.picker('执行负责人').props.candidates,x=>x.id);assert.deepEqual(candidates,['u1']);await h.submit();const payload=h.calls[0];assert.equal(payload.workspace_id,'prod');assert.equal(payload.status,'todo');assert.equal(payload.assignee_type,'member');assert.equal(payload.description,'任务说明');assert.equal(payload.project_id,'p-supply');assert.equal(payload.priority,'none');
   assert.equal(payload.due_date,null);
 });
+test('从看板列新建时预选该列状态，重新打开其它列不会沿用旧状态',async()=>{
+  const h=harness();h.props.defaultStatus='in_review';h.render();h.render();
+  h.fill();await h.submit();assert.equal(h.calls[0].status,'in_review');
+  h.props.visible=false;h.render();h.props.defaultStatus='blocked';h.props.visible=true;h.render();h.render();
+  assert.equal(h.all().find(n=>n.type==='LoopPropertyPill'&&n.props.ariaLabel==='状态').props.value,'blocked');
+});
 test('新建任务标题自动增高时保留 200 字上限，输入中的换行归一为空格',async()=>{
   const h=harness(),title='客户培训资料'.repeat(20);
   assert.equal(h.find('任务标题').type,'TextArea');

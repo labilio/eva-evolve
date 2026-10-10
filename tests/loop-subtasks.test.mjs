@@ -137,9 +137,12 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.ok(runtime.includes('" is-subtask"'));
   assert.ok(runtime.includes('" has-subtasks"'));
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
-  assert.ok(runtime.includes('const Ft=rt.filter(Qt=>Qt.status===Dt)'));
-  assert.ok(runtime.includes('React.createElement("em",null,Ft.length)'));
-  assert.ok(runtime.includes('showRelation:!1,draggable:!0'));
+  assert.ok(runtime.includes('Qt.boardOrdered(ct,rt)'));
+  assert.ok(runtime.includes('React.createElement("em",null,Vt.length)'));
+  assert.ok(runtime.includes('...EVA_BOARD_CARD_DISPLAY,draggable:!0'));
+  assert.ok(runtime.includes('evaShowStatus&&React.createElement("span",{className:"loop-card__icon",title:xt("loop.status."+rt.status)'));
+  assert.ok(runtime.includes('evaShowDates&&React.createElement("time",{className:"loop-card__time"'));
+  assert.ok(runtime.includes('evaShowDates&&rt.due_date&&React.createElement("span",{className:"loop-card__due"'));
   assert.ok(runtime.includes('pt&&React.createElement(EvaIssueRelationMeta,{issue:rt})'));
   assert.equal(runtime.includes('EvaBoardSubtask'),false);
   assert.equal(runtime.includes('showSubtasks'),false);

@@ -30,7 +30,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await kanbanFoot.locator('.eva-issue-assignee').getAttribute('title'),'负责人：苏航');
     assert.equal(await kanbanFoot.locator('.eva-issue-assignee img').count(),1,'负责人使用真实身份头像');
     assert.equal(await kanbanFoot.locator('.eva-issue-source,.loop-card__project,.loop-abadge').count(),0,'项目内看板不重复显示项目名或来源者');
-    assert.equal(await kanbanFoot.locator('.loop-card__due').count(),1,'保留截止日期');
+    assert.equal(await kanbanCard.locator('.loop-card__due,.loop-card__time').count(),0,'看板卡片不重复显示日期');
 
     // 三视图切换器，从左到右：看板、表格、层级
     const switcher=page.locator('.eva-task-view-switcher');

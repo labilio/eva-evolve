@@ -228,11 +228,37 @@
 .loop-page .loop-board { gap: 16px; overscroll-behavior: contain; }
 .loop-page .loop-board__col { border-radius: var(--eva-radius-panel); padding: 0 12px 12px; background: var(--eva-surface-subtle); border-color: var(--eva-border-faint); }
 .loop-page .loop-board__col-head { min-height: 44px; font: 500 14px/22px var(--eva-font-sans); }
+.loop-page .loop-board__col-head em { margin-left: 0; }
+.loop-page .eva-board-create-wrap { display: inline-flex; flex: 0 0 auto; margin-left: auto; }
+.loop-page .loop-board__cards { gap: 0; }
+.loop-page .eva-board-row { flex: 0 0 auto; padding-bottom: 8px; }
+.loop-page .eva-board-row.is-drop-before .loop-card { border-top-color: var(--semi-color-primary); box-shadow: inset 0 2px var(--semi-color-primary); }
+.loop-page .eva-board-row.is-drop-after .loop-card { border-bottom-color: var(--semi-color-primary); box-shadow: inset 0 -2px var(--semi-color-primary); }
+.loop-page .eva-board-spacer { flex: 0 0 auto; }
+.loop-page .eva-board-more { flex: 0 0 auto; padding: 8px; border: 0; background: transparent; color: var(--eva-text-secondary-accessible); cursor: pointer; }
 .loop-page .loop-card { padding: 12px; gap: 10px; border-radius: var(--eva-radius-chip); border-color: var(--eva-border-subtle); box-shadow: none; }
 .loop-page .loop-card:hover { border-color: var(--eva-border-default); box-shadow: var(--eva-shadow-hairline); }
 .loop-page .loop-card__title { font: 500 14px/22px var(--eva-font-sans); overflow-wrap: anywhere; }
 .loop-page :is(.loop-card__id,.loop-card__time,.loop-card__project) { font: 400 12px/16px var(--eva-font-sans); color: var(--eva-text-secondary-accessible); }
 .loop-page .loop-card__foot { flex-wrap: wrap; gap: 8px; }
+.loop-page .loop-board__col-head > svg,
+.loop-page .loop-board__col-head > em,
+.loop-page .loop-board__col-head > .eva-board-create-wrap { flex-shrink: 0; }
+.loop-page .loop-board__col-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loop-page .loop-board .loop-card__top,
+.loop-page .loop-board .loop-card__labels,
+.loop-page .loop-board .loop-card__foot { min-width: 0; }
+.loop-page .loop-board .loop-card__icon { flex-shrink: 0; }
+.loop-page .loop-board .loop-card__id { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loop-page .loop-board .eva-board-card-due { flex: 0 0 auto; margin-left: auto; color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.loop-page .loop-board .eva-board-card-due.is-overdue { color: var(--semi-color-danger); }
+.loop-page .loop-board .loop-card__title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.loop-page .loop-board .loop-card__labels { flex: 1 1 auto; overflow: hidden; }
+.loop-page .loop-board .loop-label-chips { display: flex; flex-wrap: nowrap; width: 100%; overflow: hidden; }
+.loop-page .loop-board .eva-task-label-chip { min-width: 0; flex: 0 1 auto; white-space: nowrap; }
+.loop-page .loop-board .eva-task-label-chip--overflow { flex-shrink: 0; }
+.loop-page .loop-board .loop-card__foot { flex-wrap: nowrap; }
+.loop-page .loop-board .eva-issue-assignee { min-width: 0; max-width: 100%; flex: 0 1 auto; margin-left: auto; }
 .loop-page .loop-abadge { max-width: 100%; }
 .loop-page .loop-groupboard__head { padding-block: 16px; font: 500 14px/22px var(--eva-font-sans); }
 .loop-page .loop-groupboard__head em,

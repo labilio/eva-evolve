@@ -709,7 +709,10 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-31',number:31,identifier:'SC-131',position:31,title:'取消原定供应商现场审核排期',status:'cancelled',priority:'low',due_date:'2026-09-29',assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'因供应商行程调整，原定现场审核取消，保留记录待重新排期。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-32',number:32,identifier:'SC-132',position:32,title:'取消重复的合同条款复核项',status:'cancelled',priority:'none',due_date:'2026-10-16',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'与既有条款复核任务重复，经确认取消，避免重复跟踪。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-33',number:33,identifier:'SC-133',position:33,title:'协调本周到货异常收货安排',status:'blocked',priority:'urgent',due_date:'2026-09-23',assignee_type:'member',assignee_id:'u-hejing',assignee_name:'何静',description:'到货批次与仓库收货窗口冲突，等待仓储确认临时收货安排。'},
-  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-34',number:34,identifier:'SC-134',position:34,title:'归档历史询价比价记录',status:'done',priority:'medium',due_date:'2026-09-24',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'按品类整理历史询价与比价记录，形成可检索的归档索引。'}
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-34',number:34,identifier:'SC-134',position:34,title:'归档历史询价比价记录',status:'done',priority:'medium',due_date:'2026-09-24',assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'按品类整理历史询价与比价记录，形成可检索的归档索引。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-35',number:35,identifier:'SC-135',position:35,title:'核对华东与华南区域关键原材料供应商的阶梯报价、最小起订量及跨仓调拨成本，形成季度采购成本偏差说明',status:'todo',priority:'high',due_date:null,assignee_type:'member',assignee_id:'u-suhang',assignee_name:'苏航',description:'长标题与多标签看板验收样本。完整标题在任务详情中保留。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-36',number:36,identifier:'SC-136',position:36,title:'核查供应商物料编码SUPPLIER-PART-2026-Q4-ULTRA-LONG-ALPHANUMERIC-REFERENCE-0000987654321对应的替代料认证和交付批次',status:'in_progress',priority:'medium',due_date:null,assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'连续长编码看板换行验收样本。'},
+  {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-37',number:37,identifier:'SC-137',position:37,title:'确认试生产物料齐套情况',status:'in_review',priority:'low',due_date:null,assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'多标签空间不足时显示前两项及剩余数量的验收样本。'}
 );
 // 供应链项目任务统一预置可追溯动态；在追加任务后生成，避免克隆时继承其他任务的记录。
 (function seedSupplyTaskActivity(){
@@ -791,7 +794,10 @@ window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_S
     'supply-31':['task-label-compliance'],
     'supply-32':['task-label-contract'],
     'supply-33':['task-label-delivery','task-label-supply-risk'],
-    'supply-34':['task-label-procurement','task-label-cost']
+    'supply-34':['task-label-procurement','task-label-cost'],
+    'supply-35':['task-label-procurement','task-label-cost','task-label-supplier','task-label-supply-risk'],
+    'supply-36':['task-label-quality','task-label-supplier','task-label-delivery'],
+    'supply-37':['task-label-schedule','task-label-delivery','task-label-quality','task-label-compliance','task-label-supply-risk']
   };
   canvas.issues.forEach(function(issue){
     var ids=assignments[issue.id];

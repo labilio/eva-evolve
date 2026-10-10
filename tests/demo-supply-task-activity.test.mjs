@@ -11,7 +11,7 @@ test('supply task activity tells consistent stories with real project identities
   const issues = window.__EVA_SUPPLY_CHAIN_DEMO.issues;
   const people = new Map(window.__EVA_PEOPLE.map(person => [person.id, person.name]));
   const seeded = issues.filter(issue => issue.activity_log?.length);
-  assert.equal(seeded.length, 34);
+  assert.equal(seeded.length, 37);
   assert.equal(seeded.length, issues.length);
 
   const eventIds = new Set();

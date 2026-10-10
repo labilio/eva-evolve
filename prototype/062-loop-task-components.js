@@ -10,6 +10,41 @@
   });
   const priorityDisplayOrder=Object.freeze(['none','urgent','high','medium','low']);
 
+  function boardOrdered(issues,status){
+    return issues.map((issue,index)=>({issue,index})).filter(row=>row.issue.status===status)
+      .sort((a,b)=>{
+        const left=Number.isFinite(a.issue.position)?a.issue.position:Number.MAX_SAFE_INTEGER;
+        const right=Number.isFinite(b.issue.position)?b.issue.position:Number.MAX_SAFE_INTEGER;
+        return left-right||a.index-b.index;
+      }).map(row=>row.issue);
+  }
+  function boardMovePlan(issues,issueId,status,targetId=null,after=false){
+    const moving=issues.find(issue=>issue.id===issueId);
+    if(!moving||targetId===issueId||!issues.some(issue=>issue.id===issueId))return null;
+    const source=boardOrdered(issues,moving.status).filter(issue=>issue.id!==issueId);
+    const destination=moving.status===status?source:boardOrdered(issues,status);
+    const index=targetId?destination.findIndex(issue=>issue.id===targetId):-1;
+    if(targetId&&index<0)return null;
+    destination.splice(index<0?destination.length:index+(after?1:0),0,moving);
+    const before=boardOrdered(issues,moving.status);
+    if(moving.status===status&&before.every((issue,i)=>issue.id===destination[i].id))return null;
+    return {[moving.status]:source,[status]:destination};
+  }
+  function boardPageCount(total,requested,pageSize=30){
+    return Math.min(total,Math.max(pageSize,requested));
+  }
+  function boardWindow(heights,scrollTop,viewportHeight,overscan=5){
+    const total=heights.reduce((sum,height)=>sum+height,0);
+    let start=0,top=0;
+    while(start<heights.length&&top+heights[start]<scrollTop){top+=heights[start++];}
+    let end=start,visibleHeight=0;
+    while(end<heights.length&&top+visibleHeight<scrollTop+viewportHeight){visibleHeight+=heights[end++];}
+    const first=Math.max(0,start-overscan),last=Math.min(heights.length,end+overscan);
+    const before=heights.slice(0,first).reduce((sum,height)=>sum+height,0);
+    const shown=heights.slice(first,last).reduce((sum,height)=>sum+height,0);
+    return {start:first,end:last,top:before,visibleHeight:shown,bottom:total-before-shown};
+  }
+
   function datePicker(React,DatePicker,props){
     const {dropdownClassName='',...rest}=props;
     return React.createElement(DatePicker,{
@@ -131,5 +166,5 @@
     return {StatusIcon,PriorityIcon};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);

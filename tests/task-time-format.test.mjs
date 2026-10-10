@@ -41,6 +41,11 @@ test('a due date is overdue only before the viewer\'s current calendar day', () 
   assert.equal(time.isPastDate('2026-09-27', lateToday), true);
   assert.equal(time.isPastDate('2026-09-29', lateToday), false);
   assert.equal(time.isPastDate('invalid', lateToday), false);
+  assert.equal(time.daysPastDate('2026-09-28', lateToday), 0);
+  assert.equal(time.daysPastDate('2026-09-25', lateToday), 3);
+  assert.equal(time.daysPastDate('2026-09-29', lateToday), 0);
+  assert.equal(time.daysPastDate('invalid', lateToday), 0);
+  assert.equal(time.daysPastDate('2025-12-31', new Date(2026, 0, 1, 9)), 1);
 });
 
 test('prototype task dates use a fixed local demo day by default', () => {
