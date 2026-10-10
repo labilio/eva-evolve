@@ -18,6 +18,9 @@
 .wk-contextmenus ul{margin:0;padding:0;list-style:none}
 .wk-contextmenus li{display:flex;align-items:center;gap:8px;padding:0 16px;height:40px;cursor:pointer;font-size:14px;font-family:var(--wk-font-sans,-apple-system,sans-serif);color:#1d2129;transition:background .15s ease;position:relative;user-select:none}
 .wk-contextmenus li:hover,.wk-contextmenus li:focus-visible{background:#f2f3f5;outline:none}
+.wk-contextmenus li.wk-ctx-disabled{color:var(--eva-text-muted);cursor:not-allowed}
+.wk-contextmenus li.wk-ctx-disabled:hover,.wk-contextmenus li.wk-ctx-disabled:focus-visible{background:transparent}
+.wk-contextmenus li.wk-ctx-disabled .ctx-icon{stroke:var(--eva-text-muted)}
 .wk-contextmenus li .ctx-icon{width:16px;height:16px;flex-shrink:0;stroke:#4e5969}
 .wk-contextmenus li.wk-ctx-danger{color:var(--wk-color-error,#f53f3f)}
 .wk-contextmenus li.wk-ctx-danger .ctx-icon{stroke:var(--wk-color-error,#f53f3f)}

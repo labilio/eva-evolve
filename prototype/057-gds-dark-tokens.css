@@ -597,6 +597,7 @@ body[theme-mode="dark"] {
      图标同档；危险项图标继续由 .wk-ctx-danger 的 error 色负责，故排除。 */
 :root[data-theme="dark"] .wk-contextmenus .wk-ctx-sep { background: var(--eva-border-faint); }
 :root[data-theme="dark"] .wk-contextmenus li:not(.wk-ctx-danger) .ctx-icon { stroke: var(--eva-text-secondary-accessible); }
+:root[data-theme="dark"] .wk-contextmenus li.wk-ctx-disabled .ctx-icon { stroke: var(--eva-text-muted); }
 
 /* —— 「创建了子区」通知 ——
    2026-09-18：该通知已并入气泡模式（017 用 --eva-bubble-incoming/outgoing 提供表面），
