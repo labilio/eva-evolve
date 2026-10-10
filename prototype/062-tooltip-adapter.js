@@ -32,6 +32,12 @@
     // after the portal's synthetic enter and would re-arm Semi's close timer.
     const bindings=Object.entries(events).filter(([key])=>typeof props[key]==='function').map(([key,event])=>[event,e=>{
      if((key==='onMouseEnter'||key==='onMouseLeave')&&e.relatedTarget instanceof Node&&target.contains(e.relatedTarget))return;
+     // A closed Semi modal restores focus to its opener. This is focus
+     // restoration, not a new request to show the opener's hover tooltip.
+     if(key==='onFocus'&&(
+      e.relatedTarget instanceof Element&&e.relatedTarget.closest('.semi-modal')||
+      [...document.querySelectorAll('.semi-modal')].some(modal=>modal.getClientRects().length>0&&!modal.contains(target))
+     ))return;
      props[key](e);
     }]);
     for(const [event,handler] of bindings)target.addEventListener(event,handler);

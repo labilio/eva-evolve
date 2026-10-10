@@ -59,6 +59,25 @@ test('个人 Eva 原生控件提示随路由离开卸载，返回仍可用',asyn
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
 
+test('新建分组弹窗退出后提示不因焦点返回而常亮',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{const page=await browser.newPage({viewport:{width:1200,height:800}});await page.goto(`http://127.0.0.1:${server.address().port}/#/guid`);
+ const button=page.locator('[data-eva-create-folder]'),tip=page.getByRole('tooltip',{name:'新建分组',exact:true});
+ for(const exit of ['取消','Escape','遮罩']){
+  await page.mouse.move(1190,790);await button.hover();await tip.waitFor();await button.click();
+  await page.locator('.eva-personal-folder-modal .semi-modal:visible').waitFor();
+  if(exit==='取消')await page.getByRole('button',{name:'取消',exact:true}).last().click();
+  if(exit==='Escape'){await page.mouse.move(600,400);await page.keyboard.press('Escape');}
+  if(exit==='遮罩')await page.mouse.click(1100,600);
+  await page.locator('.eva-personal-folder-modal .semi-modal:visible').waitFor({state:'hidden'});
+  assert.equal(await button.evaluate(node=>document.activeElement===node),true,`${exit}：焦点应返回新建按钮`);
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('.semi-tooltip-wrapper-show').filter({hasText:'新建分组'}).count(),0,`${exit}：鼠标已离开时提示不应常亮`);
+ }
+ await page.mouse.move(1190,790);await button.hover();await tip.waitFor();
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});
+
 test('文件卡仅截断名提示；文件库图标支持键盘且权限说明直接可见',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
  try{
