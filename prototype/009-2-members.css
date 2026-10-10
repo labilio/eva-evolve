@@ -42,7 +42,7 @@
 .eva-members-human-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .eva-members-human-role{font-size:12px;line-height:18px;color:var(--semi-color-text-2);font-weight:400}
 
-.eva-members-human-identity.is-compact .eva-members-human-avatar{width:24px;height:24px}
+.eva-members-human-identity.is-compact .eva-members-human-avatar{width:var(--eva-members-compact-avatar-size,24px);height:var(--eva-members-compact-avatar-size,24px)}
 .eva-members-human-name{font-size:14px;line-height:22px;font-weight:500}
 
 .eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head{border-block:var(--gds-border-standard) solid var(--eva-contacts-header-border);background:var(--eva-contacts-header-background);font-size:var(--gds-type-caption-font-size);font-weight:400;color:var(--eva-contacts-header-text)}

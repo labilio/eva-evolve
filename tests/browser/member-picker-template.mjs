@@ -26,6 +26,10 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await dialog.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'项目建群候选只显示短治理身份');
 
     const first=picker.locator('.eva-member-picker__candidate').first();
+    assert.deepEqual(await first.locator('img.eva-members-human-avatar').evaluate(image=>{
+      const style=getComputedStyle(image);
+      return [style.width,style.height];
+    }),['28px','28px'],'建群候选也应使用等宽高的公共头像');
     await first.click();
     assert.equal(await picker.locator('.eva-member-picker__selected-item').count(),1);
     const avatarSize=await picker.locator('.eva-member-picker__selected-avatar').first().evaluate(node=>{
@@ -192,9 +196,18 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     const categoryCandidate=category.locator('.eva-member-picker__candidate').first();
     assert.equal(await categoryCandidate.locator('.semi-checkbox').count(),1,'会话候选使用公共复选框');
     assert.equal(await categoryCandidate.locator('img.eva-members-human-avatar, .eva-ai-avatar').count(),1,'会话候选复用公共头像渲染');
+    const avatarGeometry=async scope=>scope.locator('img.eva-members-human-avatar').evaluate(image=>{
+      const style=getComputedStyle(image);
+      return {width:style.width,height:style.height,radius:style.borderRadius};
+    });
+    const directCandidate=category.locator('.eva-member-picker__candidate').filter({hasText:'高志远'});
+    assert.deepEqual(await avatarGeometry(directCandidate),{width:'28px',height:'28px',radius:'50%'},'私聊候选头像应保持圆形 28px');
     await category.getByText('从左侧选择会话',{exact:true}).waitFor();
     await categoryCandidate.click();
     assert.equal(await category.locator('.eva-member-picker__selected-item').count(),1);
+    assert.deepEqual(await avatarGeometry(category.locator('.eva-member-picker__selected-avatar').first()),{width:'28px',height:'28px',radius:'50%'},'已选头像应保持圆形 28px');
+    await directCandidate.click();
+    assert.deepEqual(await avatarGeometry(category.locator('.eva-member-picker__selected-item').filter({hasText:'高志远'})),{width:'28px',height:'28px',radius:'50%'},'私聊已选头像应保持圆形 28px');
     await category.getByRole('button',{name:'取消',exact:true}).click();
     await category.waitFor({state:'detached'});
     assert.deepEqual(errors,[]);
