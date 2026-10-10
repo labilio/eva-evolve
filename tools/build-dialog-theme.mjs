@@ -3,7 +3,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import * as sass from 'sass';
 import postcss from 'postcss';
-import {floatingFormTheme,cardTheme} from '../prototype/063-ui-theme.js';
+import {floatingFormTheme,cardTheme,popconfirmTheme} from '../prototype/063-ui-theme.js';
 import {modalTheme,dialogText} from '../prototype/063-dialog-theme.js';
 
 // Compile the locked Semi source twice and retain only configured differences.
@@ -58,5 +58,16 @@ export function buildFloatingFormTheme() {
 export function buildCardTheme() {
  const css=postcss.parse(buildComponentTheme('card',cardTheme,''));
  css.walkRules(rule=>{rule.selectors=rule.selectors.map(selector=>/\.semi-card(?=[^\w-]|$)/.test(selector)?selector.replace(/\.semi-card(?=[^\w-]|$)/,'.eva-card.semi-card'):selector.replace(/\.semi-card-/,'.eva-card .semi-card-'));});
+ return css.toString();
+}
+
+export function buildPopconfirmTheme() {
+ const css=postcss.parse(buildComponentTheme('popconfirm',popconfirmTheme,':where(.semi-portal-inner:has(.eva-popconfirm))'));
+ // Semi Sass concatenates a CSS custom property with the icon width as text.
+ // Restore its intended arithmetic while retaining the shared spacing token.
+ css.walkRules(rule=>{
+  if(!rule.selector.includes('.semi-popconfirm-body-withIcon'))return;
+  rule.walkDecls('margin-left',decl=>{decl.value=`calc(${popconfirmTheme['width-popconfirm-icon']} + ${popconfirmTheme['spacing-popconfirm_header_icon-marginRight']})`;});
+ });
  return css.toString();
 }

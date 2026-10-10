@@ -12,6 +12,7 @@ export const owners = Object.freeze({
  '063-select.jsx':['select'],
  '063-card.jsx':['card'],
  '063-info-list.jsx':['list'],
+ '063-identity-list.jsx':['list'],
 });
 export function inspectImports(name, source) {
  const errors=[];

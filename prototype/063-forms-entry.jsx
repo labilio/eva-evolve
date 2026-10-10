@@ -21,5 +21,6 @@ export {ParentTaskForm} from './063-parent-task-form.jsx';
 export {Card} from './063-card.jsx';
 
 export {InfoList} from './063-info-list.jsx';
+export {IdentityList} from './063-identity-list.jsx';
 
 export {ContentStack} from './063-content-stack.jsx';

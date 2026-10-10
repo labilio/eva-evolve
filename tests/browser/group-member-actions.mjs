@@ -80,11 +80,19 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   await panel.getByRole('button',{name:/^查看全部/}).click();
   assert.deepEqual(await names(),originalOrder,'重新打开后恢复普通成员的原有顺序');
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
-  const modal=page.getByRole('dialog').filter({hasText:'确认移除成员'});
+  const modal=page.locator('.semi-popconfirm');
+  await modal.waitFor();
+  assert.equal(await page.locator('.semi-modal:visible').count(),0,'普通成员移除只打开就近确认');
+  assert.match(await modal.innerText(),/本群聊及其子区/);
+  assert.match(await modal.innerText(),/项目成员身份不受影响/);
+  assert.equal(await modal.locator('.eva-card').count(),1);
+  assert.doesNotMatch(await modal.innerText(),/历史内容保留/);
   await modal.getByRole('button',{name:'取消',exact:true}).click();
+  await modal.waitFor({state:'hidden'});
   assert.equal(await row.count(),1);
   await row.hover();await row.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
-  await modal.getByRole('button',{name:'确认',exact:true}).click();
+  await modal.waitFor();
+  await modal.getByRole('button',{name:'移出群聊',exact:true}).click();
   await row.waitFor({state:'detached'});
   await page.reload();await open();assert.equal(await row.count(),0);
   // Opening settings must preserve the underlying composer and its draft.

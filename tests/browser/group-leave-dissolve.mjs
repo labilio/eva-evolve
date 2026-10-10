@@ -26,8 +26,8 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await panel.getByRole('button',{name:/查看全部/}).click();
     await panel.locator('.eva-chat-member-list-row').filter({has:page.getByRole('button',{name:/^移出群聊 /})}).first().hover();
     await panel.getByRole('button',{name:/^移出群聊 /}).first().click();
-    const removeModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
-    await removeModal.getByText('其分身及项目内群聊关系将一并移除。',{exact:false}).waitFor();
+    const removeModal=page.locator('.semi-popconfirm:visible');
+    await removeModal.getByText(/移出后，.*本群聊及其子区/).waitFor();
     await removeModal.getByRole('button',{name:'取消'}).click();
     await panel.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
@@ -53,6 +53,9 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await modal.getByRole('button',{name:'转让群主',exact:true}).click();
     let transfer=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'转让群主',exact:true})});
     await transfer.getByText('转让群主',{exact:true}).waitFor();
+    assert.equal(await transfer.locator('.eva-transfer-current').count(),0,'不重复展示当前群主');
+    assert.equal(await transfer.getByRole('textbox',{name:'搜索可选成员'}).count(),1,'保留原有候选搜索');
+    await transfer.screenshot({path:'/tmp/eva-transfer-group.png'});
     assert.ok(await transfer.locator('.eva-picker-row').count()>0,'手动转让只提供可接任的联系人');
     await transfer.getByRole('button',{name:'取消',exact:true}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
@@ -96,8 +99,8 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await removePanel.getByRole('button',{name:/查看全部/}).click();
     await removePanel.locator('.eva-chat-member-list-row').filter({has:page.getByRole('button',{name:/^移出群聊 /})}).first().hover();
     await removePanel.getByRole('button',{name:/^移出群聊 /}).first().click();
-    const removeGroupModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
-    await removeGroupModal.getByText('其分身也会离开本群。',{exact:false}).waitFor();
+    const removeGroupModal=page.locator('.semi-popconfirm:visible');
+    await removeGroupModal.getByText(/移出后，.*本群聊及其子区/).waitFor();
     await removeGroupModal.getByRole('button',{name:'取消'}).click();
     await removePanel.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await removePanel.getByRole('button',{name:'关闭聊天信息',exact:true}).click();

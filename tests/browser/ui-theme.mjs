@@ -12,7 +12,7 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  for(const name of ['prototype','vendor'])fs.symlinkSync(path.resolve('dist',name),path.join(tmp,name),'dir');
  const css=fs.readFileSync('dist/index.html','utf8').match(/<link[^>]+stylesheet[^>]*>/g).join('\n');
  const code=`import React from 'react';import{createRoot}from'react-dom/client';import{Popconfirm}from'./prototype/063-popconfirm.jsx';import{Popover}from'./prototype/063-popover.jsx';
- const longText="很长的说明内容需要自然换行并保持在浮层内部".repeat(12);function App(){const[done,set]=React.useState(false);return <><Popover content="键盘可读提示"><button>悬停信息</button></Popover><Popover trigger="click" title="长文案" content={longText}><button>长说明</button></Popover><Popconfirm title="单句确认" showArrow={false}><button>单句</button></Popconfirm><Popover trigger="click" position="bottomLeft" content={<div style={{padding:20}}>项目说明内容</div>}><button>项目说明</button></Popover><Popconfirm title="确认操作" content="这是一段用于验证主题的说明" icon={null} showArrow={false} onConfirm={()=>set(true)}><button>普通操作</button></Popconfirm><Popconfirm okButtonProps={{size:"small"}} cancelButtonProps={{size:"small"}} title="确认移除" content="移除后可重新添加" icon={null} showArrow={false} okType="danger" okText="移除"><button>危险操作</button></Popconfirm>{done&&<p>已完成</p>}</>};createRoot(document.getElementById('app')).render(<App/>);`;
+ const longText="很长的说明内容需要自然换行并保持在浮层内部".repeat(12);function App(){const[done,set]=React.useState(false);return <><Popover content="键盘可读提示"><button>悬停信息</button></Popover><Popover trigger="click" title="长文案" content={longText}><button>长说明</button></Popover><Popconfirm title="图标说明" content="正文说明" showArrow={false}><button>图标说明</button></Popconfirm><Popconfirm title="单句确认" showArrow={false}><button>单句</button></Popconfirm><Popover trigger="click" position="bottomLeft" content={<div style={{padding:20}}>项目说明内容</div>}><button>项目说明</button></Popover><Popconfirm title="确认操作" content="这是一段用于验证主题的说明" icon={null} showArrow={false} onConfirm={()=>set(true)}><button>普通操作</button></Popconfirm><Popconfirm okButtonProps={{size:"small"}} cancelButtonProps={{size:"small"}} title="确认移除" content="移除后可重新添加" icon={null} showArrow={false} okType="danger" okText="移除"><button>危险操作</button></Popconfirm>{done&&<p>已完成</p>}</>};createRoot(document.getElementById('app')).render(<App/>);`;
  const result=await build({stdin:{contents:code,loader:'jsx',resolveDir:process.cwd()},bundle:true,write:false,loader:{'.css':'empty'}});
  fs.writeFileSync(path.join(tmp,'app.js'),result.outputFiles[0].text);
  fs.writeFileSync(path.join(tmp,'index.html'),`${css}<div id="app" style="padding:100px"></div><script src="app.js"></script>`);
@@ -54,6 +54,14 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  await page.keyboard.press('Escape');await info.waitFor({state:'hidden'});
  await page.getByRole('button',{name:'项目说明',exact:true}).click();await info.waitFor();
  await page.locator('#app').click({position:{x:10,y:10}});await info.waitFor({state:'hidden'});
+ await page.getByRole('button',{name:'图标说明',exact:true}).click();
+ const withIcon=page.locator('.semi-popconfirm');await withIcon.waitFor();
+ assert.equal(await withIcon.evaluate(el=>{
+  const body=el.querySelector('.semi-popconfirm-body-withIcon');
+  const title=el.querySelector('.semi-popconfirm-header-title');
+  return Math.round(body.getBoundingClientRect().left-title.getBoundingClientRect().left);
+ }),0,'正文与标题左边缘对齐');
+ await withIcon.getByRole('button',{name:'取消',exact:true}).click();await withIcon.waitFor({state:'hidden'});
  await page.getByRole('button',{name:'单句',exact:true}).click();
  const single=page.locator('.semi-popconfirm');await single.waitFor();
  assert.equal(await single.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),popoverShadow,'Popover 与 Popconfirm 共用卡片浮层投影');

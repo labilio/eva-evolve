@@ -1,10 +1,10 @@
 import {checkThemeImports} from './check-ui-theme.mjs';
 checkThemeImports();
-import {popconfirmTheme,typography,floatingSurface,infoListTheme} from '../prototype/063-ui-theme.js';
+import {typography,floatingSurface,infoListTheme} from '../prototype/063-ui-theme.js';
 import { build } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
-import {buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme} from './build-dialog-theme.mjs';
+import {buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme,buildPopconfirmTheme} from './build-dialog-theme.mjs';
 
 // Compile the official Semi Form; React/ReactDOM are supplied by Eva's existing
 // runtime. Never bundle a second renderer or run a compiler in the browser.
@@ -30,7 +30,7 @@ fs.writeFileSync(path.join(output,'eva-forms.module.js'),
 
 // Semi Popconfirm exposes weight but not title font size/line height as component
 // Sass tokens. Generate these two typography roles here, never in business CSS.
-fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildDialogTheme()+buildFormLabelTheme()+buildFloatingFormTheme()+buildComponentTheme('popconfirm',popconfirmTheme,':where(.semi-portal-inner:has(.eva-popconfirm))')+`\n.eva-popconfirm {font-family:var(--eva-font-sans);font-size:${typography.body.fontSize}px;line-height:${typography.body.lineHeight};}\n.eva-popconfirm .semi-popconfirm-header-title {font-size:${typography.body.fontSize}px;line-height:${typography.body.lineHeight};}\n.eva-popconfirm-single .semi-popconfirm-header-title {margin-bottom:0;font-weight:${typography.body.fontWeight};}\n.eva-popconfirm .semi-popconfirm-header-icon {height:22px;display:flex;align-items:center;flex-shrink:0;}\n`);
+fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildDialogTheme()+buildFormLabelTheme()+buildFloatingFormTheme()+buildPopconfirmTheme()+`\n.eva-popconfirm {font-family:var(--eva-font-sans);font-size:${typography.body.fontSize}px;line-height:${typography.body.lineHeight};}\n.eva-popconfirm .semi-popconfirm-header-title {font-size:${typography.body.fontSize}px;line-height:${typography.body.lineHeight};}\n.eva-popconfirm-single .semi-popconfirm-header-title {margin-bottom:0;font-weight:${typography.body.fontWeight};}\n.eva-popconfirm .semi-popconfirm-header-icon {height:22px;display:flex;align-items:center;flex-shrink:0;}\n`);
 
 // Semi Popconfirm sends style to its inner card, not its Popover shell. The
 // public adapter styles the shell once, avoiding two nested shadows/surfaces.

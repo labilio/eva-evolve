@@ -195,3 +195,5 @@
 
 .eva-project-settings-info__milestone-copy .semi-select-selection { margin-left:8px;font:inherit; }
 .eva-project-settings-info__milestone-copy .semi-select-arrow { padding-inline:2px; }
+.eva-member-removal-content{display:flex;flex-direction:column;min-width:0}
+.eva-member-removal-content{gap:var(--eva-space-3)}

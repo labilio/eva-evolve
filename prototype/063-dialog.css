@@ -30,6 +30,11 @@
 .eva-info-list-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;color:var(--semi-color-text-2);background:var(--semi-color-fill-0);border-radius:var(--eva-radius-control)}
 .eva-info-list-title{color:var(--eva-text-primary)}
 .eva-info-list-description{margin-top:var(--eva-space-1);color:var(--semi-color-text-1)}
+.eva-identity-list .semi-list-items{display:flex;flex-direction:column;gap:var(--eva-space-4)}
+.eva-identity-list .semi-list-item{padding:0}
+.eva-identity-list .semi-list-item-body-header{flex:none;width:32px;height:32px;margin-right:var(--eva-space-2)}
+.eva-identity-list .semi-list-item-body-main{min-width:0}
+.eva-identity-list-name{display:inline-flex;align-items:center;gap:var(--eva-space-1);min-width:0;color:var(--eva-text-primary)}
 
 /* Cross-component layout owns sibling gaps; Card/List retain their internals. */
 .eva-content-stack,.eva-content-section{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:0;margin:0}

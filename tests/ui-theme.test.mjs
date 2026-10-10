@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {typography,popconfirmTheme} from '../prototype/063-ui-theme.js';
 import {dialogText} from '../prototype/063-dialog-theme.js';
 import {inspectImports,checkThemeImports} from '../tools/check-ui-theme.mjs';
-import {buildComponentTheme,buildDialogTheme,buildCardTheme} from '../tools/build-dialog-theme.mjs';
+import {buildComponentTheme,buildDialogTheme,buildCardTheme,buildPopconfirmTheme} from '../tools/build-dialog-theme.mjs';
 
 test('旧公共文字出口与新主题为同一个对象',()=>assert.equal(dialogText,typography));
 test('当前接入通过，业务直引和公共层未登记组件失败',()=>{
@@ -23,6 +23,11 @@ test('Modal 仍有局部边界；Popconfirm 的原生外壳和 Portal 消费 Eva
  assert.match(css,/var\(--eva-radius-panel\)/);
  assert.match(css,/var\(--eva-space-4\)/);
  assert.doesNotMatch(css,/移出|danger|leftTop/);
+});
+test('Popconfirm 图标和正文缩进由同一组公共 token 对齐',()=>{
+ const css=buildPopconfirmTheme();
+ assert.match(css,/\.semi-popconfirm-body-withIcon\s*\{\s*margin-left: calc\(18px \+ var\(--eva-space-2\)\)/);
+ assert.doesNotMatch(css,/18pxvar\(/);
 });
 
 test('构建拒绝业务重复设置公共字段留白或单独拼浮层按钮区',()=>{
