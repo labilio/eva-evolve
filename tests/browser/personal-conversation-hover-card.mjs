@@ -19,6 +19,14 @@ test('truncated personal conversation opens a Semi Popover with current conversa
     const card = page.locator('.eva-conversation-hover-card:visible');
     await card.waitFor();
     assert.match(await card.getAttribute('class'), /semi-popover/);
+    const surface = await card.evaluate(element => {
+      const inner = element.querySelector('.semi-popover');
+      const style = inner && getComputedStyle(inner);
+      return {outer: element.classList.contains('semi-popover-wrapper'), nestedBorder: style?.borderTopWidth, nestedShadow: style?.boxShadow};
+    });
+    assert.equal(surface.outer, true, 'the shared Popover owns the card surface');
+    assert.equal(surface.nestedBorder, '0px', 'card content does not draw a second border');
+    assert.equal(surface.nestedShadow, 'none', 'card content does not draw a second shadow');
     assert.match(await card.innerText(), /UI设计师发展前景的PPT/);
     assert.match(await card.innerText(), /分组\s*最近/);
     assert.match(await card.innerText(), /已调整结论页/);

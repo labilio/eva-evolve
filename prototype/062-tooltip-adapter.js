@@ -74,7 +74,7 @@
      h('div',{className:'eva-conversation-hover-card__folder'},h('span',null,'分组'),h('span',null,card.folder)),
      card.preview&&h('p',{className:'eva-conversation-hover-card__message'},card.preview)),
      trigger:'hover',position:'rightTop',mouseEnterDelay:180,mouseLeaveDelay:160,
-     contentClassName:'eva-conversation-hover-card',onVisibleChange:setOpen},h(Target,{target}));
+     className:'eva-conversation-hover-card',onVisibleChange:setOpen},h(Target,{target}));
    return h(Tooltip,{content,trigger:'hover',className:'eva-passive-tooltip',onVisibleChange:setOpen},h(Target,{target}));
   }
   const host=document.createElement('div');host.setAttribute('data-eva-tooltip-adapter','');document.body.append(host);

@@ -144,8 +144,8 @@
   .eva-personal-folder__row:active, .eva-personal-thread:active { background: var(--eva-overlay-pressed); }
   .eva-personal-rail-more { display: block; padding: var(--eva-space-2); border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
   .eva-personal-rail-empty { padding: var(--eva-space-2); color: var(--eva-text-muted); }
-  .eva-conversation-hover-card { box-sizing: border-box; width: min(360px, calc(100vw - 32px)); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); color: var(--eva-text-primary); box-shadow: var(--eva-shadow-popover), var(--eva-shadow-hairline); }
-  .eva-conversation-hover-card .semi-popover-content { padding: 12px 14px; }
+  /* The shared Semi Popover owns the single surface and padding. */
+  .eva-conversation-hover-card { box-sizing: border-box; width: min(350px, calc(100vw - 32px)); }
   .eva-conversation-hover-card__body { display: grid; gap: 8px; min-width: 0; font-family: var(--eva-font-sans); }
   .eva-conversation-hover-card__heading { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
   .eva-conversation-hover-card__heading strong { flex: 1; min-width: 0; font-size: 14px; line-height: 22px; font-weight: var(--eva-fw-medium); overflow-wrap: anywhere; }
