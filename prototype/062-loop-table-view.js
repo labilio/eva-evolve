@@ -358,7 +358,7 @@
       const needle=query.trim().toLowerCase();
       const list=SYSTEM_COLUMNS.filter(key=>!needle||COLUMN_LABELS[key].toLowerCase().includes(needle));
       return h(PopMenu,{open,setOpen,onNavigate:setActiveIndex,position:'bottomRight',role:'listbox',menuClassName:'eva-task-table__menu--wide','aria-label':'配置列',trigger:
-        h('button',{type:'button',className:'eva-task-table__toolbtn','aria-label':'配置列','aria-haspopup':'listbox','aria-expanded':open,title:'列',...menuTrigger(setOpen)},
+        h('button',{type:'button',className:'eva-task-table__toolbtn','aria-label':'配置列','aria-haspopup':'listbox','aria-expanded':open,...menuTrigger(setOpen)},
           h(icons.Columns3,{size:14}),h('span',null,'列'))},
         h(Input,{value:query,onChange:value=>{setQuery(value);setActiveIndex(0);},placeholder:'搜索列…','aria-label':'搜索列',
           onKeyDown:event=>{if(event.key==='Enter'&&list[activeIndex]&&list[activeIndex]!=='title'){event.preventDefault();state.toggleColumn(list[activeIndex]);}},
@@ -488,7 +488,7 @@
           h(collapsed?icons.ChevronRight:icons.ChevronDown,{size:14})):h('span',{className:'eva-task-table__toggle-spacer'}),
         h('span',{className:'eva-task-table__title-id'},issue.identifier),
         state.running&&state.running.has&&state.running.has(issue.id)?h(RunningChip,null):null,
-        h('button',{type:'button',className:'eva-task-table__title-btn',title:issue.title,
+        h('button',{type:'button',className:'eva-task-table__title-btn','data-eva-tooltip':issue.title,'data-eva-tooltip-clamp':'',
           onClick:event=>{event.stopPropagation();onOpen&&onOpen(issue.id);}},issue.title));
     }
 

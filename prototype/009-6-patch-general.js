@@ -15,10 +15,16 @@
   root.__evaPatch('general', function (source) {
     source = 'import {createForms as evaCreateForms} from "./eva-forms.module.js";\n' + source;
     source = root.__evaCut(source, 'var reactDomExports=requireReactDom();', 'var reactDomExports=requireReactDom();const evaForms=evaCreateForms(reactExports,reactDomExports);', '统一 Semi Form 实例');
+    // Semi's insertion guard must accept keyboard focus as well as pointer hover.
+    // Keep its own show/hide lifecycle; this exact anchor fails on upstream drift.
+    source = root.__evaCut(source,
+      'Pt.call(Nt,":hover"))&&this.hide(),this._adapter.off("portalInserted",xt)',
+      'Pt.call(Nt,":hover, :focus-within"))&&this.hide(),this._adapter.off("portalInserted",xt)',
+      'Semi Tooltip 保留键盘焦点触发的提示');
     // React controls use Semi directly; legacy DOM surfaces only adapt their real nodes.
-    var evaTooltipPrimitive = String.raw`var TooltipComponent=reactExports.forwardRef(function EvaSemiTooltipBridge(rt,ct){const{popupVisible:ut,disabled:pt,position:evaLegacyPosition,trigger:mt,unmountOnExit:gt,popupHoverStay:St,escToClose:Ct,blurToHide:xt,triggerProps:Pt,prefixCls:Mt,mini:Dt,...Ft}=rt,Qt=Array.isArray(mt)?mt.includes("hover")?"hover":mt.includes("focus")?"focus":"custom":mt||"hover";return reactExports.createElement(Tooltip,{...Ft,ref:ct,trigger:ut!==void 0?"custom":Qt,visible:ut,condition:!pt&&Qt!=="custom"})});TooltipComponent.displayName="Tooltip";
-    window.EvaTooltipComponent=function EvaTooltipComponent(props){return reactExports.createElement(Tooltip,props)};
-    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:Tooltip})});
+    var evaTooltipPrimitive = String.raw`let evaTooltipImpl;const EvaTooltip=reactExports.forwardRef(function EvaTooltip(props,ref){evaTooltipImpl||=window.EvaTooltipAdapter.createTooltip({React:reactExports,Tooltip});return reactExports.createElement(evaTooltipImpl,{...props,ref})});var TooltipComponent=reactExports.forwardRef(function EvaSemiTooltipBridge(rt,ct){const{popupVisible:ut,disabled:pt,position:evaLegacyPosition,trigger:mt,unmountOnExit:gt,popupHoverStay:St,escToClose:Ct,blurToHide:xt,triggerProps:Pt,prefixCls:Mt,mini:Dt,...Ft}=rt,Qt=Array.isArray(mt)?mt.includes("hover")?"hover":mt.includes("focus")?"focus":"custom":mt||"hover";return reactExports.createElement(EvaTooltip,{...Ft,ref:ct,trigger:ut!==void 0?"custom":Qt,visible:ut,condition:!pt&&Qt!=="custom"})});TooltipComponent.displayName="Tooltip";
+    window.EvaTooltipComponent=function EvaTooltipComponent(props){return reactExports.createElement(EvaTooltip,props)};
+    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:EvaTooltip})});
 `;
     source = root.__evaCut(source,
       'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',

@@ -163,7 +163,7 @@
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
       return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
-        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-clamp="" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
+        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-clamp="span" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
         + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
         + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
         + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" data-eva-tooltip="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
@@ -193,7 +193,7 @@
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
         return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
-          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" data-eva-tooltip="' + escapeHTML(folder.name) + '" data-eva-tooltip-clamp="">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
+          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" data-eva-tooltip="' + escapeHTML(folder.name) + '" data-eva-tooltip-clamp="span">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" data-eva-tooltip="文件夹设置">' + icon('ellipsis',16,'eva-i') + '</button>'
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" data-eva-tooltip="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
           + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
@@ -247,7 +247,7 @@
   function folderPickerHTML() {
     var folders = [{id:'',name:'最近'}].concat(personalSnapshot().folders);
     var selected = folders.find(function (folder) { return folder.id === selectedFolderId; }) || folders[0];
-    return '<label class="eva-newchat-context eva-personal-folder-picker" data-eva-tooltip="' + escapeHTML(selected.name) + '" data-eva-tooltip-clamp="">' + icon('folder',18,'eva-i')
+    return '<label class="eva-newchat-context eva-personal-folder-picker" data-eva-tooltip="' + escapeHTML(selected.name) + '" data-eva-tooltip-clamp="span">' + icon('folder',18,'eva-i')
       + '<span class="eva-personal-folder-picker__label" aria-hidden="true">' + escapeHTML(selected.name) + '</span>'
       + '<select aria-label="选择文件夹" data-eva-composer-folder>' + folders.map(function (folder) {
         return '<option value="' + escapeHTML(folder.id) + '"' + (folder.id === selectedFolderId ? ' selected' : '') + '>' + escapeHTML(folder.name) + '</option>';

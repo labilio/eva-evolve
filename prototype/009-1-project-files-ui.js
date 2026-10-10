@@ -172,10 +172,10 @@
       };
       const renderRelationCell=item=>{
         const linkInfo=externalInfo(item);
-        if(linkInfo)return h('span',{className:'eva-relation-cell'},h('span',{className:'eva-relation-chip is-external',title:linkInfo.url},icon(linkInfo.kind==='folder'?'folder':'link'),linkInfo.providerLabel+' · '+linkInfo.host));
+        if(linkInfo)return h('span',{className:'eva-relation-cell'},h('span',{className:'eva-relation-chip is-external','data-eva-tooltip':linkInfo.url},icon(linkInfo.kind==='folder'?'folder':'link'),linkInfo.providerLabel+' · '+linkInfo.host));
         const relations=relationsFor(item);
         if(!relations.length)return h('span',{className:'eva-file-muted'},'—');
-        return h('span',{className:'eva-relation-cell'},relations.slice(0,2).map(relation=>h('span',{className:'eva-relation-chip'+(relation.restricted?' is-restricted':''),key:relation.type+relation.id,title:relation.meta||relation.label},icon(relationIcon[relation.type]||'link'),relation.label)),relations.length>2?h('span',{className:'eva-relation-more'},'+'+(relations.length-2)):null);
+        return h('span',{className:'eva-relation-cell'},relations.slice(0,2).map(relation=>h('span',{className:'eva-relation-chip'+(relation.restricted?' is-restricted':''),key:relation.type+relation.id,'data-eva-tooltip':relation.restricted?undefined:relation.meta||relation.label,'data-eva-tooltip-clamp':!relation.meta?'':undefined},icon(relationIcon[relation.type]||'link'),relation.restricted?relation.meta||'无权访问来源':relation.label)),relations.length>2?h('span',{className:'eva-relation-more'},'+'+(relations.length-2)):null);
       };
       const renderRowActions=item=>{
         const menuButton=(label,onClick,danger)=>({label,onClick,danger});

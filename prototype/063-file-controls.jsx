@@ -16,7 +16,7 @@ export function FilePath({crumbs,onBack,onCrumb}) {
  return <div className="eva-drive__pathbar"><Button type="tertiary" theme="light" icon={<FileIcon name="chevron-left"/>} onClick={onBack}>返回上一级</Button><Breadcrumb aria-label="文件路径" autoCollapse={false}>{crumbs.map((crumb,index)=><Breadcrumb.Item key={crumb.id} onClick={()=>index<crumbs.length-1&&onCrumb(index)}>{crumb.name}</Breadcrumb.Item>)}</Breadcrumb></div>;
 }
 export function FilePreviewActions({fullscreen,onAction}) {
- return <span className="eva-file-preview-sidebar__actions"><FileButton iconName={fullscreen?'minimize-2':'maximize-2'} aria-label={fullscreen?'退出全屏预览':'全屏预览'} aria-pressed={fullscreen} data-drive-action="preview-fullscreen" onClick={event=>{event.stopPropagation();onAction('preview-fullscreen');}}/><FileButton iconName="x" aria-label="关闭预览" onClick={()=>onAction('preview-close')}/></span>;
+ return <span className="eva-file-preview-sidebar__actions"><FileButton iconName={fullscreen?'minimize-2':'maximize-2'} aria-label={fullscreen?'退出全屏预览':'全屏预览'} aria-pressed={fullscreen} data-eva-tooltip={fullscreen?'退出全屏预览':'全屏预览'} data-drive-action="preview-fullscreen" onClick={event=>{event.stopPropagation();onAction('preview-fullscreen');}}/><FileButton iconName="x" aria-label="关闭预览" onClick={()=>onAction('preview-close')}/></span>;
 }
 export function FileToolbar({onAction}) {
  return <div className="eva-file-controls-toolbar">
@@ -30,7 +30,7 @@ export function FileToolbar({onAction}) {
 }
 export function FileRowActions({name,pinned,showPin=true,onPin,items}) {
  return <span className="eva-file-controls-row">
-  {showPin&&<Button className={'eva-drive__pin-button'+(pinned?' is-pinned':'')} type={pinned?'primary':'tertiary'} theme="borderless" icon={<FileIcon name="pin"/>} aria-label={(pinned?'取消置顶：':'置顶：')+name} aria-pressed={!!pinned} onClick={event=>{event.stopPropagation();onPin();}}/>}
+  {showPin&&<Button className={'eva-drive__pin-button'+(pinned?' is-pinned':'')} type={pinned?'primary':'tertiary'} theme="borderless" icon={<FileIcon name="pin"/>} aria-label={(pinned?'取消置顶：':'置顶：')+name} aria-pressed={!!pinned} data-eva-tooltip={pinned?'取消置顶':'置顶'} onClick={event=>{event.stopPropagation();onPin();}}/>}
   <Dropdown motion={false} trigger="click" position="bottomRight" render={<Dropdown.Menu>{items.map(item=><Dropdown.Item key={item.label} type={item.danger?'danger':undefined} onClick={event=>{event.stopPropagation();item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
    <Button type="tertiary" theme="borderless" icon={<FileIcon name="ellipsis"/>} aria-label={'更多操作：'+name} onClick={event=>event.stopPropagation()}/>
   </Dropdown>
@@ -53,7 +53,7 @@ export function FileDetail({resource,files,actor,fileType,location,source,create
  const action=(label,name,danger=false)=><Button key={name} type={danger?'danger':'tertiary'} theme="light" onClick={()=>onAction(name)}>{label}</Button>;
  return <Dialog visible title={external?(external.kind==='folder'?'外部文件夹详情':'外部链接详情'):'文件详情'} size="fileDetail" initialFocus="title" onCancel={onClose} footer={null} className="eva-file-detail">
   <div className="eva-file-detail-dialog__content">
-   <div className="eva-file-detail__identity eva-file-detail__identity--with-action"><span className={'eva-drive__file-mark '+markClass}><FileIcon name={markIcon} size="large"/>{(resource.type==='shortcut'||external?.kind==='folder')&&<span className={resource.type==='shortcut'?'eva-drive__shortcut-badge':'eva-drive__file-external-badge'}><FileIcon name="external-link" size="small"/></span>}</span><span className="eva-file-detail__identity-content"><strong style={dialogText.section}>{resource.name}</strong><small>{fileType}{resource.type==='folder'?(deleted&&resource.trashedItemCount?' · 包含 '+resource.trashedItemCount+' 项':''):external?' · '+external.host:' · '+size}</small></span>{!deleted&&<Button type="tertiary" theme="borderless" icon={<FileIcon name="link-2"/>} aria-label="复制内部链接" onClick={()=>onAction('copy-link')}/>}</div>
+   <div className="eva-file-detail__identity eva-file-detail__identity--with-action"><span className={'eva-drive__file-mark '+markClass}><FileIcon name={markIcon} size="large"/>{(resource.type==='shortcut'||external?.kind==='folder')&&<span className={resource.type==='shortcut'?'eva-drive__shortcut-badge':'eva-drive__file-external-badge'}><FileIcon name="external-link" size="small"/></span>}</span><span className="eva-file-detail__identity-content"><strong style={dialogText.section}>{resource.name}</strong><small>{fileType}{resource.type==='folder'?(deleted&&resource.trashedItemCount?' · 包含 '+resource.trashedItemCount+' 项':''):external?' · '+external.host:' · '+size}</small></span>{!deleted&&<Button type="tertiary" theme="borderless" icon={<FileIcon name="link-2"/>} aria-label="复制内部链接" data-eva-tooltip="复制内部链接" onClick={()=>onAction('copy-link')}/>}</div>
    {!deleted&&<div className="eva-file-controls-actions">
     {locationAction&&action(locationAction.label,locationAction.name)}
     {external?action(external.kind==='folder'?'打开原文件夹':'打开原链接','open-external'):allowPreview&&resource.type!=='folder'&&canOpen&&action('预览','preview')}

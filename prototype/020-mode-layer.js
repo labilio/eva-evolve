@@ -410,7 +410,7 @@
     var relations = relationsFor(resource);
     if (!relations.length) return '<span class="eva-file-muted">—</span>';
     return '<span class="eva-relation-cell">' + relations.slice(0, 2).map(function (relation) {
-      return '<span class="eva-relation-chip' + (relation.restricted ? ' is-restricted' : '') + '" data-eva-tooltip="' + escapeHTML(relation.meta || relation.label) + '">' + icon(relationIconName(relation.type)) + escapeHTML(relation.label) + '</span>';
+      return '<span class="eva-relation-chip' + (relation.restricted ? ' is-restricted' : '') + '"' + (relation.restricted ? '' : ' data-eva-tooltip="' + escapeHTML(relation.meta || relation.label) + '"' + (relation.meta ? '' : ' data-eva-tooltip-clamp=""')) + '>' + icon(relationIconName(relation.type)) + escapeHTML(relation.restricted ? relation.meta || '无权访问来源' : relation.label) + '</span>';
     }).join('') + (relations.length > 2 ? '<span class="eva-relation-more">+' + (relations.length - 2) + '</span>' : '') + '</span>';
   }
 

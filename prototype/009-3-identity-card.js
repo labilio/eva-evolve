@@ -165,7 +165,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
         h('button',{type:'button',className:'eva-person-card__avatar-edit','aria-label':'更换头像',onClick:pickAvatar},h(CameraIcon,{size:20})),
         h('input',{ref:avatarFileRef,type:'file',hidden:true,accept:'image/png,image/jpeg,image/webp','aria-label':'选择头像图片',onChange:onAvatarFile}))),
        h('div',{className:'eva-person-card__heading'},
-        h('div',{className:'eva-person-card__name-row'},h('h2',{title:profile.name},profile.name),profile.kind!=='human'&&root.EvaAIIdentity.badge(h)),
+        h('div',{className:'eva-person-card__name-row'},h('h2',{'data-eva-tooltip':profile.name,'data-eva-tooltip-clamp':''},profile.name),profile.kind!=='human'&&root.EvaAIIdentity.badge(h)),
         profile.subtitle&&h('p',{className:'eva-person-card__type'},profile.subtitle))),
       avatarError&&h('p',{className:'eva-person-card__error',role:'alert'},avatarError),
       hasRows&&h('div',{className:'eva-person-card__details'},

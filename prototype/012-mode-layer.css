@@ -1,7 +1,6 @@
 
 /* EVA unified sidebar architecture layer. */
-/* Text-only Semi tooltips must not block the control beneath their portal. */
-.semi-portal-inner:has(> .eva-passive-tooltip) { pointer-events: none; }
+/* Tooltip surfaces remain hoverable so long names can be read. */
 
 .eva-nav-section {
   flex: 0 0 auto;
