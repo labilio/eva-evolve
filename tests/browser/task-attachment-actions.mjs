@@ -16,7 +16,7 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
   try {
     await page.goto(origin + '/#/collab?evaProject=prod');
     await page.locator('.collab-frame').waitFor();
-    await page.getByRole('tab', { name: '任务', exact: true }).click();
+    await page.getByRole('tab', { name: /^任务/ }).click();
     await page.getByText('分析核心品类采购成本偏差', { exact: true }).click();
 
     const detail = page.locator('.loop-idp').last();

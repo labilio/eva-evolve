@@ -16,7 +16,7 @@ test('项目任务评论 @ 复用统一 IM 提及选择器', async () => {
   try {
     await page.goto(origin + '/#/collab?evaProject=prod');
     await page.locator('.collab-frame').waitFor();
-    await page.getByRole('tab', { name: '任务', exact: true }).click();
+    await page.getByRole('tab', { name: /^任务/ }).click();
     await page.getByText('分析核心品类采购成本偏差', { exact: true }).click();
     const detail = page.locator('.loop-idp').last();
     await detail.waitFor();
@@ -111,7 +111,7 @@ test('项目任务评论 @ 输入法组词期间不刷新、上屏后才检索',
   try {
     await page.goto(origin + '/#/collab?evaProject=prod');
     await page.locator('.collab-frame').waitFor();
-    await page.getByRole('tab', { name: '任务', exact: true }).click();
+    await page.getByRole('tab', { name: /^任务/ }).click();
     await page.getByText('分析核心品类采购成本偏差', { exact: true }).click();
     const detail = page.locator('.loop-idp').last();
     await detail.waitFor();

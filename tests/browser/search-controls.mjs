@@ -99,7 +99,7 @@ for (const [name, route, selector, prepare] of [
 test('表格视图搜索：任务页第四视图的新增入口沿用公共搜索外观', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();
-  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.getByRole('tab', { name: /^任务/ }).click();
   await page.locator('.loop-board').waitFor();
   await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
   const field = page.locator('.eva-task-table__search');
@@ -141,7 +141,7 @@ test('表格视图搜索：任务页第四视图的新增入口沿用公共搜�
 
 test('任务负责人搜索：首条匹配项默认高亮，单条结果没有空白行，回车可选择', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
-  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.getByRole('tab', { name: /^任务/ }).click();
   await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
   await page.locator('.eva-task-table__row .loop-assignee-trigger').first().click();
   const menu = page.locator('.eva-task-assignee-menu');
@@ -164,7 +164,7 @@ test('任务负责人搜索：首条匹配项默认高亮，单条结果没有�
 
 test('任务负责人搜索：多条匹配时只有最匹配的首项有选中样式', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
-  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.getByRole('tab', { name: /^任务/ }).click();
   await page.getByRole('tab', { name: '表格', exact: true }).click();
   const trigger = page.locator('.eva-task-table__row .loop-assignee-trigger').first();
   await trigger.click();
@@ -593,7 +593,7 @@ test('消息中栏搜索按钮展开输入框并保留创建入口', async () =>
 test('任务指派：表格、批量、详情与新建弹窗均可输入即筛选负责人', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();
-  await page.getByRole('tab', { name: '任务', exact: true }).click();
+  await page.getByRole('tab', { name: /^任务/ }).click();
   await page.getByRole('tab', { name: '表格', exact: true }).click();
   await page.locator('.eva-task-table__grid').waitFor();
   await page.waitForTimeout(400);

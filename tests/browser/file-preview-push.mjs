@@ -133,7 +133,7 @@ test('文件库与消息支持挤压预览，任务附件沿用工作区预览�
 
     await page.reload();
     await page.locator('.collab-frame').waitFor();
-    await page.getByRole('tab', { name: '任务', exact: true }).click();
+    await page.getByRole('tab', { name: /^任务/ }).click();
     await page.getByText('处理关键供应商来料质量异常', { exact: true }).click();
     const detail = page.locator('.loop-idp').last();
     await detail.waitFor();
