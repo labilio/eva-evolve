@@ -45,7 +45,7 @@ test('manifest 声明数据入口和构建期运行时补丁', () => {
     'prototype/009-2-chat-settings.css',
     'prototype/009-2-task-prefix.js', 'prototype/009-2-members-ui.js', 'prototype/009-2-mention-candidates.js', 'prototype/009-2-members.css'];
   const uiFiles = ['prototype/009-1-project-files-ui.js'];
-  assert.deepEqual(blocks.map(block => block.file), [...splitRuntimeScripts.slice(0,5), 'prototype/009-3-digital-employees-data.js', 'prototype/009-3-digital-employees-store.js', ...membershipFiles, ...splitRuntimeScripts.slice(5), ...uiFiles]);
+  assert.deepEqual(blocks.map(block => block.file), [...splitRuntimeScripts.slice(0,4), 'prototype/009-3-unread-ui.js', splitRuntimeScripts[4], 'prototype/009-3-digital-employees-data.js', 'prototype/009-3-digital-employees-store.js', ...membershipFiles, ...splitRuntimeScripts.slice(5), ...uiFiles]);
   for (const block of blocks.filter(block => splitRuntimeScripts.slice(5).includes(block.file))) assert.equal(block.role, 'build-input');
   for (const file of membershipFiles) assert.equal(blocks.find(block => block.file === file).role, 'prototype');
   for (const file of uiFiles) assert.equal(blocks.find(block => block.file === file).role, 'prototype');

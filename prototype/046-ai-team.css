@@ -111,14 +111,6 @@
   flex-shrink: 0;
 }
 .eva-ai-team__roles { --eva-ai-team-group-margin: var(--gds-space-2); flex: 1; min-height: 0; overflow-y: auto; padding: var(--gds-space-2) var(--gds-space-2-5) var(--gds-space-3); }
-.eva-ai-team__unread-dot {
-  width: 6px;
-  height: 6px;
-  flex: 0 0 6px;
-  border-radius: 50%;
-  background: var(--eva-unread-indicator);
-  transition: opacity 120ms ease;
-}
 .eva-ai-team__teams { display: flex; flex-direction: column; }
 .eva-ai-team__team-heading { position: relative; display: flex; min-height: var(--eva-rail-identity-height); align-items: center; border-radius: var(--eva-rail-primary-row-radius); }
 /* 焦点态用 :has(:focus-visible) 而非 :focus-within：后者在鼠标点击后仍然成立，
@@ -133,7 +125,7 @@
 .eva-ai-team__team-avatar { width: var(--eva-rail-identity-avatar-size); height: var(--eva-rail-identity-avatar-size); flex: 0 0 var(--eva-rail-identity-avatar-size); border-radius: 50%; object-fit: cover; }
 .eva-ai-team__team-name { min-width: 0; flex: 1; overflow: hidden; color: var(--eva-rail-primary); font-size: var(--eva-rail-name-size); font-weight: var(--gds-font-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
 .eva-ai-team__team-default { flex-shrink: 0; padding: 0 var(--gds-space-1); border: var(--gds-border-standard) solid var(--gds-color-border-default); border-radius: var(--gds-radius-control); color: var(--gds-color-text-secondary); font-size: var(--gds-type-caption-font-size); line-height: var(--gds-type-caption-line-height); }
-.eva-ai-team__team-button > .eva-ai-team__unread-dot { margin-left: auto; }
+.eva-ai-team__team-button > [data-eva-unread] { margin-left: auto; }
 .eva-ai-team__team-thread-row { position: relative; min-height: var(--eva-rail-identity-height); border-radius: var(--eva-rail-nested-row-radius); }
 .eva-ai-team__team-threads .wk-conv-compact-item--thread { width: 100%; padding-left: var(--eva-rail-team-thread-inset); padding-right: var(--gds-space-2); min-height: var(--eva-rail-identity-height); }
 /* AI 小队子区行名称走 vendor 的 .wk-conv-compact-name 基础样式（13/1.4），
@@ -163,17 +155,7 @@
 /* 未读子区不做任何字重字色特殊处理（2026-09-20 用户决定，同关注列）：
    未读状态完全由计数徽标承担，vendor 的 unread 500/0.9 特殊值均被基线覆盖。 */
 .eva-ai-team__team-thread-row .wk-conv-compact-badges { margin-left: auto; margin-right: 0; transition: opacity 120ms ease; }
-.eva-ai-team__team-thread-row .wk-conv-compact-badge {
-  box-sizing: border-box;
-  min-width: 18px;
-  height: 16px;
-  padding: 0 5px;
-  border: 0;
-  border-radius: 5px;
-  background: var(--eva-unread-surface);
-  color: var(--eva-unread-text);
-  font: 500 11px/16px var(--eva-font-sans);
-}
+
 .eva-ai-team__team-thread-row:hover .eva-ai-team__session-actions,
 .eva-ai-team__team-thread-row:focus-within .eva-ai-team__session-actions { opacity: 1; pointer-events: auto; }
 .eva-ai-team__team-thread-row:hover .wk-conv-compact-badges,
@@ -294,18 +276,7 @@
 .eva-ai-team__session-unread {
   grid-column: 2;
   grid-row: 1;
-  display: inline-flex;
-  min-width: 18px;
-  height: 16px;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
   justify-self: end;
-  padding: 0 5px;
-  border-radius: 5px;
-  background: var(--eva-unread-surface);
-  color: var(--eva-unread-text);
-  font: 500 11px/16px var(--eva-font-sans);
   white-space: nowrap;
   transition: opacity 120ms ease;
 }
@@ -568,14 +539,14 @@
 .eva-ai-team__identity-heading > .eva-ai-team__new-session-anchor {
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
 }
-.eva-ai-team__identity-heading .eva-identity-name-row > .eva-ai-team__unread-dot { margin-left: auto; }
+.eva-ai-team__identity-heading .eva-identity-name-row > [data-eva-unread] { margin-left: auto; }
 .eva-ai-team__identity-heading .eva-ai-team__identity-button { padding-right: var(--gds-space-2); }
 .eva-ai-team__identity-heading:hover .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:focus-within .eva-ai-team__identity-button,
 .eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__identity-button { padding-right: 40px; }
-.eva-ai-team__identity-heading:hover .eva-ai-team__unread-dot,
-.eva-ai-team__identity-heading:focus-within .eva-ai-team__unread-dot,
-.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-ai-team__unread-dot { opacity: 0; }
+.eva-ai-team__identity-heading:hover .eva-identity-name-row > [data-eva-unread],
+.eva-ai-team__identity-heading:focus-within .eva-identity-name-row > [data-eva-unread],
+.eva-ai-team__identity-heading:has(.eva-ai-team__new-session.is-active) .eva-identity-name-row > [data-eva-unread] { opacity: 0; }
 .eva-ai-team__fixed-group-tree { margin-bottom: 16px; }
 .eva-ai-team__fixed-group-tree > .wk-conv-compact-item:not(.wk-conv-compact-item--thread) {
   box-sizing: border-box; min-height: var(--eva-rail-identity-height); height: auto;

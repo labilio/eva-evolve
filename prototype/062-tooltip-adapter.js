@@ -21,8 +21,8 @@
    return R.createElement(Tooltip,{closeOnEsc:true,disableArrowKeyDown:true,...props,ref:instance,
     onVisibleChange:value=>{setVisible(value);props.onVisibleChange?.(value);}});
   });
- },install({React:R,createRoot,Tooltip}){
-  const h=R.createElement,selector='[data-eva-tooltip]',records=new Map();
+ },install({React:R,createRoot,Tooltip,Popover}){
+  const h=R.createElement,selector='[data-eva-tooltip], [data-eva-hover-card]',records=new Map();
   let serial=0;
   const events={onMouseEnter:'mouseover',onMouseLeave:'mouseout',onMouseOver:'mouseover',onMouseOut:'mouseout',onFocus:'focusin',onBlur:'focusout',onClick:'click',onKeyDown:'keydown',onContextMenu:'contextmenu'};
   const Target=R.forwardRef(function Target({target,...props},ref){
@@ -47,13 +47,13 @@
    });
    return null;
   });
-  function Tip({target,content,clamp}){
+  function Tip({target,content,clamp,card}){
    const [eligible,setEligible]=R.useState(false),[present,setPresent]=R.useState(false),[open,setOpen]=R.useState(false);
    const [dismissed,setDismissed]=R.useState(false);
    R.useLayoutEffect(()=>{
-    const text=typeof clamp==='string'&&clamp&&clamp!=='true'?target.querySelector(clamp):target;
-    const measure=()=>{const shown=target.isConnected&&target.getClientRects().length>0;setPresent(shown);if(!shown)setOpen(false);setEligible(shown&&(clamp===null||!!text&&(text.scrollWidth>text.clientWidth+1||getComputedStyle(text).whiteSpace!=='nowrap'&&text.scrollHeight>text.clientHeight+1)));};
-    measure();const resize=new ResizeObserver(measure);resize.observe(target);if(text&&text!==target)resize.observe(text);return()=>resize.disconnect();
+    const texts=typeof clamp==='string'&&clamp&&clamp!=='true'?Array.from(target.querySelectorAll(clamp)):[target];
+    const measure=()=>{const shown=target.isConnected&&target.getClientRects().length>0;setPresent(shown);if(!shown)setOpen(false);setEligible(shown&&(clamp===null||texts.some(text=>text.scrollWidth>text.clientWidth+1||getComputedStyle(text).whiteSpace!=='nowrap'&&text.scrollHeight>text.clientHeight+1)));};
+    measure();const resize=new ResizeObserver(measure);resize.observe(target);for(const text of texts)if(text!==target)resize.observe(text);return()=>resize.disconnect();
    },[target,content,clamp]);
    R.useLayoutEffect(()=>{
     const dismiss=()=>{setDismissed(true);setOpen(false);},reset=e=>{
@@ -68,7 +68,14 @@
    },[target]);
    // Hover actions can change text width as the pointer enters the popup. Keep
    // an already-open tip mounted until Semi reports that interaction ended.
-   return present&&(eligible||open)&&!dismissed?h(Tooltip,{content,trigger:'hover',className:'eva-passive-tooltip',onVisibleChange:setOpen},h(Target,{target})):null;
+   if(!present||!(eligible||open)||dismissed)return null;
+   if(card)return h(Popover,{content:h('div',{className:'eva-conversation-hover-card__body'},
+     h('div',{className:'eva-conversation-hover-card__heading'},h('strong',null,card.title),card.time&&h('time',null,card.time)),
+     h('div',{className:'eva-conversation-hover-card__folder'},h('span',null,'分组'),h('span',null,card.folder)),
+     card.preview&&h('p',{className:'eva-conversation-hover-card__message'},card.preview)),
+     trigger:'hover',position:'rightTop',mouseEnterDelay:180,mouseLeaveDelay:160,
+     contentClassName:'eva-conversation-hover-card',onVisibleChange:setOpen},h(Target,{target}));
+   return h(Tooltip,{content,trigger:'hover',className:'eva-passive-tooltip',onVisibleChange:setOpen},h(Target,{target}));
   }
   const host=document.createElement('div');host.setAttribute('data-eva-tooltip-adapter','');document.body.append(host);
   const reactRoot=createRoot(host);
@@ -81,20 +88,26 @@
     records.delete(target);changed=true;
    }
    for(const target of document.querySelectorAll(selector)){
-    const content=target.getAttribute('data-eva-tooltip');
+    const card=target.hasAttribute('data-eva-hover-card')?{
+      title:target.getAttribute('data-eva-hover-title')||'',
+      folder:target.getAttribute('data-eva-hover-folder')||'',
+      preview:target.getAttribute('data-eva-hover-preview')||'',
+      time:target.getAttribute('data-eva-hover-time')||''}:null;
+    const content=card?card.title:target.getAttribute('data-eva-tooltip');
     if(!content){if(records.delete(target))changed=true;continue;}
     const clamp=target.getAttribute('data-eva-tooltip-clamp');
     const previous=records.get(target);
-    if(!previous||previous.content!==content||previous.clamp!==clamp){
+    const cardKey=card?JSON.stringify(card):'';
+    if(!previous||previous.content!==content||previous.clamp!==clamp||previous.cardKey!==cardKey){
      const identity=target.getAttribute('data-eva-tooltip-key');
-     records.set(target,{target,content,clamp,key:identity&&replaced.has(identity)?replaced.get(identity):++serial});changed=true;
+     records.set(target,{target,content,clamp,card,cardKey,key:identity&&replaced.has(identity)?replaced.get(identity):++serial});changed=true;
     }
    }
    if(changed)reactRoot.render(h(R.Fragment,null,...Array.from(records.values(),record=>h(Tip,record))));
   }
   // This observes DOM ownership only. It never derives or writes product state.
   const observer=new MutationObserver(reconcile);
-  observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-eva-tooltip','data-eva-tooltip-clamp']});
+  observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-eva-tooltip','data-eva-tooltip-clamp','data-eva-hover-card','data-eva-hover-title','data-eva-hover-folder','data-eva-hover-preview','data-eva-hover-time']});
   reconcile();
  }};
 })(window);

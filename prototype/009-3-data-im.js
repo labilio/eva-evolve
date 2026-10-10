@@ -1,8 +1,9 @@
 (function () {
   'use strict';
   window.__EVA_IM_DEMO = {
-    // Sparse initial project unread hints; conversation history and saved user state stay intact.
-    // 2026-09-20 演示加密度：覆盖父频道/子区/99+ 溢出/@我 四种形态，供未读视觉验收。
+    // Personal assistant reminder preview; project reminders live in project data.
+    // Review preview covers parents, subzones, mentions and 99+ while keeping
+    // conversation history and saved user state as the business source of truth.
     projectUnreadSeeds: {
       "c-eva": { unread: 12, atMe: true },
       "th-msg-architecture": { unread: 3, atMe: true },
@@ -11,7 +12,14 @@
       "th-demo-route": { unread: 1, atMe: false },
       "c-weekly": { unread: 5, atMe: false },
       "c-client-delivery": { unread: 2, atMe: true },
-      "c-drive-design": { unread: 7, atMe: true }
+      "c-drive-design": { unread: 7, atMe: true },
+      "th-client-trial": { unread: 4, atMe: false },
+      "th-copy-naming": { unread: 6, atMe: false },
+      "th-kd-plan": { unread: 2, atMe: true },
+      "th-vendor-onboarding": { unread: 3, atMe: false },
+      "th-trial-prep": { unread: 5, atMe: true },
+      "th-permissions": { unread: 2, atMe: false },
+      "th-html-open": { unread: 1, atMe: false }
     },
     aiTeamSessions: [
   {

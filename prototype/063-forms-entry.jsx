@@ -1,11 +1,15 @@
 export * from './063-forms.jsx';
 export {default as PersonalFolderForm} from './063-personal-folder-form.jsx';
 export {default as PersonalRailForm} from './063-personal-rail-form.jsx';
+export {default as PersonalRenamePopover} from './063-personal-rename-popover.jsx';
+export {default as PersonalActionConfirm} from './063-personal-action-confirm.jsx';
 export {default as FileForm, fileFormTypes} from './063-file-form.jsx';
 
 export {Dialog, Actions, dialogWidths} from "./063-dialog.jsx";
 
 export {dialogText} from "./063-dialog-theme.js";
+export {default as SemiCard} from '@douyinfe/semi-ui/lib/es/card';
+export {default as SemiPopover} from '@douyinfe/semi-ui/lib/es/popover';
 
 export {FileDetail,FileConfirmation,FileToolbar,FileRowActions,FileButton,FilePath,FilePreviewActions} from './063-file-controls.jsx';
 

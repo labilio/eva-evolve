@@ -127,11 +127,9 @@
   /* IM emphasis palette; neutral hover and business identity colors stay separate. */
   /* 未读徽标 2026-09-20 加深一档以提升醒目度：底 #eef0f2→#e2e5e8、字 #4f5b64→#1d2329。
    * 规范约束是「中性灰数字徽标、禁红」（三栏式现行视觉规范 / IM 界面一致性规范），
-   * 未锁具体色值；原值与白底 ΔL*≈4 徽标轮廓不显。仍为中性灰，未读红点语义
-   * （--eva-unread-indicator）不受影响。 */
+   * 未锁具体色值；原值与白底 ΔL*≈4 徽标轮廓不显。 */
   --eva-unread-surface: #e2e5e8;
   --eva-unread-text: #1d2329;
-  --eva-unread-indicator: var(--eva-c-mac-red);
   --eva-im-accent: var(--eva-action-primary);
   /* 未读徽标的「淡主色底 + 主色数字」配色（2026-09-20）。实底墨量近 100%，
    * 在高频出现的列表里压过会话名与选中行；淡底把墨量降到约 15%，醒目度改由
@@ -146,6 +144,9 @@
    * 10% → #e8effd：CR 4.53 达标，与中栏底 ΔL* 5.0、与选中面 ΔL* 1.3 均可辨。 */
   --eva-unread-tonal-surface: color-mix(in srgb, var(--eva-action-primary) 10%, var(--eva-surface-primary));
   --eva-unread-tonal-text: var(--eva-action-primary);
+  /* 选中背景上的公共角标变体：保留浅底语言，只拉开与选中行的色差。 */
+  --eva-unread-selected-surface: color-mix(in srgb, var(--eva-action-primary) 22%, var(--eva-surface-primary));
+  --eva-unread-selected-text: var(--eva-action-primary-solid-hover);
   /* 会话列表「@我」标记专用色。2026-09-20 曾按用户决定改红（#dc1a12，按「与
    * 品牌蓝同规格」推导的红色），同日计数徽标也改红后，红覆盖了普通未读与
    * @我 两类状态，「@我 优先级更高」的信号被抹平；随后用户决定计数回蓝、

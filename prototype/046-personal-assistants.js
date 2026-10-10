@@ -73,23 +73,47 @@
     });
     conversations.sort(function (a,b) { var ai = restoredOrder.indexOf(a.id), bi = restoredOrder.indexOf(b.id); return (ai < 0 ? restoredOrder.length : ai) - (bi < 0 ? restoredOrder.length : bi); });
   }
+  // The review account previews unread conversations across Recent and folders.
+  var demoUnreadSeeded = !!(saved && saved.demoUnreadSeeded);
+  var demoUnreadSeededV2 = !!(saved && saved.demoUnreadSeededV2);
+  var demoUnreadTargets = {
+    'personal-ui-designer-ppt': 2,
+    'personal-weekly-meeting-summary': 1,
+    'personal-product-copy': 2,
+    'personal-frontend-integration': 2,
+    'personal-api-regression': 1
+  };
+  conversations.forEach(function (c) {
+    var replies = c.messages.filter(function (m) { return m.role === 'assistant'; }).length;
+    c.readAssistantCount = Math.min(replies, Math.max(0, Number.isFinite(c.readAssistantCount) ? c.readAssistantCount : replies));
+    if (!demoUnreadSeeded && (c.id === 'personal-product-copy' || c.id === 'personal-api-regression')) c.readAssistantCount = Math.max(0, replies - 1);
+    if (!demoUnreadSeededV2 && Object.prototype.hasOwnProperty.call(demoUnreadTargets, c.id)) c.readAssistantCount = Math.max(0, replies - demoUnreadTargets[c.id]);
+  });
+  demoUnreadSeeded = true;
+  demoUnreadSeededV2 = true;
+  var revision = 0;
   var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
   conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
   var collapsed = []; // 每次打开个人 Eva 默认展开全部文件夹，当前页面仍可手动收起。
   var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
   var listeners = new Set();
-  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins})); }
+  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins, demoUnreadSeeded:demoUnreadSeeded, demoUnreadSeededV2:demoUnreadSeededV2})); }
   var committed = snapshot();
   function persist() {
     try { localStorage.setItem(storageKey, JSON.stringify(snapshot())); }
     catch (_) { var old = JSON.parse(JSON.stringify(committed)); folders = old.folders; conversations = old.conversations; collapsed = old.collapsed; deleted = old.deleted; folderPins = old.folderPins; throw new Error('无法保存到当前浏览器，请检查存储空间后重试。'); }
     committed = snapshot();
+    revision++;
     listeners.forEach(function (fn) { fn(); });
   }
   function folderExists(id) { return !id || folders.some(function (f) { return f.id === id; }); }
   function conversation(id) { var c = conversations.find(function (c) { return c.id === id; }); if (!c) throw new Error('对话不存在'); return c; }
   window.EvaPersonal = Object.freeze({
     getSnapshot: snapshot,
+    getRevision: function () { return revision; },
+    unreadCount: function (id) { var c = conversations.find(function (item) { return item.id === id; }); return c ? Math.max(0, c.messages.filter(function (m) { return m.role === 'assistant'; }).length - c.readAssistantCount) : 0; },
+    totalUnread: function () { return conversations.reduce(function (sum, c) { return sum + window.EvaPersonal.unreadCount(c.id); }, 0); },
+    markRead: function (id) { var c = conversation(id); var replies = c.messages.filter(function (m) { return m.role === 'assistant'; }).length; if (c.readAssistantCount !== replies) { c.readAssistantCount = replies; persist(); } },
     subscribe: function (fn) { listeners.add(fn); return function () { listeners.delete(fn); }; },
     createFolder: function (name) {
       name = String(name || '').trim();

@@ -1,3 +1,81 @@
+// Task-event mock: every reminder resolves to an existing task. The current
+// demo account is Wang Yilin; an event is relevant through assignment,
+// explicit mention, review request, or a change to a task the account created.
+// Repeated events on one task still occupy one unread task.
+window.__EVA_TASK_REMINDER_EVENTS = {
+  official: [
+    {taskId:'official-102',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了你负责的任务'},
+    {taskId:'official-103',kind:'mentioned',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静在任务中提及了你'},
+    {taskId:'official-104',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了反馈模板'},
+    {taskId:'official-105',kind:'assigned',actorId:'u-hejing',text:'何静补充了高频问题清单'}
+  ],
+  prod: [
+    {taskId:'supply-15',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了需求变更范围'},
+    {taskId:'supply-15',kind:'mentioned',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静在任务中提及了你'},
+    {taskId:'supply-16',kind:'review',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静请你复核验证数据'},
+    {taskId:'supply-17',kind:'assigned',actorId:'u-zhouyuan',text:'周远更新了合同条款'},
+    {taskId:'supply-18',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了风险简报'},
+    {taskId:'supply-19',kind:'assigned',actorId:'u-hejing',text:'何静更新了排产方案'},
+    {taskId:'supply-20',kind:'mentioned',actorId:'u-linxiao',recipientId:'u-wangyilin',text:'林晓在任务中提及了你'},
+    {taskId:'supply-28',kind:'assigned',actorId:'u-zhouyuan',text:'周远更新了价格台账'},
+    {taskId:'supply-21',kind:'assigned',actorId:'u-linxiao',text:'林晓补充了询价策略的待决条件'},
+    {taskId:'supply-22',kind:'assigned',actorId:'u-hejing',text:'何静更新了跨部门待决事项'}
+  ],
+  lab: [
+    {taskId:'client-101',kind:'created',actorId:'u-hejing',text:'何静完成了你创建的任务'},
+    {taskId:'client-102',kind:'created',actorId:'u-hejing',text:'何静将你创建的任务提交复核'},
+    {taskId:'client-103',kind:'mentioned',actorId:'u-suhang',recipientId:'u-wangyilin',text:'苏航在任务中提及了你'},
+    {taskId:'client-104',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了你负责的任务'}
+  ],
+  'drive-design': [
+    {taskId:'drive-1',kind:'created',actorId:'u-hejing',text:'何静更新了你创建的任务'},
+    {taskId:'drive-2',kind:'created',actorId:'u-zhouyuan',text:'周远将你创建的任务提交复核'},
+    {taskId:'drive-3',kind:'mentioned',actorId:'u-suhang',recipientId:'u-wangyilin',text:'苏航在任务中提及了你'},
+    {taskId:'drive-4',kind:'review',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静请你复核权限检查'}
+  ]
+};
+const evaTaskReminderReadKey = 'eva:task-reminder-read:v1';
+const evaTaskReminderRead = new Set((() => { try { return JSON.parse(localStorage.getItem(evaTaskReminderReadKey) || '[]'); } catch (_) { return []; } })());
+const evaTaskReminderListeners = new Set();
+let evaTaskReminderRevision = 0;
+window.EvaProjectReminderDemo = {
+  subscribe(fn) { evaTaskReminderListeners.add(fn); return () => evaTaskReminderListeners.delete(fn); },
+  getRevision() { return evaTaskReminderRevision; },
+  markRead(projectId, taskId) {
+    const key = projectId + ':' + taskId;
+    if (evaTaskReminderRead.has(key) || !this.record(projectId, taskId)) return;
+    evaTaskReminderRead.add(key);
+    try { localStorage.setItem(evaTaskReminderReadKey, JSON.stringify([...evaTaskReminderRead])); } catch (_) {}
+    evaTaskReminderRevision++;
+    evaTaskReminderListeners.forEach(fn => fn());
+  },
+  record(projectId, taskId, actorId) { return this.allItems(projectId, actorId).find(item => item.id === taskId); },
+  items(projectId, actorId) { return this.allItems(projectId, actorId).filter(item => item.unread); },
+  allItems(projectId, actorId) {
+    const currentActor = actorId || 'u-wangyilin';
+    const tasks = projectId === 'official' ? window.__EVA_OFFICIAL_TASKS
+      : projectId === 'lab' ? window.__EVA_CLIENT_TASKS
+      : projectId === 'drive-design' ? window.__EVA_DRIVE_DEMO?.issues
+      : projectId === 'prod' ? window.__EVA_SUPPLY_CHAIN_DEMO?.issues : [];
+    const byId = new Map((tasks || []).map(task => [task.id, task]));
+    const grouped = new Map();
+    for (const event of window.__EVA_TASK_REMINDER_EVENTS[projectId] || []) {
+      const task = byId.get(event.taskId);
+      if (!task || event.actorId === currentActor) continue;
+      const related = event.kind === 'assigned' && task.assignee_id === currentActor
+        || event.kind === 'created' && task.creator_id === currentActor
+        || (event.kind === 'mentioned' || event.kind === 'review') && event.recipientId === currentActor;
+      if (!related) continue;
+      const record = grouped.get(task.id);
+      if (record) record.reasons.push(event.text);
+      else grouped.set(task.id, {id:task.id,projectId,identifier:task.identifier,title:task.title,reasons:[event.text],unread:!evaTaskReminderRead.has(projectId + ":" + task.id)});
+    }
+    return Array.from(grouped.values());
+  },
+  count(projectId, actorId) { return this.items(projectId, actorId).length; },
+  total(projects, actorId) { return projects.reduce((sum, project) => sum + this.count(project.id, actorId), 0); }
+};
+
 // Canonical human account fixtures. Memberships and conversations reference these IDs.
 window.__EVA_PEOPLE = [
   {"uid":"u-gaozhiyuan","name":"高志远","color":"#1d5bd6","dept":"总经办","title":"供应链数智化总监","online":true,"id":"u-gaozhiyuan","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/全球供应链中心/供应链数智化总监"},

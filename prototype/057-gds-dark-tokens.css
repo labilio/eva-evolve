@@ -102,6 +102,8 @@
    * 故此处把 047 的 tonal-text 重指。 */
   --eva-unread-tonal-surface: color-mix(in srgb, var(--eva-action-primary) 8%, var(--eva-surface-primary));
   --eva-unread-tonal-text: var(--eva-action-primary);
+  --eva-unread-selected-surface: color-mix(in srgb, var(--eva-action-primary) 18%, var(--eva-surface-primary));
+  --eva-unread-selected-text: var(--eva-nav-accent);
 
   /* ---- shadow / elevation（大扩散 + 白色发丝描边）---- */
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);

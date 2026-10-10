@@ -627,24 +627,12 @@
 }
 
 /* 一级导航图标槽：图标尺寸统一由 .eva-nav-entry svg.lucide（--eva-icon-nav）控制，
-   容器只负责未读红点的定位；禁止在单个入口写死图标尺寸。 */
+   容器只负责图标定位；未读数字由公共组件提供。 */
 .eva-nav-icon {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.eva-nav-icon__unread {
-  position: absolute;
-  top: 0;
-  right: -1px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--eva-unread-indicator);
-  box-shadow: 0 0 0 2px var(--eva-surface-primary);
-  pointer-events: none;
 }
 
 .eva-personal-entry.is-collapsed {
@@ -1218,5 +1206,15 @@
 .eva-nav-more-menu .eva-nav-section + .eva-nav-section { margin-top: 8px; }
 .eva-nav-more-menu .eva-nav-section__title { height: 24px; padding: 0 8px; }
 
-/* 未读红点统一由 .eva-nav-icon__unread 承担（见上方图标槽），所有入口共用同一容器；
-   数据源仍为团队 IM 会话聚合（009-7 evaMessagesHasUnread）。 */
+/* 导航仅定位既有 IM 数字徽标；尺寸、颜色与字体由 017 公共规则提供。 */
+.eva-nav-entry:has([data-eva-nav-unread]) { position: relative; }
+.eva-nav-entry [data-eva-nav-unread] { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+.eva-nav-entry:has([data-eva-nav-unread]) .collapsed-hidden { padding-right: 28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-nav-section.is-collapsed [data-eva-nav-unread] { top: 2px; right: 8px; transform: none; }
+.eva-nav-section.is-collapsed .eva-nav-entry:has([data-eva-nav-unread]) .collapsed-hidden { padding-right: 0; }
+/* 个人 Eva 使用独立导航行，角标仍由同一公共组件绘制。 */
+.eva-personal-entry:has([data-eva-nav-unread]) { position: relative; }
+.eva-personal-entry [data-eva-nav-unread] { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+.eva-personal-entry:has([data-eva-nav-unread]) .eva-personal-entry__label { padding-right: 28px; }
+.eva-personal-entry.is-collapsed [data-eva-nav-unread] { top: 2px; right: 8px; transform: none; }
+.eva-personal-entry.is-collapsed:has([data-eva-nav-unread]) .eva-personal-entry__label { padding-right: 0; }

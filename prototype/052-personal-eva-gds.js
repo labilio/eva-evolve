@@ -131,29 +131,15 @@
     return railForm ? '<div data-eva-rail-form-host></div>' : '';
   }
 
-  function syncDeleteControls() {
-    if(!pageServices?.showDeleteControls)return;
-    pageServices.showDeleteControls(Array.from(root.querySelectorAll('[data-eva-delete-host]')).map(function(container){
-      var id=container.dataset.evaDeleteHost,detail=conversationForId(id);
-      return {container:container,id:id,title:detail.title,onConfirm:function(){
-        window.EvaPersonal.deleteConversation(id);delete personalDrafts[id];
-        if(activeConversationId===id){activeConversationId='';selectedConversation='';resetToHome();location.hash='#/guid';}
-        renderRail();
-        root?.querySelector('[data-eva-create-folder]')?.focus();
-      }};
-    }));
-  }
-
   function syncRailForm() {
-    syncDeleteControls();
     if (!pageServices?.showRailForm) return;
-    var container = root && root.querySelector('[data-eva-rail-form-host]');
-    if (!railForm || !container) { pageServices.showRailForm(null); return; }
+    if (!railForm) { pageServices.showRailForm(null); return; }
     var current = railForm;
     var moving = current.type === 'conversation';
     var detail = moving ? conversationForId(current.id) : personalSnapshot().folders.find(function (f) { return f.id === current.id; });
-    if (!detail) { railForm = null; pageServices.showRailForm(null); return; }
-    pageServices.showRailForm({container:container, moving:moving, detail:detail, folders:personalSnapshot().folders,
+    var target = root && root.querySelector(moving ? '[data-eva-personal-conversation-id="' + current.id + '"]' : '[data-eva-folder-menu="' + current.id + '"]');
+    if (!detail || !target) { railForm = null; pageServices.showRailForm(null); return; }
+    pageServices.showRailForm({target:target, moving:moving, detail:detail, folders:personalSnapshot().folders,
       onClose:function () { railForm = null; renderRail(); },
       onSave:function (values) {
         if (railForm !== current) return;
@@ -172,15 +158,18 @@
     });
   }
 
-  function conversationRowsHTML(items, folderId) {
+  function conversationRowsHTML(items, folderId, folderName) {
     items = items.slice().sort(function (a,b) { return Number(!!b.pinned) - Number(!!a.pinned); });
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
-      return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
-        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-key="personal-thread:' + escapeHTML(item.id) + '" data-eva-tooltip-clamp="span" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
-        + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
-        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '" data-eva-tooltip-key="personal-pin:' + escapeHTML(item.id) + '">' + icon('pin',16,'eva-i') + '</button>'
-        + '<span data-eva-delete-host="' + escapeHTML(item.id) + '"></span></span>'
+      var lastMessage = item.messages && item.messages[item.messages.length - 1];
+      var preview = lastMessage && (lastMessage.text || lastMessage.intro || (lastMessage.paragraphs && lastMessage.paragraphs[0])) || '';
+      return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '" data-eva-hover-card="conversation" data-eva-hover-title="' + escapeHTML(item.title) + '" data-eva-hover-folder="' + escapeHTML(folderName) + '" data-eva-hover-preview="' + escapeHTML(preview) + '" data-eva-hover-time="' + escapeHTML(item.time || '') + '" data-eva-tooltip-clamp=".eva-personal-thread__title,.eva-personal-thread__preview">'
+        + '<button type="button" class="eva-personal-thread__main" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span class="eva-personal-thread__title">' + escapeHTML(item.title) + '</span><span class="eva-personal-thread__preview">' + escapeHTML(preview) + '</span></button>'
+        + (window.EvaPersonal ? window.EvaUnreadUI.badgeHTML({count:window.EvaPersonal.unreadCount(item.id),attributes:{'data-eva-personal-unread':item.id}}) : '')
+        + '<time class="eva-personal-thread__time">'  + escapeHTML(item.time || '') + '</time>'
+        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
+        + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" data-eva-tooltip="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
         + '</div>' ;
     }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
       + (!items.length ? '<div class="eva-personal-rail-empty eva-t-caption">还没有对话</div>' : '');
@@ -202,7 +191,6 @@
     return '<aside class="eva-personal-sider-panel" aria-label="Eva 文件夹与对话">'
       + '<div class="eva-personal-rail-top eva-rail-header"><span class="eva-personal-rail-title">分组</span><button type="button" class="eva-personal-rail-new" data-eva-create-folder aria-label="新建分组" data-eva-tooltip="新建分组">' + icon('folder-plus',16,'eva-i') + '</button></div>'
       + '<div class="eva-personal-sider-panel__body">'
-      + railFormHTML()
       + recentFolders.concat([{id:'',name:'最近'}],legacyFolders).sort(function (a,b) { var pins = snapshot.folderPins || []; return Number(pins.includes(b.id)) - Number(pins.includes(a.id)); }).map(function (folder) {
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
@@ -211,7 +199,7 @@
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '"' + (folderMenu === folder.id ? '' : ' data-eva-tooltip="文件夹设置" data-eva-tooltip-key="personal-folder-menu:' + escapeHTML(folder.id) + '"') + '>' + icon('ellipsis',16,'eva-i') + '</button>'
           + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" data-eva-tooltip="新建对话" data-eva-tooltip-key="personal-folder-new:' + escapeHTML(folder.id) + '">' + icon('plus',16,'eva-i') + '</button></div>'
           + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
-          + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
+          + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id,folder.name) + '</div>' : '') + '</section>';
       }).join('')
       + '</div><div class="eva-conversation-rail-resizer" role="separator" aria-label="调整中间栏宽度" aria-orientation="vertical" tabindex="0" data-eva-conversation-rail-resizer></div></aside>';
   }
@@ -749,14 +737,23 @@
     if (renameFolder) { railForm = {type:'rename-folder', id:renameFolder.dataset.evaRenameFolder}; folderMenu = null; renderRail(); return; }
     var deleteFolder = event.target.closest('[data-eva-delete-folder]');
     if (deleteFolder) {
-      if (!window.confirm('删除这个文件夹？其中的对话会移回「最近」。')) return;
-      window.EvaPersonal.deleteFolder(deleteFolder.dataset.evaDeleteFolder);
-      if (selectedFolderId === deleteFolder.dataset.evaDeleteFolder) selectedFolderId = '';
+      var folderToDelete = personalSnapshot().folders.find(function (item) { return item.id === deleteFolder.dataset.evaDeleteFolder; });
       folderMenu = null; renderRail();
-      var folderPicker = root.querySelector('.eva-personal-folder-picker'); if (folderPicker) folderPicker.outerHTML = folderPickerHTML(); return;
+      var deleteAnchor = root.querySelector('[data-eva-folder-menu="' + folderToDelete?.id + '"]');
+      if (folderToDelete && deleteAnchor) pageServices.showActionConfirm({kind:'delete-folder', target:deleteAnchor, detail:folderToDelete,
+        onApply:function () { window.EvaPersonal.deleteFolder(folderToDelete.id); if (selectedFolderId === folderToDelete.id) selectedFolderId = ''; folderMenu = null; renderRail(); var picker = root.querySelector('.eva-personal-folder-picker'); if (picker) picker.outerHTML = folderPickerHTML(); }});
+      return;
     }
     var pin = event.target.closest('[data-eva-pin-conversation]');
     if (pin) { window.EvaPersonal.togglePin(pin.dataset.evaPinConversation); renderRail(); return; }
+    var deletion = event.target.closest('[data-eva-delete-conversation]');
+    if (deletion) {
+      var deletedId = deletion.dataset.evaDeleteConversation;
+      var conversationToDelete = conversationForId(deletedId);
+      if (conversationToDelete) pageServices.showActionConfirm({kind:'delete-conversation', target:deletion, detail:conversationToDelete,
+        onApply:function () { window.EvaPersonal.deleteConversation(deletedId); delete personalDrafts[deletedId]; if (activeConversationId === deletedId) { activeConversationId = ''; selectedConversation = ''; resetToHome(); location.hash = '#/guid'; } renderRail(); }});
+      return;
+    }
     if (folderMenu !== null) { folderMenu = null; renderRail(); }
     var toggle = event.target.closest('[data-eva-toggle-folder]');
     if (toggle) { window.EvaPersonal.toggleFolder(toggle.dataset.evaToggleFolder); renderRail(); return; }
@@ -896,6 +893,7 @@
     var match = hash.match(/^#\/conversation\/([^?]+)/);
     var detail = match && conversationForId(decodeURIComponent(match[1]));
     if (detail) {
+      if (window.EvaPersonal) window.EvaPersonal.markRead(detail.id);
       if (activeConversationId === detail.id && (state === 'generating' || state === 'completed')) return;
       selectedConversation = detail.title;
       activeConversationId = detail.id;
@@ -1001,7 +999,6 @@
     return function () {
       personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
       pageServices?.showRailForm?.(null);
-      pageServices?.showDeleteControls?.([]);
       pageServices = null;
       railForm = null;
       conversationPickerOpen = false;

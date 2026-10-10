@@ -46,7 +46,7 @@
     session.readAiMessageCount = Math.min(session.readAiMessageCount, total);
     return session;
   };
-  const unreadCountOf = session => Math.max(0, incomingMessageCount(session) - (Number.isInteger(session?.readAiMessageCount) ? session.readAiMessageCount : 0));
+  const unreadCountOf = session => Math.max(session?.markedUnread ? 1 : 0, incomingMessageCount(session) - (Number.isInteger(session?.readAiMessageCount) ? session.readAiMessageCount : 0));
   function freeze(value) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
       Object.values(value).forEach(freeze);
@@ -327,6 +327,15 @@
       });
       state.unreadNotificationsV1 = true;
     }
+    if (options.profile === 'review' && !state.unreadNotificationsV2) {
+      const preview = {'team-assistant-welcome':2,'team-persona-welcome':1,'team-rd-review':1};
+      state.sessions.forEach(session => {
+        if (!Object.prototype.hasOwnProperty.call(preview, session.id)) return;
+        const total = incomingMessageCount(session);
+        if (total) session.readAiMessageCount = Math.max(0, total - preview[session.id]);
+      });
+      state.unreadNotificationsV2 = true;
+    }
     // Add the Octo parent/topic relationship without changing local IDs or user content.
     state.sessions = state.sessions.map(record => ['persona', 'assistant'].includes(state.identities.find(i => i.id === record.identityId)?.role)
       ? threadRecord(record.identityId, record) : record);
@@ -493,11 +502,13 @@
       const session = state.sessions.find(item => item.id === sessionId);
       if (!session) return false;
       const total = incomingMessageCount(session);
-      if (session.readAiMessageCount === total) return false;
+      if (session.readAiMessageCount === total && !session.markedUnread) return false;
+      delete session.markedUnread;
       session.readAiMessageCount = total;
       publish();
       return true;
     }
+    function markUnread(sessionId) { const session=state.sessions.find(s=>s.id===sessionId);if(!session||session.markedUnread)return false;session.markedUnread=true;publish();return true; }
     function unreadCount(sessionId) {
       return unreadCountOf(state.sessions.find(item => item.id === sessionId));
     }
@@ -551,7 +562,7 @@
       if(!session)return false;
       const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self',name:'我',color:message.sender?.color||'#1563EB',ai:false}})));session.updatedAt=time;publish();return true;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, unreadCount, hasUnread, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, markUnread, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的 AI 小队”动态包含所有 AI；自定义 AI 小队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
@@ -655,9 +666,11 @@
         const groups=groupId?[groupById(groupId)]:state.groups;
         return groups.some(group=>unreadCountOf(group)>0||group.threads.some(thread=>!thread.deleted&&unreadCountOf(thread)>0));
       },
+      markUnread(groupId,channelId) {const current=target(groupId,channelId);if(current.markedUnread)return false;current.markedUnread=true;publish();return true;},
       markRead(groupId, channelId) {
         const current=target(groupId,channelId),total=incomingMessageCount(current);
-        if(current.readAiMessageCount===total)return false;
+        if(current.readAiMessageCount===total&&!current.markedUnread)return false;
+        delete current.markedUnread;
         current.readAiMessageCount=total;publish();return true;
       },
       source(groupOrMembers, membersOrThread, threadMaybe) {
@@ -716,4 +729,10 @@
   }
   window.EvaMyAITeamGroup = Object.freeze({...createTeamGroupStore(), createStore:createTeamGroupStore});
   window.EvaAITeam = Object.freeze({ ...createStore({profile:'review'}), createStore });
+  // Prepare the shipped team stories before navigation reads unread totals.
+  // The same source path owns the one-time migration when the page later opens.
+  window.EvaMyAITeamGroup.source([
+    {id:'u-wangyilin',name:'王宜林',kind:'human'},
+    ...window.EvaAITeam.getSnapshot().identities.map(identity=>({id:identity.id,name:identity.name,kind:'ai'}))
+  ]);
 })(window);

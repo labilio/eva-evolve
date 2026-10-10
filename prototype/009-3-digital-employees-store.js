@@ -25,7 +25,7 @@
     session.readAiMessageCount=Math.min(session.readAiMessageCount,total);
     return session;
   };
-  const unreadCountOf=session=>Math.max(0,incomingMessageCount(session)-(Number.isInteger(session?.readAiMessageCount)?session.readAiMessageCount:0));
+  const unreadCountOf=session=>Math.max(session?.markedUnread?1:0,incomingMessageCount(session)-(Number.isInteger(session?.readAiMessageCount)?session.readAiMessageCount:0));
   // Add newly shipped organization employees without replacing local creations or edits.
   const hrOnboardingSeed=seed.agents.find(a=>a.id==='a_hr_onboarding');
   if(hrOnboardingSeed&&!state.agents.some(a=>a.id===hrOnboardingSeed.id))state.agents=[...state.agents,{...hrOnboardingSeed}];
@@ -71,7 +71,7 @@
     session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text,...(replyTo?{replyTo}:{})},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
     session.draft='';session.updatedAt=now();publish();return true;
   };
-  const markSessionRead=(id,sessionId)=>{const session=readSession(id,sessionId);if(!session)return false;const total=incomingMessageCount(session);if(session.readAiMessageCount===total)return false;session.readAiMessageCount=total;publish();return true;};
+  const markSessionRead=(id,sessionId)=>{const session=readSession(id,sessionId);if(!session)return false;const total=incomingMessageCount(session);if(session.readAiMessageCount===total&&!session.markedUnread)return false;delete session.markedUnread;session.readAiMessageCount=total;publish();return true;};
   const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||'prototype/assets/project-agent-bot.svg',logo:'prototype/assets/project-agent-bot.svg'});
   const demoSession=(id,a,story,index)=>{
     const title=Array.isArray(story)?story[0]:story.title;
@@ -125,6 +125,20 @@
     state.unreadNotificationsV1=true;
     publish();
   }
+  if(!state.unreadNotificationsV2){
+    const previewIds=new Set([
+      'digital-session:a_hr_onboarding:professional-v1:0',
+      'digital-session:a_supply:professional-v1:0',
+      'digital-session:a_supply:professional-v1:2',
+      'digital-session:a_quality:professional-v1:0',
+      'digital-session:n_pub_bid:professional-v1:0'
+    ]);
+    state.teamIds.flatMap(id=>list(id)).forEach(session=>{
+      if(previewIds.has(session.id)&&incomingMessageCount(session)>0)session.readAiMessageCount=incomingMessageCount(session)-1;
+    });
+    state.unreadNotificationsV2=true;
+    publish();
+  }
   // Include newly seeded records in the same persisted Octo topic contract.
   Object.entries(state.chats).forEach(([id,chat])=>{chat.sessions=chat.sessions.map(record=>privateConversations.threadRecord(id,record));});
   root.EvaDigitalEmployeesStore={
@@ -144,6 +158,7 @@
       for(const id of state.teamIds){const session=list(id).find(item=>item.channel_id===channelId);if(!session)continue;session.messages.push(...JSON.parse(JSON.stringify(messages)).map(message=>({...message,sender:{...message.sender,uid:'u-wangyilin',name:'王宜林',ai:false}})));session.updatedAt=now();publish();return true;}return false;
     },
     markRead:markSessionRead,
+    markUnread(id,sessionId){const session=readSession(id,sessionId);if(!session||session.markedUnread)return false;session.markedUnread=true;publish();return true;},
     unreadCount(id,sessionId){return unreadCountOf(readSession(id,sessionId));},
     hasUnread(id){return (id?list(id):state.teamIds.flatMap(teamId=>list(teamId))).some(session=>unreadCountOf(session)>0);},
     conversationSource(id,sessionId){

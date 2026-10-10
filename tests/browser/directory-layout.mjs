@@ -37,7 +37,7 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   }
   await page.goto(origin+'/#/collab?evaProject=prod');
   await page.locator('.collab-frame').waitFor();
-  await page.getByRole('tab',{name:'任务',exact:true}).click();
+  await page.getByRole('tab',{name:/^任务/}).click();
   await page.getByText('完成本季度间接采购需求归集',{exact:true}).click();
   const detail=page.locator('.loop-idp').last();
   const tree=detail.locator('.eva-loop-subtask-tree');

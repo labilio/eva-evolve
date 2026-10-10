@@ -159,29 +159,32 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await more.click();
     assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3);
 
-    assert.ok(await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).count() > 0, '左侧导航聚合未读红点');
-    assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '团队父级聚合红点');
+    assert.ok(await page.locator('[data-eva-nav-id="my-ai"] [data-eva-nav-unread]').count() > 0, '左侧导航聚合未读数字');
+    assert.match(await page.locator('[data-eva-nav-id="my-ai"] [data-eva-nav-unread]').innerText(), /^\d+\+?$/, '徽标只显示数字');
+    assert.ok(await systemTeam.locator('.eva-ai-team__team-button [data-eva-unread]').count() > 0, '团队父级展示未打开主会话的数字');
     await systemTeam.locator('.eva-ai-team__team-button').click();
-    assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '主会话已读后仍聚合未读子区');
+    assert.ok(await systemTeam.locator('.eva-ai-team__team-thread-row [data-eva-unread]').count() > 0, '主会话已读后未读子区仍显示数字');
     const unreadTeamThread = systemTeam.locator('.eva-ai-team__team-thread-row:has(.wk-conv-compact-badge)').first();
     const unreadTeamThreadName = await unreadTeamThread.locator('.wk-conv-compact-name').innerText();
     const selectedTeamThread = systemTeam.locator('.wk-conv-compact-item').filter({ hasText: unreadTeamThreadName }).first();
     await selectedTeamThread.click();
     await selectedTeamThread.locator('.wk-conv-compact-badge').waitFor({ state: 'detached' });
-    assert.equal(await systemTeam.locator('.eva-ai-team__unread-dot').count(), 0, '主会话与唯一未读子区均已读后团队红点清零');
+    assert.equal(await systemTeam.locator('.eva-ai-team__team-button [data-eva-unread]').count(), 0, '可见子区已读后团队不重复显示数字');
 
     const selectedTeamButton = systemTeam.locator('.eva-ai-team__team-button');
     assert.equal(await selectedTeamButton.getAttribute('aria-current'), null, '进入子区后父团队不伪装为当前主会话');
     const selectedThreadState = await selectedTeamThread.getAttribute('aria-current');
-    const unreadIdentity = page.locator('.eva-ai-team__identity:has(.eva-ai-team__unread-dot)').first();
+    const unreadIdentity = page.locator('.eva-ai-team__identity:has(.eva-ai-team__session-unread)').first();
     const unreadIdentityName = await unreadIdentity.locator('.eva-ai-team__identity-name').innerText();
     const selectedIdentity = page.locator('.eva-ai-team__identity').filter({ hasText: unreadIdentityName }).first();
     const unreadIdentityButton = selectedIdentity.locator('.eva-ai-team__identity-button');
     if (await unreadIdentityButton.getAttribute('aria-expanded') === 'false') await unreadIdentityButton.click();
     await unreadIdentityButton.click();
     assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '收起身份会话列表不切换当前子区');
+    assert.equal(await selectedIdentity.locator('.eva-ai-team__identity-heading [data-eva-unread]').innerText(), '1', '收起后父级显示未读会话数');
     await unreadIdentityButton.click();
     assert.equal(await selectedTeamThread.getAttribute('aria-current'), selectedThreadState, '展开身份会话列表不切换当前子区');
+    assert.equal(await selectedIdentity.locator('.eva-ai-team__identity-heading [data-eva-unread]').count(), 0, '展开后由叶子会话显示未读数');
 
     const unreadSessionRow = selectedIdentity.locator('.eva-ai-team__session-row:has(.eva-ai-team__session-unread)').first();
     const unreadBadge = unreadSessionRow.locator('.eva-ai-team__session-unread');
@@ -193,7 +196,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     assert.equal(await unreadSessionRow.locator('.eva-ai-team__session-actions').evaluate(node => getComputedStyle(node).opacity), '1');
     await unreadSessionRow.locator('.eva-ai-team__session').click();
     await unreadBadge.waitFor({ state: 'detached' });
-    assert.equal(await selectedIdentity.locator('.eva-ai-team__unread-dot').count(), 0, '进入唯一未读会话后身份红点清零');
+    assert.equal(await selectedIdentity.locator('.eva-ai-team__identity-heading [data-eva-unread]').count(), 0, '进入唯一未读会话后身份汇总清零');
 
     await page.evaluate(() => {
       const direct = window.EvaAITeam;
@@ -206,13 +209,13 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
         groups.source(group.id, []).channels[0].threads.forEach(thread => groups.markRead(group.id, thread.id));
       });
     });
-    await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).waitFor({ state: 'detached' });
+    await page.locator('[data-eva-nav-id="my-ai"] [data-eva-nav-unread]').waitFor({ state: 'detached' });
 
     const editor = page.getByRole('textbox', { name: /^发送给 / });
     await editor.fill('当前会话未读回归');
     await page.getByRole('button', { name: '发送', exact: true }).click();
     await page.locator('.eva-im-bubble-row').getByText('当前会话未读回归', { exact: true }).waitFor();
-    assert.equal(await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).count(), 0, '当前会话同步回复不会产生幽灵未读');
+    assert.equal(await page.locator('[data-eva-nav-id="my-ai"] [data-eva-nav-unread]').count(), 0, '当前会话同步回复不会产生幽灵未读');
     assert.equal(await page.locator('.eva-ai-team__session-unread').count(), 0);
     const viewport = await page.evaluate(() => ({
       scrollX: window.scrollX,

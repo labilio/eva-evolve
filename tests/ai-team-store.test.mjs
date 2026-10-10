@@ -69,8 +69,8 @@ test('empty persona keeps only a transient draft target and creates its first vi
 test('unread counts only incoming AI messages, aggregates by identity, clears and persists',()=>{
  const storage=memory(),s=make({storage});
  const session=s.getSnapshot().sessions.find(item=>item.id==='team-assistant-welcome');
- assert.equal(session.unreadCount,1);
- assert.equal(s.unreadCount(session.id),1);
+ assert.equal(session.unreadCount,2);
+ assert.equal(s.unreadCount(session.id),2);
  assert.equal(s.hasUnread('ai-general'),true);
  assert.equal(s.markRead(session.id),true);
  assert.equal(s.markRead(session.id),false);

@@ -91,7 +91,8 @@
     color: var(--eva-text-primary); text-align: left; cursor: pointer; font: var(--eva-fw-regular) var(--gds-type-label-font-size)/var(--gds-type-label-line-height) var(--eva-font-sans);
   }
 
-  .eva-personal-rail-new:hover, .eva-personal-folder__row:hover, .eva-personal-thread:hover { background: var(--eva-overlay-hover); }
+  .eva-personal-rail-new:hover, .eva-personal-folder__row:hover { background: var(--eva-overlay-hover); }
+  .eva-personal-thread:hover { background: var(--eva-conversation-row-hover); }
   .eva-personal-rail-section { display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: var(--eva-space-1) var(--eva-space-2); color: var(--eva-text-secondary-accessible); font: var(--eva-fw-regular) var(--gds-type-caption-font-size)/var(--gds-type-caption-line-height) var(--eva-font-sans); }
   .eva-personal-folder { position: relative; margin-bottom: var(--eva-space-3); }
   .eva-personal-folder__row { display: flex; align-items: center; border-radius: var(--eva-radius-control); }
@@ -111,9 +112,8 @@
   .eva-personal-folder-menu button { display: flex; align-items: center; gap: 6px; width: 100%; padding: 5px 7px; border: 0; border-radius: var(--eva-radius-key); background: transparent; color: var(--eva-text-primary); font: 12px/18px var(--eva-font-sans); text-align: left; cursor: pointer; }
   .eva-personal-folder-menu button svg { width: 14px; height: 14px; flex: none; }
   .eva-personal-folder-menu button:hover, .eva-personal-folder-menu button:active { background: var(--eva-overlay-hover); }
-  /* 2026-09-20 密度收敛：个人页 36px 档并入全局容器档 32px；名称显式 14/22/400，
-     与「我的消息」「我的 Agent」的末级行同档（GDS §4.2 label）。 */
-  .eva-personal-thread { position: relative; display: flex; align-items: center; min-height: 32px; border-radius: var(--eva-radius-control); }
+  /* Telegram 会话列表将时间置于右上、未读数置于右下；个人会话沿用 Eva 公共徽标。 */
+  .eva-personal-thread { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(56px, auto); grid-template-rows: 20px 18px; column-gap: var(--eva-space-2); align-items: center; min-height: 50px; padding: 6px var(--eva-space-2); border-radius: var(--eva-conversation-row-radius); }
   /* 末级行字色梯度：见 046 session-title 同款注释 */
   .eva-personal-thread__main { font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); color: var(--eva-text-secondary); }
   /* 选中态与「我的消息」/「我的 Agent」同源：EvaMate 0.3.0 surface/selected。
@@ -121,13 +121,20 @@
      选中与悬停完全无法区分，且是 hover 语义的 token 用在永久选中表面上
      （evamate §3.1「hover 与 pressed 是覆盖层，不是新的永久表面」）。 */
   .eva-personal-thread.is-selected { background: var(--eva-conversation-row-selected); }
+  .eva-personal-thread.is-selected:hover { background: var(--eva-conversation-row-selected); }
   /* 蓝底上次要文字升一档提对比度，与「我的消息」对选中行的处理一致
      （017-im-shell.css 对 .wk-conversationlist-item-selected 的时间/摘要同样处理）。
      实测时间文字在蓝底上仅 2.75(浅)/3.71(暗)，升档后达 AA。 */
-  .eva-personal-thread.is-selected .eva-personal-thread__time { color: var(--eva-conversation-row-selected-meta); }
-  .eva-personal-thread__main { flex: 1; min-height: 32px; padding: 0 var(--eva-space-2); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); }
-  .eva-personal-thread__time { margin-right: var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
-  .eva-personal-thread__actions { display: none; flex: none; margin-right: 4px; }
+  .eva-personal-thread.is-selected .eva-personal-thread__time,
+  .eva-personal-thread.is-selected .eva-personal-thread__preview { color: var(--eva-conversation-row-selected-meta); }
+  .eva-personal-thread__main { grid-column: 1; grid-row: 1 / 3; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 0; min-height: 38px; padding: 0; font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); }
+  .eva-personal-thread__main .eva-personal-thread__title, .eva-personal-thread__main .eva-personal-thread__preview { display: block; width: 100%; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .eva-personal-thread__preview { color: var(--eva-text-muted); font: var(--eva-fw-regular) 12px/18px var(--eva-font-sans); }
+  .eva-personal-thread__time { grid-column: 2; grid-row: 1; justify-self: end; color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
+  .eva-personal-thread > [data-eva-unread] { grid-column: 2; grid-row: 2; justify-self: end; }
+  .eva-personal-thread__actions { display: none; grid-column: 2; grid-row: 1; justify-self: end; align-self: center; transform: translateY(-2px); z-index: 1; background: var(--eva-conversation-row-hover); }
+  .eva-personal-thread.is-selected .eva-personal-thread__actions { background: var(--eva-conversation-row-selected); }
+  .eva-personal-thread__actions .eva-personal-rail-icon { width: 24px; height: 24px; flex-basis: 24px; }
   .eva-personal-thread:hover .eva-personal-thread__actions, .eva-personal-thread:focus-within .eva-personal-thread__actions, .eva-personal-thread:has([aria-expanded="true"]) .eva-personal-thread__actions { display: flex; }
   .eva-personal-thread:hover .eva-personal-thread__time, .eva-personal-thread:focus-within .eva-personal-thread__time { display: none; }
   .eva-personal-folder-menu .is-pinned svg, .eva-personal-thread__actions [aria-pressed="true"] svg { fill: currentColor; stroke-width: 1.8; }
@@ -137,17 +144,20 @@
   .eva-personal-folder__row:active, .eva-personal-thread:active { background: var(--eva-overlay-pressed); }
   .eva-personal-rail-more { display: block; padding: var(--eva-space-2); border: 0; background: transparent; color: var(--eva-text-muted); font: inherit; cursor: pointer; }
   .eva-personal-rail-empty { padding: var(--eva-space-2); color: var(--eva-text-muted); }
-  .eva-personal-rail-form { display: flex; flex-direction: column; gap: var(--eva-space-2); margin: var(--eva-space-1) 0 var(--eva-space-3); padding: var(--eva-space-3); background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); }
-  .eva-personal-rail-form .semi-input-wrapper, .eva-personal-rail-form .semi-select { box-sizing: border-box; width: 100%; min-width: 0; height: 32px; border: 1px solid var(--eva-border-default); border-radius: var(--eva-radius-key); background: var(--eva-surface-primary); color: var(--eva-text-primary); padding: 0 var(--eva-space-2); font: inherit; }
-  .eva-personal-rail-form.semi-form-vertical .semi-form-field { padding: 0; }
-  .eva-personal-rail-form .semi-input-wrapper { padding: 0; }
-  .eva-personal-rail-form .semi-input { height: 30px; padding: 0 var(--eva-space-2); font: inherit; }
-  .eva-personal-rail-form .semi-select-selection { margin-left: 0; font: inherit; }
-  .eva-personal-rail-form__actions { display: flex; justify-content: flex-end; gap: var(--eva-space-2); }
-  .eva-personal-rail-form__actions button { min-height: 32px; padding: 0 var(--eva-space-3); border: 0; border-radius: var(--eva-radius-key); background: var(--eva-overlay-hover); color: var(--eva-text-primary); font: inherit; cursor: pointer; }
-  .eva-personal-rail-form__actions button[type="submit"] { background: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
-  .eva-personal-rail-form [role="alert"]:empty { display: none; }
-  .eva-personal-sider-panel button:focus-visible, .eva-personal-rail-form input:focus-visible, .eva-personal-rail-form select:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
+  .eva-conversation-hover-card { box-sizing: border-box; width: min(360px, calc(100vw - 32px)); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); color: var(--eva-text-primary); box-shadow: var(--eva-shadow-popover), var(--eva-shadow-hairline); }
+  .eva-conversation-hover-card .semi-popover-content { padding: 12px 14px; }
+  .eva-conversation-hover-card__body { display: grid; gap: 8px; min-width: 0; font-family: var(--eva-font-sans); }
+  .eva-conversation-hover-card__heading { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+  .eva-conversation-hover-card__heading strong { flex: 1; min-width: 0; font-size: 14px; line-height: 22px; font-weight: var(--eva-fw-medium); overflow-wrap: anywhere; }
+  .eva-conversation-hover-card__heading time { flex: none; color: var(--eva-text-muted); font-size: 11px; line-height: 20px; white-space: nowrap; }
+  .eva-conversation-hover-card__folder { display: flex; gap: 8px; color: var(--eva-text-secondary); font-size: 12px; line-height: 18px; }
+  .eva-conversation-hover-card__folder span:first-child { color: var(--eva-text-muted); }
+  .eva-conversation-hover-card__message { margin: 0; padding-top: 8px; border-top: 1px solid var(--eva-border-subtle); color: var(--eva-text-secondary); font-size: 12px; line-height: 19px; overflow-wrap: anywhere; }
+  .eva-personal-rename-popover { background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); box-shadow: var(--semi-shadow-elevated); }
+  .eva-personal-delete-popconfirm { background: var(--eva-surface-primary); border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); box-shadow: var(--semi-shadow-elevated); }
+  .eva-personal-rename-popover .eva-personal-rail-form { box-sizing: border-box; width: 280px; margin: 0; padding: var(--eva-space-3); }
+  .eva-personal-rename-popover .eva-personal-rail-form__actions { display: flex; justify-content: flex-end; }
+  .eva-personal-sider-panel button:focus-visible { outline: 2px solid var(--eva-border-focus); outline-offset: -2px; }
   .eva-create-group-member .eva-identity-avatar.eva-create-group-member__avatar {
     width: 32px;
     height: 32px;

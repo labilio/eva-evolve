@@ -604,10 +604,6 @@ body.eva-message-hierarchy-ready :is(
   margin-bottom: 1px;
 }
 
-.eva-msg .wk-conv-compact-icon--reddot::after {
-  display: none !important;
-}
-
 /* Flat project tree: retain Eva's compact chrome while removing card stacking. */
 body.eva-message-hierarchy-ready .eva-msg .ch-list__scroll {
   padding: 4px 10px 12px;

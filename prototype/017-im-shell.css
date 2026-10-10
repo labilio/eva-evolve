@@ -91,9 +91,8 @@
  *   · IM 界面一致性规范「…5px 圆角」→ 现为胶囊（999px）
  * 字号 11px 与最近列日期同档；字重 500 取 EvaMate「Badge / Compact」。
  * 高度 16px、min-width 18px 维持规范几何未变。 */
-.ch-layout :is(.wk-conv-compact-badge, .wk-category-header__badge, .wk-sidebar-tabbar__badge, .wk-conv-unread-num, .eva-recent-topic-tabs__unread),
-.eva-thread-list--compact .eva-recent-topic-tabs__unread,
-.collab-tab .badge {
+/* Shared unread primitives: element-owned appearance, independent of its host. */
+body [data-eva-unread] {
   box-sizing: border-box;
   min-width: 18px;
   height: 16px;
@@ -107,6 +106,29 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+[data-eva-unread-label] {
+  width: auto;
+  height: 20px;
+  padding-inline: 7px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+body .wk-conv-compact-item--muted [data-eva-unread],
+body .eva-ai-team__session-row.is-muted [data-eva-unread],
+body [data-eva-unread].is-muted {
+  background: var(--semi-color-fill-1, var(--eva-unread-surface));
+  color: var(--semi-color-text-2, var(--eva-unread-text));
+}
+/* 公共组件的 selected-on-surface 状态，读取宿主已有选中态，不保存第二份状态。
+ * 静音入口排除在外，保持原有弱提醒；尺寸/字重/普通态不变。 */
+.eva-nav-entry .bg-fill-3 [data-eva-unread],
+.eva-personal-entry.is-selected [data-eva-unread],
+.wk-conv-compact-item--selected:not(.wk-conv-compact-item--muted) [data-eva-unread],
+.eva-ai-team__session-row.is-selected:not(.is-muted) [data-eva-unread],
+.collab-tab.is-active [data-eva-unread] {
+  background: var(--eva-unread-selected-surface);
+  color: var(--eva-unread-selected-text);
 }
 .ch-layout .wk-conv-compact-badges {
   display: flex;

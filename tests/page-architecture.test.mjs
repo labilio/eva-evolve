@@ -135,7 +135,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.match(imPatch, /groupStore\.removeGroup\(id\).+selection\.identityId===id.+choose\(groupStore\.id,null\)/s);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__group-count'/);
   assert.match(imPatch, /className:'eva-ai-team__session-unread'/);
-  assert.match(imPatch, /className:'eva-ai-team__unread-dot'/);
+  assert.match(imPatch, /const unreadGroupBadge=count=>h\(EvaUnreadBadge,\{count,unit:'个会话有未读消息'\}\)/);
   assert.doesNotMatch(imPatch, /className:'eva-ai-team__session-time'/);
   assert.doesNotMatch(imPatch, /Math\.max\(0,channel\.members-1\)/);
   assert.match(imPatch, /EvaAIIdentityAvatar.+eva-ai-team__identity-name.+AiBadge/s);
@@ -291,7 +291,7 @@ test('团队消息和我的 AI 的第二栏使用同一套 GDS 文字层级', ()
   // 2026-09-20 未读徽标改为主色胶囊 + 反白数字，字号取 EvaMate Label/Small 12px。
   // 前景走 --eva-action-primary-text（暗色自动转近黑），不得写死白色。
   const imShellCss = read('prototype/017-im-shell.css');
-  assert.match(imShellCss, /wk-conv-unread-num/);
+  assert.match(imShellCss, /body \[data-eva-unread\]/);
   assert.match(imShellCss, /font: 500 11px\/16px var\(--eva-font-sans\)/);
   assert.match(imShellCss, /background:\s*var\(--eva-unread-tonal-surface\);\s*\n\s*color:\s*var\(--eva-unread-tonal-text\)/);
   assert.match(hierarchyCss, /wk-category-header__name\s*\{[^}]*font-size:\s*var\(--gds-type-label-medium-font-size\)[^}]*font-weight:\s*var\(--gds-font-weight-medium\)/s);
@@ -375,26 +375,25 @@ test('我的 AI 分组标题与搜索结果统一为「标题 + 右侧拖尾细�
   assert.match(aiTeamCss, /\.eva-ai-team__team-button\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 var\(--eva-ai-team-secondary-inset\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*padding:\s*0 var\(--gds-space-2\) 0 0/s);
   assert.doesNotMatch(imPatch, /hasDirectUnread/);
-  assert.match(imPatch, /hasUnread=role==='digital'&&items\.some/);
+  assert.match(imPatch, /unreadCount=items\.reduce/);
   assert.doesNotMatch(aiTeamCss, /--eva-ai-section-(?:bg|meta)/);
-  assert.match(aiTeamCss, /\.eva-ai-team__unread-dot\s*\{[^}]*width:\s*6px[^}]*background:\s*var\(--eva-unread-indicator\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
+  assert.match(imPatch, /const unreadGroupBadge=count=>h\(EvaUnreadBadge,\{count,unit:'个会话有未读消息'\}\)/);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*background:/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-unread\s*\{[^}]*justify-self:\s*end/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-actions\s*\{[^}]*position:\s*absolute[^}]*right:\s*4px/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-row:hover \.eva-ai-team__session-unread,[^}]*focus-within \.eva-ai-team__session-unread\s*\{\s*opacity:\s*0/s);
   assert.match(aiTeamCss, /\.eva-ai-team__session-row \.eva-ai-team__session\s*\{[^}]*width:\s*100%[^}]*padding-right:\s*var\(--gds-space-2\)/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-button > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__team-button > \[data-eva-unread\]\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badges\s*\{[^}]*margin-left:\s*auto[^}]*margin-right:\s*0/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badge\s*\{[^}]*background:\s*var\(--eva-unread-surface\)[^}]*color:\s*var\(--eva-unread-text\)/s);
+  assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-thread-row \.wk-conv-compact-badge\s*\{/);
   assert.match(aiTeamCss, /\.eva-ai-team__team-thread-row:hover \.wk-conv-compact-badges,[^}]*focus-within \.wk-conv-compact-badges\s*\{\s*opacity:\s*0/s);
-  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \.eva-ai-team__unread-dot\s*\{\s*margin-left:\s*auto/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-identity-name-row > \[data-eva-unread\]\s*\{\s*margin-left:\s*auto/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading \.eva-ai-team__identity-button\s*\{[^}]*padding-right:\s*var\(--gds-space-2\)/s);
   assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__identity-button,[^}]*focus-within \.eva-ai-team__identity-button,[^}]*is-active\) \.eva-ai-team__identity-button\s*\{\s*padding-right:\s*40px/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__identity-heading:has\(> \.eva-ai-team__menu-anchor\)/);
   assert.doesNotMatch(aiTeamCss, /eva-ai-team__assistant-avatar|has-config-avatar/);
-  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-ai-team__unread-dot,[^}]*focus-within \.eva-ai-team__unread-dot,[^}]*is-active\) \.eva-ai-team__unread-dot\s*\{\s*opacity:\s*0/s);
-  assert.match(tokens, /--eva-unread-indicator:\s*var\(--eva-c-mac-red\)/);
-  assert.match(modeCss, /\.eva-nav-icon__unread\s*\{[^}]*background:\s*var\(--eva-unread-indicator\)/s);
+  assert.match(aiTeamCss, /\.eva-ai-team__identity-heading:hover \.eva-identity-name-row > \[data-eva-unread\],[^}]*opacity:\s*0/s);
+  assert.doesNotMatch(read('prototype/017-im-shell.css'), /\[data-eva-unread-dot\]/);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle\s*\{[^}]*min-height:\s*32px[^}]*background:\s*transparent/s);
   assert.match(aiTeamCss, /\.eva-ai-team__group-toggle \.eva-ai-team__section-heading\s*\{[^}]*flex:\s*1/s);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-heading:has\([^)]*\)[^{]*\.eva-ai-team__group-count/);
@@ -421,11 +420,11 @@ test('我的 AI 小队父群去掉左侧箭头并由父群行同时切换子区'
   assert.doesNotMatch(teamHeading, /ChevronRight/);
   assert.match(teamHeading, /className:'eva-ai-team__team-button'/, '父群按钮由共享行组件渲染');
   assert.match(teamHeading, /className:'eva-ai-team__team-avatar'/, '父群头像由共享行组件渲染');
-  assert.match(teamGroupItem, /aiTeamTeamHeading\(\{id:group\.id,name:group\.name,system:group\.system,selected:selected&&!selection\.sessionId,hasUnread,buttonProps:\{'aria-label':'进入 AI 小队会话 '\+group\.name,'aria-current':selected&&!selection\.sessionId\?'true':undefined,'aria-expanded':expanded,'aria-controls':threadsId,onClick:\(\)=>\{if\(!expanded\)setCollapsed\(value=>\(\{\.\.\.value,\[group\.id\]:false\}\)\);choose\(group\.id,null\);\}\}\}\)/, '父群行通过 buttonProps 承载进入/展开语义');
-  assert.match(teamGroupItem, /hasUnread=groupStore\.hasUnread\(group\.id\)/);
-  assert.match(teamHeading, /options\.hasUnread&&unreadDot\(options\.name\+'有未读消息'\)/);
+  assert.match(teamGroupItem, /aiTeamTeamHeading\(\{id:group\.id.+buttonProps:\{'aria-label':'进入 AI 小队会话 '.+choose\(group\.id,null\)/s, '父群行通过 buttonProps 承载进入/展开语义');
+  assert.match(teamGroupItem, /unreadCount=Number\(groupStore\.unreadCount\(group\.id,group\.id\)>0\)/);
+  assert.match(teamHeading, /unreadGroupBadge\(options\.unreadCount\)/);
   assert.match(teamGroupItem, /aiTeamThreadRow\(group\.id,item,\{selected:selected&&selection\.sessionId===item\.id,actions:teamThreadMenu\(group,item\)\}\)/);
-  assert.match(threadRow, /h\(ConvCompactItem,\{isThread:true,name:options\.nameNode!==undefined\?options\.nameNode:thread\.name,unread:Number\(thread\.unread\|\|thread\.unreadCount\|\|0\)\|\|0,selected:options\.selected,onClick:options\.onActivate\|\|\(\(\)=>choose\(groupId,thread\.id\)\)\}\)/);
+  assert.match(threadRow, /h\(ConvCompactItem,\{isThread:true,muted:reminderMap\.get\(thread\.id\)\?\.muted,hasMention:reminderMap\.get\(thread\.id\)\?\.mentioned,name:options\.nameNode!==undefined\?options\.nameNode:thread\.name,unread:Number\(thread\.unread\|\|thread\.unreadCount\|\|0\)\|\|0,selected:options\.selected,onClick:options\.onActivate\|\|\(\(\)=>choose\(groupId,thread\.id\)\)\}\)/);
   assert.match(threadRow, /className:'eva-ai-team__team-thread-row'/);
   assert.match(threadRow, /options\.actions!==undefined&&h\('div',\{className:'eva-ai-team__session-actions'\},options\.actions\)/);
   assert.doesNotMatch(aiTeamCss, /\.eva-ai-team__team-toggle/);
@@ -443,20 +442,20 @@ test('我的 AI 小队保留三条预览，AI 身份行控制全部会话的收�
   assert.match(imPatch, /else setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:false\}\)\)/);
   assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2&&!threadPreferenceStore\.chatPreferences\(item\.id,threadPreferenceActor\)\.hidden\)\.sort/);
   assert.match(imPatch, /Number\(!!threadPreferenceStore\.chatPreferences\(b\.id,threadPreferenceActor\)\.top\)-Number\(!!threadPreferenceStore\.chatPreferences\(a\.id,threadPreferenceActor\)\.top\)\|\|teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)/);
-  assert.match(imPatch, /visibleThreads=group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
+  assert.match(imPatch, /visibleThreads=reminderFilter==='all'&&group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
   assert.match(imPatch, /className:'eva-ai-team__team-threads-more','aria-expanded':showAll/);
   assert.match(imPatch, /'aria-label':\(showAll\?'收起 ':'展开查看 '\)\+group\.name\+' 子区'/);
   assert.match(imPatch, /h\('span',null,showAll\?'收起':'展开查看'\),h\(ChevronDown,\{size:12,className:'eva-ai-team__team-threads-more-chevron'\+\(showAll\?' is-expanded':''\)/);
   assert.doesNotMatch(imPatch, /展开查看（|其余 '\+\(threads\.length-3\)/);
   assert.doesNotMatch(imPatch, /identitySessionsDisclosure|identity-sessions-more|showAllIdentitySessions|openLatestConversation/);
   const identityItem=imPatch.match(/function identityItem\(i\)[\s\S]*?function employeeItem/)[0];
-  assert.match(identityItem, /const collapsed=collapsedIdentitySessions\[i\.id\]===true/);
+  assert.match(identityItem, /const collapsed=reminderFilter==='all'&&collapsedIdentitySessions\[i\.id\]===true/);
   assert.match(identityItem, /'aria-label':\(collapsed\?'展开 ':'收起 '\)\+i\.name\+' 会话列表'/);
   assert.match(identityItem, /'aria-expanded':!collapsed,'aria-controls':'ai-sessions-'\+i\.id/);
   assert.match(identityItem, /onClick:\(\)=>toggleIdentitySessions\(i\.id\)/);
   assert.match(identityItem, /h\('div',\{className:'eva-ai-team__sessions',id:'ai-sessions-'\+i\.id,hidden:collapsed\}.+sessions\.map/s);
   const employeeItem=imPatch.match(/function employeeItem\(item\)[\s\S]*?function roleGroup/)[0];
-  assert.match(employeeItem, /const sessions=digitalStore\.sessions\(item\.id\), collapsed=collapsedIdentitySessions\[item\.id\]===true/);
+  assert.match(employeeItem, /const sessions=digitalStore\.sessions\(item\.id\)\.filter\(matchesReminder\), collapsed=reminderFilter==='all'&&collapsedIdentitySessions\[item\.id\]===true/);
   assert.match(employeeItem, /'aria-label':\(collapsed\?'展开 ':'收起 '\)\+item\.name\+' 会话列表'/);
   assert.match(employeeItem, /onClick:\(\)=>toggleIdentitySessions\(item\.id\)/);
   assert.match(employeeItem, /h\('div',\{className:'eva-ai-team__sessions',id:'ai-sessions-'\+item\.id,hidden:collapsed\}.+sessions\.map/s);
@@ -470,7 +469,7 @@ test('个人文件夹与对话使用统一 Hover、选中及公共 Lucide 图标
   const workspace = read('prototype/052-personal-eva-gds.js');
   const convergence = read('prototype/043-final-layout-convergence.css');
   assert.match(workspace, /icon\('folder',18/);
-  assert.match(convergence, /eva-personal-thread:hover[^}]*var\(--eva-overlay-hover\)/s);
+  assert.match(convergence, /eva-personal-thread:hover[^}]*var\(--eva-conversation-row-hover\)/s);
   // 2026-09-17：选中态改用 surface/selected，与「我的消息」「我的 Agent」一致。
   // 原先取 --eva-overlay-hover，与 :hover 和 :active 三者同值，选中与悬停无法区分，
   // 且把 hover 语义的覆盖层用作永久选中表面（evamate §3.1）。
@@ -503,8 +502,8 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
   // 折叠态 label 断言不锚定压缩变量名（2026-09-21 重构后折叠标志为局部 evaSectionCollapsed）。
   assert.match(sider, /case"my-ai":return.+SiderEvaStub,\{label:[A-Za-z_$][\w$]*\?"Agent":"我的 Agent"/);
-  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+EvaNavIcon\(React\.createElement\(EvaMyAgentIcon/s);
-  assert.match(sider, /EvaNavIcon=\(rt,ct,ut\)=>React\.createElement\("span",\{className:"eva-nav-icon"\},rt,ct&&React\.createElement\("span",\{className:"eva-nav-icon__unread"/);
+  assert.match(sider, /EvaMyAiCollaborationIcon=\(\)=>.+window\.EvaMyAITeamGroup.+rt\.hasUnread\(\)\|\|ct\.hasUnread\(\)\|\|pt\.hasUnread\(\).+React\.createElement\(EvaMyAgentIcon.+React\.createElement\(EvaReminderNavBadge,\{mode:"my-ai"\}\)/s);
+  assert.match(sider, /EvaNavIcon=\(rt,ct,ut\)=>React\.createElement\("span",\{className:"eva-nav-icon"\},rt,ct&&React\.createElement\(EvaReminderNavBadge/);
   assert.match(runtime, /LABEL\$2="我的项目",SiderCollabEntry=/);
   assert.doesNotMatch(sider, /我的Agent|React\.cloneElement/);
   assert.match(sider, /label:[A-Za-z_$][\w$]*\?"自动化":"自动化任务"/);
@@ -636,6 +635,7 @@ test('项目内项目信息位于项目设置前并展示核心项目档案', ()
 
   assert.match(patch, /eva-project-directory-actions/);
   assert.match(patch, /eva-project-directory-search/);
+  assert.doesNotMatch(patch, /EvaProjectUnreadOverview/);
   assert.match(patch, /evaFilteredPinnedProjects/);
   assert.match(patch, /evaFilteredProjects/);
   assert.doesNotMatch(patch, /eva-project-directory-hero/);

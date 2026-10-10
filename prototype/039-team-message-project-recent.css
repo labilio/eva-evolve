@@ -326,9 +326,7 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 
 /* Telegram's trailing count: separate from the selected-tab indicator. */
 .eva-recent-topic-tabs__label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-/* Geometry and tonal colors come from the shared IM unread badge rule in 017. */
-.eva-recent-topic-tabs .eva-recent-topic-tabs__unread.is-muted,
-.eva-thread-list--compact .eva-recent-topic-tabs__unread.is-muted { background:var(--semi-color-fill-1); color:var(--semi-color-text-2); }
+/* Geometry and colors come from the shared unread badge rule in 017. */
 
 /* Natural end position; when full, Semi's scroll area shrinks while create stays visible. */
 .eva-recent-topic-tabs { display: flex; align-items: center; gap: 8px; }
@@ -388,3 +386,16 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 .eva-msg .eva-project-all-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eva-msg .eva-project-all-recent-name > .eva-project-all-tag,
 .eva-msg .eva-project-all-title > .eva-project-all-tag { flex: none; }
+
+/* 站内提醒使用公共控件与颜色，不改变原有两种组织视图。 */
+.eva-reminder-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 6px 12px; flex-shrink: 0; }
+.eva-reminder-filters { display: flex; gap: 2px; min-width: 0; }
+.eva-reminder-filters .semi-button { padding-inline: 7px; font-size: 12px; }
+.eva-reminder-filters .semi-button[aria-pressed=true] { background: var(--eva-conversation-row-selected); }
+.eva-reminder-filter-count { margin-left: 4px; font-variant-numeric: tabular-nums; }
+.eva-reminder-hint { padding: 6px 12px; color: var(--semi-color-text-2); font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+
+
+.ch-stream .eva-unread-start { position: relative; margin-top: 26px; }
+.ch-stream .eva-unread-start::before { content: '以下为未读消息'; position: absolute; top: -24px; left: 0; right: 0; text-align: center; color: var(--semi-color-text-2); font-size: 12px; line-height: 20px; border-top: 1px solid var(--semi-color-border); }
+.eva-new-messages { align-self: center; flex-shrink: 0; }

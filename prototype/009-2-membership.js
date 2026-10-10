@@ -491,8 +491,45 @@
         return items.filter(t=>state.threads[t.id]===id&&api.canRead(t.id,uid)).map(t=>({id:t.id,pinned:!!state.chatPreferences[uid]?.[t.id]?.top,pinOrder:Number(state.chatPreferences[uid]?.[t.id]?.pinOrder)||0,at:api.conversationActivity(t.id,uid,t.updated_at||t.created_at)})).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||(a.pinned?b.pinOrder-a.pinOrder:b.at.localeCompare(a.at)));
       },
       conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
-      conversationUnread(id,uid,seed=0){const count=state.chatPreferences[uid]?.[id]?.readMessageCount;return count===undefined?seed:Math.max(0,[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length-count);},
-      clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify({keys:['chatPreferences']});},
+      initializeUnreadBaseline(){
+        if(state.unreadBaselineV1)return;
+        state.unreadBaselineV1={};
+        for(const uid of state.people.map(p=>p.id)){
+          const counts=state.unreadBaselineV1[uid]={};
+          for(const id of new Set([...Object.keys(state.messages),...Object.keys(state.directConversations||{})]))counts[id]=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        }
+        notify();
+      },
+      conversationUnread(id,uid,seed=0){
+        if(!api.canReadForwardSource(id,uid))return 0;
+        const pref=state.chatPreferences[uid]?.[id],count=pref?.readMessageCount;
+        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        return Math.max(pref?.markedUnread?1:0,count===undefined?(state.unreadBaselineV1?(Number(seed)||0)+Math.max(0,total-(state.unreadBaselineV1[uid]?.[id]||0)):Math.max(Number(seed)||0,total)):total-count,0);
+      },
+      conversationMentioned(id,uid,seed=false){
+        if(!api.canReadForwardSource(id,uid))return false;
+        const count=state.chatPreferences[uid]?.[id]?.readMessageCount;
+        if(count===undefined&&seed)return true;
+        const name=person(uid)?.name,token='@'+name;
+        return [...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').slice(count??state.unreadBaselineV1?.[uid]?.[id]??0).some(m=>{
+          if((m.mentions||[]).some(x=>(x.uid||x.id)===uid)||(m.notifiedHumanIds||[]).includes(uid))return true;
+          const text=String(m.text||'');let at=text.indexOf(token);
+          while(name&&at>=0){const end=at+token.length;if(end===text.length||/[\s，。！？、,.:：；;…]/.test(text[end]))return true;at=text.indexOf(token,end);}
+          return /@(?:所有人|全体成员)(?=$|[\s，。！？、,.:：；;…])/.test(text);
+        });
+      },
+      markConversationUnread(id,uid){
+        requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
+        state.chatPreferences[uid]||={};const pref=state.chatPreferences[uid][id]||={};
+        if(pref.markedUnread)return false;pref.markedUnread=true;notify({keys:['chatPreferences']});return true;
+      },
+      clearConversationUnread(id,uid){
+        requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
+        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        state.chatPreferences[uid]||={};const pref=state.chatPreferences[uid][id]||={};
+        if(pref.readMessageCount===total&&!pref.markedUnread)return false;
+        pref.readMessageCount=total;delete pref.markedUnread;notify({keys:['chatPreferences']});return true;
+      },
       chatPreferences(id,uid){return JSON.parse(JSON.stringify(state.chatPreferences[uid]?.[id]||{}));},
       setChatSettings(id,uid,patch){
         if(!api.canRead(id,uid)||!manager(id,uid))fail('仅群主或群内管理员可修改');
@@ -1086,7 +1123,7 @@
       const settings=store.chatSettings(context?.groupId||id);
       return {avatar:settings?.avatar,project:context};
     });
-    store.seedSupplyChatContent();store.seedProjectAgents();return store;
+    store.seedSupplyChatContent();store.seedProjectAgents();store.initializeUnreadBaseline();return store;
   }
   root.EvaMembership=Object.freeze({create,bootstrap});
 })(window);

@@ -119,5 +119,22 @@
   }
 
   .eva-project-switcher-menu {
-    min-width: 176px;
+    min-width: 224px;
+  }
+
+  .eva-project-switcher-menu__project {
+    display: flex;
+    align-items: center;
+  }
+
+  .eva-project-switcher-menu__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eva-project-switcher-menu__project .wk-conv-compact-badge {
+    margin-inline-start: auto;
+    flex: none;
   }
