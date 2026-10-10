@@ -56,7 +56,12 @@
     measure();const resize=new ResizeObserver(measure);resize.observe(target);if(text&&text!==target)resize.observe(text);return()=>resize.disconnect();
    },[target,content,clamp]);
    R.useLayoutEffect(()=>{
-    const dismiss=()=>{setDismissed(true);setOpen(false);},reset=()=>setDismissed(false);
+    const dismiss=()=>{setDismissed(true);setOpen(false);},reset=e=>{
+     // A redraw blurs the clicked button while the pointer still rests on it.
+     // Keep click dismissal until the pointer actually leaves that control.
+     if(e.type==='focusout'&&target.matches(':hover'))return;
+     setDismissed(false);
+    };
     target.addEventListener('click',dismiss);
     target.addEventListener('mouseleave',reset);target.addEventListener('focusout',reset);
     return()=>{target.removeEventListener('click',dismiss);target.removeEventListener('mouseleave',reset);target.removeEventListener('focusout',reset);};
@@ -69,13 +74,21 @@
   const reactRoot=createRoot(host);
   function reconcile(){
    let changed=false;
-   for(const [target] of records)if(!target.isConnected||!target.matches(selector)){records.delete(target);changed=true;}
+   const replaced=new Map();
+   for(const [target,record] of records)if(!target.isConnected||!target.matches(selector)){
+    const identity=target.getAttribute('data-eva-tooltip-key');
+    if(identity)replaced.set(identity,record.key);
+    records.delete(target);changed=true;
+   }
    for(const target of document.querySelectorAll(selector)){
     const content=target.getAttribute('data-eva-tooltip');
     if(!content){if(records.delete(target))changed=true;continue;}
     const clamp=target.getAttribute('data-eva-tooltip-clamp');
     const previous=records.get(target);
-    if(!previous||previous.content!==content||previous.clamp!==clamp){records.set(target,{target,content,clamp,key:++serial});changed=true;}
+    if(!previous||previous.content!==content||previous.clamp!==clamp){
+     const identity=target.getAttribute('data-eva-tooltip-key');
+     records.set(target,{target,content,clamp,key:identity&&replaced.has(identity)?replaced.get(identity):++serial});changed=true;
+    }
    }
    if(changed)reactRoot.render(h(R.Fragment,null,...Array.from(records.values(),record=>h(Tip,record))));
   }

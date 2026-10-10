@@ -78,6 +78,21 @@ test('新建分组弹窗退出后提示不因焦点返回而常亮',async()=>{
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
 
+test('个人 Eva 侧栏按钮点击重建后不重新点亮提示',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{const page=await browser.newPage({viewport:{width:1200,height:800}});await page.goto(`http://127.0.0.1:${server.address().port}/#/guid`);
+  for(const [selector,label] of [['[data-eva-folder-menu]','文件夹设置'],['[data-eva-new-folder-chat]','新建对话']]){
+   const button=page.locator(selector).first();await button.locator('xpath=ancestor::div[contains(@class,"eva-personal-folder__row")]').hover();await button.hover();await page.getByRole('tooltip',{name:label,exact:true}).waitFor();await button.click();await page.waitForTimeout(350);
+   assert.equal(await page.locator('.semi-tooltip-wrapper-show').filter({hasText:label}).count(),0,`${label} 点击后不应重新出现`);
+   await page.mouse.move(1190,790);
+   if(label==='文件夹设置'){await button.hover();await page.waitForTimeout(350);assert.equal(await page.locator('.semi-tooltip-wrapper-show').filter({hasText:label}).count(),0,'菜单打开期间重新悬停也不显示提示');await page.mouse.move(1190,790);}
+  }
+  const pin=page.locator('[data-eva-pin-conversation]').first();await pin.locator('xpath=ancestor::div[contains(@class,"eva-personal-thread")]').hover();await pin.hover();await page.getByRole('tooltip',{name:'置顶',exact:true}).waitFor();await pin.click();await page.waitForTimeout(350);
+  assert.equal(await page.locator('.semi-tooltip-wrapper-show').filter({hasText:'取消置顶'}).count(),0,'置顶后重建的按钮不应立即显示新提示');
+  await page.mouse.move(1190,790);await pin.locator('xpath=ancestor::div[contains(@class,"eva-personal-thread")]').hover();await pin.hover();await page.getByRole('tooltip',{name:'取消置顶',exact:true}).waitFor();
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});
+
 test('文件卡仅截断名提示；文件库图标支持键盘且权限说明直接可见',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
  try{

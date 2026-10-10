@@ -177,9 +177,9 @@
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
       return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '">'
-        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-clamp="span" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
+        + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-key="personal-thread:' + escapeHTML(item.id) + '" data-eva-tooltip-clamp="span" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
         + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
-        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
+        + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '" data-eva-tooltip-key="personal-pin:' + escapeHTML(item.id) + '">' + icon('pin',16,'eva-i') + '</button>'
         + '<span data-eva-delete-host="' + escapeHTML(item.id) + '"></span></span>'
         + '</div>' ;
     }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
@@ -207,9 +207,9 @@
         var collapsed = snapshot.collapsed.includes(folder.id);
         var items = snapshot.conversations.filter(function (c) { return c.folderId === folder.id; });
         return '<section class="eva-personal-folder"><div class="eva-personal-folder__row">'
-          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" data-eva-tooltip="' + escapeHTML(folder.name) + '" data-eva-tooltip-clamp="span">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
-          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '" data-eva-tooltip="文件夹设置">' + icon('ellipsis',16,'eva-i') + '</button>'
-          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" data-eva-tooltip="新建对话">' + icon('plus',16,'eva-i') + '</button></div>'
+          + '<button type="button" class="eva-personal-folder__main" data-eva-toggle-folder="' + escapeHTML(folder.id) + '" aria-expanded="' + !collapsed + '" data-eva-tooltip="' + escapeHTML(folder.name) + '" data-eva-tooltip-key="personal-folder:' + escapeHTML(folder.id) + '" data-eva-tooltip-clamp="span">' + icon('folder',18,'eva-i') + '<span>' + escapeHTML(folder.name) + '</span>' + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__more" data-eva-folder-menu="' + escapeHTML(folder.id) + '" aria-label="设置文件夹：' + escapeHTML(folder.name) + '" aria-haspopup="menu" aria-expanded="' + (folderMenu === folder.id) + '"' + (folderMenu === folder.id ? '' : ' data-eva-tooltip="文件夹设置" data-eva-tooltip-key="personal-folder-menu:' + escapeHTML(folder.id) + '"') + '>' + icon('ellipsis',16,'eva-i') + '</button>'
+          + '<button type="button" class="eva-personal-rail-icon eva-personal-folder__new" data-eva-new-folder-chat="' + escapeHTML(folder.id) + '" aria-label="在' + escapeHTML(folder.name) + '中新建对话" data-eva-tooltip="新建对话" data-eva-tooltip-key="personal-folder-new:' + escapeHTML(folder.id) + '">' + icon('plus',16,'eva-i') + '</button></div>'
           + (folderMenu === folder.id ? folderMenuHTML(folder) : '')
           + (!collapsed ? '<div class="eva-personal-folder__threads">' + conversationRowsHTML(items,folder.id) + '</div>' : '') + '</section>';
       }).join('')
@@ -636,8 +636,8 @@
   }
 
   /* ---- 交互 ------------------------------------------------
-     捕获阶段单一委托，与 044 同样的写法；只处理挂在本页根节点内的
-     目标，不碰侧栏与其它页。
+     页面内单一委托在目标按钮处理完 click 后执行，避免同步重绘侧栏
+     提前卸载按钮及其 Semi Tooltip 关闭处理。
      -------------------------------------------------------- */
   document.addEventListener('click', function (event) {
     if (!root || !root.isConnected) return;
@@ -799,7 +799,7 @@
 
     var prompt = event.target.closest('.eva-composer-prompt');
     if (prompt) prompt.focus();
-  }, true);
+  });
 
   document.addEventListener('keydown', function(event) {
     if (!root || !root.contains(event.target)) return;
