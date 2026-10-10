@@ -1,5 +1,5 @@
 import React from 'react';
-import Popover from '@douyinfe/semi-ui/lib/es/popover';
+import {Popover} from './063-popover.jsx';
 import PersonalRailForm from './063-personal-rail-form.jsx';
 
 const Anchor = React.forwardRef(function Anchor({target}, ref) {

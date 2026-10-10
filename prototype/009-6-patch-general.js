@@ -24,7 +24,7 @@
     // React controls use Semi directly; legacy DOM surfaces only adapt their real nodes.
     var evaTooltipPrimitive = String.raw`let evaTooltipImpl;const EvaTooltip=reactExports.forwardRef(function EvaTooltip(props,ref){evaTooltipImpl||=window.EvaTooltipAdapter.createTooltip({React:reactExports,Tooltip});return reactExports.createElement(evaTooltipImpl,{...props,ref})});var TooltipComponent=reactExports.forwardRef(function EvaSemiTooltipBridge(rt,ct){const{popupVisible:ut,disabled:pt,position:evaLegacyPosition,trigger:mt,unmountOnExit:gt,popupHoverStay:St,escToClose:Ct,blurToHide:xt,triggerProps:Pt,prefixCls:Mt,mini:Dt,...Ft}=rt,Qt=Array.isArray(mt)?mt.includes("hover")?"hover":mt.includes("focus")?"focus":"custom":mt||"hover";return reactExports.createElement(EvaTooltip,{...Ft,ref:ct,trigger:ut!==void 0?"custom":Qt,visible:ut,condition:!pt&&Qt!=="custom"})});TooltipComponent.displayName="Tooltip";
     window.EvaTooltipComponent=function EvaTooltipComponent(props){return reactExports.createElement(EvaTooltip,props)};
-    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:EvaTooltip,Popover:evaForms.SemiPopover})});
+    queueMicrotask(function(){window.EvaTooltipAdapter.install({React:reactExports,createRoot:clientExports.createRoot,Tooltip:EvaTooltip,Popover:evaForms.Popover})});
 `;
     source = root.__evaCut(source,
       'var TooltipComponent=reactExports.forwardRef(Tooltip$2);TooltipComponent.displayName="Tooltip";',

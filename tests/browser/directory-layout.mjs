@@ -80,10 +80,10 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   }
   await page.setViewportSize({width:1200,height:800});
   await page.getByRole('button',{name:'查看 王宜林 的资料',exact:true}).click();
-  // 资料弹窗现含两层 role=dialog（Semi 结构调整），改以可见关闭按钮作为开合锚点。
-  await page.locator('.semi-modal-close:visible').first().waitFor();
+  // 资料卡现由公共 Semi Popover 承载，按真实可见宿主核对开合。
+  await page.locator('.eva-person-card-popover:visible').waitFor();
   await page.keyboard.press('Escape');
-  await page.locator('.semi-modal-close:visible').first().waitFor({state:'hidden'});
+  await page.locator('.eva-person-card-popover:visible').waitFor({state:'hidden'});
   await page.goto(origin+'/#/eva-stub/数字员工');
   await page.locator('.eva-digital-center__filter-card').waitFor();
   assert.equal(await page.locator('.eva-digital-center__market-search, .eva-digital-center__domain-search').count(),0,'旧的员工搜索框与图标业务域搜索均已移除');

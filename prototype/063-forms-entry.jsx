@@ -8,8 +8,6 @@ export {default as FileForm, fileFormTypes} from './063-file-form.jsx';
 export {Dialog, Actions, dialogWidths} from "./063-dialog.jsx";
 
 export {dialogText} from "./063-dialog-theme.js";
-export {default as SemiCard} from '@douyinfe/semi-ui/lib/es/card';
-export {default as SemiPopover} from '@douyinfe/semi-ui/lib/es/popover';
 
 export {FileDetail,FileConfirmation,FileToolbar,FileRowActions,FileButton,FilePath,FilePreviewActions} from './063-file-controls.jsx';
 
@@ -19,7 +17,6 @@ export {Popover} from './063-popover.jsx';
 
 export {ActionMenu} from './063-file-controls.jsx';
 export {FloatingForm} from './063-popover.jsx';
-export {PersonalDelete} from './063-personal-delete.jsx';
 export {ParentTaskForm} from './063-parent-task-form.jsx';
 
 export {Card} from './063-card.jsx';

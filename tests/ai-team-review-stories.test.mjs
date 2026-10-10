@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 function setup(storage, data=true){
- const ctx={window:{localStorage:storage},setTimeout,clearTimeout,console};
+ const ctx={window:{localStorage:storage},setTimeout,clearTimeout,console,TextEncoder};
  for(const file of ['003-my-assistant-identity.js','009-0-demo-time.js',...(data?['009-3-data-im.js']:[]),'009-3-ai-team-store.js'])vm.runInNewContext(readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),ctx);
  return ctx.window.EvaAITeam;
 }

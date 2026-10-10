@@ -1,5 +1,5 @@
 import React from 'react';
-import Popconfirm from '@douyinfe/semi-ui/lib/es/popconfirm';
+import {Popconfirm} from './063-popconfirm.jsx';
 
 const Anchor = React.forwardRef(function Anchor({target}, ref) {
   React.useImperativeHandle(ref, () => target, [target]);

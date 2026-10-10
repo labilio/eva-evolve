@@ -597,6 +597,9 @@
 .eva-project-pinned-card :is(.semi-card-header-wrapper, .arco-card-header-title) { min-width: 0; }
 
 /* Project interior task reminders retain the shared unread component. */
+.collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tab { flex-shrink: 0; white-space: nowrap; }
+.collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tabs__list { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tabs__list::-webkit-scrollbar { display: none; }
 .eva-project-info__card.eva-project-reminders { margin-top: 16px; }
 .eva-project-reminders h2 { display: flex; align-items: center; gap: 8px; }
 .eva-project-reminders__list { list-style: none; padding: 0; margin: 0; }

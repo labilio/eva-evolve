@@ -18,7 +18,7 @@ function setup() {
     localStorage: {getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value)}
   };
   loadIdentityEnvironment(window);
-  const context = vm.createContext({window, jdenticon: {toSvg: id => '<svg>' + id + '</svg>'}, console, setTimeout, clearTimeout});
+  const context = vm.createContext({window, jdenticon: {toSvg: id => '<svg>' + id + '</svg>'}, console, setTimeout, clearTimeout, TextEncoder});
   for (const file of [...DATA, ...SUPPORT]) vm.runInContext(read(file), context);
   const store = window.EvaMembership.bootstrap(window.__EVA_PEOPLE, [], {}, []);
   const model = window.EvaContactIdentities.create(store);
