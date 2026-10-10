@@ -128,7 +128,7 @@
   .eva-personal-thread__main { flex: 1; min-height: 32px; padding: 0 var(--eva-space-2); font-size: var(--gds-type-label-font-size); line-height: var(--gds-type-label-line-height); font-weight: var(--eva-fw-regular); }
   .eva-personal-thread__time { margin-right: var(--eva-space-2); color: var(--eva-text-muted); font: var(--eva-fw-regular) 11px/20px var(--eva-font-sans); white-space: nowrap; }
   .eva-personal-thread__actions { display: none; flex: none; margin-right: 4px; }
-  .eva-personal-thread:hover .eva-personal-thread__actions, .eva-personal-thread:focus-within .eva-personal-thread__actions { display: flex; }
+  .eva-personal-thread:hover .eva-personal-thread__actions, .eva-personal-thread:focus-within .eva-personal-thread__actions, .eva-personal-thread:has([aria-expanded="true"]) .eva-personal-thread__actions { display: flex; }
   .eva-personal-thread:hover .eva-personal-thread__time, .eva-personal-thread:focus-within .eva-personal-thread__time { display: none; }
   .eva-personal-folder-menu .is-pinned svg, .eva-personal-thread__actions [aria-pressed="true"] svg { fill: currentColor; stroke-width: 1.8; }
   .eva-personal-folder-menu .is-pinned, .eva-personal-thread__actions [aria-pressed="true"] { color: var(--semi-color-text-0, #1c1f23); }

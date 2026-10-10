@@ -1,6 +1,6 @@
 /* Only Eva integration geometry lives here. Header/body/footer spacing and
    borders are generated from Semi's public theme parameters at build time. */
-:root { --eva-dialog-section-gap:24px; --eva-dialog-action-gap:12px; }
+:root { --eva-dialog-section-gap:var(--eva-space-6); --eva-dialog-action-gap:var(--eva-space-3); }
 .eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-content {
   max-height:calc(100dvh - var(--topbar-height,36px) - 48px);
 }
@@ -12,7 +12,7 @@
 .eva-dialog-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--eva-dialog-action-gap);flex-shrink:0; }
 .eva-dialog-actions>.semi-button { margin:0; }
 .eva-dialog .semi-modal-body > .semi-form > .eva-dialog-actions { margin-top:var(--eva-dialog-section-gap); }
-.eva-dialog-actions--compact { --eva-dialog-section-gap:12px; }
+.eva-dialog-actions--compact { --eva-dialog-section-gap:var(--eva-space-3); }
 @media(max-width:560px) { .eva-dialog > .semi-modal-wrap > .semi-modal { max-width:calc(100vw - 32px); } }
 .eva-dialog-portal { position:fixed;inset:var(--topbar-height,36px) 0 0;pointer-events:none;z-index:1000; }
 .eva-dialog-portal .semi-modal-mask,.eva-dialog-portal .semi-modal-wrap { position:absolute;inset:0;height:100%;pointer-events:auto; }
@@ -20,3 +20,19 @@
    not add it again at the edges of a direct form inside a standard dialog. */
 .eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:first-child { padding-top:0; }
 .eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:last-child { padding-bottom:0; }
+
+/* Static explanation composition: Semi owns list anatomy; this owns inner spacing.
+   No outer padding/margin: the host remains responsible for surrounding space. */
+.eva-info-list .semi-list-items{display:flex;flex-direction:column;gap:var(--eva-space-5)}
+.eva-info-list .semi-list-item-body,.eva-info-list .semi-list-item-body-main{min-width:0}
+.eva-info-list .semi-list-item-body-main{flex:1;overflow-wrap:anywhere}
+.eva-info-list .semi-list-item-body-header{flex:none}
+.eva-info-list-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;color:var(--semi-color-text-2);background:var(--semi-color-fill-0);border-radius:var(--eva-radius-control)}
+.eva-info-list-title{color:var(--eva-text-primary)}
+.eva-info-list-description{margin-top:var(--eva-space-1);color:var(--semi-color-text-1)}
+
+/* Cross-component layout owns sibling gaps; Card/List retain their internals. */
+.eva-content-stack,.eva-content-section{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:0;margin:0}
+.eva-content-stack{gap:var(--eva-space-5)}
+.eva-content-section{gap:var(--eva-space-3)}
+.eva-content-section-description{margin:0;min-width:0;overflow-wrap:anywhere;color:var(--semi-color-text-2)}

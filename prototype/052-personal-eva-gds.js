@@ -131,7 +131,21 @@
     return railForm ? '<div data-eva-rail-form-host></div>' : '';
   }
 
+  function syncDeleteControls() {
+    if(!pageServices?.showDeleteControls)return;
+    pageServices.showDeleteControls(Array.from(root.querySelectorAll('[data-eva-delete-host]')).map(function(container){
+      var id=container.dataset.evaDeleteHost,detail=conversationForId(id);
+      return {container:container,id:id,title:detail.title,onConfirm:function(){
+        window.EvaPersonal.deleteConversation(id);delete personalDrafts[id];
+        if(activeConversationId===id){activeConversationId='';selectedConversation='';resetToHome();location.hash='#/guid';}
+        renderRail();
+        root?.querySelector('[data-eva-create-folder]')?.focus();
+      }};
+    }));
+  }
+
   function syncRailForm() {
+    syncDeleteControls();
     if (!pageServices?.showRailForm) return;
     var container = root && root.querySelector('[data-eva-rail-form-host]');
     if (!railForm || !container) { pageServices.showRailForm(null); return; }
@@ -166,7 +180,7 @@
         + '<button type="button" class="eva-personal-thread__main" data-eva-tooltip="' + escapeHTML(item.title) + '" data-eva-tooltip-clamp="span" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span>' + escapeHTML(item.title) + '</span></button>'
         + '<time class="eva-personal-thread__time">' + escapeHTML(item.time || '') + '</time>'
         + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '">' + icon('pin',16,'eva-i') + '</button>'
-        + '<button type="button" class="eva-personal-rail-icon" data-eva-delete-conversation="' + escapeHTML(item.id) + '" aria-label="删除对话：' + escapeHTML(item.title) + '" data-eva-tooltip="删除">' + icon('trash-2',16,'eva-i') + '</button></span>'
+        + '<span data-eva-delete-host="' + escapeHTML(item.id) + '"></span></span>'
         + '</div>' ;
     }).join('') + (items.length > 6 ? '<button type="button" class="eva-personal-rail-more" data-eva-expand-list="' + escapeHTML(folderId) + '">' + (expandedLists.has(folderId) ? '收起显示' : '展开显示') + '</button>' : '')
       + (!items.length ? '<div class="eva-personal-rail-empty eva-t-caption">还没有对话</div>' : '');
@@ -743,14 +757,6 @@
     }
     var pin = event.target.closest('[data-eva-pin-conversation]');
     if (pin) { window.EvaPersonal.togglePin(pin.dataset.evaPinConversation); renderRail(); return; }
-    var deletion = event.target.closest('[data-eva-delete-conversation]');
-    if (deletion) {
-      if (!window.confirm('删除“' + conversationForId(deletion.dataset.evaDeleteConversation).title + '”？删除后无法恢复。')) return;
-      var deletedId = deletion.dataset.evaDeleteConversation;
-      window.EvaPersonal.deleteConversation(deletedId); delete personalDrafts[deletedId];
-      if (activeConversationId === deletedId) { activeConversationId = ''; selectedConversation = ''; resetToHome(); location.hash = '#/guid'; }
-      renderRail(); return;
-    }
     if (folderMenu !== null) { folderMenu = null; renderRail(); }
     var toggle = event.target.closest('[data-eva-toggle-folder]');
     if (toggle) { window.EvaPersonal.toggleFolder(toggle.dataset.evaToggleFolder); renderRail(); return; }
@@ -995,6 +1001,7 @@
     return function () {
       personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
       pageServices?.showRailForm?.(null);
+      pageServices?.showDeleteControls?.([]);
       pageServices = null;
       railForm = null;
       conversationPickerOpen = false;

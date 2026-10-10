@@ -2,6 +2,7 @@ import React, {useState,useId} from 'react';
 import {Form, withField, useSubmission, SubmissionError} from './063-forms.jsx';
 import {EvaFormSelect,EvaSelect} from './063-select.jsx';
 import {dialogText} from './063-dialog-theme.js';
+import {FloatingForm} from './063-popover.jsx';
 import {Dialog, Actions} from './063-dialog.jsx';
 
 export const fileFormTypes = ['new-folder','rename','external-link','external-folder','edit-external-link','move','create-shortcut','tags'];
@@ -31,7 +32,7 @@ const FileTags = withField(function FileTags({value=[],onChange,api,draft='',ava
 });
 
 // The two file-library entrances share fields, validation and the same data API.
-export default function FileForm({type,files,actor,spaceId,parentId=0,resource,entry='project',onClose,onSaved,sourceLabel}) {
+export default function FileForm({type,files,actor,spaceId,parentId=0,resource,entry='project',onClose,onSaved,sourceLabel,inline=false}) {
   const [api,formState,values] = Form.useForm();
   const [confirmedURL,setConfirmedURL] = useState(null);
   const project = entry === 'project';
@@ -69,9 +70,9 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
   const field = (label,id,control) => <div className="eva-drive-dialog__field"><span id={id+'-label'} style={dialogText.section}><label htmlFor={id}>{label}</label></span>{control}</div>;
   const select = (label,id,fieldName,options,onChange) => field(label,id,<EvaFormSelect field={fieldName} id={id} noLabel optionList={options} style={{width:'100%'}} onChange={onChange}/>);
   const noTarget = type==='create-shortcut'&&!spaces.length;
-  return <Dialog visible selectInitialText={type==='rename'} size="compact" title={title} className="eva-file-dialog" onCancel={onClose}
-    footer={<Actions onCancel={onClose} cancelLabel={noTarget?'关闭':'取消'} submitLabel={noTarget?null:confirmation} form={submission.formProps.id} busy={submission.busy}/> }>
-        <Form {...submission.formProps} form={api} initValues={initial} className="eva-file-name-form eva-file-form">
+  const FormComponent=inline?FloatingForm:Form;
+  const body = (
+        <FormComponent {...(inline?{onCancel:onClose,busy:submission.busy}:{})} {...submission.formProps} form={api} initValues={initial} className="eva-file-name-form eva-file-form">
           {(type==='new-folder'||type==='rename'||external)&&field(external?(folder?'文件夹名称':'文件名称'):type==='new-folder'?'文件夹名称':'新名称',nameId,
             <Form.Input field="name" id={nameId} noLabel autoFocus maxLength={external?100:undefined}
               placeholder={external?(folder?'例如：供应商交付资料':'例如：供应商协作飞书文档'):undefined}
@@ -92,11 +93,14 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
           </>)}
           {type==='tags'&&<>
             <Form.Input field="tagInput" type="hidden" noLabel noErrorMessage fieldStyle={{display:'none'}}/>
-            <FileTags field="tags" noLabel api={api} draft={values.tagInput||''} availableTags={availableTags} error={formState.errors?.tagInput}
+            <FileTags field="tags" noLabel extraText={inline?"从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。":undefined} api={api} draft={values.tagInput||''} availableTags={availableTags} error={formState.errors?.tagInput}
               rules={[{type:'array',max:8,message:'每个文件最多添加 8 个标签'}]}/>
-            <p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>
+            {!inline&&<p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>}
           </>}
           <SubmissionError submission={submission}/>
-        </Form>
-  </Dialog>;
+        </FormComponent>);
+  if(inline)return body;
+  return <Dialog visible selectInitialText={type==='rename'} size="compact" title={title} className="eva-file-dialog" onCancel={onClose}
+    footer={<Actions onCancel={onClose} cancelLabel={noTarget?'关闭':'取消'} submitLabel={noTarget?null:confirmation} form={submission.formProps.id} busy={submission.busy}/> }>
+{body}</Dialog>;
 }

@@ -1,5 +1,9 @@
-import React from 'react';
+import React, {useState,useRef} from 'react';
+import {Popover} from './063-popover.jsx';
+import {Popconfirm} from './063-popconfirm.jsx';
+import FileForm from './063-file-form.jsx';
 import Button from '@douyinfe/semi-ui/lib/es/button';
+export {Button};
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
 import Breadcrumb from '@douyinfe/semi-ui/lib/es/breadcrumb';
 import {SubmissionError} from './063-forms.jsx';
@@ -28,13 +32,40 @@ export function FileToolbar({onAction}) {
   <Button type="primary" theme="solid" onClick={()=>onAction('upload')}>上传本地文件</Button>
  </div>;
 }
-export function FileRowActions({name,pinned,showPin=true,onPin,items}) {
+// Menus and their follow-up overlays share the persistent trigger. The menu
+// closes before the form/confirmation opens; no anchor on an unmounted item.
+export function ActionMenu({items,children,position='bottomRight'}) {
+ const [menu,setMenu]=useState(false),[active,setActive]=useState(null);
+ const host=useRef(null);
+ const returnFocus=()=>host.current?.querySelector('button');
+ const close=()=>setActive(null);
+ const trigger=React.cloneElement(children,{onClick:event=>{event.stopPropagation();if(active)close();else setMenu(!menu);}});
+ const overlay=active?.renderContent?<Popover trigger="custom" visible returnFocus={returnFocus} title={active.label} style={active.overlayStyle} position={position} motion={false}
+  onClickOutSide={close} onEscKeyDown={close} content={active.renderContent(close)}>{trigger}</Popover>:
+ active?.confirmation?<Popconfirm trigger="custom" visible returnFocus={returnFocus} {...active.confirmation} position={position} motion={false}
+  onVisibleChange={visible=>{if(!visible)close();}} onCancel={close} onClickOutSide={close} onConfirm={async(event,{isCurrent})=>{await active.onConfirm();if(isCurrent())close();}}>{trigger}</Popconfirm>:
+ <Dropdown trigger="custom" visible={menu} motion={false} position={position} onClickOutSide={()=>setMenu(false)} onEscKeyDown={()=>setMenu(false)}
+  render={<Dropdown.Menu>{items.map(item=><Dropdown.Item key={item.label} icon={item.icon} type={item.danger?'danger':undefined}
+   onClick={event=>{event.stopPropagation();setMenu(false);if(item.renderContent||item.confirmation)setActive(item);else item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
+  {trigger}
+ </Dropdown>;
+ return <span ref={host}>{overlay}</span>;
+}
+const deletionProps=resource=>({title:'永久删除“'+resource.name+'”？',content:'删除后不可恢复',okText:'永久删除',okButtonProps:{type:'danger'}});
+export function FileRowActions({name,pinned,showPin=true,onPin,items,files,actor,resource,onRemoved}) {
+ const mapped=items.map(item=>item.action==='tags'?{...item,renderContent:close=><FileForm inline type="tags" files={files} actor={actor} resource={resource} onClose={close}/>}:
+  item.action==='delete-forever'&&resource.type!=='folder'?{...item,confirmation:deletionProps(resource),onConfirm:()=>{files.removeForever(actor,resource.id);onRemoved?.();}}:item);
  return <span className="eva-file-controls-row">
   {showPin&&<Button className={'eva-drive__pin-button'+(pinned?' is-pinned':'')} type={pinned?'primary':'tertiary'} theme="borderless" icon={<FileIcon name="pin"/>} aria-label={(pinned?'取消置顶：':'置顶：')+name} aria-pressed={!!pinned} data-eva-tooltip={pinned?'取消置顶':'置顶'} onClick={event=>{event.stopPropagation();onPin();}}/>}
-  <Dropdown motion={false} trigger="click" position="bottomRight" render={<Dropdown.Menu>{items.map(item=><Dropdown.Item key={item.label} type={item.danger?'danger':undefined} onClick={event=>{event.stopPropagation();item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
-   <Button type="tertiary" theme="borderless" icon={<FileIcon name="ellipsis"/>} aria-label={'更多操作：'+name} onClick={event=>event.stopPropagation()}/>
-  </Dropdown>
+  <ActionMenu items={mapped}><Button type="tertiary" theme="borderless" icon={<FileIcon name="ellipsis"/>} aria-label={'更多操作：'+name}/></ActionMenu>
  </span>;
+}
+function FileTagsPopover({resource,files,actor}) {
+ const [open,setOpen]=useState(false);
+ return <Popover trigger="click" visible={open} onVisibleChange={setOpen} title="编辑标签" position="bottomRight" motion={false}
+  onClickOutSide={()=>setOpen(false)} onEscKeyDown={()=>setOpen(false)} content={open&&<FileForm key={resource.id} inline type="tags" files={files} actor={actor} resource={resource} onClose={()=>setOpen(false)}/>}>
+  <Button theme="borderless">编辑</Button>
+ </Popover>;
 }
 export function FileConfirmation({resource,type,onClose,onConfirm,error}) {
  const title=type==='trash'?'移至回收站':'永久删除';
@@ -50,7 +81,7 @@ export function FileDetail({resource,files,actor,fileType,location,source,create
  const shortcut=files.shortcutInfo(resource,actor),canOpen=!shortcut||shortcut.status==='available';
  const external=canOpen?files.externalLinkInfo(resource,actor):null;
  const relations=files.relationsFor(resource,actor);
- const action=(label,name,danger=false)=><Button key={name} type={danger?'danger':'tertiary'} theme="light" onClick={()=>onAction(name)}>{label}</Button>;
+ const action=(label,name,danger=false)=>name==='delete-forever'&&resource.type!=='folder'?<Popconfirm key={name} {...deletionProps(resource)} onConfirm={()=>{files.removeForever(actor,resource.id);onClose();}}><Button type="danger" theme="light">{label}</Button></Popconfirm>:<Button key={name} type={danger?'danger':'tertiary'} theme="light" onClick={()=>onAction(name)}>{label}</Button>;
  return <Dialog visible title={external?(external.kind==='folder'?'外部文件夹详情':'外部链接详情'):'文件详情'} size="fileDetail" initialFocus="title" onCancel={onClose} footer={null} className="eva-file-detail">
   <div className="eva-file-detail-dialog__content">
    <div className="eva-file-detail__identity eva-file-detail__identity--with-action"><span className={'eva-drive__file-mark '+markClass}><FileIcon name={markIcon} size="large"/>{(resource.type==='shortcut'||external?.kind==='folder')&&<span className={resource.type==='shortcut'?'eva-drive__shortcut-badge':'eva-drive__file-external-badge'}><FileIcon name="external-link" size="small"/></span>}</span><span className="eva-file-detail__identity-content"><strong style={dialogText.section}>{resource.name}</strong><small>{fileType}{resource.type==='folder'?(deleted&&resource.trashedItemCount?' · 包含 '+resource.trashedItemCount+' 项':''):external?' · '+external.host:' · '+size}</small></span>{!deleted&&<Button type="tertiary" theme="borderless" icon={<FileIcon name="link-2"/>} aria-label="复制内部链接" data-eva-tooltip="复制内部链接" onClick={()=>onAction('copy-link')}/>}</div>
@@ -70,7 +101,7 @@ export function FileDetail({resource,files,actor,fileType,location,source,create
    </div>}
    {deleted&&<div className="eva-file-controls-management">{can('restore')&&action('恢复','restore')}{can('delete-forever')&&action('永久删除','delete-forever',true)}</div>}
    {resource.type!=='folder'&&<>
-    <Section title="标签" action={!deleted&&can('edit-tags')&&<Button theme="borderless" onClick={()=>onAction('tags')}>编辑</Button>}><div className="eva-file-controls-tags">{resource.tags?.length?resource.tags.map(tag=><Tag key={tag}>{tag}</Tag>):<span className="eva-file-muted">暂无标签</span>}</div></Section>
+    <Section title="标签" action={!deleted&&can('edit-tags')&&<FileTagsPopover key={resource.id} resource={resource} files={files} actor={actor}/>}><div className="eva-file-controls-tags">{resource.tags?.length?resource.tags.map(tag=><Tag key={tag}>{tag}</Tag>):<span className="eva-file-muted">暂无标签</span>}</div></Section>
     <Section title="系统关联" action={<Tag>只读</Tag>}>{relations.length?<div className="eva-file-relations">{relations.map((relation,index)=><div className="eva-file-relation" key={index}><span className="eva-file-relation__icon"><FileIcon name={relation.type==='task'?'list-checks':relation.type==='file'?'file-text':'users'}/></span><span><small>{{task:'任务',group:'群聊',chat:'私聊','ai-conversation':'AI 小队会话',file:'来源文件'}[relation.type]||'关联内容'}</small><strong>{relation.label}</strong>{relation.meta&&<em>{relation.meta}</em>}</span>{relation.navigable&&!relation.restricted&&['ai-conversation','chat','group'].includes(relation.type)&&<Button theme="borderless" onClick={()=>onRelation(relation)}>查看来源</Button>}</div>)}</div>:<p className="eva-file-detail__empty">当前文件没有系统关联</p>}</Section>
    </>}
    {shortcut&&<Section title="快捷方式信息"><Meta items={[["访问状态",shortcut.statusLabel],...(shortcut.status==='available'?[["源文件",shortcut.sourceName],["来源文件库",shortcut.sourceSpaceName]]:[["权限说明","快捷方式不会授予源文件权限"]])]}/></Section>}

@@ -94,32 +94,3 @@
 .collab-route-right.eva-route-drawer.eva-drawer-full .loop-idp__fsbtn {
   display: none;
 }
-
-/* ---- 关联父任务选择器（弹窗内）---- */
-.eva-parent-picker {
-  padding: 4px 0 2px;
-}
-.eva-parent-picker__opt {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.eva-parent-picker__id {
-  color: var(--eva-text-secondary, #6b7075);
-  font: var(--eva-fw-semibold, 600) 11px/14px var(--eva-font-sans, inherit);
-  letter-spacing: 0.02em;
-}
-.eva-parent-picker__title {
-  overflow: hidden;
-  color: var(--eva-text-primary, #1c1f23);
-  font-size: 13px;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.eva-parent-picker__dropdown .semi-select-option {
-  height: auto;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}

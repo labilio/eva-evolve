@@ -275,7 +275,9 @@ test('详情复制链接用 Semi 图标按钮，尺寸与对齐交给原生组�
 });
 test('操作菜单由 Semi Dropdown 管理 Portal 和自动避让',()=>{
  assert.match(controls,/@douyinfe\/semi-ui\/lib\/es\/dropdown/);
- assert.match(controls,/<Dropdown[^>]*position="bottomRight"/);
+ assert.match(controls,/function ActionMenu\(\{items,children,position='bottomRight'\}\)/);
+ assert.match(controls,/<Dropdown[^>]*position=\{position\}/);
+ assert.match(controls,/<ActionMenu items=\{mapped\}/);
  for(const file of ['020-mode-layer.js','009-1-project-files-ui.js']){
   const source=fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8');
   assert.match(source,/FileRowActions/);assert.doesNotMatch(source,/rowMenuAnchor|setMenuAnchor/);

@@ -178,12 +178,12 @@
         return h('span',{className:'eva-relation-cell'},relations.slice(0,2).map(relation=>h('span',{className:'eva-relation-chip'+(relation.restricted?' is-restricted':''),key:relation.type+relation.id,'data-eva-tooltip':relation.restricted?undefined:relation.meta||relation.label,'data-eva-tooltip-clamp':!relation.meta?'':undefined},icon(relationIcon[relation.type]||'link'),relation.restricted?relation.meta||'无权访问来源':relation.label)),relations.length>2?h('span',{className:'eva-relation-more'},'+'+(relations.length-2)):null);
       };
       const renderRowActions=item=>{
-        const menuButton=(label,onClick,danger)=>({label,onClick,danger});
+        const menuButton=(label,onClick,danger,action)=>({label,onClick,danger,action});
         const shortcutInfo=context.files.shortcutInfo(item,actor),canOpen=!shortcutInfo||shortcutInfo.status==='available',linkInfo=canOpen?externalInfo(item):null,isExternal=Boolean(linkInfo),canDownload=item.type!=='folder'&&!isExternal&&canOpen&&context.files.can('download',item.spaceId,actor),items=[];
         if(trashMode){
           items.push(menuButton('查看文件信息',()=>openDetails(item)));
           if(context.files.can('restore',item.spaceId,actor))items.push(menuButton('恢复',()=>restoreItem(item)));
-          if(context.files.can('delete-forever',item.spaceId,actor))items.push(menuButton('永久删除',()=>setDialog({type:'delete',id:item.id}),true));
+          if(context.files.can('delete-forever',item.spaceId,actor))items.push(menuButton('永久删除',()=>setDialog({type:'delete',id:item.id}),true,'delete-forever'));
         }else{
           if(item.type==='folder')items.push(menuButton('打开文件夹',()=>enterFolder(item)));
           else if(isExternal)items.push(menuButton(linkInfo.kind==='folder'?'打开原文件夹':'打开原链接',()=>openExternal(item)));
@@ -198,10 +198,10 @@
           if(context.files.can('move',item.spaceId,actor))items.push(menuButton('移动',()=>setDialog({type:'move',id:item.id,parentId:item.parent_id||0})));
           if(item.type!=='shortcut'&&!isExternal&&context.files.can('copy',item.spaceId,actor))items.push(menuButton('创建副本',()=>context.files.copy(actor,item.id)));
           if(item.type!=='shortcut'&&item.type!=='folder'&&context.files.can('create-shortcut',item.spaceId,actor))items.push(menuButton('创建快捷方式',()=>setDialog({type:'create-shortcut',id:item.id,targetSpaceId:context.files.writableSpaces(actor,item.spaceId)[0]?.id,targetParentId:0})));
-          if(item.type!=='folder'&&context.files.can('edit-tags',item.spaceId,actor))items.push(menuButton('编辑标签',()=>setDialog({type:'tags',id:item.id})));
+          if(item.type!=='folder'&&context.files.can('edit-tags',item.spaceId,actor))items.push(menuButton('编辑标签',()=>setDialog({type:'tags',id:item.id}),false,'tags'));
           if(context.files.can('trash',item.spaceId,actor))items.push(menuButton('移至回收站',()=>setDialog({type:'trash',id:item.id}),true));
         }
-        return h(deps.forms.FileRowActions,{name:item.name,pinned:item.pinned,showPin:!trashMode,onPin:()=>togglePin(item),items});
+        return h(deps.forms.FileRowActions,{files:context.files,actor,resource:item,onRemoved:()=>setSelectedId(null),name:item.name,pinned:item.pinned,showPin:!trashMode,onPin:()=>togglePin(item),items});
       };
 
       const renderDetails=()=>selected?h(deps.forms.FileDetail,{

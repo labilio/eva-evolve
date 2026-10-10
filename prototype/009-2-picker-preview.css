@@ -1,4 +1,4 @@
-.eva-picker-modal .semi-modal-content{border-radius:16px;background:var(--semi-color-bg-2)}
+.eva-picker-modal .semi-modal-content{border-radius:var(--eva-radius-panel);background:var(--semi-color-bg-2)}
 .eva-picker-modal .semi-modal-title{color:var(--semi-color-text-0)}
 .eva-picker-heading p{margin:0 0 16px;font-size:13px;line-height:20px;color:var(--semi-color-text-2)}
 .eva-picker-heading>.semi-input-wrapper{margin-bottom:16px}

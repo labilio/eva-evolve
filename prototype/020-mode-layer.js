@@ -471,7 +471,7 @@
       if (context.files.can('trash', resource.spaceId, actor)) items.push(rowMenuItem('trash', '移至回收站', true));
     }
     var key=fileRowControls.length;
-    fileRowControls.push({key:key,props:{name:resource.name,pinned:resource.pinned,showPin:!isTrash,onPin:function(){dispatchDriveAction('toggle-pin',resource);},items:items.map(function(item){return {label:item.label,danger:item.danger,onClick:function(){dispatchDriveAction(item.action,resource);}};})}});
+    fileRowControls.push({key:key,props:{files:context.files,actor:actor,resource:resource,onRemoved:function(){state.selectedId=null;renderDrive();},name:resource.name,pinned:resource.pinned,showPin:!isTrash,onPin:function(){dispatchDriveAction('toggle-pin',resource);},items:items.map(function(item){return {action:item.action,label:item.label,danger:item.danger,onClick:function(){dispatchDriveAction(item.action,resource);}};})}});
     return '<span data-eva-file-row-host="'+key+'"></span>';
   }
 

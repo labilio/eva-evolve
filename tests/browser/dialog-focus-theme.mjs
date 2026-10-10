@@ -20,7 +20,7 @@ test('公共弹窗：打开直接填写、选择焦点、嵌套 Escape 和返回
  await page.getByRole('button',{name:'更多操作：会议纪要',exact:true}).click();await page.getByRole('menuitem',{name:'移动',exact:true}).click();
  await dialog.waitFor();const select=dialog.getByRole('combobox');
  assert.equal(await select.evaluate(el=>el===document.activeElement||el.contains(document.activeElement)),true,'选择型弹窗初始焦点应在选择器');
- await select.press('Enter');await page.locator('.semi-select-option').first().waitFor();
+ await select.press('Enter');await page.getByRole('option').first().waitFor();
  await page.keyboard.press('Escape');assert.equal(await dialog.isVisible(),true,'第一下 Escape 仅关闭选项');
  await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
  }finally{await browser.close();await new Promise(r=>server.close(r));}
