@@ -76,8 +76,8 @@ body .semi-popover-wrapper:has(.eva-loop-task-create__tag-menu) { background: tr
 .eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger > svg:last-child { color: var(--semi-color-text-2); }
 
 .eva-loop-task-create .loop-ci__head { min-height: 52px; box-sizing: border-box; padding: 12px 24px; }
-.eva-loop-task-create .loop-ci__title { display: block; min-height: 40px; padding: 8px 24px; overflow: hidden; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 16px/24px var(--eva-font-sans); }
-.eva-loop-task-create .loop-ci__desc { padding: 8px 24px; font: 400 15px/24px var(--eva-font-sans); }
+.eva-loop-task-create .loop-ci__title { display: block; min-height: 40px; padding: 8px 24px; overflow: hidden; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; font: 600 18px/28px var(--eva-font-sans); }
+.eva-loop-task-create .loop-ci__desc { padding: 8px 24px; font: 400 14px/1.625 var(--eva-font-sans); }
 .eva-loop-task-create .loop-ci__toolbar { padding: 16px 24px 12px; gap: 8px; }
 .eva-loop-task-create .loop-ci__labels { padding: 0 24px 16px; }
 .eva-loop-task-create .loop-ci__footer { padding: 16px 24px; }
