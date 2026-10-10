@@ -70,7 +70,7 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     const grantDialog=page.locator('.semi-modal:visible');
     await grantDialog.getByText('移除普通成员（不能移除群主和群管理员）',{exact:true}).waitFor();
     assert.equal(await grantDialog.getByText(/授权范围/).count(),0);
-    await grantDialog.getByText('修改群聊及其子区的 GROUP.md',{exact:true}).waitFor();
+    await grantDialog.getByText('修改群聊及其子区的协作说明',{exact:true}).waitFor();
     assert.equal(await grantDialog.getByText(/免 @ 回复/).count(),0);
     assert.equal(await grantDialog.getByRole('listitem').count(),3);
     assert.equal(await botManagerRow.getByText('AI 管理员',{exact:true}).count(),0);
@@ -144,9 +144,9 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     assert.match((await order())[1],/林晓/,'联系人管理员仍在普通成员之前');
 
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
-    await panel.getByText('GROUP.md',{exact:true}).click();
+    await panel.getByText('协作说明',{exact:true}).click();
     await panel.getByRole('tab',{name:'编辑',exact:true}).click();
-    const groupMd=panel.getByRole('textbox',{name:'GROUP.md 内容'});
+    const groupMd=panel.getByRole('textbox',{name:'协作说明内容'});
     await groupMd.fill('# 采购协作约定');
     await panel.getByRole('button',{name:'保存',exact:true}).click();
     assert.equal(await groupMd.inputValue(),'# 采购协作约定');
@@ -155,11 +155,11 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     await botManagerRow.hover();
     await botManagerRow.getByRole('button',{name:/^移出群聊 /}).click();
     const removeDialog=page.getByRole('dialog').filter({hasText:'确认移除成员'});
-    await removeDialog.getByRole('button',{name:'cancel',exact:true}).click();
+    await removeDialog.getByRole('button',{name:'取消',exact:true}).click();
     assert.equal(await botManagerRow.count(),1);
     await botManagerRow.hover();
     await botManagerRow.getByRole('button',{name:/^移出群聊 /}).click();
-    await removeDialog.getByRole('button',{name:'confirm',exact:true}).click();
+    await removeDialog.getByRole('button',{name:'确认',exact:true}).click();
     await removeDialog.waitFor({state:'hidden'});
     assert.equal(await botManagerRow.count(),0);
     await page.reload();
@@ -197,10 +197,10 @@ test('群成员移除确认保留默认页脚，取消不变更，确认后刷�
     const removeRow=panel.locator('.eva-chat-member-list-row').filter({hasText:'林晓'});
     await removeRow.hover();await panel.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
     const dialog=page.getByRole('dialog').filter({hasText:'确认移除成员'});
-    await dialog.getByRole('button',{name:'cancel',exact:true}).click();
+    await dialog.getByRole('button',{name:'取消',exact:true}).click();
     assert.equal(await panel.locator('.eva-chat-member-list-row').count(),1);
     await removeRow.hover();await panel.getByRole('button',{name:'移出群聊 林晓',exact:true}).click();
-    await dialog.getByRole('button',{name:'confirm',exact:true}).click();
+    await dialog.getByRole('button',{name:'确认',exact:true}).click();
     await dialog.waitFor({state:'hidden'});
     assert.equal(await panel.locator('.eva-chat-member-list-row').count(),0);
     await page.reload();panel=await openMembers();

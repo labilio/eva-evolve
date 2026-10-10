@@ -6,7 +6,7 @@
     if (reply.conversationId !== conversationId || typeof reply.messageId !== 'string' || !reply.messageId || typeof reply.fromName !== 'string' || typeof reply.digest !== 'string') throw new Error('引用消息不属于当前会话或内容无效');
     return {conversationId, messageId:reply.messageId, fromName:reply.fromName, digest:reply.digest};
   }
-  function create(seed, persist, resolveProjectInfo){
+  function create(seed, persist, resolveProjectInfo, persistJSON){
     let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},groupGovernance:{},cloneMentionFree:{},memberAdditions:[],sequence:0,...seed}));
     // Consolidate legacy records by stable owner ID. Existing memberships and
     // messages follow the same owner's canonical identity, never another person.
@@ -60,7 +60,42 @@
       return (governanceRecord(key).managerIds||[]).includes(uid);
     };
     const selected=(uid,ids,pid)=>{if(!Array.isArray(ids))fail('分身选择格式无效');return [...new Set(ids.map(canonicalId))].map(id=>{const c=clone(id);if(!c||c.ownerId!==uid)fail('只能带入自己的可用分身');if(pid&&!state.projects[pid].cloneIds.includes(id))fail('请先将分身加入项目');return id;});};
-    const notify=()=>{revision++;if(persist)persist(JSON.parse(JSON.stringify(state)));listeners.forEach(fn=>fn());};
+    // Versions describe business dependencies, not renders. Unclassified writes and
+    // transactions deliberately invalidate everything; adding a command cannot silently
+    // leave an old permission/source cache alive. Existing global subscribers still run.
+    let fullRevision=0,allMessagesRevision=0;
+    const fieldVersions=new Map(),messageVersions=new Map(),savedFields=new Map();
+    const messageFields=['actorId','people','clones','cloneAliases','legacyCloneRecords','projects','groups','threads','threadDetails','chatSettings','directConversations'];
+    const sourceFields=[...messageFields,'conversationCategories','conversationCategoryAssignments','followedConversations','followOrders','pinnedProjects'];
+    const versionOf=fields=>Math.max(fullRevision,0,...fields.map(key=>fieldVersions.get(key)||0));
+    const revisionFor=(kind,id)=>{
+      const source=versionOf(sourceFields);
+      if(kind==='source')return source;
+      if(kind==='messages')return Math.max(versionOf(messageFields),allMessagesRevision,messageVersions.get(id)||0);
+      if(kind==='list')return Math.max(source,versionOf(['messages','chatPreferences','deletedMessageKeys']));
+      throw new Error('Unknown membership revision scope: '+kind);
+    };
+    const notify=change=>{
+      revision++;
+      if(!change){fullRevision=revision;allMessagesRevision=revision;savedFields.clear();messageVersions.clear();}
+      else {
+        for(const key of change.keys){fieldVersions.set(key,revision);savedFields.delete(key);}
+        if(change.keys.includes('messages')){
+          if(change.messageIds)for(const id of change.messageIds)messageVersions.set(id,revision);
+          else allMessagesRevision=revision;
+        }
+      }
+      if(persistJSON){
+        // Same localStorage key and JSON schema, synchronous write. Reuse serialized
+        // unchanged fields: a role/pref edit never walks all message objects again.
+        const fields=Object.keys(state).map(key=>{
+          if(!savedFields.has(key))savedFields.set(key,JSON.stringify(state[key]));
+          const value=savedFields.get(key);return value===undefined?null:JSON.stringify(key)+':'+value;
+        }).filter(value=>value!==null);
+        persistJSON('{'+fields.join(',')+'}');
+      }else if(persist)persist(JSON.parse(JSON.stringify(state)));
+      listeners.forEach(fn=>fn());
+    };
     const writable=id=>{if(id.startsWith('all:'))fail('请在项目成员管理中操作');if(state.threads[id])fail('子区继承父群成员，不单独管理');return scope(id);};
     const drop=(id,uid)=>{const s=scope(id),removedCloneIds=s.cloneIds.filter(cid=>clone(cid)?.ownerId===uid);if(state.projects[id]&&s.memberRoleIds){delete s.memberRoleIds[uid];removedCloneIds.forEach(cid=>delete s.memberRoleIds[cid]);}s.humans=s.humans.filter(m=>m.id!==uid);s.cloneIds=s.cloneIds.filter(cid=>!removedCloneIds.includes(cid));const record=state.groupGovernance?.[state.projects[id]?'all:'+id:id];if(record){record.managerIds=(record.managerIds||[]).filter(item=>item!==uid);record.botAdminIds=(record.botAdminIds||[]).filter(item=>!removedCloneIds.includes(item));}};
     // Dissolve is the terminal state: the group and its child threads, plus every
@@ -148,7 +183,7 @@
       return ids.reduce((total,key)=>total+(state.messages[key]||[]).length+(state.directConversations?.[key]?.messages||[]).length,0);
     };
     const api={
-      subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,
+      subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,revisionFor,
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
       // Narrow detached reads: UI metadata queries must not copy message history.
       projectRecord:id=>state.projects[id]?JSON.parse(JSON.stringify(state.projects[id])):null,
@@ -164,7 +199,7 @@
         const record=requireHuman(uid);if(uid!==state.actorId)fail('只能更换自己的头像');
         const avatar=avatarValue(value);
         if(avatar)record.avatar=avatar;else delete record.avatar;
-        notify();
+        notify({keys:['people']});
       },
       setCloneAvatar(uid,ownerId,value){
         requireHuman(uid);if(uid!==state.actorId)fail('只能更换自己的头像');
@@ -173,7 +208,7 @@
         if(!c)fail('当前账号还没有可编辑的分身');
         const avatar=avatarValue(value);
         if(avatar)c.avatar=avatar;else delete c.avatar;
-        notify();
+        notify({keys:['clones']});
       },
       projectRoles(pid){return JSON.parse(JSON.stringify(state.projects[pid]?.projectRoles||[]));},
       memberRoles(pid,id){const p=state.projects[pid];if(!p||!api.canRead(pid,id))return [];const ids=p.memberRoleIds?.[id]||[];return api.projectRoles(pid).filter(r=>ids.includes(r.id));},
@@ -206,7 +241,7 @@
       setPinnedProjects(uid,ids){
         requireHuman(uid);const next=[...new Set(ids)].slice(0,6);
         if(JSON.stringify(state.pinnedProjects?.[uid]||[])===JSON.stringify(next))return;
-        state.pinnedProjects||={};state.pinnedProjects[uid]=next;notify();
+        state.pinnedProjects||={};state.pinnedProjects[uid]=next;notify({keys:['pinnedProjects']});
       },
       conversationCategories(uid){
         return [{id:'scope:other',name:state.conversationCategories?.[uid]?.find(c=>c.id==='scope:other')?.name||'其他会话'},...(state.conversationCategories?.[uid]||[]).filter(c=>c.id!=='scope:other').map(c=>({...c}))];
@@ -267,7 +302,7 @@
       },
       setFollowOrder(uid,bucket,ids){
         requireHuman(uid);state.followOrders||={};state.followOrders[uid]||={};
-        state.followOrders[uid][bucket]=[...new Set(ids)];notify();
+        state.followOrders[uid][bucket]=[...new Set(ids)];notify({keys:['followOrders']});
       },
       // 关注是显式状态：项目按整个项目置顶关注，非项目会话由本人加入关注。
       conversationFollowed(id,uid){
@@ -328,7 +363,7 @@
       },
       directMessages(uid,base={}){return {...base,...Object.fromEntries(Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>[c.id,[...(base[c.id]||[]),...JSON.parse(JSON.stringify(c.messages))]]))};},
       directDraft(id,uid){const c=state.directConversations?.[id];return c?.memberIds.includes(uid)?c.drafts?.[uid]||'':'';},
-      setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify();},
+      setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify({keys:['directConversations']});},
       canReadForwardSource(id,uid){
         if(api.canRead(id,uid)||api.canReadDirect(id,uid))return true;
         // Shipped IM demo conversations are global fixtures and remain operable.
@@ -375,13 +410,13 @@
       deleteSelectedMessages(sourceId,uid,messages){
         requireHuman(uid);if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
         if(!messages.length||messages.some(m=>m.evaConversationId!==sourceId||!m.evaSelectionKey))fail('请选择同一会话中的消息');
-        state.deletedMessageKeys||={};state.deletedMessageKeys[uid]=[...new Set([...(state.deletedMessageKeys[uid]||[]),...messages.map(m=>m.evaSelectionKey)])];notify();
+        state.deletedMessageKeys||={};state.deletedMessageKeys[uid]=[...new Set([...(state.deletedMessageKeys[uid]||[]),...messages.map(m=>m.evaSelectionKey)])];notify({keys:['deletedMessageKeys']});
       },
       isMessageDeleted(uid,key){return !!state.deletedMessageKeys?.[uid]?.includes(key);},
       sendDirect(id,uid,text,reply){
         requireHuman(uid);const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');
         if(!person(c.memberIds.find(p=>p!==uid)))fail('对方账号不可用');if(!text.trim())return false;
-        const replyTo=replySnapshot(id,reply);c.drafts||={};c.drafts[uid]='';c.lastAt=new Date().toISOString();c.messages.push({kind:'text',sender:{...person(uid),uid},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{})});notify();return true;
+        const replyTo=replySnapshot(id,reply);c.drafts||={};c.drafts[uid]='';c.lastAt=new Date().toISOString();c.messages.push({kind:'text',sender:{...person(uid),uid},time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{})});notify({keys:['directConversations']});return true;
       },
       transaction(fn){const staged=create(state,undefined,resolveProjectInfo);fn(staged);state=staged.snapshot();notify();},
       renameProject(id,uid,name){requireHuman(uid);if(!state.projects[id]||!manager(id,uid))fail('仅项目负责人或管理员可修改');if(!name.trim()||name.length>50)fail('项目名称须为 1–50 个字符');state.projects[id].name=name.trim();notify();},
@@ -395,18 +430,18 @@
       setGroupManager(id,uid,target,enabled){
         requireHuman(uid);requireHuman(target);const key=groupKey(id)||fail('群聊不存在'),s=groupScope(key);
         if(s.ownerId!==uid)fail('仅群主可设置群管理员');if(target===s.ownerId||!s.humans.some(item=>item.id===target))fail('只能设置群内其他联系人');
-        const record=ensureGovernance(key),ids=new Set(record.managerIds||[]);enabled?ids.add(target):ids.delete(target);record.managerIds=[...ids];notify();
+        const record=ensureGovernance(key),ids=new Set(record.managerIds||[]);enabled?ids.add(target):ids.delete(target);record.managerIds=[...ids];notify({keys:['groupGovernance']});
       },
       setGroupBotAdmin(id,uid,target,enabled){
         requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');if(!manager(key,uid))fail('仅群主或群内管理员可设置 AI 管理员');
         if(!api.groupMembers(key).some(item=>item.id===target&&item.kind!=='human'))fail('只能设置当前群内的 AI 成员');
-        const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify();
+        const record=ensureGovernance(key),ids=new Set(record.botAdminIds||[]);enabled?ids.add(target):ids.delete(target);record.botAdminIds=[...ids];notify({keys:['groupGovernance']});
       },
       setGroupAllowNoMention(id,uid,enabled){
         requireHuman(uid);const key=groupKey(id)||fail('群聊不存在');
         if(state.threads[id])fail('请在父群管理中操作');
         if(!manager(key,uid))fail('仅群主或群管理员可修改');
-        ensureGovernance(key).allowAIWithoutMention=enabled===true;notify();
+        ensureGovernance(key).allowAIWithoutMention=enabled===true;notify({keys:['groupGovernance']});
       },
       cloneCanReplyWithoutMention(id,cid){
         const key=groupKey(id),c=clone(cid);
@@ -428,7 +463,7 @@
         state.cloneMentionFree||={};const prefs=state.cloneMentionFree[c.id]||(state.cloneMentionFree[c.id]={});
         enabled?prefs[key]=true:delete prefs[key];
         if(!Object.keys(prefs).length)delete state.cloneMentionFree[c.id];
-        notify();
+        notify({keys:['cloneMentionFree']});
       },
       groupMd(id,uid){
         if(!api.canRead(id,uid))fail('无会话访问权限');
@@ -439,11 +474,11 @@
         requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');
         value=String(value||'');if(unescape(encodeURIComponent(value)).length>10240)fail('内容超过 10 KB，请精简后保存');
         const record=state.threads[id]?(state.threadDetails[id]||={id}):ensureGovernance(id);
-        record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify();
+        record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});
       },
-      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify();},
+      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
-      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify();},
+      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify({keys:['chatPreferences']});},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
       conversationActivity(id,uid,seedAt=''){
         if(!api.canReadForwardSource(id,uid))return '';
@@ -457,7 +492,7 @@
       },
       conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
       conversationUnread(id,uid,seed=0){const count=state.chatPreferences[uid]?.[id]?.readMessageCount;return count===undefined?seed:Math.max(0,[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length-count);},
-      clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify();},
+      clearConversationUnread(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');state.chatPreferences[uid]||={};state.chatPreferences[uid][id]={...state.chatPreferences[uid][id],readMessageCount:[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid).length};notify({keys:['chatPreferences']});},
       chatPreferences(id,uid){return JSON.parse(JSON.stringify(state.chatPreferences[uid]?.[id]||{}));},
       setChatSettings(id,uid,patch){
         if(!api.canRead(id,uid)||!manager(id,uid))fail('仅群主或群内管理员可修改');
@@ -468,7 +503,7 @@
         if(patch.avatar&&!/^data:image\/(png|jpeg|webp);base64,/.test(patch.avatar))fail('请上传 PNG、JPEG 或 WebP 图片');
         state.chatSettings[id]={...state.chatSettings[id],...patch};
         if(patch.name&&state.groups[id])state.groups[id].name=patch.name.trim();
-        notify();
+        notify({keys:patch.name?['chatSettings','groups']:['chatSettings']});
       },
       setChatPreferences(id,uid,patch){
         requireHuman(uid);if(!id)fail('会话不存在');
@@ -479,10 +514,10 @@
         if(patch.top===true&&!previous.top)next.pinOrder=Math.max(0,...Object.values(state.chatPreferences[uid]).map(pref=>Number(pref.pinOrder)||0))+1;
         if(patch.top===false)delete next.pinOrder;
         if(patch.mute===null)delete next.mute;
-        state.chatPreferences[uid][id]=next;notify();
+        state.chatPreferences[uid][id]=next;notify({keys:['chatPreferences']});
       },
       visibleMessages(id,uid,messages){return messages.slice(api.chatPreferences(id,uid).clearedCount||0).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));},
-      setActor(uid){requireHuman(uid);state.actorId=uid;notify();},
+      setActor(uid){requireHuman(uid);state.actorId=uid;notify({keys:['actorId']});},
       seedSupplyChatContent(){
         let changed=false;
         if(!state.conciseAllHandsV2){
@@ -578,9 +613,9 @@
           while(cursor>=0){const end=cursor+token.length;if(end===text.length||/[\s，。！？、,.:：；;…]/.test(text[end])){matched=true;break;}cursor=text.indexOf(token,end);}
           if(explicit||matched){prefs.hidden=false;changed=true;}
         }
-        if(changed)notify();return changed;
+        if(changed)notify({keys:['chatPreferences']});return changed;
       },
-      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify();},
+      sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify({keys:['messages','chatPreferences'],messageIds:[id]});},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));
@@ -1043,7 +1078,7 @@
       saved.seededFollowedConversationsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
-    const store=create(saved,state=>{try{root.localStorage.setItem(key,JSON.stringify(state));}catch{}},resolveProjectInfo);
+    const store=create(saved,undefined,resolveProjectInfo,json=>{try{root.localStorage.setItem(key,json);}catch{}});
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAIIdentity?.setCloneAvatarResolver?.(ownerId=>store.cloneAvatar(ownerId));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{

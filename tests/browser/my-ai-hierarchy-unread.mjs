@@ -94,7 +94,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
       await firstDigitalIdentity.locator('.eva-ai-team__identity-button').click({ button: 'right' });
       const digitalMenu = page.locator('.eva-context-menu');
       await digitalMenu.getByRole('menuitem', { name: '新建会话', exact: true }).waitFor();
-      await digitalMenu.getByRole('menuitem', { name: '从我的 AI 移除', exact: true }).waitFor();
+      await digitalMenu.getByRole('menuitem', { name: '从我的 Agent 移除', exact: true }).waitFor();
       await page.keyboard.press('Escape');
       await digitalMenu.waitFor({ state: 'detached' });
     }
@@ -159,7 +159,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await more.click();
     assert.equal(await systemTeam.locator('.eva-ai-team__team-thread-row').count(), 3);
 
-    assert.ok(await page.locator('.eva-nav-icon__unread').count() > 0, '左侧导航聚合未读红点');
+    assert.ok(await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).count() > 0, '左侧导航聚合未读红点');
     assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '团队父级聚合红点');
     await systemTeam.locator('.eva-ai-team__team-button').click();
     assert.ok(await systemTeam.locator('.eva-ai-team__unread-dot').count() > 0, '主会话已读后仍聚合未读子区');
@@ -206,13 +206,13 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
         groups.source(group.id, []).channels[0].threads.forEach(thread => groups.markRead(group.id, thread.id));
       });
     });
-    await page.locator('.eva-nav-icon__unread').waitFor({ state: 'detached' });
+    await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).waitFor({ state: 'detached' });
 
     const editor = page.getByRole('textbox', { name: /^发送给 / });
     await editor.fill('当前会话未读回归');
     await page.getByRole('button', { name: '发送', exact: true }).click();
     await page.locator('.eva-im-bubble-row').getByText('当前会话未读回归', { exact: true }).waitFor();
-    assert.equal(await page.locator('.eva-nav-icon__unread').count(), 0, '当前会话同步回复不会产生幽灵未读');
+    assert.equal(await page.getByRole('status', { name: '我的 Agent 有未读消息', exact: true }).count(), 0, '当前会话同步回复不会产生幽灵未读');
     assert.equal(await page.locator('.eva-ai-team__session-unread').count(), 0);
     const viewport = await page.evaluate(() => ({
       scrollX: window.scrollX,
@@ -223,7 +223,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await customTeam.locator('.eva-ai-team__team-button').click();
     assert.equal(await customTeam.locator('.eva-ai-team__team-button').getAttribute('aria-expanded'), 'true', '进入自定义 AI 小队时同步展开子区');
     assert.equal(await customTeam.locator('.eva-ai-team__team-menu').count(), 0, '中栏不再保留第二套团队治理菜单');
-    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    await page.getByRole('button', { name: '打开聊天信息', exact: true }).last().click();
     let teamInfo = page.locator('.eva-chat-settings');
     await teamInfo.waitFor();
     await teamInfo.getByRole('heading', { name: '聊天信息（2）', exact: true }).waitFor();
@@ -248,7 +248,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await candidate.click();
     assert.equal(await candidate.getByRole('checkbox').isChecked(), true);
     await groupEditor.getByText('保存', { exact: true }).click();
-    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    await page.getByRole('button', { name: '打开聊天信息', exact: true }).last().click();
     teamInfo = page.locator('.eva-chat-settings');
     await teamInfo.getByRole('heading', { name: '聊天信息（3）', exact: true }).waitFor();
     assert.ok(await teamInfo.getByText(fixture.newMemberName, { exact: true }).count() > 0, '新增成员即时出现在团队信息中');
@@ -260,7 +260,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     await page.screenshot({ path: '/tmp/eva-my-ai-dissolve-confirm-1200.png' });
     await dissolveModal.getByText('取消', { exact: true }).click();
     assert.equal(await renamedTeam.count(), 1, '取消解散后团队仍保留');
-    await page.getByRole('button', { name: '聊天信息', exact: true }).click();
+    await page.getByRole('button', { name: '打开聊天信息', exact: true }).last().click();
     teamInfo = page.locator('.eva-chat-settings');
     await teamInfo.waitFor();
     await teamInfo.getByRole('button', { name: '解散 AI 小队', exact: true }).click();

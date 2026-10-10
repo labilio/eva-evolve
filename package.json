@@ -30,7 +30,8 @@
     "test:composer": "node --test tests/browser/im-composer-visual.mjs",
     "test:mentions": "node --test tests/browser/task-comment-mentions.mjs tests/browser/im-mentions.mjs",
     "test:picker": "node --test tests/browser/member-picker-template.mjs",
-    "test:select": "node --test tests/browser/select-controls.mjs"
+    "test:select": "node --test tests/browser/select-controls.mjs",
+    "test:im-performance": "node --test tests/browser/im-switch-performance.mjs tests/browser/group-member-actions.mjs"
   },
   "devDependencies": {
     "esbuild": "0.25.12",

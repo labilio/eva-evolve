@@ -30,6 +30,7 @@ try {
   assert.equal(result.snapshotReads,0,'切换会话不得深拷贝全量业务状态');
   console.log(JSON.stringify({allowed,...result}));
  };
+ for(const mode of ['关注','最近','关注','最近'])await measure(page.getByRole('button',{name:mode,exact:true}),['all:prod']);
  await measure(page.getByRole('heading',{name:'采购与招投标',exact:true}),['all:prod','c-eva']);
  await measure(page.getByRole('heading',{name:'质量与排产',exact:true}),['c-eva','c-review']);
  await measure(page.getByRole('heading',{name:'采购与招投标',exact:true}),['c-review','c-eva']);
@@ -49,6 +50,9 @@ try {
  await page.getByRole('button',{name:'最近',exact:true}).click();
  await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();
  await page.getByRole('textbox',{name:'发送给 采购与招投标',exact:true}).fill('性能回归：发送后摘要必须更新');
+ await settle();await page.evaluate(()=>window.__evaMessageReads=[]);
  await page.getByRole('textbox',{name:'发送给 采购与招投标',exact:true}).press('Enter');
  await page.locator('.wk-conversationlist-item').filter({has:page.getByRole('heading',{name:'采购与招投标',exact:true})}).getByText(/性能回归：发送后摘要必须更新/).waitFor();
+ await settle();assert.deepEqual(await page.evaluate(()=>[...new Set(window.__evaMessageReads)].filter(id=>id!=='c-eva')),[],'新消息只重新读取所属会话，不扫描其他群历史');
+ assert.deepEqual(errors,[]);
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

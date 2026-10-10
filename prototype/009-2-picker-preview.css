@@ -15,7 +15,7 @@
    8px 图文间距，聚焦只变边框）全部来自公共 055-search-controls.css，模板不重复声明、不按入口改写；
    工具栏左右内缩 12px 是既定基准（候选行的盒是 8px、行内容与分组标题是 16px，谁也不将就谁），
    宽度由工具栏撑满给出，下留白 8px 让列表滚动后候选行不再贴住搜索框下边框。 */
-.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px;--picker-row-height:52px;--picker-row-pad-x:var(--gds-space-2);--picker-row-inner-gap:var(--gds-space-2);--picker-avatar-size:28px;--picker-toolbar-pad:var(--gds-space-3) var(--gds-space-3) var(--gds-space-2)}
+.eva-member-picker__panel,.eva-picker-body{--picker-list-pad:var(--gds-space-2);--picker-group-gap:var(--gds-space-4);--picker-legend-gap:var(--gds-space-2);--picker-row-gap:0px;--picker-row-height:52px;--picker-row-pad-x:var(--gds-space-2);--picker-row-inner-gap:var(--gds-space-2);--picker-avatar-size:28px;--eva-members-compact-avatar-size:var(--picker-avatar-size);--picker-toolbar-pad:var(--gds-space-3) var(--gds-space-3) var(--gds-space-2)}
 .eva-picker-list{max-height:min(400px,calc(100vh - 340px));overscroll-behavior:contain}
 /* 契约只在模板容器内生效：048 层给 .eva-picker-list 的通用内边距/溢出不得改写本模板节奏
    （该通用规则服务于个人 Eva 技能选择器，不是本模板）。 */
