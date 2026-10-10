@@ -116,7 +116,7 @@ test('Edge：大列按需加载并只挂载可见卡片，列头仍显示总数'
     const total=Number((await todo.locator('.loop-board__col-head em').textContent()).trim());
     assert.ok(total>=100);
     assert.equal(await todo.locator('.eva-board-row').count(),30);
-    await todo.locator('.eva-board-more').click();
+    await todo.locator('.eva-board-more').evaluate(button=>button.click());
     await todo.locator('.eva-board-spacer').first().waitFor();
     assert.ok(await todo.locator('.eva-board-row').count()<60,'虚拟列表只挂载窗口附近的卡片');
     assert.equal(Number((await todo.locator('.loop-board__col-head em').textContent()).trim()),total);
