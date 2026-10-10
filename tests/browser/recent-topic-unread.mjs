@@ -20,9 +20,9 @@ try{
  await page.evaluate(()=>window.EvaTheme.apply('dark'));await page.screenshot({path:'/tmp/eva-topic-unread-dark.png'});
  await page.evaluate(()=>window.EvaTheme.apply('light'));
  await page.getByRole('heading',{name:'供应链专题协同（多子区演示）',exact:true}).click();
- assert.equal(await tabs.getByRole('tab').count(),25);assert.equal(await badge.count(),4);
+ assert.equal(await tabs.getByRole('tab').count(),13);assert.equal(await badge.count(),5);
  await tabs.getByRole('tab').last().focus();await page.keyboard.press('Enter');
- assert.equal(await tabs.getByRole('tab').last().getAttribute('aria-selected'),'true');assert.equal(await badge.count(),4);
+ assert.equal(await tabs.getByRole('tab').last().getAttribute('aria-selected'),'true');assert.equal(await badge.count(),5);
  await page.setViewportSize({width:1000,height:800});await tabs.getByRole('tab').last().scrollIntoViewIfNeeded();await page.waitForTimeout(250);await page.screenshot({path:'/tmp/eva-topic-unread-overflow.png'});
  await page.getByRole('button',{name:'关注',exact:true}).click();assert.equal(await tabs.count(),0);
  await page.getByRole('button',{name:'最近',exact:true}).click();await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();assert.deepEqual(await badge.allTextContents(),['12','3','1']);

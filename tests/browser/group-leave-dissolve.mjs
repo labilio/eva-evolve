@@ -28,7 +28,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await panel.getByRole('button',{name:/^移出群聊 /}).first().click();
     const removeModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
     await removeModal.getByText('其分身及项目内群聊关系将一并移除。',{exact:false}).waitFor();
-    await removeModal.getByRole('button',{name:'cancel'}).click();
+    await removeModal.getByRole('button',{name:'取消'}).click();
     await panel.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
     assert.equal(await panel.getByRole('button',{name:'转让群主',exact:true}).count(),1,'有可接任联系人时保留转让群主入口');
@@ -51,7 +51,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     assert.ok(positions.cancel.left<positions.transfer.left,'取消与转让群主保持右侧顺序');
     await page.screenshot({path:'/tmp/eva-group-owner-leave-confirm.png'});
     await modal.getByRole('button',{name:'转让群主',exact:true}).click();
-    let transfer=page.locator('.semi-modal:visible');
+    let transfer=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'转让群主',exact:true})});
     await transfer.getByText('转让群主',{exact:true}).waitFor();
     assert.ok(await transfer.locator('.eva-picker-row').count()>0,'手动转让只提供可接任的联系人');
     await transfer.getByRole('button',{name:'取消',exact:true}).click();
@@ -98,7 +98,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await removePanel.getByRole('button',{name:/^移出群聊 /}).first().click();
     const removeGroupModal=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'确认移除成员'})});
     await removeGroupModal.getByText('其分身也会离开本群。',{exact:false}).waitFor();
-    await removeGroupModal.getByRole('button',{name:'cancel'}).click();
+    await removeGroupModal.getByRole('button',{name:'取消'}).click();
     await removePanel.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await removePanel.getByRole('button',{name:'关闭聊天信息',exact:true}).click();
     const soloRow=page.locator('.wk-conv-compact-item').filter({hasText:'单人退出测试群'}).first();

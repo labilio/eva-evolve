@@ -58,6 +58,9 @@ jobs:
       - name: Verify member picker template in browser
         run: npm run test:picker
 
+      - name: Verify IM update boundaries
+        run: npm run test:im-performance
+
       - name: Check list content insets
         run: npm run test:layout
 

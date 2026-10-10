@@ -13,6 +13,17 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   const page=await browser.newPage({viewport:{width:1200,height:800}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(5000);
   await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await page.addInitScript(()=>{
+   window.__memberPerf={reads:[],snapshots:0,frames:[]};let api;
+   Object.defineProperty(window,'EvaMembership',{configurable:true,get:()=>api,set:value=>{api={...value,bootstrap(...args){const store=value.bootstrap(...args),read=store.messagesFor,snapshot=store.snapshot;store.messagesFor=function(id,...rest){window.__memberPerf.reads.push(id);return read.call(store,id,...rest);};store.snapshot=function(...rest){window.__memberPerf.snapshots++;return snapshot.apply(store,rest);};return store;}};}});
+   document.addEventListener('click',()=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>window.__memberPerf.frames.push(performance.now()-start)));},true);
+  });
+  const resetPerf=()=>page.evaluate(()=>{window.__memberPerf={reads:[],snapshots:0,frames:[]};});
+  const checkPerf=async()=>{
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const result=await page.evaluate(()=>window.__memberPerf);
+   assert.deepEqual(result.reads,[],'管理员任免不重新读取任何聊天历史');assert.equal(result.snapshots,0,'管理员任免不复制全量状态');console.log('admin performance',JSON.stringify(result));
+  };
   await page.goto(origin+'/#/messages');
   const open=async()=>{
    await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
@@ -34,8 +45,8 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   assert.equal(await row.locator('.eva-members-human-role').count(),0);
   await grant.hover();
   await page.getByRole('tooltip').filter({hasText:'设为群管理员'}).waitFor();
-  await grant.click();
-  await row.locator('.semi-tag').getByText('群管理员',{exact:true}).waitFor();
+  await resetPerf();await grant.click();
+  await row.locator('.semi-tag').getByText('群管理员',{exact:true}).waitFor();await checkPerf();
   assert.deepEqual((await names()).map(x=>x.replace('群管理员','')),originalOrder,'任命成功不移动当前行');
   const nextRow=panel.locator('.eva-chat-member-list-row').filter({hasText:'严博'});
   await nextRow.hover();
@@ -59,8 +70,8 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   const revoke=row.getByRole('button',{name:'取消群管理员 林晓',exact:true});
   await page.mouse.move(10,10);await panel.getByRole('textbox',{name:'搜索群聊成员'}).focus();await page.keyboard.press('Tab');await revoke.focus();
   assert.equal(await row.locator('.eva-chat-member-actions').evaluate(el=>getComputedStyle(el).opacity),'1');
-  await page.keyboard.press('Enter');
-  await grant.waitFor();assert.equal(await row.locator('.semi-tag').count(),0);
+  await resetPerf();await page.keyboard.press('Enter');
+  await grant.waitFor();await checkPerf();assert.equal(await row.locator('.semi-tag').count(),0);
   assert.deepEqual((await names()).map(x=>x.replace('群管理员','')),promotedOrder.map(x=>x.replace('群管理员','')),'取消管理员后当前行不移动');
   await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('林晓');
   await panel.getByRole('textbox',{name:'搜索群聊成员'}).fill('');
