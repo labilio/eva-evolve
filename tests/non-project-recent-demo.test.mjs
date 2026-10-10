@@ -46,3 +46,27 @@ test('无项目会话预置只增量初始化一次', () => {
   assert.equal(messages.filter(message => message.text === '我手动补充的内容').length, 1);
   assert.equal(messages.filter(message => String(message.fixtureId || '').startsWith('non-project-recent-v1:')).length, 3);
 });
+
+
+test('退役演示会话不能凭旧关注和置顶记录恢复访问，已有用户内容保留', () => {
+  const first = bootstrap();
+  const saved = JSON.parse(first.saved());
+  const retired = ['im-eva-octo', 'im-delivery', 'im-review', 'im-meeting'];
+  saved.followedConversations ||= {};
+  saved.followedConversations['u-wangyilin'] ||= {};
+  saved.chatPreferences ||= {};
+  saved.chatPreferences['u-wangyilin'] ||= {};
+  saved.messages ||= {};
+  for (const id of retired) {
+    saved.followedConversations['u-wangyilin'][id] = true;
+    saved.chatPreferences['u-wangyilin'][id] = {top: true};
+    saved.messages[id] = [{kind: 'text', sender: {uid: 'u-wangyilin'}, text: '保留的用户历史'}];
+  }
+  const {store} = bootstrap(JSON.stringify(saved));
+  for (const id of retired) {
+    assert.equal(store.canReadForwardSource(id, 'u-wangyilin'), false, id + ' 不应继续作为可访问会话');
+    assert.equal(store.snapshot().messages[id][0].text, '保留的用户历史');
+  }
+  assert.equal(store.canRead('community-product-co-creation', 'u-wangyilin'), true);
+  assert.ok(store.messagesFor('community-feedback-roundup', 'u-wangyilin').length);
+});
