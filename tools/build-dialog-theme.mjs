@@ -3,7 +3,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import * as sass from 'sass';
 import postcss from 'postcss';
-import {floatingFormTheme,cardTheme,popconfirmTheme} from '../prototype/063-ui-theme.js';
+import {floatingFormTheme,cardTheme,popconfirmTheme,readOnlyTagTheme} from '../prototype/063-ui-theme.js';
 import {modalTheme,dialogText} from '../prototype/063-dialog-theme.js';
 
 // Compile the locked Semi source twice and retain only configured differences.
@@ -58,6 +58,12 @@ export function buildFloatingFormTheme() {
 export function buildCardTheme() {
  const css=postcss.parse(buildComponentTheme('card',cardTheme,''));
  css.walkRules(rule=>{rule.selectors=rule.selectors.map(selector=>/\.semi-card(?=[^\w-]|$)/.test(selector)?selector.replace(/\.semi-card(?=[^\w-]|$)/,'.eva-card.semi-card'):selector.replace(/\.semi-card-/,'.eva-card .semi-card-'));});
+ return css.toString();
+}
+
+export function buildReadOnlyTagTheme() {
+ const css=postcss.parse(buildComponentTheme('tag',readOnlyTagTheme,''));
+ css.walkRules(rule=>{rule.selectors=rule.selectors.map(selector=>selector.replace(/^(\.semi-tag[\w-]*)/,'.eva-readonly-tag$1'));});
  return css.toString();
 }
 

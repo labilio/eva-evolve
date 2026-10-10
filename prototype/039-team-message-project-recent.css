@@ -378,3 +378,13 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 
 .eva-topic-pin { display:inline-flex; align-items:center; flex:none; color:var(--eva-action-primary); }
 .eva-topic-pin .ctx-icon { width:13px; height:13px; }
+/* Keep the group type visible while long group names truncate. Tag owns its
+   geometry and color through Semi props and the scoped Semi Sass theme. */
+.eva-msg .wk-conv-compact-item:has(> .eva-project-all-tag) { gap: var(--eva-space-2); }
+.eva-msg .wk-conv-compact-item > .eva-project-all-tag { flex: none; }
+.eva-msg .wk-conv-compact-item:has(> .eva-project-all-tag) .wk-conv-compact-name { min-width: 0; flex: 0 1 auto; }
+.eva-msg .eva-project-all-recent-name,
+.eva-msg .eva-project-all-title { display: inline-flex; align-items: center; gap: var(--eva-space-2); min-width: 0; }
+.eva-msg .eva-project-all-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eva-msg .eva-project-all-recent-name > .eva-project-all-tag,
+.eva-msg .eva-project-all-title > .eva-project-all-tag { flex: none; }

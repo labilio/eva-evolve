@@ -633,14 +633,6 @@ body[theme-mode="dark"] {
   color: #6fd0b0;
 }
 
-/* C9 · 「官方」徽章：浅紫 #f1f0ff / #e2e0fa / #6862be → 复用 space-card
-   drive tone 的暗色三件套，避免另立紫色。 */
-:root[data-theme="dark"] .eva-official-badge {
-  background: #262234;
-  border-color: #383152;
-  color: #b3a3e0;
-}
-
 /* ============================================================
    项目详情外壳（collab-frame / collab-tabs / 右侧路由）暗色适配
    ------------------------------------------------------------

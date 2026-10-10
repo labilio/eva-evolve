@@ -79,7 +79,14 @@ export const cardTheme = Object.freeze({
  'font-card_default-lineHeight':typography.body.lineHeight,
 });
 
-// Preserve the accepted explanation-list hierarchy; all callers share it.
+// Read-only type tags share Semi Tag geometry and Eva semantic colors.
+export const readOnlyTagTheme = Object.freeze({
+ 'radius-tag':'var(--eva-radius-control)',
+ 'color-tag_white-bg-default':'var(--eva-surface-subtle)',
+ 'color-tag_white-border-default':'var(--eva-border-faint)',
+ 'color-tag_white-text-default':'var(--eva-text-secondary)',
+});
+
 export const infoListText = Object.freeze({
  title:Object.freeze({...typography.section,lineHeight:'20px'}),
  description:Object.freeze({...typography.body,fontSize:13,lineHeight:'20px'}),

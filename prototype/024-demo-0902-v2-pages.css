@@ -112,7 +112,6 @@
   .collab-space-card .collab-space-ic { background: var(--semi-color-fill-0, #f2f3f5); color: var(--semi-color-text-2, #4c4f56); transition: background-color .16s ease, color .16s ease; }
   .collab-space-card:hover,
   .collab-space-card:focus-visible { border-color: color-mix(in srgb, var(--eva-project-color, #86909c) 34%, #dfe1e6); box-shadow: 0 5px 16px color-mix(in srgb, var(--eva-project-color, #86909c) 10%, transparent); }
-  .eva-official-badge { display: inline-flex; align-items: center; padding: 1px 7px; border: 1px solid #e2e0fa; border-radius: 999px; background: #f1f0ff; color: #6862be; font-size: 11px; font-weight: 500; }
   .eva-project-tag { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 999px; background: #eee7ff; color: #6d2bd1; font-size: 11px; font-weight: 500; }
   .eva-project-tag--org { background: #e8f5ef; color: #18764d; }
   .eva-project-detail-page { padding: 0; }
