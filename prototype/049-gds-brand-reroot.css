@@ -208,6 +208,11 @@ body .semi-popover-wrapper:has(.semi-datepicker, .semi-select-option-list-wrappe
   box-shadow: var(--eva-shadow-floating), var(--eva-shadow-hairline);
   backdrop-filter: none;
 }
+/* Semi Popconfirm puts its style prop on the inner card. Elevation belongs to
+   the outer floating shell, shared with Eva Popover rather than doubled inside. */
+body .semi-popconfirm-popover:has(.eva-popconfirm) {
+  box-shadow: var(--eva-popconfirm-shadow);
+}
 :root[data-theme="dark"] .semi-dropdown-item:not(.semi-dropdown-item-active):hover,
 :root[data-theme="dark"] .semi-dropdown-item:focus-visible { background-color: var(--eva-overlay-hover); }
 

@@ -1,9 +1,9 @@
-/* Shared Eva identity card. Semi owns modal focus and portal lifecycle;
+/* Shared Eva identity card. Semi owns floating focus and portal lifecycle;
  * identity projections own fields and permissions; React owns the return stack.
  */
 (function(root){
 'use strict';
-root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store){
+root.EvaIdentityCard={create({React:R,ReactDOM,Popover,Modal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store){
  const h=R.createElement,model=root.EvaContactIdentities.create(store);
  function Appearance({profile,size=32}){
   return profile.appearance?root.EvaAIIdentity.avatar(profile.appearance,size,h):h('img',{className:'eva-profile-human-avatar',src:profile.avatar,alt:'',width:size,height:size,draggable:false});
@@ -78,7 +78,7 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
   const label=name||project?.name||project?.projectName||'',appearance=root.EvaProjectAppearance.css(project||{});
   return h('span',{className:'eva-project-identity',title:label},h(ProjectIcon,{size:16,style:{color:appearance.accent},'aria-hidden':true}),h('span',{className:'eva-project-identity__name'},label));
  }
- function IdentityCard({identity,onClose,startAvatarEditing}){
+ function IdentityCard({identity,anchor,onClose,startAvatarEditing}){
   const navigate=useNavigate();
   // 资料卡可能从侧栏底部账号菜单打开。宿主挂到 body，避免模态被侧栏的层叠上下文
   // 压到内容区之下；投影范围仍由 .eva-identity-portal 的 topbar 偏移控制。
@@ -89,8 +89,29 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
   R.useSyncExternalStore(root.EvaAITeam.subscribe,root.EvaAITeam.getSnapshot);
   R.useSyncExternalStore(root.EvaDigitalEmployeesStore.subscribe,root.EvaDigitalEmployeesStore.getSnapshot);
   const [ownerId,setOwnerId]=R.useState(null),[error,setError]=R.useState(''),[page,setPage]=R.useState('identity');
+  const cardRef=R.useRef(null),previousLayer=R.useRef(null);
   const [avatarEditing,setAvatarEditing]=R.useState(!!startAvatarEditing),[avatarError,setAvatarError]=R.useState(''),[cropImage,setCropImage]=R.useState(null);
   const id=typeof identity==='string'?identity:identity?.id||identity?.uid;
+  const [anchorRect,setAnchorRect]=R.useState(null);
+  R.useLayoutEffect(()=>{
+   if(!id||!anchor||startAvatarEditing){setAnchorRect(null);return;}
+   const measure=()=>{
+    if(!anchor.isConnected){onClose();return;}
+    const rect=anchor.getBoundingClientRect();
+    const topbar=root.document.querySelector('.topbar')?.getBoundingClientRect().bottom||0;
+    let clipped=false;
+    for(let parent=anchor.parentElement;parent&&!clipped;parent=parent.parentElement){
+     const style=root.getComputedStyle(parent);
+     if(!/(auto|scroll|hidden|clip)/.test(style.overflowX+' '+style.overflowY))continue;
+     const bounds=parent.getBoundingClientRect();
+     clipped=rect.bottom<=bounds.top||rect.top>=bounds.bottom||rect.right<=bounds.left||rect.left>=bounds.right;
+    }
+    if(clipped||rect.bottom<=topbar||rect.top>=root.innerHeight||rect.right<=0||rect.left>=root.innerWidth){onClose();return;}
+    setAnchorRect(previous=>previous&&previous.left===rect.left&&previous.top===rect.top&&previous.width===rect.width&&previous.height===rect.height?previous:{left:rect.left,top:rect.top,width:rect.width,height:rect.height});
+   };
+   measure();root.addEventListener('scroll',measure,true);root.addEventListener('resize',measure);
+   return()=>{root.removeEventListener('scroll',measure,true);root.removeEventListener('resize',measure);};
+  },[id,anchor,startAvatarEditing]);
   const actor=store.actorId();
   R.useEffect(()=>{setOwnerId(null);setError('');setPage('identity');setAvatarEditing(!!startAvatarEditing);setAvatarError('');setCropImage(null);},[id,actor,startAvatarEditing]);
   const profile=model.resolve(ownerId||id),owner=profile?.owner&&model.resolve(profile.owner.id);
@@ -132,18 +153,37 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
   const goBack=()=>{setError('');if(page==='mentionFree')setPage('identity');else setOwnerId(null);};
   const pageTitle=page==='mentionFree'?'群聊回复':'身份资料';
   const canGoBack=page!=='identity'||!!ownerId;
+  R.useLayoutEffect(()=>{
+   if(canGoBack)cardRef.current?.querySelector('.eva-person-card__back button,button.eva-person-card__back')?.focus({preventScroll:true});
+   else if(previousLayer.current)cardRef.current?.querySelector(previousLayer.current==='owner'?'.eva-person-card__person-link button,button.eva-person-card__person-link':'.eva-person-card__row--button')?.focus({preventScroll:true});
+   previousLayer.current=ownerId?'owner':page!=='identity'?'mentionFree':null;
+  },[ownerId,page]);
   const hasRows=owner||profile?.deptFull||profile?.description||profile?.ownership||profile?.project||manageClone;
   // 「职务」以路径末级的任职名称做主值，
   // 上层链路做小字灰字副行并完整换行——任意层数都放得下，不需要截断或悬停。
   const orgSegments=profile?.deptFull?String(profile.deptFull).split('/').filter(Boolean):[];
   const orgLeaf=orgSegments.length?orgSegments[orgSegments.length-1]:'';
   const orgParents=orgSegments.slice(0,-1).join('/');
-  const mentionSection=(title,rows)=>h('section',{className:'eva-person-card__mention-section',key:title},title&&h('p',{className:'eva-person-card__mention-section-title'},title),h('div',{className:'eva-person-card__mention-list'},rows.map(group=>h('div',{className:'eva-person-card__mention-row',key:group.groupId},h('div',{className:'eva-person-card__mention-main'},h('span',{className:'eva-person-card__mention-name',title:group.name},group.name),h('span',{className:'eva-person-card__mention-status'},group.noMention?(group.groupAllowed?'AI 无需被 @ 即可回复':'已开启，待群管理员允许'):'AI 仅在被 @ 时回复')),Switch&&h(Switch,{'aria-label':group.name+'：'+(group.noMention?(group.groupAllowed?'AI 无需被 @ 即可回复':'已开启，待群管理员允许'):'AI 仅在被 @ 时回复'),checked:group.noMention,onChange:value=>run(()=>store.setCloneMentionFree(profile.owner.id,actor,group.groupId,value))})))));
-  return h(R.Fragment,null,id&&(popupHost||!root.document)&&h(Modal,{
-   visible:true,centered:true,getPopupContainer:popupContainer,className:'eva-person-card-modal',width:420,title:null,
-   'aria-label':profile?profile.name+'的资料':'身份资料',onCancel:onClose,footer:null,maskClosable:true
-  },h('article',{className:'eva-person-card'},
-   !avatarEditing&&profile&&h('header',{className:'eva-person-card__head'},
+  const mentionSection=(title,rows)=>h('section',{className:'eva-person-card__mention-section',key:title},title&&h('p',{className:'eva-person-card__mention-section-title'},title),h('div',{className:'eva-person-card__mention-list'},rows.map(group=>h('div',{className:'eva-person-card__mention-row',key:group.groupId},h('div',{className:'eva-person-card__mention-main'},h('span',{className:'eva-person-card__mention-name',title:group.name},group.name),h('span',{className:'eva-person-card__mention-status'},group.noMention?'AI 无需被 @ 即可回复':'AI 仅在被 @ 时回复')),Switch&&h(Switch,{'aria-label':group.name+'：'+(group.noMention?'AI 无需被 @ 即可回复':'AI 仅在被 @ 时回复'),checked:group.noMention,onChange:value=>run(()=>store.setCloneMentionFree(profile.owner.id,actor,group.groupId,value))})))));
+  // Semi keeps Tab within interactive Popovers. This profile is non-modal, so
+  // leaving either end of its controls closes it and continues from the opener.
+  const tabSelector='a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  const tabTargets=scope=>[...scope.querySelectorAll(tabSelector)].filter(node=>node.isConnected&&node.getClientRects().length&&!node.closest('[hidden],[inert],[aria-hidden="true"]')&&root.getComputedStyle(node).visibility!=='hidden');
+  const onCardKeyDown=event=>{
+   if(event.key!=='Tab'||avatarEditing)return;
+   const controls=tabTargets(cardRef.current),edge=event.shiftKey?controls[0]:controls[controls.length-1];
+   if(edge&&event.target!==edge)return;
+   event.preventDefault();
+   const outside=tabTargets(root.document).filter(node=>!node.closest('.eva-identity-portal'));
+   const origin=anchor.closest(tabSelector)||anchor,index=outside.indexOf(origin);
+   const target=(index>=0?outside[index+(event.shiftKey?-1:1)]:event.shiftKey?
+    outside.filter(node=>node.compareDocumentPosition(anchor)&4).at(-1):
+    outside.find(node=>anchor.compareDocumentPosition(node)&4))||origin;
+   onClose();
+   root.setTimeout(()=>{if(target?.isConnected)target.focus({preventScroll:true});},0);
+  };
+  const card=h('article',{ref:cardRef,className:'eva-person-card',onKeyDownCapture:onCardKeyDown},
+   !avatarEditing&&profile&&canGoBack&&h('header',{className:'eva-person-card__head'},
     canGoBack&&h(Button,{className:'eva-person-card__back',theme:'borderless',type:'tertiary',icon:h(BackIcon,{size:20}),'aria-label':'返回',onClick:goBack}),
     h('h2',{className:'eva-person-card__title'},pageTitle)),
    avatarEditing&&profile&&canEditAvatar?h('div',{className:'eva-avatar-editor__host'},
@@ -179,9 +219,20 @@ root.EvaIdentityCard={create({React:R,Modal,Button,Switch,BackIcon,ProjectIcon,C
        manageClone&&h(Button,{className:'eva-person-card__row eva-person-card__row--button',key:'manage',theme:'borderless',type:'tertiary',onClick:()=>setPage('mentionFree')},h('span',{className:'eva-person-card__row-label'},'群聊回复'),h('span',{className:'eva-person-card__row-value'},h('span',{className:'eva-person-card__row-desc'},'设置 AI 是否仅在被 @ 时回复')),ChevronRight&&h(ChevronRight,{size:16,className:'eva-person-card__row-chevron','aria-hidden':true})))),
      (profile.action||profile.hint||error)&&h('footer',{className:'eva-person-card__actions'},
       error&&h('p',{role:'alert',className:'eva-person-card__error'},error),
-      profile.action?h(Button,{className:'eva-person-card__cta',theme:'solid',type:'primary',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
+      profile.action?h(Button,{className:'eva-person-card__cta',theme:'solid',type:'primary',size:'large',block:true,onClick:action},profile.action.label):profile.hint&&h('p',{className:'eva-person-card__hint'},profile.hint))
    )
-   ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看'))));
+   ):h('p',{className:'eva-person-card__unavailable',role:'status'},'该身份已不可用，或当前账号无权查看'));
+  if(!id)return null;
+  // Keep the content renderer usable in non-DOM environments; only the browser
+  // chooses between anchored Popover and the avatar editor Modal.
+  if(!root.document)return card;
+  if(!popupHost)return null;
+  if(avatarEditing)return h(Modal,{visible:true,centered:true,getPopupContainer:popupContainer,className:'eva-person-card-modal',width:420,title:null,'aria-label':'更换头像',onCancel:onClose,footer:null,maskClosable:true},card);
+  if(!anchorRect||!Popover||!ReactDOM)return null;
+  return ReactDOM.createPortal(h(Popover,{trigger:'custom',visible:true,bare:true,motion:false,showArrow:false,position:'rightTop',autoAdjustOverflow:true,spacing:8,zIndex:1100,
+   className:'eva-person-card-popover',style:{width:'min(360px, calc(100vw - 32px))',maxWidth:'calc(100vw - 32px)'},getPopupContainer:popupContainer,returnFocus:anchor,initialFocus:'content',
+   'aria-label':profile?profile.name+'的资料':'身份资料',onVisibleChange:visible=>{if(!visible)onClose();},onClickOutSide:event=>{if(!anchor.contains(event.target))onClose();},onEscKeyDown:onClose,
+   content:card},h('span',{className:'eva-person-card__anchor','aria-hidden':true,style:{position:'fixed',left:anchorRect.left,top:anchorRect.top,width:anchorRect.width,height:anchorRect.height,pointerEvents:'none'}})),popupHost);
  }
  return {IdentityCard,IdentityAppearance:Appearance,ProjectIdentity,identityModel:model,AvatarEditor,readAvatarFile};
 }};

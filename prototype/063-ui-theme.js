@@ -27,6 +27,10 @@ export const popconfirmTheme = Object.freeze({
  'color-popconfirm_body-text':'var(--semi-color-text-1)',
 });
 
+// Popover consumes its component token; Popconfirm has a separate component
+// token on Semi's outer shell. Both inherit the anchored elevation by default.
+export const floatingElevation = Object.freeze({boxShadow:'var(--eva-popover-shadow)'});
+
 // Scoped CSS variables also color Semi's native arrow inside the same portal.
 export const floatingSurface = Object.freeze({
  '--semi-color-bg-3':'var(--eva-surface-primary)',
@@ -36,7 +40,7 @@ export const floatingSurface = Object.freeze({
  color:'var(--eva-text-primary)',
  backgroundColor:'var(--eva-surface-primary)',
  borderRadius:'var(--eva-radius-panel)',
- boxShadow:'var(--eva-shadow-floating), var(--eva-shadow-hairline)',
+ ...floatingElevation,
  backdropFilter:'none',
 });
 

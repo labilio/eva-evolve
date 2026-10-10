@@ -225,6 +225,11 @@
 
   /* ---- shadow -------------------------------------------- */
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.07);
+  /* 贴近触发入口的浮层（Popover / Popconfirm），仍轻于右侧抽屉。 */
+  --eva-shadow-anchored: 0 12px 32px -6px rgba(15, 18, 24, 0.18), 0 3px 10px -3px rgba(15, 18, 24, 0.10);
+  /* 组件级出口：同一基础抬升，后续可分别调整而不影响另一种浮层。 */
+  --eva-popover-shadow: var(--eva-shadow-anchored), var(--eva-shadow-hairline);
+  --eva-popconfirm-shadow: var(--eva-shadow-anchored), var(--eva-shadow-hairline);
   /* 输入区浮层（提及/表情选择）用的收紧接触投影：微量抬升，比 floating 更贴近触发面 */
   --eva-shadow-popover: 0 4px 12px -2px rgba(0, 0, 0, 0.10);
   --eva-shadow-hairline: 0 0 0 0.5px rgba(20, 20, 20, 0.15);

@@ -30,14 +30,14 @@ test('资料卡标签列与值列左对齐，部门末级大字、上层链路�
     const settle=async()=>{
       let prev=null;
       for(let i=0;i<25;i++){
-        const box=await page.locator('.eva-person-card-modal .semi-modal').evaluate(el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(v=>Math.round(v*100)).join(',');});
+        const box=await page.locator('.eva-person-card-popover').evaluate(el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height].map(v=>Math.round(v*100)).join(',');});
         if(box===prev)return;
         prev=box;
         await page.waitForTimeout(80);
       }
     };
     const open=async name=>{await page.locator(`button[aria-label="查看 ${name} 的资料"]`).first().click();await card.waitFor();await settle();};
-    const close=async()=>{await page.locator('.eva-person-card-modal .semi-modal-close').click();await card.waitFor({state:'detached'});};
+    const close=async()=>{await page.keyboard.press('Escape');await card.waitFor({state:'detached'});};
 
     await page.goto(origin+'/#/contacts');
 

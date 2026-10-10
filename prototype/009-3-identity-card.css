@@ -1,4 +1,4 @@
-/* Eva identity card: one shared surface. Semi owns the modal shell and buttons,
+/* Eva identity card: one shared surface. Semi owns the floating shell and buttons,
    GDS semantic tokens own the geometry/color, identity projections own the data. */
 /* 关闭按钮几何由父容器统一声明：标题栏右侧预留空间、关闭尺寸与垂直居中位置都从这里推导，
    避免标题栏和关闭各自写死一份数字后再次失去同步。无标题栏状态（头像编辑器等）以 close-inset 作顶距。 */
@@ -13,12 +13,12 @@
 /* 有标题栏时，关闭按标题栏行中心对齐；与下方 __head 的右侧预留同源，改标题栏高度即同步。 */
 .eva-person-card-modal .semi-modal-content:has(.eva-person-card__head) .semi-modal-close{top:calc((var(--eva-person-card-head-height) - var(--eva-person-card-close)) / 2)}
 
-.eva-person-card{position:relative;display:flex;flex-direction:column;max-height:calc(100dvh - var(--topbar-height) - 2 * var(--gds-space-4) - 2 * var(--gds-border-standard));color:var(--semi-color-text-0);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
+.eva-person-card{--eva-person-card-head-height:56px;position:relative;display:flex;flex-direction:column;max-height:calc(100dvh - var(--topbar-height) - 2 * var(--gds-space-4) - 2 * var(--gds-border-standard));color:var(--semi-color-text-0);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 /* 资料卡 Portal 挂在 body 上，脱离应用内全局 border-box 作用域；满宽行 + 内边距必须自带盒模型。 */
 .eva-person-card,.eva-person-card *{box-sizing:border-box}
 
-/* 标题栏：左上返回（标准 Semi 圆形图标按钮，仅在可返回层出现），右上关闭由 Semi 承担。 */
-.eva-person-card__head{flex:none;display:flex;align-items:center;gap:var(--gds-space-2);height:var(--eva-person-card-head-height);padding:0 calc(var(--eva-person-card-close-inset) + var(--eva-person-card-close) + var(--gds-space-3)) 0 var(--gds-space-6);border-bottom:1px solid var(--semi-color-border)}
+/* 根层直接以身份姓名开头；仅在卡内进入下一层时显示返回栏。 */
+.eva-person-card__head{flex:none;display:flex;align-items:center;gap:var(--gds-space-2);height:var(--eva-person-card-head-height);padding:0 var(--gds-space-6);border-bottom:1px solid var(--semi-color-border)}
 .eva-person-card__title{min-width:0;margin:0;font-size:var(--gds-type-header-font-size);line-height:var(--gds-type-header-line-height);font-weight:var(--gds-font-weight-semibold);color:var(--semi-color-text-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eva-person-card__back{flex:none;width:var(--gds-space-8);height:var(--gds-space-8);min-width:var(--gds-space-8);min-height:var(--gds-space-8);padding:0;margin:0;border-radius:var(--gds-radius-control);color:var(--semi-color-text-1)}
 
@@ -118,16 +118,15 @@
 .eva-person-card__mention-row>.semi-switch{flex:none}
 .eva-person-card__mention-empty{margin:0;padding:var(--gds-space-8) 0;color:var(--semi-color-text-2);text-align:center;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 
-/* 底部：整宽主行动，或居中提示文案。主按钮配色统一走 GDS「实心主按钮三件套」，
-   组件只下发 Semi 的 primary 变量、不自己重画底色，避免状态被 Semi 默认样式抢走后黑跳蓝。 */
-.eva-person-card__actions{flex:none;display:flex;flex-direction:column;gap:var(--gds-space-2);padding:var(--eva-person-card-block-gap) var(--eva-person-card-pad) var(--gds-space-5);border-top:1px solid var(--semi-color-border)}
-.eva-person-card__actions>.semi-button{height:44px;min-height:44px;border-radius:var(--gds-radius-chip);font-size:var(--gds-type-body-medium-font-size);font-weight:var(--gds-font-weight-medium)}
-.eva-person-card__cta{--semi-color-primary:var(--eva-action-primary-solid);--semi-color-primary-hover:var(--eva-action-primary-solid-hover);--semi-color-primary-active:var(--eva-action-primary-solid-hover);color:var(--eva-action-primary-solid-text)}
+/* 底部主行动保持 Eva 的蓝色整宽按钮；无分割线和额外顶部留白。 */
+.eva-person-card__actions{flex:none;display:flex;flex-direction:column;gap:var(--gds-space-2);padding:0 var(--eva-person-card-pad) var(--gds-space-5)}
+.eva-person-card__actions>.semi-button.eva-person-card__cta{border-radius:var(--gds-radius-chip);--semi-color-primary:var(--eva-action-primary-solid);--semi-color-primary-hover:var(--eva-action-primary-solid-hover);--semi-color-primary-active:var(--eva-action-primary-solid-hover);color:var(--eva-action-primary-solid-text)}
 .eva-person-card__hint{margin:0;padding:var(--gds-space-2) 0;color:var(--semi-color-text-2);text-align:center;font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 .eva-person-card__error{margin:0 0 var(--gds-space-3);color:var(--semi-color-danger);font-size:var(--gds-type-caption-font-size);line-height:var(--gds-type-chip-line-height)}
 .eva-person-card__unavailable{margin:0;padding:var(--gds-space-12) var(--gds-space-6) var(--gds-space-6);color:var(--semi-color-text-1)}
 .eva-identity-portal{position:fixed;inset:var(--topbar-height) 0 0;z-index:1000;pointer-events:none}
 .eva-identity-portal .semi-modal-mask,.eva-identity-portal .semi-modal-wrap{position:absolute;inset:0;height:100%;pointer-events:auto}
+.eva-identity-portal .semi-popover-wrapper{pointer-events:auto}
 
 @media(max-width:480px){
  /* 窄视口只收外层内边距；标签列宽随父容器单点声明，不再另设例外。 */

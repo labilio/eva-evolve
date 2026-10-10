@@ -25,7 +25,7 @@ test('身份资料卡可更换头像：本人/分身主人/助理可编辑，写
     const humanTrigger = name => page.locator(`button[aria-label="查看 ${name} 的资料"]`);
     const card = page.locator('.eva-person-card');
     const cardAvatarSrc = () => card.locator('.eva-person-card__avatar img').first().getAttribute('src');
-    const closeCard = async () => { await page.locator('.eva-person-card-modal .semi-modal-close').click(); await card.waitFor({state: 'detached'}); };
+    const closeCard = async () => { await page.keyboard.press('Escape'); await card.waitFor({state: 'detached'}); };
     // 资料卡入口（本人／分身／个人助理）：点击头像选图后一律进入同一个圆形裁剪，
     // 「取消 / 保存」确认后写回，资料卡保留并回到身份页。
     const uploadFromCardWithCrop = async () => {

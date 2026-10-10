@@ -105,6 +105,7 @@
 
   /* ---- shadow / elevation（大扩散 + 白色发丝描边）---- */
   --eva-shadow-floating: 0 16px 48px -8px rgba(0, 0, 0, 0.55);
+  --eva-shadow-anchored: 0 12px 32px -6px rgba(0, 0, 0, 0.62), 0 3px 10px -3px rgba(0, 0, 0, 0.36);
   --eva-shadow-hairline: 0 0 0 0.5px rgba(255, 255, 255, 0.08);
   --eva-shadow-canvas: 0 4px 80px 8px rgba(0, 0, 0, 0.5), 0 3px 6px 0 rgba(0, 0, 0, 0.4);
   /* 抽屉族暗色：环境光弱，纯投影在深底上不够可读，故比浅色档加深一档

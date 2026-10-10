@@ -21,12 +21,13 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
  await page.goto(`http://127.0.0.1:${server.address().port}`);
- const palettes=[];
+ const palettes=[],shadows=[];
  for(const theme of ['light','dark']){
   await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
   await page.getByRole('button',{name:'普通操作',exact:true}).click();
   const card=page.locator('.semi-popconfirm');await card.waitFor();
   palettes.push(await card.evaluate(el=>({surface:getComputedStyle(el.closest('.semi-popover-wrapper')).backgroundColor,text:getComputedStyle(el.querySelector('.semi-popconfirm-body')).color})));
+  shadows.push(await card.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow));
   const values=await card.evaluate(el=>{
    const style=s=>getComputedStyle(el.querySelector(s));
    return {title:style('.semi-popconfirm-header-title').fontSize,weight:style('.semi-popconfirm-header-title').fontWeight,body:getComputedStyle(el).fontSize,padding:style('.semi-popconfirm-inner').paddingTop,radius:getComputedStyle(el.closest('.semi-popover-wrapper')).borderRadius,portal:!document.getElementById('app').contains(el)};
@@ -39,6 +40,7 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  }
  assert.notEqual(palettes[0].surface,palettes[1].surface,'暗色浮层表面跟随公共主题');
  assert.notEqual(palettes[0].text,palettes[1].text,'暗色正文跟随公共主题');
+ assert.notEqual(shadows[0],shadows[1],'Popconfirm 投影跟随亮暗公共 token');
  await page.getByRole('button',{name:'普通操作',exact:true}).click();await page.getByRole('button',{name:'确定',exact:true}).click();await page.getByText('已完成',{exact:true}).waitFor();await page.locator('.semi-popconfirm').waitFor({state:'hidden'});
  await page.getByRole('button',{name:'危险操作',exact:true}).click();
  assert.match(await page.getByRole('button',{name:'移除',exact:true}).getAttribute('class'),/danger/);
@@ -46,6 +48,7 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  await page.locator('.semi-popconfirm').getByRole('button',{name:'取消',exact:true}).click();
  await page.getByRole('button',{name:'项目说明',exact:true}).click();
  const info=page.getByText('项目说明内容',{exact:true});await info.waitFor();
+ const popoverShadow=await info.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow);
  assert.equal(await info.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).borderRadius),'16px');
  assert.equal(await info.evaluate(el=>getComputedStyle(el).fontSize),'14px');
  await page.keyboard.press('Escape');await info.waitFor({state:'hidden'});
@@ -53,6 +56,7 @@ test('Popconfirm 共享主题：Portal、亮暗、文字、间距、取消与危
  await page.locator('#app').click({position:{x:10,y:10}});await info.waitFor({state:'hidden'});
  await page.getByRole('button',{name:'单句',exact:true}).click();
  const single=page.locator('.semi-popconfirm');await single.waitFor();
+ assert.equal(await single.evaluate(el=>getComputedStyle(el.closest('.semi-popover-wrapper')).boxShadow),popoverShadow,'Popover 与 Popconfirm 共用卡片浮层投影');
  assert.equal(await page.getByRole('dialog',{name:'单句确认',exact:true}).count(),1);
  assert.equal(await single.getByRole('button',{name:'取消',exact:true}).evaluate(el=>el===document.activeElement),true,'默认聚焦取消');
  await page.keyboard.press('Shift+Tab');

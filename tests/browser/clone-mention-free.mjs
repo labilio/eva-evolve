@@ -26,7 +26,7 @@ test('本人分身在资料卡内按群开启免 @ 回答，非主人不可见�
       await card.getByRole('button',{name:/群聊回复/}).click();
       await card.getByRole('heading',{name:'群聊回复',exact:true}).waitFor();
     };
-    const closeCard=async()=>{await page.locator('.eva-person-card-modal .semi-modal-close').click();await card.waitFor({state:'detached'});};
+    const closeCard=async name=>{await trigger(name).click();await card.waitFor({state:'detached'});};
 
     await page.goto(origin+'/#/contacts');
 
@@ -34,7 +34,7 @@ test('本人分身在资料卡内按群开启免 @ 回答，非主人不可见�
     await trigger('林晓的 AI 分身').click();
     await card.waitFor();
     assert.equal(await card.getByRole('button',{name:/群聊回复/}).count(),0,'他人分身不提供免 @ 回答');
-    await closeCard();
+    await closeCard('林晓的 AI 分身');
 
     await openMentionFree('王宜林的 AI 分身');
     const rows=card.locator('.eva-person-card__mention-row');
@@ -55,7 +55,7 @@ test('本人分身在资料卡内按群开启免 @ 回答，非主人不可见�
     const remaining=await rows.count()-1;
     if(remaining)await card.getByText('未开启（'+remaining+'）',{exact:true}).waitFor();
 
-    await closeCard();
+    await closeCard('王宜林的 AI 分身');
     await page.reload();
     await openMentionFree('王宜林的 AI 分身');
     const restored=card.locator('.eva-person-card__mention-row').first();

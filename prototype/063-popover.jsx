@@ -9,7 +9,7 @@ import {floatingSurface,floatingLayout,typography,popoverLayout,composition} fro
 // Semi owns positioning, visibility, portals, Escape and Tab navigation. Hover
 // information keeps focus on its trigger; a click/custom dialog uses Semi's
 // initialFocusRef. A render-function content may supply a more specific target.
-export const Popover = React.forwardRef(function Popover({style,children,title,content,className='',trigger='hover',initialFocus='field',returnFocus,description=false,...props},ref) {
+export const Popover = React.forwardRef(function Popover({style,children,title,content,className='',trigger='hover',initialFocus='field',returnFocus,description=false,bare=false,...props},ref) {
  const {titleId,descriptionId,labelRef}=useFloatingLabel(title != null,props['aria-label'] || (typeof content === 'string' ? content : undefined),description);
  const focus=useFloatingFocus({interactive:trigger!=='hover'&&trigger!=='focus',visible:props.visible,returnFocus});
  return <SemiPopover disableFocusListener={false} {...props} trigger={trigger} returnFocusOnClose={false}
@@ -19,7 +19,7 @@ export const Popover = React.forwardRef(function Popover({style,children,title,c
   content={context => <div tabIndex={-1} ref={node=>{
    labelRef(node);focus.bind(node);
    if (trigger !== 'hover' && trigger !== 'focus' && node && !context.initialFocusRef.current?.isConnected) context.initialFocusRef.current=initialFloatingFocus(node,initialFocus);
-  }} onKeyDownCapture={event=>{if(event.key==='Escape'&&event.nativeEvent.isComposing)event.stopPropagation();}} style={{padding:popoverLayout.padding}}>
+  }} onKeyDownCapture={event=>{if(event.key==='Escape'&&event.nativeEvent.isComposing)event.stopPropagation();}} style={{padding:bare?0:popoverLayout.padding}}>
    {title != null && <div id={titleId} style={typography.title}>{title}</div>}
    <div id={descriptionId} style={{...typography.body,marginTop:title != null ? popoverLayout.titleGap : undefined}}>{typeof content === 'function' ? content(context) : content}</div>
   </div>}>{children}</SemiPopover>;
