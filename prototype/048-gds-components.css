@@ -706,7 +706,7 @@
   background: var(--eva-action-primary-solid-hover);
 }
 .semi-button-primary:is(.semi-button-light,.semi-button-borderless) {
-  color: var(--eva-text-secondary);
+  color: var(--eva-action-primary);
   background: transparent;
 }
 .semi-button-primary:is(.semi-button-light,.semi-button-borderless):hover:not(.semi-button-disabled) {

@@ -199,7 +199,7 @@
 
   .eva-project-follow-button.is-followed {
     background: transparent;
-    color: var(--semi-color-text-0, #1c1f23);
+    color: var(--eva-action-primary);
   }
 
   .eva-project-follow-button .semi-button-content,

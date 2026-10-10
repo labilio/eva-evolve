@@ -376,5 +376,5 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 .eva-topic-list-trigger { display:inline-flex; flex:none; }
 .eva-recent-topic-tabs__list .semi-button-content { display:flex; align-items:center; gap:4px; }
 
-.eva-topic-pin { display:inline-flex; align-items:center; flex:none; color:var(--semi-color-text-2); }
+.eva-topic-pin { display:inline-flex; align-items:center; flex:none; color:var(--eva-action-primary); }
 .eva-topic-pin .ctx-icon { width:13px; height:13px; }

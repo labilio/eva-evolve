@@ -131,7 +131,7 @@
   .eva-personal-thread:hover .eva-personal-thread__actions, .eva-personal-thread:focus-within .eva-personal-thread__actions, .eva-personal-thread:has([aria-expanded="true"]) .eva-personal-thread__actions { display: flex; }
   .eva-personal-thread:hover .eva-personal-thread__time, .eva-personal-thread:focus-within .eva-personal-thread__time { display: none; }
   .eva-personal-folder-menu .is-pinned svg, .eva-personal-thread__actions [aria-pressed="true"] svg { fill: currentColor; stroke-width: 1.8; }
-  .eva-personal-folder-menu .is-pinned, .eva-personal-thread__actions [aria-pressed="true"] { color: var(--semi-color-text-0, #1c1f23); }
+  .eva-personal-folder-menu .is-pinned, .eva-personal-thread__actions [aria-pressed="true"] { color: var(--eva-action-primary); }
   /* pressed 比 hover 深一档（6% → 9%），与导航 --eva-nav-pressed 的分工一致；
      原先与 hover 同值，按下没有任何反馈。 */
   .eva-personal-folder__row:active, .eva-personal-thread:active { background: var(--eva-overlay-pressed); }

@@ -561,6 +561,8 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   transition: opacity 120ms ease, color 120ms ease, background 120ms ease;
 }
 
+.eva-drive__pin-button.is-pinned svg { fill: currentColor; }
+
 .eva-drive__row:hover .eva-drive__pin-button,
 .eva-drive__row:focus-within .eva-drive__pin-button,
 .eva-drive__pin-button.is-pinned,
