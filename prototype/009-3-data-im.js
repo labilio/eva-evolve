@@ -598,3 +598,58 @@ window.__EVA_TOPIC_ORDER_DEMO = {
   {id:'supply-many-topic-04',minute:20,messages:['合同付款节点已改为验收后 30 天，请确认附件中的验收标准与最终报价一致。']}
  ]
 };
+
+// Personal cron demo: definitions and completed runs share stable IDs with
+// the personal Eva conversation seed. These records do not start a scheduler.
+window.__EVA_PERSONAL_AUTOMATION_DEMO = Object.freeze([
+  {
+    id:'personal-daily-supply-brief', name:'供应链每日简报',
+    description:'汇总供应链运营协同的关键进展与待确认项。',
+    instruction:'每天汇总供应链运营协同项目的采购、质量和合规进展，列出待确认事项。',
+    schedule:'每天 08:30', nextRun:'等待下次触发', executor:'Eva 同学', enabled:true,
+    sessionId:'personal-automation-daily-supply-brief',
+    runs:[
+      {id:'daily-supply-2026-10-12',at:'2026-10-12T08:31:00+08:00',status:'completed',summary:'采购关键件第一批已出库；质量证明与合同交期仍需确认。'},
+      {id:'daily-supply-2026-10-11',at:'2026-10-11T08:32:00+08:00',status:'completed',summary:'已整理库存、供应商材料和合同续签三项待办。'},
+      {id:'daily-supply-2026-10-10',at:'2026-10-10T08:31:00+08:00',status:'completed',summary:'已核对关键件库存，供应商续期证明仍未补齐。'},
+      {id:'daily-supply-2026-10-09',at:'2026-10-09T08:33:00+08:00',status:'completed',summary:'质量异常批次仍在隔离，暂不能视为放行。'},
+      {id:'daily-supply-2026-10-08',at:'2026-10-08T08:30:00+08:00',status:'completed',summary:'已汇总采购需求与待评审报价，合同 B 的提价依据待确认。'},
+      {id:'daily-supply-2026-10-07',at:'2026-10-07T08:34:00+08:00',status:'completed',summary:'合同 C 的交期调整可能影响排产，需核对分批交付方案。'},
+      {id:'daily-supply-2026-10-06',at:'2026-10-06T08:31:00+08:00',status:'completed',summary:'已整理供应商准入材料，授权书签章仍缺失。'},
+      {id:'daily-supply-2026-10-05',at:'2026-10-05T08:32:00+08:00',status:'completed',summary:'已汇总本周采购、质量与合规待办，放行与续签均待人工确认。'},
+      {id:'daily-supply-2026-10-04',at:'2026-10-04T08:31:00+08:00',status:'completed',summary:'已标记下周待办：关键件补货、异常批次复核和合同续签。'},
+      {id:'daily-supply-2026-10-03',at:'2026-10-03T08:30:00+08:00',status:'completed',summary:'已整理供应链项目的当前状态，未确认事项继续保留在清单中。'}
+    ]
+  },
+  {
+    id:'personal-weekly-supply-review', name:'供应链每周复盘',
+    description:'每周汇总已完成事项、风险与下周计划。',
+    instruction:'复盘供应链运营协同项目本周进展并给出下周优先级建议。',
+    schedule:'每周五 17:30', nextRun:'暂无后续执行', executor:'Eva 同学', enabled:false,
+    sessionId:'personal-automation-weekly-supply-review',
+    runs:[
+      {id:'weekly-supply-2026-10-09',at:'2026-10-09T17:31:00+08:00',status:'completed',summary:'本周完成关键件首批出库；质量证明和合同交期留待下周核对。'},
+      {id:'weekly-supply-2026-10-02',at:'2026-10-02T17:32:00+08:00',status:'completed',summary:'整理了采购需求、报价评审和供应商准入三项下周优先事项。'}
+    ]
+  },
+  {
+    id:'personal-quality-watch', name:'质量异常跟进',
+    description:'跟进异常批次的材料补齐与复核结果。',
+    instruction:'检查供应链运营协同项目的质量异常待办，整理需人工确认的事项。',
+    schedule:'每天 17:00', nextRun:'暂无后续执行', executor:'Eva 同学', enabled:false,
+    runs:[]
+  }
+]);
+
+// Additional personal requests are distinct from cron runs and use stable
+// conversation IDs so local edits and deletions survive later demo updates.
+window.__EVA_PERSONAL_CONVERSATION_DEMO = Object.freeze([
+  {id:'personal-supplier-delivery',title:'核对供应商交期风险',time:'2 小时',messages:[
+    {role:'user',text:'帮我梳理供应链运营协同里两家供应商的交期变化，哪些会影响下周排产？'},
+    {role:'assistant',intro:'目前需要重点核对合同 C 延长的 7 天交期，以及关键件第二批的材质证明。',paragraphs:['建议先确认第一批到货窗口，再让采购与仓库核对第二批是否需要分批交付；在人工确认前不要把预计到货写成承诺。']}
+  ]},
+  {id:'personal-afternoon-sync',title:'准备下午项目同步会',time:'5 小时',messages:[
+    {role:'user',text:'下午要同步供应链运营协同进展，帮我列一个 10 分钟议程。'},
+    {role:'assistant',intro:'议程分为采购进展、质量异常、合同交期和待拍板事项四段。',paragraphs:['每段只保留一项结论和一项下一步，最后请采购确认交期，请质量负责人确认异常批次的复核条件。']}
+  ]}
+]);

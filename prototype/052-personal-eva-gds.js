@@ -162,10 +162,11 @@
     items = items.slice().sort(function (a,b) { return Number(!!b.pinned) - Number(!!a.pinned); });
     var visible = expandedLists.has(folderId) ? items : items.slice(0,6);
     return visible.map(function (item) {
+      var displayTitle = item.scheduledTaskId ? item.title.replace(/^\[(?:定时|cron)\]\s+/i, '') : item.title;
       var lastMessage = item.messages && item.messages[item.messages.length - 1];
       var preview = lastMessage && (lastMessage.text || lastMessage.intro || (lastMessage.paragraphs && lastMessage.paragraphs[0])) || '';
-      return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '" data-eva-hover-card="conversation" data-eva-hover-title="' + escapeHTML(item.title) + '" data-eva-hover-folder="' + escapeHTML(folderName) + '" data-eva-hover-preview="' + escapeHTML(preview) + '" data-eva-hover-time="' + escapeHTML(item.time || '') + '" data-eva-tooltip-clamp=".eva-personal-thread__title,.eva-personal-thread__preview">'
-        + '<button type="button" class="eva-personal-thread__main" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span class="eva-personal-thread__title">' + escapeHTML(item.title) + '</span><span class="eva-personal-thread__preview">' + escapeHTML(preview) + '</span></button>'
+      return '<div class="eva-personal-thread' + (activeConversationId === item.id ? ' is-selected' : '') + '" data-eva-hover-card="conversation" data-eva-hover-title="' + escapeHTML(displayTitle) + '" data-eva-hover-folder="' + escapeHTML(folderName) + '" data-eva-hover-preview="' + escapeHTML(preview) + '" data-eva-hover-time="' + escapeHTML(item.time || '') + '" data-eva-tooltip-clamp=".eva-personal-thread__title,.eva-personal-thread__preview">'
+        + '<button type="button" class="eva-personal-thread__main" data-eva-personal-conversation-id="' + escapeHTML(item.id) + '"' + (activeConversationId === item.id ? ' aria-current="page"' : '') + '><span class="eva-personal-thread__title">' + (item.scheduledTaskId ? '<span class="eva-personal-thread__scheduled" title="定时任务" aria-label="定时任务">' + icon('clock',14,'eva-i') + '</span>' : '') + '<span class="eva-personal-thread__title-text">' + escapeHTML(displayTitle) + '</span></span><span class="eva-personal-thread__preview">' + escapeHTML(preview) + '</span></button>'
         + (window.EvaPersonal ? window.EvaUnreadUI.badgeHTML({count:window.EvaPersonal.unreadCount(item.id),attributes:{'data-eva-personal-unread':item.id}}) : '')
         + '<time class="eva-personal-thread__time">'  + escapeHTML(item.time || '') + '</time>'
         + '<span class="eva-personal-thread__actions"><button type="button" class="eva-personal-rail-icon" data-eva-pin-conversation="' + escapeHTML(item.id) + '" aria-pressed="' + !!item.pinned + '" aria-label="' + (item.pinned ? '取消置顶' : '置顶') + '：' + escapeHTML(item.title) + '" data-eva-tooltip="' + (item.pinned ? '取消置顶' : '置顶') + '" data-eva-tooltip-key="personal-pin:' + escapeHTML(item.id) + '">' + icon('pin',16,'eva-i') + '</button>'
@@ -388,15 +389,16 @@
   function historyConversationHTML() {
     var detail = conversationForId(activeConversationId) || conversationForTitle(selectedConversation) || conversationCatalog()[0];
     if (!detail) return '';
+    var assistantName = detail.assistant || personalAssistantName();
     return '<section class="eva-personal-workspace__conversation eva-personal-workspace__history">'
       + '<header class="eva-topbar eva-personal-workspace__topbar">'
       + '<span class="eva-personal-topbar__mark">' + icon('brain', 18, 'eva-i-nav') + '</span>'
       + '<span class="ttl eva-t-header">' + escapeHTML(detail.title) + '</span>'
-      + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(personalAssistantName()) + '</span>'
+      + '<span class="eva-history-header__assistant eva-t-label">' + escapeHTML(assistantName) + '</span>'
       + '<span style="flex:1 1 auto"></span>'
       + '</header>'
       + '<div class="eva-personal-workspace__stream"><div class="eva-flow eva-history-flow">'
-      + detail.messages.map(function (message) { return historyMessageHTML(message, personalAssistantName()); }).join('')
+      + detail.messages.map(function (message) { return historyMessageHTML(message, assistantName); }).join('')
       + '</div></div><div class="eva-personal-workspace__dock">' + composerPanelHTML() + '</div></section>';
   }
 

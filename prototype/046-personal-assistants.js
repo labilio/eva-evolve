@@ -54,50 +54,119 @@
       ]
     }
   ];
+  var originalTimes = ['3 小时','7 小时','1 天','1 分钟','2 天'];
+  var personalDemo = window.__EVA_PERSONAL_CONVERSATION_DEMO || [];
+  personalDemo.forEach(function (item) {
+    seedConversations.push(Object.assign({assistantId:'assistant-general', assistant:'Eva 同学', folderId:''}, item));
+  });
+  var automationDemo = (window.__EVA_PERSONAL_AUTOMATION_DEMO || []).filter(function (task) {
+    return task.sessionId && Array.isArray(task.runs) && task.runs.length;
+  });
+  automationDemo.forEach(function (task) {
+    seedConversations.push({
+      id:task.sessionId, scheduledTaskId:task.id, folderId:'', time:task.enabled ? '今天' : task.id === 'personal-weekly-supply-review' ? '3 天' : '2 天',
+      assistantId:'assistant-general', assistant:'Eva 同学',
+      title:'[定时] ' + task.name,
+      messages:task.runs.slice().reverse().flatMap(function (run) {
+        return [
+          {role:'user', automationRunId:run.id, text:task.instruction + '（' + run.at.slice(0, 10) + ' ' + run.at.slice(11, 16) + ' 触发；演示记录）'},
+          {role:'assistant', automationRunId:run.id, intro:run.summary, note:'本次运行已完成 · ' + run.at.slice(0, 10) + ' · 演示记录'}
+        ];
+      })
+    });
+  });
+  var demoLeadIds = [
+    'personal-supplier-delivery', 'personal-automation-daily-supply-brief',
+    'personal-afternoon-sync', 'personal-automation-weekly-supply-review'
+  ];
+  var retiredDemo = {
+    'personal-purchase-email': {title:'起草采购确认邮件', messageCount:2},
+    'personal-sharing-permissions': {title:'解释文件分享权限', messageCount:2},
+    'personal-automation-quality-watch': {title:'[定时] 质量异常跟进', messageCount:4}
+  };
   var storageKey = 'eva:personal-folders:v1';
   var saved;
   try { saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch (_) {}
   var folders = saved && Array.isArray(saved.folders) ? saved.folders.filter(function (f) { return f && typeof f.id === 'string' && typeof f.name === 'string'; }) : [{id:'personal-supply', name:'供应链运营协同'}];
   var conversations = seedConversations.map(function (c, index) {
-    return Object.assign({}, c, {folderId: index === 1 ? 'personal-supply' : '', time: ['3 小时','7 小时','1 天','1 分钟','2 天'][index]});
+    return Object.assign({}, c, {folderId: c.folderId || (index === 1 ? 'personal-supply' : ''), time: c.time || originalTimes[index] || '10月12日'});
   });
   if (saved && Array.isArray(saved.conversations)) {
     var restoredOrder = [];
     saved.conversations.forEach(function (c) {
       if (!c || typeof c.id !== 'string' || typeof c.title !== 'string' || !Array.isArray(c.messages)) return;
+      var retired = retiredDemo[c.id];
+      if (retired && c.title === retired.title && c.messages.length === retired.messageCount && !c.folderId && !c.pinned) return;
       c = Object.assign({}, c, {assistantId:'assistant-general', assistant:'Eva 同学'});
+      var automation = automationDemo.find(function (task) { return task.sessionId === c.id; });
+      if (automation) {
+        var seeded = seedConversations.find(function (item) { return item.id === automation.sessionId; });
+        var missing = [];
+        automation.runs.slice().reverse().forEach(function (run, index) {
+          if (!c.messages.some(function (message) { return message.role === 'user' && (message.automationRunId === run.id || String(message.text || '').includes(run.at.slice(0, 10))); })) {
+            missing.push(seeded.messages[index * 2], seeded.messages[index * 2 + 1]);
+          }
+        });
+        c.messages = missing.concat(c.messages);
+        c.scheduledTaskId = automation.id;
+      }
       if (!folders.some(function (f) { return f.id === c.folderId; })) c.folderId = '';
       if (!restoredOrder.includes(c.id)) restoredOrder.push(c.id);
       var index = conversations.findIndex(function (old) { return old.id === c.id; });
       if (index < 0) conversations.push(c); else conversations[index] = c;
     });
-    conversations.sort(function (a,b) { var ai = restoredOrder.indexOf(a.id), bi = restoredOrder.indexOf(b.id); return (ai < 0 ? restoredOrder.length : ai) - (bi < 0 ? restoredOrder.length : bi); });
+    conversations.sort(function (a,b) {
+      function order(item) {
+        var savedIndex = restoredOrder.indexOf(item.id);
+        if (savedIndex >= 0) return demoLeadIds.length + savedIndex;
+        var leadIndex = demoLeadIds.indexOf(item.id);
+        return leadIndex >= 0 ? leadIndex : demoLeadIds.length + restoredOrder.length + seedConversations.findIndex(function (seed) { return seed.id === item.id; });
+      }
+      return order(a) - order(b);
+    });
+  } else if (personalDemo.length || automationDemo.length) {
+    conversations.sort(function (a,b) {
+      var ai = demoLeadIds.indexOf(a.id), bi = demoLeadIds.indexOf(b.id);
+      return (ai < 0 ? demoLeadIds.length + seedConversations.findIndex(function (item) { return item.id === a.id; }) : ai)
+        - (bi < 0 ? demoLeadIds.length + seedConversations.findIndex(function (item) { return item.id === b.id; }) : bi);
+    });
   }
   // The review account previews unread conversations across Recent and folders.
   var demoUnreadSeeded = !!(saved && saved.demoUnreadSeeded);
   var demoUnreadSeededV2 = !!(saved && saved.demoUnreadSeededV2);
+  var demoUnreadSeededV3 = !!(saved && saved.demoUnreadSeededV3);
   var demoUnreadTargets = {
-    'personal-ui-designer-ppt': 2,
+    'personal-ui-designer-ppt': 1,
     'personal-weekly-meeting-summary': 1,
-    'personal-product-copy': 2,
-    'personal-frontend-integration': 2,
-    'personal-api-regression': 1
+    'personal-product-copy': 1,
+    'personal-frontend-integration': 1,
+    'personal-api-regression': 1,
+    'personal-supplier-delivery': 1,
+    'personal-afternoon-sync': 1,
+    'personal-automation-daily-supply-brief': 3,
+    'personal-automation-weekly-supply-review': 1
   };
   conversations.forEach(function (c) {
     var replies = c.messages.filter(function (m) { return m.role === 'assistant'; }).length;
     c.readAssistantCount = Math.min(replies, Math.max(0, Number.isFinite(c.readAssistantCount) ? c.readAssistantCount : replies));
     if (!demoUnreadSeeded && (c.id === 'personal-product-copy' || c.id === 'personal-api-regression')) c.readAssistantCount = Math.max(0, replies - 1);
     if (!demoUnreadSeededV2 && Object.prototype.hasOwnProperty.call(demoUnreadTargets, c.id)) c.readAssistantCount = Math.max(0, replies - demoUnreadTargets[c.id]);
+    if (!demoUnreadSeededV3 && Object.prototype.hasOwnProperty.call(demoUnreadTargets, c.id)) {
+      var existed = saved && Array.isArray(saved.conversations) && saved.conversations.some(function (item) { return item.id === c.id; });
+      if (!existed) c.readAssistantCount = Math.max(0, replies - demoUnreadTargets[c.id]);
+      else if (!c.scheduledTaskId) c.readAssistantCount = Math.max(c.readAssistantCount, replies - 1);
+    }
   });
   demoUnreadSeeded = true;
   demoUnreadSeededV2 = true;
+  demoUnreadSeededV3 = true;
   var revision = 0;
   var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
   conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
   var collapsed = []; // 每次打开个人 Eva 默认展开全部文件夹，当前页面仍可手动收起。
   var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
   var listeners = new Set();
-  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins, demoUnreadSeeded:demoUnreadSeeded, demoUnreadSeededV2:demoUnreadSeededV2})); }
+  function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins, demoUnreadSeeded:demoUnreadSeeded, demoUnreadSeededV2:demoUnreadSeededV2, demoUnreadSeededV3:demoUnreadSeededV3})); }
   var committed = snapshot();
   function persist() {
     try { localStorage.setItem(storageKey, JSON.stringify(snapshot())); }
