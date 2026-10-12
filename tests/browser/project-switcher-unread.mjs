@@ -19,6 +19,12 @@ test('project switcher shows task counts and only reading distinct task details 
     await badge.waitFor();
     const initial = Number((await badge.innerText()).match(/未读任务\s+(\d+)$/)?.[1]);
     assert.ok(initial >= 2);
+    assert.equal(await prod.locator('.eva-project-switcher-menu__check').count(),0);
+    await page.evaluate(()=>{const {store}=window.__evaGetFileContext();store.setProjectArchived('drive-design',store.actorId(),true);});
+    assert.equal(await page.locator('.eva-project-switcher-menu [data-eva-project-id="drive-design"]').count(),0);
+    assert.equal(await page.locator('.eva-project-switcher-menu [data-eva-project-id="zhou-private-review"]').count(),0);
+    await page.evaluate(()=>{const {store}=window.__evaGetFileContext();store.setProjectArchived('drive-design',store.actorId(),false);});
+    await page.locator('.eva-project-switcher-menu [data-eva-project-id="drive-design"]').waitFor();
     assert.equal(await badge.getAttribute('class'), 'wk-conv-compact-badge');
     await page.keyboard.press('Escape');
     await page.goto(`${base}&evaTab=tasks`);
@@ -36,6 +42,16 @@ test('project switcher shows task counts and only reading distinct task details 
     await switcher.click();
     assert.equal(Number((await badge.innerText()).match(/未读任务\s+(\d+)$/)?.[1]), initial - 2);
     assert.equal(await page.locator('.eva-project-switcher-menu [data-eva-project-id="lab"] [data-eva-unread]').count(), 1);
+    await prod.waitFor({state:'visible'});
+    await page.waitForTimeout(250);
+    await page.screenshot({path:'/tmp/eva-project-switcher-final.png'});
+    await page.locator('.eva-project-switcher-menu [data-eva-project-id="lab"]').click();
+    await page.waitForURL(/evaProject=lab/);await switcher.click();
+    await prod.click();await page.waitForURL(/evaProject=prod/);
+    await switcher.click();
+    await page.evaluate(()=>{for(const item of window.EvaProjectReminderDemo.items('lab'))window.EvaProjectReminderDemo.markRead('lab',item.id);});
+    assert.equal(await page.locator('.eva-project-switcher-menu [data-eva-project-id="lab"] [data-eva-unread]').count(),0);
+    await page.keyboard.press('Escape');
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));

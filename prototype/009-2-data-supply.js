@@ -49,9 +49,16 @@ window.EvaProjectReminderDemo = {
     evaTaskReminderRevision++;
     evaTaskReminderListeners.forEach(fn => fn());
   },
+  removeProject(projectId) {
+    delete window.__EVA_TASK_REMINDER_EVENTS[projectId];
+    for(const key of evaTaskReminderRead)if(key.startsWith(projectId+':'))evaTaskReminderRead.delete(key);
+    try { localStorage.setItem(evaTaskReminderReadKey,JSON.stringify([...evaTaskReminderRead])); } catch (_) {}
+    evaTaskReminderRevision++;evaTaskReminderListeners.forEach(fn=>fn());
+  },
   record(projectId, taskId, actorId) { return this.allItems(projectId, actorId).find(item => item.id === taskId); },
   items(projectId, actorId) { return this.allItems(projectId, actorId).filter(item => item.unread); },
   allItems(projectId, actorId) {
+    if(window.__evaGetFileContext?.().store.isProjectDeleted?.(projectId))return [];
     const currentActor = actorId || 'u-wangyilin';
     const tasks = projectId === 'official' ? window.__EVA_OFFICIAL_TASKS
       : projectId === 'lab' ? window.__EVA_CLIENT_TASKS

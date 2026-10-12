@@ -6,6 +6,15 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const controls=fs.readFileSync(new URL('../prototype/063-file-controls.jsx',import.meta.url),'utf8');
 function setup(){const window={};loadIdentityEnvironment(window);for(const file of ['009-2-membership.js','009-1-file-sharing.js'])vm.runInNewContext(fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),{window});const members=window.EvaMembership.create({people:[{id:'a'},{id:'b'},{id:'c'}]});members.createProject('p','项目','a',[]);members.addMember('p','a','b');members.createGroup('g','工作群','p','a',[]);return {members,files:window.EvaFileSharing.create(members),sharing:window.EvaFileSharing};}
+test('归档项目文件双入口只读，保留下载和个人文件库写入',()=>{
+  const {members,files}=setup();members.setProjectArchived('p','a',true);
+  for(const action of ['upload','rename','move','copy','edit-tags','trash','restore','delete-forever','create-folder','add-external-link'])assert.equal(files.can(action,'p','a'),false,action);
+  for(const action of ['read','preview','download','copy-link','view-trash'])assert.equal(files.can(action,'p','a'),true,action);
+  assert.equal(files.writableSpaces('a').some(space=>space.id==='p'),false);
+  assert.throws(()=>files.createFolder('a','p','不应创建'));
+  assert.equal(files.can('upload','personal:a','a'),true);
+  members.setProjectArchived('p','a',false);assert.equal(files.can('upload','p','a'),true);
+});
 test('转存形成项目共享版本，项目成员能读文件但不能读来源群',()=>{const {members,files}=setup();const file={name:'分析报告.pdf',size:1024,extension:'pdf',version:2};const source={groupId:'g',groupName:'工作群',threadId:null,taskId:'SC-103'};const id=files.transfer('a','p',file,source);assert.equal(files.list('p','b').length,1);assert.equal(files.list('p','b')[0].sourceVersion,2);assert.equal(members.canRead('g','b'),false);assert.equal(files.list('p','c').length,0);assert.equal(files.transfer('a','p',file,source),id);assert.equal(files.list('p','a').length,1);});
 test('任务附件保存为项目文件独立副本并保留任务来源',()=>{const {files}=setup();const task={id:'issue-104',identifier:'SC-104',title:'分析核心品类采购成本偏差',workspace_id:'p'},attachment={id:'att-cost',name:'核心品类采购成本偏差.csv',size:736,extension:'csv',content_type:'text/csv',version:1,url:'blob:task-cost'};const id=files.saveTaskAttachment('b','p',attachment,task);const saved=files.list('p','b').find(item=>item.id===id);assert.equal(saved.name,attachment.name);assert.equal(saved.url,attachment.url);assert.equal(saved.source.type,'task-copy');assert.equal(saved.taskArtifact.taskId,task.id);assert.equal(files.relationsFor(saved,'b')[0].id,task.id);assert.equal(files.findTaskAttachment('b','p',attachment,task).id,id);assert.equal(files.saveTaskAttachment('b','p',attachment,task),id);assert.equal(files.list('p','b').filter(item=>item.taskArtifact?.taskId===task.id).length,1);});
 test('任务附件只能保存到所属且有上传权限的项目文件库',()=>{const {members,files}=setup();members.createProject('other','其他项目','c',[]);const task={id:'issue-104',identifier:'SC-104',title:'成本偏差',workspace_id:'p'},attachment={id:'att-cost',name:'成本偏差.csv'};assert.throws(()=>files.saveTaskAttachment('a','other',attachment,task),/任务不属于当前项目/);assert.throws(()=>files.saveTaskAttachment('c','p',attachment,task),/当前角色无此操作权限/);assert.equal(files.findTaskAttachment('c','p',attachment,task),null);});
@@ -318,4 +327,12 @@ test('项目定向读取保持副本隔离，不允许调用方改写成员权�
   assert.equal(members.projectRecord('p').ownerId,'a');
   assert.equal(members.projectRecord('p').name,'项目');
   assert.equal(members.canRead('p','b'),true);
+});
+test('删除归档项目同步永久移除文件与置顶，重新加载不恢复演示文件',()=>{
+ const {members,files,sharing}=setup();members.setActor('a');
+ const id=files.createFolder('a','p','项目资料');files.setPinned('a',id,true);
+ const seeded=files.snapshot('a');members.setProjectArchived('p','a',true);members.deleteProject('p','a','项目');
+ assert.equal(files.snapshot('a').some(item=>item.spaceId==='p'),false);
+ assert.equal(files.isPinned('a',id),false);
+ const reloaded=sharing.create(members,seeded);assert.equal(reloaded.snapshot('a').some(item=>item.spaceId==='p'),false);
 });

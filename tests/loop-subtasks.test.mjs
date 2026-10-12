@@ -23,8 +23,8 @@ function setup() {
     {id:'peer',identifier:'SC-104',title:'同级任务',status:'todo',priority:'none',parent_issue_id:null},
   ];
   // 切片内含有图标定义（EvaLinkIcon 等），裸 vm 上下文补齐其工厂依赖；仅提供桩，不断言图标行为。
-  const ctx = {issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name}),
-    evaMembers:()=>({store:{actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
+  const store={isProjectArchived:()=>false,actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})};
+  const ctx = {currentSpaceId:()=> 'prod',issuesOf:()=>issues,Date,createLucideIcon:(name)=>({name}),evaMembers:()=>({store})};
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
@@ -55,6 +55,14 @@ test('父子关系只允许当前项目内无环引用，并可清除父任务',
   assert.equal(issues.find(issue=>issue.id==='peer').due_date,'2026-09-20');
   await ctx.updateIssue('peer',{due_date:null});
   assert.equal(issues.find(issue=>issue.id==='peer').due_date,null);
+});
+test('项目归档拒绝任务更新和单项及批量删除且不修改历史状态',async()=>{
+ const {ctx,issues}=setup();ctx.evaMembers().store.isProjectArchived=()=>true;const before=JSON.stringify(issues);
+ await assert.rejects(ctx.updateIssue('peer',{status:'done'}),/已归档/);
+ await assert.rejects(ctx.deleteIssue('peer'),/已归档/);
+ await assert.rejects(ctx.batchDeleteIssues(['peer']),/已归档/);
+ await assert.rejects(ctx.batchUpdateIssues(['peer'],{status:'done'}),/已归档/);
+ assert.equal(JSON.stringify(issues),before);
 });
 
 test('删除父任务会被阻止，删除叶子任务不会遗留孤儿数据', async()=>{
@@ -139,7 +147,7 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.ok(runtime.includes('parentIssueId:evaCreateParent?.id'));
   assert.ok(runtime.includes('Qt.boardOrdered(ct,rt)'));
   assert.ok(runtime.includes('React.createElement("em",null,Vt.length)'));
-  assert.ok(runtime.includes('...EVA_BOARD_CARD_DISPLAY,draggable:!0'));
+  assert.ok(runtime.includes('...EVA_BOARD_CARD_DISPLAY,draggable:!evaMembers().store.isProjectArchived(currentSpaceId())'));
   assert.ok(runtime.includes('evaShowStatus&&React.createElement("span",{className:"loop-card__icon",title:xt("loop.status."+rt.status)'));
   assert.ok(runtime.includes('evaShowDates&&React.createElement("time",{className:"loop-card__time"'));
   assert.ok(runtime.includes('evaShowDates&&rt.due_date&&React.createElement("span",{className:"loop-card__due"'));

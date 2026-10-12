@@ -133,12 +133,12 @@
       R.useEffect(()=>{if(action?.type==='remove'){removalApi.reset();removalApi.setValues({successors:{}});}},[sid,actor,action?.type,action?.id]);
       R.useEffect(()=>{setAddOpen(false);setError('');setAction(null);setDetails(null);setIdentityProfile(null);setRoleMember(null);},[sid,actor]);
       if(!scope)return h('p',null,'该范围已不存在');
-      const joined=store.canRead(sid,actor),manage=joined&&store.manager(sid,actor),all=scopeId.startsWith('all:'),isProject=!!project;
+      const joined=store.canRead(sid,actor),manage=joined&&!store.isProjectArchived(sid)&&store.manager(sid,actor),all=scopeId.startsWith('all:'),isProject=!!project;
       const run=fn=>{try{fn();setError('');return true;}catch(e){setError(e.message);return false;}};
       const name=id=>store.person(id)?.name||id;
       const humanRows=scope.humans.map(m=>({...store.person(m.id),...m}));
       const rowClones=id=>scope.cloneIds.map(id=>store.clone(id)).filter(c=>c?.ownerId===id);
-      const canEdit=!all&&joined;
+      const canEdit=!all&&joined&&!store.isProjectArchived(sid);
       const openAction=(type,data)=>{setError('');setAction({type,...data});};
       const confirm=()=>{if(run(()=>{
         if(action.type==='dissolve'){store.dissolveGroup(sid,actor);Toast&&Toast.success('群聊已解散');}

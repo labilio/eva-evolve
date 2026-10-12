@@ -714,3 +714,9 @@ body[theme-mode="dark"] {
    非按钮的品牌填充（eva-edition-badge、eva-bubble、消息多选勾选框）仍走
    --eva-action-primary + --eva-text-inverse 的暗色 EvaMate 配对，不受影响。
    ============================================================ */
+/* Project archive state uses the same semantic surface and interaction tokens in both themes. */
+:root[data-theme="dark"] .eva-project-archive-notice {
+  background: var(--semi-color-bg-1);
+  border-color: var(--semi-color-border);
+  color: var(--semi-color-text-2);
+}

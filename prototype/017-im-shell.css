@@ -394,6 +394,8 @@ body [data-eva-unread].is-muted {
 .eva-im-bubble-row .wk-markdown > :last-child { margin-bottom: 0; }
 .eva-im-bubble-row .wk-markdown ul:has(> li > input[type="checkbox"]) { padding-left: 0; }
 .eva-im-bubble-row .wk-markdown li:has(> input[type="checkbox"]) { list-style: none; }
+/* Stream rows already carry horizontal margins; 100% would add those margins to the width. */
+.ch-layout .ch-stream > .wk-message-time-box { width: auto; }
 .ch-layout .wk-msg-system-tag { max-width: 100%; box-sizing: border-box; }
 .ch-layout .wk-msg-system-tag-text { white-space: normal; overflow-wrap: anywhere; text-align: center; }
 /**
@@ -579,3 +581,16 @@ body [data-eva-unread].is-muted {
 
 /* Keep the two-space gap between a linked task ID and its title. */
 .eva-task-message-link { white-space:pre-wrap; }
+.eva-project-archive-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 24px;
+  padding: 16px;
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-large);
+  color: var(--semi-color-text-2);
+  background: var(--semi-color-bg-1);
+}
+.eva-project-archive-notice > span { flex: 1; min-width: 0; }
+.eva-project-archive-notice > svg { flex-shrink: 0; }

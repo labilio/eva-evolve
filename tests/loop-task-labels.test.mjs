@@ -23,6 +23,7 @@ function setup(){
   ]}};
   const ctx={
     window,
+    evaMembers:()=>({store:{assertProjectWritable:()=>{}}}),
     ISSUES_BY_SPACE:issues,
     loadSpaces:()=>projects,
     currentSpaceId:()=>current,

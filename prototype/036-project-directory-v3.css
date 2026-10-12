@@ -601,3 +601,26 @@
 .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tabs__list { min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .collab-frame.eva-channel-surface[data-eva-channel-surface="project"] .collab-tabs__list::-webkit-scrollbar { display: none; }
 .collab-tab .wk-conv-compact-badge { margin-left: 6px; }
+.eva-project-archive-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--eva-space-4, 16px);
+  margin: 24px;
+  padding: var(--eva-space-4, 16px);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+  color: var(--semi-color-text-0);
+  background: var(--semi-color-bg-1);
+}
+.eva-project-archive-card h2, .eva-project-archive-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.eva-project-archive-card h2 { margin: 0; font-size: 14px; }
+.eva-project-archive-card p { margin: 8px 0 0; color: var(--semi-color-text-2); }
+.eva-project-archive-label { margin-left: 12px; font-size: 12px; font-weight: 400; color: var(--semi-color-text-2); white-space: nowrap; }
+
+/* Project status is separate from the switcher and stays visible across tabs. */
+.eva-project-archive-status { display:inline-flex; align-items:center; gap:var(--eva-space-2); margin-inline-start:auto; flex:none; white-space:nowrap; color:var(--semi-color-text-2); font-size:var(--semi-font-size-regular); }

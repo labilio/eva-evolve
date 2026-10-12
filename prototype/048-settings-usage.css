@@ -175,3 +175,18 @@
   font:var(--eva-fw-regular) 14px/22px var(--eva-font-sans);
 }
 .eva-appearance__select:focus-visible { outline:var(--eva-border-focus-w) solid var(--eva-border-focus);outline-offset:2px; }
+
+/* 归档管理沿用设置外壳与公共控件，列表只定义信息布局。 */
+.eva-archived-projects{display:flex;flex-direction:column;gap:var(--eva-space-4);padding-top:var(--eva-space-4)}
+.eva-archived-projects h3{margin:0;font:var(--eva-fw-medium) 16px/24px var(--eva-font-sans);color:var(--eva-text-primary)}
+.eva-archived-projects__search{width:100%}
+.eva-archived-projects__list{list-style:none;margin:0;padding:0 var(--eva-space-4);border:1px solid var(--eva-border-subtle);border-radius:var(--eva-radius-panel)}
+.eva-archived-projects__row{display:flex;align-items:center;justify-content:space-between;gap:var(--eva-space-4);padding:var(--eva-space-4) 0}
+.eva-archived-projects__row+.eva-archived-projects__row{border-top:1px solid var(--eva-border-subtle)}
+.eva-archived-projects__identity{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:var(--eva-space-1)}
+.eva-archived-projects__name.semi-button{max-width:100%;height:auto;padding:0;text-align:left;white-space:normal}
+.eva-archived-projects__name .semi-button-content{white-space:normal;overflow-wrap:anywhere}
+.eva-archived-projects__identity time,.eva-archived-projects__permission,.eva-archived-projects__empty{font:var(--eva-fw-regular) 12px/18px var(--eva-font-sans);color:var(--eva-text-secondary-accessible)}
+.eva-archived-projects__actions{display:flex;flex:none;align-items:center;gap:var(--eva-space-2)}
+.eva-archived-projects__empty{padding:var(--eva-space-8) 0;text-align:center}
+@media(max-width:760px){.eva-archived-projects__row{flex-wrap:wrap}.eva-archived-projects__actions{margin-left:auto}}

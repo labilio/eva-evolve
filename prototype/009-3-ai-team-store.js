@@ -720,8 +720,8 @@
           onSend(text,channelId,reply){const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
             const replyTo=replySnapshot(channelId||selectedThreadId||group.id,reply);
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
-            current.messages.push({id:messageId,kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,...(replyTo?{replyTo}:{})});
-            unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
+            current.messages.push({id:messageId,createdAt:new Date().toISOString(),kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,...(replyTo?{replyTo}:{})});
+            unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,createdAt:new Date().toISOString(),kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
             current.readAiMessageCount=incomingMessageCount(current);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }

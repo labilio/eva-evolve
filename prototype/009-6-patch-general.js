@@ -1,5 +1,69 @@
 (function (root) {
   'use strict';
+  function EvaProjectArchiveNotice({scopeId}) {
+    const h=React.createElement,store=evaMembers().store;
+    reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
+    const [open,setOpen]=reactExports.useState(false),id=store.owningProject(scopeId),project=store.projectRecord(id);
+    if(!project?.archivedAt)return null;
+    return h('div',{className:'eva-project-archive-notice',role:'status'},h(Archive,{size:20,'aria-hidden':true}),h('span',null,'所属项目已归档，历史消息仍可查看。'),project.ownerId===store.actorId()&&h(Button,{theme:'light',type:'tertiary',onClick:()=>setOpen(true)},'恢复项目'),open&&h(EvaProjectArchiveDialog,{projectId:id,archived:true,onClose:()=>setOpen(false)}));
+  }
+  function EvaProjectArchiveDialog({projectId,archived,onClose,returnFocus}) {
+    const h=React.createElement,store=evaMembers().store,project=store.projectRecord(projectId),label=archived?'恢复项目':'归档项目';
+    const {Form,useSubmission,SubmissionError,Dialog,Actions}=evaForms,[api]=Form.useForm();
+    const submission=useSubmission({active:true,resetKey:projectId+':'+archived,onSubmit:(_,context)=>{
+      if(store.isProjectArchived(projectId)!==archived)throw new Error('项目状态已变化，请关闭后重试');
+      store.setProjectArchived(projectId,store.actorId(),!archived);
+      if(context.isCurrent()){Toast.success(archived?'项目已恢复':'项目已归档');onClose();}
+    }});
+    return h(Dialog,{visible:true,title:label,width:420,zIndex:1100,returnFocus,onCancel:onClose,footer:h(Actions,{onCancel:onClose,submitLabel:label,form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h('p',null,archived?'恢复「'+project.name+'」后可继续协作；任务和自动化不会自动重启。':'归档「'+project.name+'」后，项目及所属群聊、任务和文件将只读，历史内容保留。'),h(Form.Input,{field:'confirmation',label:'输入“'+label+'”确认',validator:value=>value===label?'':'请输入“'+label+'”确认'}),h(SubmissionError,{submission})));
+  }
+  function EvaProjectArchiveCard({projectId}) {
+    const h=React.createElement,store=evaMembers().store;
+    reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
+    const [open,setOpen]=reactExports.useState(false),project=store.projectRecord(projectId),archived=!!project?.archivedAt;
+    if(!project||project.ownerId!==store.actorId())return null;
+    const events=project.archiveEvents||[],last=events.at(-1);
+    return h('section',{className:'eva-project-archive-card'},h('div',null,h('h2',null,h(Archive,{size:18,'aria-hidden':true}),archived?'项目已归档':'归档项目'),h('p',null,archived?'历史内容可查看，恢复后可继续协作。':'停止项目协作并保留历史内容，可随时恢复。'),last&&h('p',null,(store.person(last.actorId)?.name||'项目负责人')+' · '+new Date(last.at).toLocaleString('zh-CN'))),h(Button,{theme:'light',type:'tertiary',onClick:()=>setOpen(true)},archived?'恢复项目':'归档项目'),open&&h(EvaProjectArchiveDialog,{projectId,archived,onClose:()=>setOpen(false)}));
+  }
+  function evaDeleteArchivedProject(projectId,confirmation){
+    const {store}=evaMembers(),actor=store.actorId();
+    store.assertCanDeleteProject(projectId,actor,confirmation);
+    const issues=ISSUES_BY_SPACE[projectId]||[];
+    for(const issue of issues){
+      const attachments=[...(issue.attachments||[]),...(evaLoopCommentsByTask.get(issue.id)||[]).flatMap(comment=>comment.attachments||[])];
+      for(const file of attachments){if(file.url?.startsWith('blob:'))URL.revokeObjectURL(file.url);evaLoopTaskAttachments.delete(file.id);}
+      evaLoopCommentsByTask.delete(issue.id);
+    }
+    delete ISSUES_BY_SPACE[projectId];evaLoopTaskLabelsByProject.delete(projectId);
+    for(const scopes of Object.values(BY_SPACE))delete scopes[projectId];
+    store.deleteProject(projectId,actor,confirmation);
+    window.EvaProjectReminderDemo.removeProject(projectId);
+    saveSpaces(loadSpaces().filter(project=>project.id!==projectId));
+  }
+  function EvaProjectDeleteDialog({projectId,onClose,returnFocus}){
+    const h=React.createElement,store=evaMembers().store,project=store.projectRecord(projectId);
+    const {Form,useSubmission,SubmissionError,Dialog,Actions}=evaForms,[api]=Form.useForm();
+    const submission=useSubmission({active:true,resetKey:projectId,onSubmit:(values,context)=>{
+      evaDeleteArchivedProject(projectId,values.confirmation);
+      if(context.isCurrent()){Toast.success('项目已删除');onClose();}
+    }});
+    return h(Dialog,{visible:true,title:'删除项目',size:'compact',zIndex:1100,onCancel:onClose,returnFocus,footer:h(Actions,{danger:true,onCancel:onClose,submitLabel:'删除项目',form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h('p',null,'将永久删除「'+(project?.name||'')+'」及其任务、文件、群聊、消息和历史记录。所有成员都将无法访问，删除后无法恢复。'),h(Form.Input,{field:'confirmation',label:'输入项目名称确认',validator:value=>value===project?.name?'':'请输入完整项目名称确认'}),h(SubmissionError,{submission})));
+  }
+  function EvaArchivedProjectsSettings({onClose,navigate}){
+    const h=React.createElement,store=evaMembers().store,revision=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot),actor=store.actorId();
+    const [query,setQuery]=reactExports.useState(''),[action,setAction]=reactExports.useState(null),searchRef=reactExports.useRef(null);
+    const projects=reactExports.useMemo(()=>Object.values(store.projectRecords()).filter(project=>project.archivedAt&&store.canRead(project.id,actor)).sort((a,b)=>b.archivedAt.localeCompare(a.archivedAt)),[store,revision,actor]);
+    const shown=projects.filter(project=>project.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+    return h('section',{className:'eva-archived-projects','aria-label':'已归档项目'},
+      h('h3',null,'已归档项目'),
+      h(ForwardInput,{ref:searchRef,className:'eva-archived-projects__search',prefix:h(Search$1,{size:16}),value:query,onChange:setQuery,showClear:true,placeholder:'搜索已归档项目','aria-label':'搜索已归档项目'}),
+      shown.length?h('ul',{className:'eva-archived-projects__list'},shown.map(project=>h('li',{key:project.id,className:'eva-archived-projects__row'},
+        h('div',{className:'eva-archived-projects__identity'},h(Button,{theme:'borderless',type:'tertiary',className:'eva-archived-projects__name',onClick:()=>{onClose();navigate('/collab?evaProject='+encodeURIComponent(project.id)+'&evaTab=project-info');}},project.name),h('time',{dateTime:project.archivedAt},new Date(project.archivedAt).toLocaleString('zh-CN',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}))),
+        project.ownerId===actor?h('div',{className:'eva-archived-projects__actions'},h(Button,{theme:'borderless',type:'tertiary',icon:h(Trash2,{size:16}),'aria-label':'删除项目 '+project.name,onClick:()=>setAction({id:project.id,type:'delete'})}),h(Button,{theme:'light',type:'tertiary',onClick:()=>setAction({id:project.id,type:'restore'})},'恢复项目')):h('span',{className:'eva-archived-projects__permission'},'仅负责人可恢复或删除')))):
+      h('p',{className:'eva-archived-projects__empty',role:'status'},query.trim()?'没有匹配的已归档项目':'暂无已归档项目'),
+      action?.type==='restore'&&h(EvaProjectArchiveDialog,{projectId:action.id,archived:true,onClose:()=>setAction(null),returnFocus:()=>searchRef.current?.inputRef?.current}),
+      action?.type==='delete'&&h(EvaProjectDeleteDialog,{projectId:action.id,onClose:()=>setAction(null),returnFocus:()=>searchRef.current?.inputRef?.current}));
+  }
   // Cache only derived lookup data; persistence remains the authoritative source.
   function evaCreateProjectResolver(loadProjects,readVersion) {
     let initialized=false,version,projects;
@@ -209,7 +273,7 @@
           ],
           [
             'Mt=React.createElement("span",{className:"collab-sp-chip",role:"button",tabIndex:0,"aria-haspopup":"menu","aria-expanded":St,onClick:()=>Ct(Ft=>!Ft),onKeyDown:Ft=>{Ft.key==="Enter"&&Ct(Qt=>!Qt)}},React.createElement("span",{className:"nm",title:rt.name},rt.name),React.createElement("span",{className:"caret"},"▾"),St&&React.createElement("div",{className:"sp-menu",onClick:Ft=>Ft.stopPropagation()},ct.map(Ft=>React.createElement("div",{key:Ft.id,className:"mi",onClick:()=>{Ct(!1),WKApp$1.routeRight.popAll(),ut(Ft.id)}},Ft.name)),React.createElement("div",{className:"divider"}),React.createElement("div",{className:"mi",onClick:()=>{Ct(!1),WKApp$1.routeRight.popAll(),ut(null)}},"⌂ 全部项目")))',
-            'Mt=React.createElement(React.Fragment,null,React.createElement(Button,{size:"small",theme:"borderless",type:"tertiary",className:"eva-project-directory-button","aria-label":"全部项目",title:"全部项目",icon:React.createElement(EvaProjectHomeIcon,{size:16,"aria-hidden":!0}),onClick:()=>{WKApp$1.routeRight.popAll(),ut(null)}}),React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",spacing:4,clickToHide:!0,render:React.createElement(Dropdown.Menu,{className:"eva-project-switcher-menu"},(()=>{const evaMemberStore=evaProjectMemberStore,evaActor=evaMemberStore.actorId(),evaPinnedProjects=evaMemberStore.pinnedProjects(evaActor).map(evaId=>ct.find(Ft=>Ft.id===evaId)).filter(Boolean),evaPinnedIds=evaPinnedProjects.map(Ft=>Ft.id),evaRemainingProjects=ct.filter(Ft=>!evaPinnedIds.includes(Ft.id)),evaGrouped=evaPinnedProjects.length>0&&evaRemainingProjects.length>0,evaRenderProject=Ft=>React.createElement(Dropdown.Item,{key:Ft.id,"data-eva-project-id":Ft.id,className:"eva-project-switcher-menu__project",onClick:()=>{WKApp$1.routeRight.popAll(),ut(Ft.id)}},React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(Ft).accent,marginInlineEnd:8,flexShrink:0},"aria-hidden":!0}),React.createElement("span",{className:"eva-project-switcher-menu__name"},Ft.name),React.createElement(EvaProjectUnreadTasks,{projectId:Ft.id,label:"未读任务"}));return React.createElement(React.Fragment,null,evaGrouped?React.createElement(React.Fragment,null,React.createElement(Dropdown.Title,null,"关注项目"),evaPinnedProjects.map(evaRenderProject),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Title,null,"未关注项目"),evaRemainingProjects.map(evaRenderProject)):ct.map(evaRenderProject))})())},React.createElement("span",{className:"eva-project-switcher-anchor"},React.createElement(Button,{size:"small",theme:"borderless",type:"tertiary",className:"collab-sp-chip eva-project-switcher"},React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(rt).accent},className:"eva-project-switcher__icon","aria-hidden":!0}),React.createElement("span",{className:"nm",title:rt.name},rt.name),React.createElement(ChevronDown,{size:13,className:"eva-project-switcher__chevron","aria-hidden":!0})))))'
+            'Mt=React.createElement(React.Fragment,null,React.createElement(Button,{size:"small",theme:"borderless",type:"tertiary",className:"eva-project-directory-button","aria-label":"全部项目",title:"全部项目",icon:React.createElement(EvaProjectHomeIcon,{size:16,"aria-hidden":!0}),onClick:()=>{WKApp$1.routeRight.popAll(),ut(null)}}),React.createElement(Dropdown,{trigger:"click",position:"bottomLeft",spacing:4,clickToHide:!0,render:React.createElement(Dropdown.Menu,{className:"eva-project-switcher-menu"},(()=>{const evaMemberStore=evaProjectMemberStore,evaActor=evaMemberStore.actorId(),evaAvailableProjects=ct.filter(Ft=>evaMemberStore.canRead(Ft.id,evaActor)&&!evaMemberStore.isProjectArchived(Ft.id)),evaPinnedProjects=evaMemberStore.pinnedProjects(evaActor).map(evaId=>evaAvailableProjects.find(Ft=>Ft.id===evaId)).filter(Boolean),evaPinnedIds=evaPinnedProjects.map(Ft=>Ft.id),evaRemainingProjects=evaAvailableProjects.filter(Ft=>!evaPinnedIds.includes(Ft.id)),evaGrouped=evaPinnedProjects.length>0&&evaRemainingProjects.length>0,evaRenderProject=Ft=>React.createElement(Dropdown.Item,{key:Ft.id,"data-eva-project-id":Ft.id,className:"eva-project-switcher-menu__project",onClick:()=>{if(!evaMemberStore.canRead(Ft.id,evaMemberStore.actorId())||evaMemberStore.isProjectArchived(Ft.id)||Ft.id===rt.id)return;WKApp$1.routeRight.popAll(),ut(Ft.id)}},React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(Ft).accent,marginInlineEnd:8,flexShrink:0},"aria-hidden":!0}),React.createElement("span",{className:"eva-project-switcher-menu__name"},Ft.name),React.createElement(EvaProjectUnreadTasks,{projectId:Ft.id,label:"未读任务"}));return React.createElement(React.Fragment,null,evaGrouped?React.createElement(React.Fragment,null,React.createElement(Dropdown.Title,null,"关注项目"),evaPinnedProjects.map(evaRenderProject),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Title,null,"未关注项目"),evaRemainingProjects.map(evaRenderProject)):evaAvailableProjects.length?evaAvailableProjects.map(evaRenderProject):React.createElement(Dropdown.Item,{disabled:true},"暂无可切换的项目"))})())},React.createElement("span",{className:"eva-project-switcher-anchor"},React.createElement(Button,{size:"small",theme:"borderless",type:"tertiary",className:"collab-sp-chip eva-project-switcher"},React.createElement(LayoutGrid,{size:16,style:{color:window.EvaProjectAppearance.css(rt).accent},className:"eva-project-switcher__icon","aria-hidden":!0}),React.createElement("span",{className:"nm",title:rt.name},rt.name),React.createElement(ChevronDown,{size:13,className:"eva-project-switcher__chevron","aria-hidden":!0})))))'
           ],
           [
             '),Ft)},SpaceFrame=',
@@ -573,6 +637,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     }
     function evaSaveProjectInfo(id,{name,goal,issuePrefix,overview}){
       const store=evaMembers().store,actor=store.actorId();
+      store.assertProjectWritable(id);
       if(!store.manager(id,actor))throw new Error('仅项目负责人或管理员可修改');
       const projects=window.EvaTaskPrefix.migrate(loadSpaces(),ISSUES_BY_SPACE,rows=>localStorage.setItem(KEY,JSON.stringify(rows))),project=projects.find(p=>p.id===id);if(!project)throw new Error('项目不存在');
       name=name.trim();goal=goal.trim();issuePrefix=(issuePrefix??evaProjectIssuePrefix(project)).trim().toUpperCase();
@@ -648,11 +713,13 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     function evaTaskCommentAccess(issueId){
       const issue=issuesOf().find(item=>item.id===issueId),project=evaCurrentTaskProject(),store=evaMembers().store,actorId=store.actorId();
       if(!issue||!project||evaTaskProjectId(project)!==issue.workspace_id||!store.canRead(project.id,actorId))throw new Error('你无法操作该任务的评论');
+      store.assertProjectWritable(project.id);
       return {store,actorId};
     }
     async function evaAddTaskComment(issueId,content,parentId){
       const {store,actorId}=evaTaskCommentAccess(issueId);
       const comments=await listComments(issueId);
+      evaTaskCommentAccess(issueId);
       if(parentId&&!comments.some(item=>item.id===parentId))throw new Error('回复的评论已不存在');
       const comment={id:'task-comment:'+crypto.randomUUID(),issue_id:issueId,parent_id:parentId||null,author_type:'member',author_id:actorId,author_name:store.person(actorId)?.name||'当前用户',content:String(content||'').trim(),created_at:new Date().toISOString(),resolved_at:null,reactions:null,attachments:[]};
       evaLoopCommentsByTask.get(issueId).push(comment);
@@ -681,6 +748,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       return Promise.reject(new Error('评论不存在'));
     }
     function evaRegisterLoopAttachment(file,target={}){
+      evaMembers().store.assertProjectWritable(currentSpaceId());
       if(!file||file.size>20*1024*1024)return Promise.reject(new Error('单个附件不能超过 20 MB'));
       const name=String(file.name||'附件'),extension=(name.split('.').pop()||'').toLowerCase(),url=URL.createObjectURL(file),record={id:'task-file:'+crypto.randomUUID(),name,filename:name,size:Number(file.size||0),extension,mime_type:file.type||'',content_type:file.type||'',url,download_url:url,previewUrl:url,version:1};
       evaLoopTaskAttachments.set(record.id,record);
@@ -696,15 +764,18 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
     function evaCurrentTaskProject(){return loadSpaces().find(project=>project.id===currentSpaceId());}
     function evaTaskProjectId(project){return project?.collaborationId||(project?.id==='p-supply'?'prod':project?.id);}
     function evaCreateTaskLabel(project,name,color){
+      evaMembers().store.assertProjectWritable(evaTaskProjectId(project));
       const normalized=String(name||'').trim();if(!normalized||normalized.length>20)throw new Error('标签名称须为 1–20 个字符');
       const labels=evaTaskLabels(project),existing=labels.find(label=>label.name===normalized);if(existing)return existing;
       const labelProjectId=project.id==='prod'?'p-supply':project.id,label={id:'task-label:'+labelProjectId+':'+Date.now().toString(36)+':'+Math.random().toString(36).slice(2,7),project_id:labelProjectId,name:normalized,color:color||'#64748b'};labels.push(label);return label;
     }
     function evaAttachTaskLabel(project,pid,issueId,labelId){
+      evaMembers().store.assertProjectWritable(pid);
       const label=evaTaskLabels(project).find(item=>item.id===labelId),issues=ISSUES_BY_SPACE[pid]||[],index=issues.findIndex(item=>item.id===issueId);if(!label||index<0)throw new Error('标签或任务不存在');
       const issue=issues[index];if((issue.labels||[]).some(item=>item.id===label.id))return issue;const next={...issue,labels:[...(issue.labels||[]),{...label}]};issues[index]=next;return next;
     }
     function evaDetachTaskLabel(project,pid,issueId,labelId){
+      evaMembers().store.assertProjectWritable(pid);
       const issues=ISSUES_BY_SPACE[pid]||[],index=issues.findIndex(item=>item.id===issueId);if(!evaTaskLabels(project).some(item=>item.id===labelId)||index<0)throw new Error('标签或任务不存在');
       const issue=issues[index],next={...issue,labels:(issue.labels||[]).filter(item=>item.id!==labelId)};issues[index]=next;return next;
     }
@@ -1216,6 +1287,25 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视�
     source=root.__evaCut(source,'value:`${ha.type}:${ha.id}`},ha.name," · ",rt(`loop.assignee.${ha.type}`)','value:`${ha.type}:${ha.id}`,label:ha.name,icon:React.createElement(EvaLoopIdentityAvatar,{person:ha}),content:React.createElement(EvaLoopIdentityName,{person:ha})},ha.name','专家团候选复用身份组件');
     source=root.__evaCut(source,'la.map(ha=>React.createElement(Select.Option,{key:ha.id,value:ha.id},ha.name))','la.map(ha=>React.createElement(Select.Option,{key:ha.id,value:ha.id,label:ha.name,icon:React.createElement(EvaLoopIdentityAvatar,{person:{...ha,type:"agent"}}),content:React.createElement(EvaLoopIdentityName,{person:{...ha,type:"agent"}})},ha.name))','专家团负责人公共身份');
     source=root.__evaCut(source,',mi=()=>React.createElement(Dropdown.Menu,null,React.createElement(Dropdown.Item,{icon:React.createElement(SlidersHorizontal,{size:13}),onClick:()=>{Xa(),rn(!0)}},St("loop.menu.editProps")),React.createElement(Dropdown.Item,{icon:React.createElement(Plus$c,{size:13}),onClick:()=>Kt(!0)},St("loop.subIssue.create")),React.createElement(Dropdown.Divider,null),ai?ni?Ia:qa:React.createElement(React.Fragment,null,qa,Ia),React.createElement(Dropdown.Divider,null),React.createElement(Dropdown.Item,{type:"danger",icon:React.createElement(Trash2,{size:13}),onClick:Aa},St("loop.menu.deleteIssue")))','','移除已被共享菜单替代的旧菜单函数');
-    return evaCreateProjectResolver.toString()+"\n"+source;
+    source=root.__evaCut(source,'Ct=!!pt,[xt,Pt]=reactExports.useState(pt?.issue??null)', 'Ct=!!pt||evaMembers().store.isProjectArchived(currentSpaceId()),evaArchiveRevision=reactExports.useSyncExternalStore(evaMembers().store.subscribe,evaMembers().store.getSnapshot),[xt,Pt]=reactExports.useState(pt?.issue??null)','归档复用任务详情只读能力');
+    source=root.__evaCut(source,'const id=xt;Pt(null);Mt(null);if(!id)return;', 'const id=xt;Pt(null);Mt(null);if(!id||evaMembers().store.isProjectArchived(currentSpaceId()))return;','归档看板禁止拖拽重排');
+    source=root.__evaCut(source,"'仅项目负责人和管理员可编辑。'","store.isProjectArchived(project.id)?'项目已归档，恢复后可编辑。':'仅项目负责人和管理员可编辑。'",'归档只读原因');
+    for(const anchor of ['updateIssue=(rt,ct)=>{','deleteIssue=rt=>{','batchDeleteIssues=rt=>{','batchUpdateIssues=(rt,ct)=>{'])source=root.__evaCut(source,anchor,anchor+'if(evaMembers().store.isProjectArchived(currentSpaceId()))return Promise.reject(new Error("所属项目已归档，请恢复项目后再操作"));','任务写入重验项目归档：'+anchor);
+    source=root.__evaCut(source,'if(!project||!scope||!store.canRead(pid,snapshot.actorId))return Promise.reject', 'if(store.isProjectArchived(pid))return Promise.reject(new Error("所属项目已归档，请恢复项目后再操作"));if(!project||!scope||!store.canRead(pid,snapshot.actorId))return Promise.reject','归档禁止新建任务');
+    source=root.__evaCut(source,'evaFilteredProjects=evaAllProjects.filter(evaMatchesProject),evaFilteredPinnedProjects=evaPinnedProjects.filter(evaMatchesProject);','evaFilteredProjects=evaAllProjects.filter(p=>!evaPinStore.isProjectArchived(p.id)).filter(evaMatchesProject),evaFilteredPinnedProjects=evaPinnedProjects.filter(p=>!evaPinStore.isProjectArchived(p.id)).filter(evaMatchesProject);','我的项目默认不显示归档项目');
+    source=root.__evaCut(source,'function loadSpaces(){','function loadSpaces(){const rows=evaLoadStoredSpaces();let deleted={};try{deleted=JSON.parse(localStorage.getItem("eva:project-members:v1"))?.deletedProjects||{}}catch{}return rows.filter(project=>!deleted[project.id]);}function evaLoadStoredSpaces(){','已删除项目不由演示数据重新补回');
+    source=root.__evaCut(source,'React.createElement("h1",null,evaWorkspace.name),','React.createElement("h1",null,evaWorkspace.name,evaMembers().store.isProjectArchived(evaWorkspace.id)&&React.createElement("span",{className:"eva-project-archive-label"},React.createElement(Archive,{size:16}),"已归档")),','项目概览归档状态');
+    source=root.__evaCut(source,'const editable=store.manager(project.id,actor),','const editable=!store.isProjectArchived(project.id)&&store.manager(project.id,actor),','归档项目信息只读');
+    source=root.__evaCut(source,"return React.createElement(Form,{...submission.formProps,form:api,initValues:initial,className:'eva-project-settings-info'},","return React.createElement(React.Fragment,null,React.createElement(Form,{...submission.formProps,form:api,initValues:initial,className:'eva-project-settings-info'},",'归档入口与项目表单分离');
+    source=root.__evaCut(source,"onClick:submission.submit},'保存修改')));","onClick:submission.submit},'保存修改'))),React.createElement(EvaProjectArchiveCard,{projectId:project.id}));",'基本信息底部归档入口');
+    source=root.__evaCut(source,'unit:"个会话未读"}))))),React.createElement("div",{className:"collab-body"}', 'unit:"个会话未读"})))),evaProjectMemberStore.isProjectArchived(rt.id)&&React.createElement("span",{className:"eva-project-archive-status",role:"status"},React.createElement(Archive,{size:16,"aria-hidden":true}),"项目已归档")),React.createElement("div",{className:"collab-body"}', '项目归档状态独立放在顶部右侧');
+    for(const suffix of ['',',style:{marginTop:12}']){
+      const button='React.createElement(LoopButton,{icon:React.createElement(Plus$c,{size:14}),onClick:Ra'+suffix+'},pt("loop.action.newIssue"))';
+      source=root.__evaCut(source,button,'!evaFilterStore.isProjectArchived(evaFilterProject)&&'+button,'归档隐藏任务创建入口'+suffix);
+    }
+    source=root.__evaCut(source,'React.createElement(window.EvaTooltipComponent,{content:"在"+Dt("loop.status."+rt)+"新建任务"','!evaMembers().store.isProjectArchived(currentSpaceId())&&React.createElement(window.EvaTooltipComponent,{content:"在"+Dt("loop.status."+rt)+"新建任务"','归档隐藏看板列头创建入口');
+    source=root.__evaCut(source,'...EVA_BOARD_CARD_DISPLAY,draggable:!0,','...EVA_BOARD_CARD_DISPLAY,draggable:!evaMembers().store.isProjectArchived(currentSpaceId()),','归档禁用任务卡拖动');
+    for(const anchor of ['createSkill=rt=>{','updateSkill=(rt,ct)=>{','deleteSkill=rt=>{','createAgent=rt=>{','updateAgent=(rt,ct)=>{','archiveAgent=rt=>{','restoreAgent=rt=>{','createSquad=rt=>{','updateSquad=(rt,ct)=>{','deleteSquad=rt=>{','addSquadMember=(rt,ct)=>{','removeSquadMember=(rt,ct)=>{'])source=root.__evaCut(source,anchor,anchor+'if(evaMembers().store.isProjectArchived(currentSpaceId()))return Promise.reject(new Error("所属项目已归档，请恢复项目后再操作"));','归档冻结项目配置：'+anchor);
+    return [EvaProjectArchiveNotice,EvaProjectArchiveDialog,EvaProjectArchiveCard,evaDeleteArchivedProject,EvaProjectDeleteDialog,EvaArchivedProjectsSettings,evaCreateProjectResolver].map(fn=>fn.toString()).join('\n')+'\n'+source;
   });
 })(window);

@@ -27,6 +27,7 @@ function setup() {
     'u-linxiao': {id: 'u-linxiao', name: '林晓'},
   };
   const store = {
+    isProjectArchived: () => false,
     actorId: () => 'u-wangyilin',
     snapshot: () => ({actorId: 'u-wangyilin', projects: {prod: {humans: Object.values(people)}}}),
     person: id => people[id],

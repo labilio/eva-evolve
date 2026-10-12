@@ -10,7 +10,7 @@ function setup(){
  assert.ok(start>=0,'project-scoped save helper exists');
  let saved=[{id:'p',name:'原项目',desc:'原目标'},{id:'q',name:'其他项目',desc:'其他目标'}];
  let projection='原项目';
- const store={actorId:()=>store.snapshot().actorId,snapshot:()=>({actorId:'owner'}),manager:(_,actor)=>actor==='owner',renameProject:(_,actor,name)=>{assert.equal(actor,'owner');projection=name;}};
+ const store={assertProjectWritable:()=>{},actorId:()=>store.snapshot().actorId,snapshot:()=>({actorId:'owner'}),manager:(_,actor)=>actor==='owner',renameProject:(_,actor,name)=>{assert.equal(actor,'owner');projection=name;}};
  const ctx={ISSUES_BY_SPACE:{},loadSpaces:()=>structuredClone(saved),KEY:'spaces',localStorage:{setItem:(_,value)=>{saved=JSON.parse(value);}},evaMembers:()=>({store}),window:{pinyinPro:{pinyin}}};
  vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
  vm.runInNewContext(runtime.slice(start,end),ctx);
@@ -31,6 +31,11 @@ test('普通成员和写入失败不会得到已保存结果',()=>{
  s.ctx.localStorage.setItem=()=>{throw Error('storage full');};
  assert.throws(()=>s.ctx.evaSaveProjectInfo('p',{name:'未保存',goal:''}),/storage full/);
  assert.equal(s.projection(),'原项目');
+});
+test('归档期间旧表单保存不能先写入项目资料再失败',()=>{
+ const s=setup();s.ctx.evaMembers().store.assertProjectWritable=()=>{throw Error('所属项目已归档');};
+ assert.throws(()=>s.ctx.evaSaveProjectInfo('p',{name:'不应保存',goal:''}),/已归档/);
+ assert.equal(s.read()[0].name,'原项目');assert.equal(s.projection(),'原项目');
 });
 
 test('启动时保留已编辑的项目名称和共同目标',async()=>{

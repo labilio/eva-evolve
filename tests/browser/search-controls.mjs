@@ -735,3 +735,10 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
   }
   await modal.waitFor({ state: 'hidden' });
 });
+
+test('设置数据管理中的归档搜索复用公共外观',async()=>{
+ await page.goto(`${origin}/#/collab`);await page.getByRole('button',{name:'账户：王宜林'}).hover();await page.getByRole('menuitem',{name:'设置',exact:true}).click();await page.getByRole('button',{name:'数据管理',exact:true}).click();
+ const field=page.locator('.eva-archived-projects__search');await field.waitFor();await page.evaluate(()=>Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{}))));const input=field.locator('input');await input.blur();
+ const idle=await appearance(field);assert.equal(idle.height,32);assert.equal(idle.radius,'8px');assert.equal(idle.iconWidth,16);assert.equal(idle.gap,8);assert.equal(idle.inputBorder,'0px');
+ await input.focus();const focused=await appearance(field);assert.equal(focused.shadow,'none');assert.equal(focused.height,idle.height);await input.fill('无匹配');await input.fill('');await page.getByRole('button',{name:'关闭设置'}).click();
+});

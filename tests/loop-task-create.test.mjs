@@ -13,7 +13,7 @@ function setup() {
   const projects = [{id:'prod',name:'供应链',issue_prefix:'SC'},{id:'q',name:'其他项目',issue_prefix:'QA'}];
   const lists = {prod:[{id:'old',identifier:'SC-101',run_id:'old-run',description:'old description'}],q:[{id:'q-old',identifier:'QA-9'}]};
   const scope = {humans:[{id:'owner'},{id:'member'}],cloneIds:['clone'],employeeIds:['employee']};
-  const store = {actorId:()=>store.snapshot().actorId,identityRecords:()=>({people:store.snapshot().people,clones:store.snapshot().clones}),projectRecord:id=>store.snapshot().projects[id],taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',people:[{id:'owner',name:'项目所有者'},{id:'member',name:'当前成员'},{id:'outsider',name:'外部联系人'}],clones:[{id:'clone',name:'成员分身'},{id:'clone2',name:'未入项目分身'}],projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
+  const store = {isProjectArchived:()=>false,actorId:()=>store.snapshot().actorId,identityRecords:()=>({people:store.snapshot().people,clones:store.snapshot().clones}),projectRecord:id=>store.snapshot().projects[id],taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',people:[{id:'owner',name:'项目所有者'},{id:'member',name:'当前成员'},{id:'outsider',name:'外部联系人'}],clones:[{id:'clone',name:'成员分身'},{id:'clone2',name:'未入项目分身'}],projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
   const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{pinyinPro:{pinyin}},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
   vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
   const helperStart=runtime.indexOf('function evaNormalizeTaskStatus'),helperEnd=runtime.indexOf('function evaNormalizeTaskList',helperStart);
@@ -75,4 +75,11 @@ test('来源者与创建者可为任何联系人，但 AI 分身与数字员工�
 });
 test('负责人显示信息从身份数据确定，不接受伪造身份名称和类型',async()=>{
  const s=setup();const a=await s.ctx.createIssue({title:'任务',assignee_id:'member',assignee_type:'agent',assignee_name:'其他人'});assert.equal(a.assignee_name,'当前成员');assert.equal(a.assignee_type,'member');
+});
+
+test('归档只阻止目标项目创建，其他项目仍可创建',async()=>{
+ const s=setup();s.store.isProjectArchived=id=>id==='prod';
+ await assert.rejects(s.ctx.createIssue({workspace_id:'prod',title:'冻结项目任务'}),/已归档/);
+ assert.equal(s.lists.prod.length,1);
+ assert.equal((await s.ctx.createIssue({workspace_id:'q',title:'正常项目任务'})).workspace_id,'q');
 });

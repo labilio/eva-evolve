@@ -137,6 +137,7 @@
     const ownerActions=new Set(['set-manager','transfer-ownership']);
     const can=(action,spaceId,actorId)=>{
       const value=role(spaceId,actorId);
+      if(membership.isProjectArchived(spaceId)&&!['read','preview','download','copy-link','view-trash','view-audit'].includes(action))return false;
       return Boolean(value&&(editableActions.has(action)||(value!=='editor'&&managerActions.has(action))||(value==='owner'&&ownerActions.has(action))));
     };
     const fail=message=>{throw new Error(message);};
@@ -308,7 +309,7 @@
       },
       writableSpaces(actorId,excludeSpaceId){
         const result=[{id:personalSpace(actorId),name:'个人文件库',kind:'personal'}];
-        Object.entries(membership.projectRecords()).forEach(([projectId,project])=>{if(role(projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
+        Object.entries(membership.projectRecords()).forEach(([projectId,project])=>{if(can('upload',projectId,actorId))result.push({id:projectId,name:project.name||projectId,kind:'project'});});
         return clone(result.filter(space=>space.id!==excludeSpaceId));
       },
       relationsFor(idOrRecord,actorId){
@@ -479,6 +480,13 @@
         records.push(recordValue);notify();return id;
       }
     };
+    // A project tombstone is authoritative for all file entry points and reloads.
+    const purgeDeletedProjects=()=>{
+      const removed=new Set(records.filter(item=>membership.isProjectDeleted?.(item.spaceId)).map(item=>item.id));
+      if(!removed.size)return;
+      records=records.filter(item=>!removed.has(item.id));pins=pins.filter(pin=>!removed.has(pin.fileId));notify();
+    };
+    membership.subscribe?.(purgeDeletedProjects);purgeDeletedProjects();
     return api;
   }
 

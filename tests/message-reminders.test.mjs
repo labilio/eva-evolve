@@ -139,3 +139,13 @@ test('进入项目不清未读，只在打开具体任务后减少一个并持�
  const refreshed=makeWindow();vm.runInNewContext(code,{window:refreshed,localStorage});
  assert.equal(refreshed.EvaProjectReminderDemo.count('prod'),1);
 });
+
+test('删除项目不再产生任务提醒，刷新后的预置事件不能复活',()=>{
+ const source=fs.readFileSync('prototype/009-2-data-supply.js','utf8'),code=source.slice(0,source.indexOf('// Canonical human account fixtures.'));
+ const window={__EVA_SUPPLY_CHAIN_DEMO:{issues:[{id:'supply-15',identifier:'SC-115',title:'变更',assignee_id:'u-wangyilin'}]}};
+ let deleted=false;window.__evaGetFileContext=()=>({store:{isProjectDeleted:()=>deleted}});
+ vm.runInNewContext(code,{window});const reminders=window.EvaProjectReminderDemo;
+ assert.equal(reminders.count('prod'),1);deleted=true;assert.equal(reminders.count('prod'),0);
+ let changes=0;reminders.subscribe(()=>changes++);reminders.removeProject('prod');assert.equal(changes,1);
+ assert.equal(window.__EVA_TASK_REMINDER_EVENTS.prod,undefined);
+});

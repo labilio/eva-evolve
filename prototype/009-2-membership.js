@@ -51,6 +51,9 @@
     const member=(id,uid)=>humanRows(id).some(m=>m.id===uid);
     const groupKey=id=>{const target=state.threads[id]||id;if(target?.startsWith('all:')&&state.projects[target.slice(4)])return target;if(state.groups[target])return target;return null;};
     const groupScope=id=>{const key=groupKey(id);return key&&(key.startsWith('all:')?state.projects[key.slice(4)]:state.groups[key]);};
+    const owningProject=id=>{const key=state.threads[id]||id;return state.projects[key]?key:key?.startsWith('all:')?key.slice(4):state.groups[key]?.projectId||null;};
+    const isProjectArchived=id=>!!state.projects[owningProject(id)]?.archivedAt;
+    const assertProjectWritable=id=>{if(isProjectArchived(id))fail('所属项目已归档，请恢复项目后再操作');};
     const governanceRecord=id=>state.groupGovernance?.[groupKey(id)]||{};
     const ensureGovernance=id=>{const key=groupKey(id)||fail('群聊不存在');state.groupGovernance||={};return state.groupGovernance[key]||={managerIds:[],botAdminIds:[],groupMd:''};};
     const manager=(id,uid)=>{
@@ -182,7 +185,65 @@
       const ids=[id,...Object.keys(state.threads||{}).filter(threadId=>state.threads[threadId]===id&&!state.threadDetails[threadId]?.deleted)];
       return ids.reduce((total,key)=>total+(state.messages[key]||[]).length+(state.directConversations?.[key]?.messages||[]).length,0);
     };
+    const archiveMessageScopes=id=>{
+      const groups=['all:'+id,...Object.values(state.groups).filter(group=>group.projectId===id).map(group=>group.id)];
+      return [...groups,...Object.keys(state.threads).filter(thread=>groups.includes(state.threads[thread])&&!state.threadDetails[thread]?.deleted)];
+    };
+    const deliverArchiveEvent=(id,event)=>{
+      const scopes=event.messageScopeIds||archiveMessageScopes(id),eventType='project-'+event.type;
+      for(const channelId of scopes){
+        const messages=state.messages[channelId]||=[];
+        if(messages.some(m=>m.eventType===eventType&&m.createdAt===event.at&&m.actorId===event.actorId))continue;
+        const message={kind:'system',eventType,actorId:event.actorId,createdAt:event.at,silent:true,text:(person(event.actorId)?.name||event.actorId)+(event.type==='archived'?'归档':'恢复')+'了项目'};
+        const later=messages.findIndex(m=>m.createdAt&&m.createdAt>event.at);
+        if(later<0)messages.push(message);else messages.splice(later,0,message);
+      }
+      event.messageScopeIds=scopes;
+      return scopes;
+    };
     const api={
+      owningProject,isProjectArchived,assertProjectWritable,
+      isProjectDeleted:id=>!!state.deletedProjects?.[id],
+      assertCanDeleteProject(id,uid,confirmation){
+        requireHuman(uid);const p=state.projects[id]||fail('项目不存在');
+        if(p.ownerId!==uid||!member(id,uid))fail('仅项目负责人可以删除项目');
+        if(!p.archivedAt)fail('请先归档项目');
+        if(confirmation!==p.name)fail('请输入完整项目名称确认');
+      },
+      deleteProject(id,uid,confirmation){
+        api.assertCanDeleteProject(id,uid,confirmation);
+        const groupIds=['all:'+id,...Object.values(state.groups).filter(g=>g.projectId===id).map(g=>g.id)];
+        const scopeIds=new Set([id,...groupIds,...Object.keys(state.threads).filter(t=>groupIds.includes(state.threads[t]))]);
+        groupIds.forEach(dissolve);
+        for(const key of scopeIds){
+          for(const field of ['messages','chatSettings','groupGovernance','threadDetails','threads','deletedMessageKeys'])if(state[field])delete state[field][key];
+          for(const field of ['conversationDrafts','chatPreferences','followedConversations','conversationCategoryAssignments','cloneMentionFree'])for(const values of Object.values(state[field]||{}))if(values)delete values[key];
+        }
+        for(const [user,ids] of Object.entries(state.pinnedProjects||{}))state.pinnedProjects[user]=ids.filter(pid=>pid!==id);
+        for(const [user,keys] of Object.entries(state.deletedMessageKeys||{}))state.deletedMessageKeys[user]=keys.filter(key=>{try{return !scopeIds.has(JSON.parse(key)[0]);}catch{return true;}});
+        state.memberAdditions=state.memberAdditions.filter(item=>!scopeIds.has(item.scopeId));
+        delete state.projects[id];(state.deletedProjects||={})[id]=true;
+        notify();
+      },
+      setProjectArchived(id,uid,archived){
+        requireHuman(uid);const p=state.projects[id]||fail('项目不存在');
+        if(p.ownerId!==uid||!member(id,uid))fail('仅项目负责人可以归档或恢复项目');
+        if(typeof archived!=='boolean')fail('归档状态无效');
+        if(!!p.archivedAt===archived)return;
+        const at=new Date().toISOString();
+        if(archived){p.archivedAt=at;p.archivedBy=uid;p.executionStoppedAt=at;p.automationStatus=Object.fromEntries(Object.entries(p.automationStatus||{}).map(([key,status])=>[key,status==='archived'?'archived':'paused']));}else{delete p.archivedAt;delete p.archivedBy;p.restoredAt=at;p.restoredBy=uid;}
+        const event={type:archived?'archived':'restored',actorId:uid,at};
+        (p.archiveEvents||=[]).push(event);
+        const channelIds=deliverArchiveEvent(id,event);
+        notify({keys:['projects','messages'],messageIds:channelIds});
+      },
+      projectAutomationStatus(id,automationId,fallback){const p=state.projects[id],status=p?.automationStatus?.[automationId]||fallback;if(status==='archived')return status;return p?.archivedAt?'paused':p?.automationStatus?.[automationId]||(p?.executionStoppedAt?'paused':fallback);},
+      setProjectAutomationStatus(id,uid,automationId,status){
+        assertProjectWritable(id);requireHuman(uid);const p=state.projects[id]||fail('项目不存在');
+        if(!member(id,uid))fail('请先加入项目');
+        if(!['active','paused','archived'].includes(status))fail('自动化状态无效');
+        (p.automationStatus||={})[automationId]=status;notify({keys:['projects']});
+      },
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,revisionFor,
       snapshot:()=>JSON.parse(JSON.stringify({...state,clones:state.clones.map(cloneView)})),actorId:()=>state.actorId,person,people,personRecord:id=>{const p=state.people.find(p=>p.id===id);return p?{...p}:null;},clone,employee,manager,projectAgent:agentFor,
       // Narrow detached reads: UI metadata queries must not copy message history.
@@ -362,6 +423,14 @@
         return Boolean(person(peer));
       },
       directMessages(uid,base={}){return {...base,...Object.fromEntries(Object.values(state.directConversations||{}).filter(c=>c.memberIds.includes(uid)).map(c=>[c.id,[...(base[c.id]||[]),...JSON.parse(JSON.stringify(c.messages))]]))};},
+      conversationDraft(id,uid){return api.canRead(id,uid)?state.conversationDrafts?.[uid]?.[id]||'':'';},
+      setConversationDraft(id,uid,text){
+        requireHuman(uid);if(!api.canRead(id,uid))fail('无会话访问权限');
+        text=String(text||'');if(api.conversationDraft(id,uid)===text)return;
+        state.conversationDrafts||={};state.conversationDrafts[uid]||={};
+        if(text)state.conversationDrafts[uid][id]=text;else delete state.conversationDrafts[uid][id];
+        notify({keys:['conversationDrafts']});
+      },
       directDraft(id,uid){const c=state.directConversations?.[id];return c?.memberIds.includes(uid)?c.drafts?.[uid]||'':'';},
       setDirectDraft(id,uid,text){const c=state.directConversations?.[id];if(!c||!c.memberIds.includes(uid))fail('无私聊访问权限');if((c.drafts?.[uid]||'')===text)return;c.drafts||={};c.drafts[uid]=text;notify({keys:['directConversations']});},
       canReadForwardSource(id,uid){
@@ -468,7 +537,7 @@
       groupMd(id,uid){
         if(!api.canRead(id,uid))fail('无会话访问权限');
         const key=groupKey(id)||fail('群聊不存在'),thread=state.threads[id],details=state.threadDetails[id];
-        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
+        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!isProjectArchived(id)&&!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
       },
       setGroupMd(id,uid,value){
         requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');
@@ -496,14 +565,14 @@
         state.unreadBaselineV1={};
         for(const uid of state.people.map(p=>p.id)){
           const counts=state.unreadBaselineV1[uid]={};
-          for(const id of new Set([...Object.keys(state.messages),...Object.keys(state.directConversations||{})]))counts[id]=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+          for(const id of new Set([...Object.keys(state.messages),...Object.keys(state.directConversations||{})]))counts[id]=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
         }
         notify();
       },
       conversationUnread(id,uid,seed=0){
         if(!api.canReadForwardSource(id,uid))return 0;
         const pref=state.chatPreferences[uid]?.[id],count=pref?.readMessageCount;
-        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
         return Math.max(pref?.markedUnread?1:0,count===undefined?(state.unreadBaselineV1?(Number(seed)||0)+Math.max(0,total-(state.unreadBaselineV1[uid]?.[id]||0)):Math.max(Number(seed)||0,total)):total-count,0);
       },
       conversationMentioned(id,uid,seed=false){
@@ -511,7 +580,7 @@
         const count=state.chatPreferences[uid]?.[id]?.readMessageCount;
         if(count===undefined&&seed)return true;
         const name=person(uid)?.name,token='@'+name;
-        return [...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').slice(count??state.unreadBaselineV1?.[uid]?.[id]??0).some(m=>{
+        return [...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').slice(count??state.unreadBaselineV1?.[uid]?.[id]??0).some(m=>{
           if((m.mentions||[]).some(x=>(x.uid||x.id)===uid)||(m.notifiedHumanIds||[]).includes(uid))return true;
           const text=String(m.text||'');let at=text.indexOf(token);
           while(name&&at>=0){const end=at+token.length;if(end===text.length||/[\s，。！？、,.:：；;…]/.test(text[end]))return true;at=text.indexOf(token,end);}
@@ -525,7 +594,7 @@
       },
       clearConversationUnread(id,uid){
         requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
-        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
         state.chatPreferences[uid]||={};const pref=state.chatPreferences[uid][id]||={};
         if(pref.readMessageCount===total&&!pref.markedUnread)return false;
         pref.readMessageCount=total;delete pref.markedUnread;notify({keys:['chatPreferences']});return true;
@@ -631,7 +700,7 @@
         state.memberAdditions=state.memberAdditions.filter(i=>!scopeIds.has(i.scopeId));
         state.actorId='u-wangyilin';state.supplyDemoVersion=d.version;api.seedSupplyChatContent();state.projectAgentDemoVersion=0;api.seedProjectAgents();notify();
       },
-      createProject(id,name,uid,ids,goal,humanIds){requireHuman(uid);if(state.projects[id]||state.groups[id])fail('项目已存在');const clones=selected(uid,ids),humans=[{id:uid,role:'owner'}];(Array.isArray(humanIds)?humanIds:[]).map(canonicalId).forEach(humanId=>{if(!humanId||humanId===uid||humans.some(member=>member.id===humanId))return;requireHuman(humanId);humans.push({id:humanId,role:'member'});});state.projects[id]={id,name,ownerId:uid,humans,cloneIds:clones};agentWelcome(id,goal);notify();return id;},
+      createProject(id,name,uid,ids,goal,humanIds){requireHuman(uid);if(state.deletedProjects?.[id])fail('项目已删除，不能复用标识');if(state.projects[id]||state.groups[id])fail('项目已存在');const clones=selected(uid,ids),humans=[{id:uid,role:'owner'}];(Array.isArray(humanIds)?humanIds:[]).map(canonicalId).forEach(humanId=>{if(!humanId||humanId===uid||humans.some(member=>member.id===humanId))return;requireHuman(humanId);humans.push({id:humanId,role:'member'});});state.projects[id]={id,name,ownerId:uid,humans,cloneIds:clones};agentWelcome(id,goal);notify();return id;},
       createGroup(id,name,pid,uid,ids){requireHuman(uid);if(state.groups[id]||state.projects[id])fail('群已存在');if(pid&&!member(pid,uid))fail('请先加入项目');const clones=selected(uid,ids,pid);state.groups[id]={id,name,projectId:pid||null,ownerId:uid,humans:[{id:uid,role:'member'}],cloneIds:clones};if(!pid){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();return id;},
       demoStoryGroups(){return [...(state.topicStoryGroups||[])];},
       threadNameConflict(gid,name,excludeId){const value=String(name||'').trim();const match=Object.entries(state.threads).filter(([id,parent])=>parent===gid&&id!==excludeId&&!state.threadDetails[id]?.deleted).map(([id])=>state.threadDetails[id]).find(t=>String(t?.name||'').trim()===value);return match?JSON.parse(JSON.stringify(match)):null;},
@@ -655,7 +724,7 @@
       sendMessage(id,uid,text,reply){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,...(replyTo?{replyTo}:{}),notifiedHumanIds:(text.includes('@所有人')||text.includes('@全体成员'))?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&[agent.name,...root.EvaAIIdentity.projectAgentLegacyNames(project)].some(name=>text.includes('@'+name));if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify({keys:['messages','chatPreferences'],messageIds:[id]});},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
-        return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>api.decorateMentions(id,projectAgentMessage(id,m)));
+        return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>{if(m.kind==='system'&&['project-archived','project-restored'].includes(m.eventType))m.text=m.text.split(' · ')[0];return api.decorateMentions(id,projectAgentMessage(id,m));});
       },
       decorateMentions(id,m){
         const gid=state.threads[id]||id;if(!state.groups[gid]&&!state.projects[gid.replace(/^all:/,'')])return m;
@@ -709,6 +778,20 @@
         notify();
       },
     };
+    // Shared project writes are checked at invocation, including stale open forms and
+    // transaction clones. Read access and account-only preferences remain unchanged.
+    const archiveWriteScopes={
+      saveProjectRole:0,setMemberRoles:0,deleteProjectRole:0,addEmployee:0,removeEmployee:0,
+      renameProject:0,setGroupManager:0,setGroupBotAdmin:0,setGroupAllowNoMention:0,
+      setCloneMentionFree:2,setGroupMd:0,deleteGroupMd:0,setChatSettings:0,
+      createGroup:2,createThread:1,updateThread:0,sendMessage:0,
+      addMember:0,addClone:0,removeClone:0,transfer:0,setAdmin:0,leaveGroup:0,remove:0,dissolveGroup:0,
+      forwardMessages:1,deleteSelectedMessages:0
+    };
+    for(const [name,index] of Object.entries(archiveWriteScopes)){
+      const command=api[name];
+      api[name]=(...args)=>{assertProjectWritable(args[index]);return command(...args);};
+    }
     // One-time conversion of old local invitation data; no acceptance workflow remains.
     if(state.invitations){
       const pending=state.invitations.filter(i=>['pending_approval','pending_accept'].includes(i.status));
@@ -730,6 +813,14 @@
       }
       delete state.invitations;
     }
+    // Upgrade the earlier preview's all-members-only records once, preserving their
+    // original operator/time. Scope snapshots prevent replay into newly created chats.
+    let archiveMessagesMigrated=false;
+    for(const project of Object.values(state.projects))for(const event of project.archiveEvents||[]){
+      if(event.messageScopeIds||!['archived','restored'].includes(event.type)||!event.at||!event.actorId)continue;
+      deliverArchiveEvent(project.id,event);archiveMessagesMigrated=true;
+    }
+    if(archiveMessagesMigrated)notify({keys:['projects','messages']});
     return api;
   }
   function bootstrap(people,projects,channels,orgChannels=[],resolveProjectInfo){
