@@ -2198,10 +2198,7 @@ function EvaAITeamPage() {
     cut(',Fi&&React.createElement("div",{className:"wk-conv-group-hash-badge"},React.createElement(GroupIcon,{size:10}))','', '最近列表群头像不显示子区角标');
     cut('ci.crumb&&React.createElement("div",{className:"wk-conv-breadcrumb"},ci.crumb),','','最近行取消独立项目行');
     cut('React.createElement("h3",null,ci.isThread&&React.createElement(ThreadIcon,{size:13,className:"wk-conv-channel-icon wk-conv-thread-icon"}),ci.name)',
-      'React.createElement("h3",ci.crumb?{"data-eva-tooltip":ci.crumb+" / "+ci.name}:null,ci.isThread&&React.createElement(ThreadIcon,{size:13,className:"wk-conv-channel-icon wk-conv-thread-icon"}),ci.name)',
-      '最近行群名保留完整路径提示');
-    cut('React.createElement("h3",ci.crumb?{"data-eva-tooltip":ci.crumb+" / "+ci.name}:null,ci.isThread&&React.createElement(ThreadIcon,{size:13,className:"wk-conv-channel-icon wk-conv-thread-icon"}),ci.name)',
-      'React.createElement("h3",{className:ci.ch.allMembers&&!ci.isThread?"eva-project-all-recent-name":void 0,...(ci.crumb?{"data-eva-tooltip":ci.crumb+" / "+ci.name}:{})},ci.isThread&&React.createElement(ThreadIcon,{size:13,className:"wk-conv-channel-icon wk-conv-thread-icon"}),React.createElement("span",{className:"eva-project-all-name-text"},ci.name),ci.ch.allMembers&&!ci.isThread&&React.createElement(Tag,{className:"eva-readonly-tag eva-project-all-tag",color:"white",size:"small"},"全员"))', '最近群名后使用 Semi Tag');
+      'React.createElement("h3",{className:ci.ch.allMembers&&!ci.isThread?"eva-project-all-recent-name":void 0},ci.isThread&&React.createElement(ThreadIcon,{size:13,className:"wk-conv-channel-icon wk-conv-thread-icon"}),React.createElement("span",{className:"eva-project-all-name-text"},ci.name),ci.ch.allMembers&&!ci.isThread&&React.createElement(Tag,{className:"eva-readonly-tag eva-project-all-tag",color:"white",size:"small"},"全员"))', '最近群名后使用 Semi Tag');
     cut('Cn==="recent"?Aa:React.createElement(EvaFollowList','Cn==="recent"||Va.trim()?Aa:React.createElement(EvaFollowList','跨项目搜索统一归属行');
     cut('React.createElement("span",{className:"t"},Sa.name))),ut&&!fa&&(ct?.scopeNameOf[Sa.id]??Kr[Sa.id])&&React.createElement("span",{className:"ch-head__scope"},ct?.scopeNameOf[Sa.id]??Kr[Sa.id]),',
       'React.createElement("span",{className:"t"},Sa.name))),','聊天标题独立成行');
