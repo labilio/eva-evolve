@@ -792,6 +792,16 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-36',number:36,identifier:'SC-136',position:36,title:'核查供应商物料编码SUPPLIER-PART-2026-Q4-ULTRA-LONG-ALPHANUMERIC-REFERENCE-0000987654321对应的替代料认证和交付批次',status:'in_progress',priority:'medium',due_date:null,assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'连续长编码看板换行验收样本。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-37',number:37,identifier:'SC-137',position:37,title:'确认试生产物料齐套情况',status:'in_review',priority:'low',due_date:null,assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'多标签空间不足时显示前两项及剩余数量的验收样本。'}
 );
+// 任务范围演示：复用已有任务和身份，覆盖无关、评论参与及分身提及。
+(function seedTaskScopeExamples(){
+  var demo=window.__EVA_SUPPLY_CHAIN_DEMO;
+  [26,30,37].forEach(function(number){
+    var task=demo.issues.find(function(item){return item.id==='supply-'+number;});
+    Object.assign(task,{source_id:'u-zhouyuan',source_type:'member',source_name:'周远',creator_id:'u-zhouyuan',creator_type:'member',creator_name:'周远'});
+  });
+  demo.comments['supply-30']=[{id:'supply-30-scope-comment',issue_id:'supply-30',parent_id:null,author_id:'u-wangyilin',author_type:'member',author_name:'王宜林',content:'试点范围建议先覆盖间接采购，评估结果请放在本任务继续讨论。',created_at:window.__EVA_DEMO_TIME.TASK_YESTERDAY,attachments:[]}];
+  demo.issues.find(function(item){return item.id==='supply-37';}).description+='\n\n[@王宜林的 AI 分身](mention://agent/b-wangyilin) 请核对齐套清单中的缺项。';
+})();
 // 供应链项目任务统一预置可追溯动态；在追加任务后生成，避免克隆时继承其他任务的记录。
 (function seedSupplyTaskActivity(){
   var people=new Map(window.__EVA_PEOPLE.map(function(person){return [person.id,person.name];}));
