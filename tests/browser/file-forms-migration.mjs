@@ -33,7 +33,7 @@ for(const entry of ['project','drive'])test(entry+' 文件表单：空提交、�
   dialog=page.getByRole('dialog',{name:'创建快捷方式',exact:true});await dialog.getByRole('button',{name:'创建快捷方式',exact:true}).click();await dialog.waitFor({state:'hidden'});
   assert.equal((await records()).filter(i=>i.type==='shortcut'&&i.sourceFileId===id).length,1);
   await host.getByRole('button',{name:'更多操作：链接表单验收',exact:true}).click();await page.getByRole('menuitem',{name:'移动',exact:true}).click();
-  dialog=page.getByRole('dialog',{name:'移动到',exact:true});await dialog.getByRole('combobox',{name:'目标文件夹',exact:true}).click();await page.getByRole('option',{name:'会议纪要',exact:true}).click();await dialog.getByRole('button',{name:entry==='project'?'移动':'确认',exact:true}).click();await dialog.waitFor({state:'hidden'});
+  dialog=page.getByRole('dialog',{name:'移动到',exact:true});await dialog.getByRole('combobox',{name:'目标文件夹',exact:true}).click();await page.getByRole('option',{name:'会议纪要',exact:true}).click();await dialog.getByRole('button',{name:'移动',exact:true}).click();await dialog.waitFor({state:'hidden'});
   assert.equal((await records()).find(i=>i.id===id).parent_id,(await records()).find(i=>i.spaceId==='prod'&&i.name==='会议纪要').id);
   await page.reload();assert.equal((await records()).find(i=>i.id===id).external.host,'example.net');assert.deepEqual(errors,[]);
  }finally{await browser.close();await new Promise(r=>server.close(r));}

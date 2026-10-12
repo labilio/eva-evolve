@@ -22,7 +22,7 @@ const FileTags = withField(function FileTags({value=[],onChange,api,draft='',ava
   }}>
     <span id={labelId} hidden>输入或选择标签</span>
     <EvaSelect multiple filter allowCreate max={8} value={value} optionList={options} style={{width:'100%'}}
-      aria-labelledby={labelId} placeholder="输入或选择标签" motion={false}
+      aria-labelledby={labelId} placeholder="输入或选择标签"
       renderCreateItem={input=>'创建标签 '+input}
       onSearch={(text,event)=>{if(!text&&event?.type!=='change'&&event?.type!=='input')return;api.setValue('tagInput',text);api.setError('tagInput',undefined);}}
       onChange={next=>{onChange(Array.from(new Set(next.map(canonical))).filter(Boolean));api.setValue('tagInput','');api.setError('tagInput',undefined);}}

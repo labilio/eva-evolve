@@ -25,7 +25,7 @@ export function FilePreviewActions({fullscreen,onAction}) {
 export function FileToolbar({onAction}) {
  return <div className="eva-file-controls-toolbar">
   <Button type="tertiary" theme="light" onClick={()=>onAction('new-folder')}>新建文件夹</Button>
-  <Dropdown motion={false} trigger="click" position="bottomLeft" render={<Dropdown.Menu>
+  <Dropdown trigger="click" position="bottomLeft" render={<Dropdown.Menu>
    <Dropdown.Item icon={<FileIcon name="link-2"/>} onClick={()=>onAction('external-link')}>外部链接</Dropdown.Item>
    <Dropdown.Item icon={<FileIcon name="folder"/>} onClick={()=>onAction('external-folder')}>外部文件夹</Dropdown.Item>
   </Dropdown.Menu>}><Button type="tertiary" theme="light" icon={<FileIcon name="chevron-down"/>} iconPosition="right">添加外部资源</Button></Dropdown>
@@ -35,18 +35,19 @@ export function FileToolbar({onAction}) {
 // Menus and their follow-up overlays share the persistent trigger. The menu
 // closes before the form/confirmation opens; no anchor on an unmounted item.
 export function ActionMenu({items,children,position='bottomRight'}) {
- const [menu,setMenu]=useState(false),[active,setActive]=useState(null);
+ const [menu,setMenu]=useState(false),[active,setActive]=useState(null),[open,setOpen]=useState(false);
  const host=useRef(null);
  const returnFocus=()=>host.current?.querySelector('button');
- const close=()=>setActive(null);
- const trigger=React.cloneElement(children,{onClick:event=>{event.stopPropagation();if(active)close();else setMenu(!menu);}});
- const overlay=active?.renderContent?<Popover trigger="custom" visible returnFocus={returnFocus} title={active.label} style={active.overlayStyle} position={position} motion={false}
+ // Retain content until Semi finishes its native exit; no custom timer or duration.
+ const close=()=>setOpen(false);
+ const trigger=React.cloneElement(children,{onClick:event=>{event.stopPropagation();if(open)close();else {setActive(null);setMenu(!menu);}}});
+ const overlay=active?.renderContent?<Popover trigger="custom" visible={open} returnFocus={returnFocus} title={active.label} style={active.overlayStyle} position={position}
   onClickOutSide={close} onEscKeyDown={close} content={active.renderContent(close)}>{trigger}</Popover>:
- active?.confirmation?<Popconfirm trigger="custom" visible returnFocus={returnFocus} {...active.confirmation} position={position} motion={false}
+ active?.confirmation?<Popconfirm trigger="custom" visible={open} returnFocus={returnFocus} {...active.confirmation} position={position}
   onVisibleChange={visible=>{if(!visible)close();}} onCancel={close} onClickOutSide={close} onConfirm={async(event,{isCurrent})=>{await active.onConfirm();if(isCurrent())close();}}>{trigger}</Popconfirm>:
- <Dropdown trigger="custom" visible={menu} motion={false} position={position} onClickOutSide={()=>setMenu(false)} onEscKeyDown={()=>setMenu(false)}
+ <Dropdown trigger="custom" visible={menu} position={position} onClickOutSide={()=>setMenu(false)} onEscKeyDown={()=>setMenu(false)}
   render={<Dropdown.Menu>{items.map(item=><Dropdown.Item key={item.label} icon={item.icon} type={item.danger?'danger':undefined}
-   onClick={event=>{event.stopPropagation();setMenu(false);if(item.renderContent||item.confirmation)setActive(item);else item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
+   onClick={event=>{event.stopPropagation();setMenu(false);if(item.renderContent||item.confirmation){setActive(item);setOpen(true);}else item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
   {trigger}
  </Dropdown>;
  return <span ref={host}>{overlay}</span>;
@@ -62,8 +63,8 @@ export function FileRowActions({name,pinned,showPin=true,onPin,items,files,actor
 }
 function FileTagsPopover({resource,files,actor}) {
  const [open,setOpen]=useState(false);
- return <Popover trigger="click" visible={open} onVisibleChange={setOpen} title="编辑标签" position="bottomRight" motion={false}
-  onClickOutSide={()=>setOpen(false)} onEscKeyDown={()=>setOpen(false)} content={open&&<FileForm key={resource.id} inline type="tags" files={files} actor={actor} resource={resource} onClose={()=>setOpen(false)}/>}>
+ return <Popover trigger="click" visible={open} onVisibleChange={setOpen} title="编辑标签" position="bottomRight"
+  onClickOutSide={()=>setOpen(false)} onEscKeyDown={()=>setOpen(false)} content={<FileForm key={resource.id} inline type="tags" files={files} actor={actor} resource={resource} onClose={()=>setOpen(false)}/>}>
   <Button theme="borderless">编辑</Button>
  </Popover>;
 }

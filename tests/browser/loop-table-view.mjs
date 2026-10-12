@@ -1,3 +1,4 @@
+import {settleMotion} from '../helpers/settle-motion.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {chromium} from 'playwright';
@@ -79,7 +80,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.deepEqual(clippedDates,[],'日期单元格不应截断: '+clippedDates.join(','));
 
     // 单选枚举使用 Semi Dropdown 原生选中态；优先级保留公共语义色图形，不重复胶囊与对勾。
-    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();await settleMotion(page);
     const priorityMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
     await priorityMenu.waitFor();
     assert.equal(await priorityMenu.evaluate(el=>getComputedStyle(el).paddingTop),'6px','表格弹层应使用 Eva 下拉菜单的 6px 外留白');
@@ -92,13 +93,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await activePriority.hover();
     assert.notEqual(await activePriority.evaluate(el=>getComputedStyle(el).backgroundColor),activeBefore,'当前项也应有统一的 hover 反馈');
     const menuSkin=await priorityMenu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-dropdown-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await priorityMenu.waitFor({state:'hidden'});
-    await firstStatusCell.click();
+    await firstStatusCell.click();await settleMotion(page);
     const enumStatusMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
     assert.equal(await enumStatusMenu.locator('.semi-dropdown-item-active').count(),1,'当前状态由 Semi active 态标明');
     assert.equal(await enumStatusMenu.locator('.eva-task-table__menu-check').count(),0,'状态单选菜单不显示第二列对勾');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await enumStatusMenu.waitFor({state:'hidden'});
     await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().click();
     const labelMenu=page.locator('.eva-task-table__menu[role="listbox"]:visible');
@@ -114,7 +115,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(fixedLabelControls.scrollable,true,'标签结果区独立滚动');
     assert.equal(fixedLabelControls.after,fixedLabelControls.before,'标签目录滚动时顶部搜索保持可见');
     assert.equal(await labelMenu.getByText('管理标签',{exact:true}).count(),0,'表格标签菜单没有管理入口');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
 
     // 搜索：命中与清空（Semi Input + 公共搜索外观）
     const search=table.locator('.eva-task-table__search input');
@@ -126,7 +127,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await table.locator('.eva-task-table__row').first().waitFor();
 
     // 分组：按状态分组出现分组行与计数（PopMenu 列表项）
-    await table.locator('.eva-task-table__toolbtn',{hasText:'分组'}).click();
+    await table.locator('.eva-task-table__toolbtn',{hasText:'分组'}).click();await settleMotion(page);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     assert.equal(await page.locator('.eva-task-table__menu:visible .eva-task-table__menu-item:focus').textContent(),'状态','方向键应逐项移动菜单焦点');
@@ -138,13 +139,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await firstGroup.click();
     await firstGroup.click();
     // 分组改回不分组（触发器再点可关闭，再次打开选择）
-    await table.locator('.eva-task-table__toolbtn',{hasText:'分组'}).click();
+    await table.locator('.eva-task-table__toolbtn',{hasText:'分组'}).click();await settleMotion(page);
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'不分组'}).click();
     await page.locator('.eva-task-table__menu:visible').waitFor({state:'detached'}).catch(()=>{});
     assert.equal(await page.locator('.eva-task-table__menu:visible').count(),0,'选择分组项后菜单应关闭');
 
     // 列显示/隐藏：隐藏「标签」列后表头不再包含，再恢复
-    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();
+    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();await settleMotion(page);
     const colMenu=page.locator('.eva-task-table__menu:visible');
     await colMenu.getByText('任务属性',{exact:true}).waitFor();
     await colMenu.getByRole('textbox',{name:'搜索列'}).fill('标签');
@@ -154,18 +155,18 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await colMenu.getByRole('textbox',{name:'搜索列'}).fill('');
     await colMenu.getByRole('option',{name:'标签'}).click();
     await colMenu.getByRole('option',{name:'标签'}).click();
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await page.locator('.eva-task-table__menu:visible').waitFor({state:'detached'}).catch(()=>{});
     await table.locator('.eva-task-table__grid').waitFor();
     const headerAfterHide=await table.locator('.eva-task-table__th-btn .eva-task-table__th-label').allTextContents();
     assert.ok(!headerAfterHide.includes('标签'),'隐藏标签列后表头不应包含标签');
-    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();
+    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();await settleMotion(page);
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'标签'}).click();
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     assert.deepEqual(await table.locator('.eva-task-table__th-btn .eva-task-table__th-label').allTextContents(),['任务','状态','优先级','负责人','截止日期','标签']);
 
     const firstLabelCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-editor').last();
-    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
+    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();await settleMotion(page);
     const tableLabelMenu=page.locator('.eva-task-table__menu:visible');
     await tableLabelMenu.getByRole('textbox',{name:'搜索或新建标签'}).fill('供应风');
     assert.deepEqual(await tableLabelMenu.locator('[role="option"] .eva-task-label-chip').allTextContents(),['供应风险'],'表格标签输入同时筛选已有标签');
@@ -189,19 +190,19 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await tableLabelMenu.isVisible(),true,'表格新建标签后多选菜单保持打开');
     await tableLabelMenu.getByRole('option',{name:'质量'}).click();
     assert.equal(await tableLabelMenu.isVisible(),true,'表格连续选择标签时菜单保持打开');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     assert.equal(await tableLabelMenu.isVisible(),false,'Esc 关闭表格标签菜单');
-    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
+    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();await settleMotion(page);
     assert.equal(await tableLabelMenu.getByRole('option',{name:'质量'}).getAttribute('aria-selected'),'true','重新打开后保留连续选择结果');
-    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();
+    await table.locator('.eva-task-table__toolbtn',{hasText:'列'}).click();await settleMotion(page);
     await page.locator('.eva-task-table__menu:visible').getByRole('option',{name:'标签'}).waitFor();
-    await page.keyboard.press('Escape');
-    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();
+    await page.keyboard.press('Escape');await settleMotion(page);
+    await firstLabelCell.locator('.eva-task-table__cell-trigger').click();await settleMotion(page);
     assert.equal(await tableLabelMenu.getByText('管理标签',{exact:true}).count(),0,'表格选标签菜单不显示管理入口');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
 
     // 排序：任务列菜单升序（title 可经菜单排序）
-    await table.locator('.eva-task-table__th-btn',{hasText:'任务'}).first().click();
+    await table.locator('.eva-task-table__th-btn',{hasText:'任务'}).first().click();await settleMotion(page);
     const headerMenu=page.locator('.eva-task-table__menu:visible');
     const headerInsets=await headerMenu.getByRole('menuitem').evaluateAll(items=>items.map(item=>{
       const icon=item.querySelector('svg');
@@ -230,7 +231,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const assigneeWrapper=page.locator('.semi-dropdown-wrapper:visible').filter({has:page.locator('.eva-task-assignee-search')});
     const assigneeSkin=await assigneeWrapper.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
     assert.deepEqual(assigneeSkin,menuSkin,'负责人菜单应沿用王岩的统一浮层背景、圆角和投影');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
 
     // 截止日期内联编辑：共用 Semi 紧凑面板，翻上月选 1 日必逾期标红，再用「无截止日期」行清空
     const dateCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="截止日期"]');
@@ -314,7 +315,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('text=已导出 1 个任务').waitFor();
 
     // 批量删除：确认弹窗 → 行消失
-    await batchBar.locator('.eva-task-table__toolbtn--danger').click();
+    await batchBar.locator('.eva-task-table__toolbtn--danger').click();await settleMotion(page);
     await page.locator('.semi-modal').getByText('删除 1 个任务？').waitFor();
     await page.locator('.semi-modal').locator('button[aria-label="confirm"]').click();
     const deleteToast=page.locator('.semi-toast',{hasText:'已删除 1 个任务'});
@@ -344,7 +345,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
       assert.equal(await menu.evaluate(el=>getComputedStyle(el).minWidth),'160px',`详情${name}菜单沿用公共最小宽度`);
       if(name==='优先级')assert.deepEqual((await menu.getByRole('menuitem').allTextContents()).map(text=>text.trim()),['无','紧急','高','中','低'],'详情优先级顺序与表格一致');
       assert.deepEqual(await menu.evaluate(el=>{const s=getComputedStyle(el.closest('.semi-dropdown-wrapper'));return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),menuSkin,`详情${name}使用统一浮层外观`);
-      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');await settleMotion(page);
     }
     const detailDate=page.locator('.collab-route-right .loop-idp__due-picker');
     await detailDate.waitFor();
@@ -365,7 +366,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await detailLabels.locator('button').first().click();
     await page.locator('.semi-dropdown-wrapper:visible .loop-label-option .eva-task-label-chip').first().waitFor();
     assert.equal(await page.locator('.semi-dropdown-wrapper:visible').getByText('管理标签',{exact:true}).count(),0,'详情选标签菜单不显示管理入口');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
     await table.locator('.eva-task-table__grid').waitFor();
@@ -386,7 +387,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const createDate=page.locator('.eva-loop-task-create__due');
     await createDate.locator('.eva-loop-task-create__due-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'创建胶囊应使用同一紧凑日期面板');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await page.getByRole('textbox',{name:'添加或编辑任务标签'}).click();
     const tagMenu=page.locator('.eva-loop-task-create__tag-menu:visible');
     const tagSkin=await tagMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
@@ -420,14 +421,14 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.evaluate(()=>window.EvaTheme.apply('dark'));
     const darkLabelColor=await table.locator('.eva-task-table__label-tags > .eva-task-label-chip:visible').first().evaluate(el=>getComputedStyle(el).color);
     assert.equal(darkLabelColor,'rgb(247, 247, 247)','暗色任务标签须使用高对比文字，不沿用旧 Loop 的暗字');
-    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="优先级"]').click();await settleMotion(page);
     const darkEnum=page.locator('.semi-dropdown-wrapper:visible:has(.eva-task-enum-menu)');
     const darkEnumSkin=await darkEnum.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
-    await page.keyboard.press('Escape');await darkEnum.waitFor({state:'hidden'});
-    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-editor').last().locator('.eva-task-table__cell-trigger').click();
+    await page.keyboard.press('Escape');await settleMotion(page);await darkEnum.waitFor({state:'hidden'});
+    await table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-editor').last().locator('.eva-task-table__cell-trigger').click();await settleMotion(page);
     const darkLabelMenu=page.locator('.eva-task-table__menu--labels:visible');
     assert.deepEqual(await darkLabelMenu.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};}),darkEnumSkin,'暗色单选和标签菜单沿用王岩同一浮层契约');
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');await settleMotion(page);
     await page.evaluate(()=>window.EvaTheme.apply('light'));
 
     await page.screenshot({path:'/tmp/eva-loop-table-view.png'});

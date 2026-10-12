@@ -1,3 +1,4 @@
+import {settleMotion} from '../helpers/settle-motion.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {chromium} from 'playwright';
@@ -10,7 +11,7 @@ test('业务浮层：父任务取消、对话删除焦点、文件永久删除�
  try{
   await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
   await page.getByRole('button',{name:'更多操作',exact:true}).click();await page.getByRole('menuitem',{name:'关联父任务',exact:true}).click();
-  const parent=page.getByRole('dialog',{name:'关联父任务',exact:true});await parent.waitFor();
+  const parent=page.getByRole('dialog',{name:'关联父任务',exact:true});await parent.waitFor();await settleMotion(page);
   assert.equal(await parent.locator('.semi-modal').count(),0);
   await parent.getByRole('combobox').press('Escape');assert.equal(await parent.isVisible(),true);
   const spacing=await parent.evaluate(e=>{const field=e.querySelector('.semi-select').getBoundingClientRect(),button=Array.from(e.querySelectorAll('button')).find(b=>b.textContent==='取消').getBoundingClientRect();return button.top-field.bottom;});
@@ -22,9 +23,9 @@ test('业务浮层：父任务取消、对话删除焦点、文件永久删除�
   await parent.getByRole('button',{name:'取消',exact:true}).click();await parent.waitFor({state:'hidden'});
   assert.equal(await page.getByRole('button',{name:'更多操作',exact:true}).evaluate(e=>e===document.activeElement),true);
   await page.goto(origin+'/#/conversation/personal-weekly-meeting-summary');
-  await page.getByRole('button',{name:'整理本周会议结论',exact:true}).click();
+  await page.locator('[data-eva-personal-conversation-id="personal-weekly-meeting-summary"]').click();
   const remove=page.getByRole('button',{name:'删除对话：整理本周会议结论',exact:true});await remove.click();
-  const confirm=page.getByRole('dialog',{name:'删除“整理本周会议结论”？',exact:true});await confirm.waitFor();
+  const confirm=page.getByRole('dialog',{name:'删除对话',exact:true});await confirm.waitFor();
   assert.equal(await confirm.getByRole('button',{name:'取消',exact:true}).evaluate(e=>e===document.activeElement),true);
   await confirm.getByRole('button',{name:'取消',exact:true}).click();await confirm.waitFor({state:'hidden'});
   assert.equal(await remove.evaluate(e=>e===document.activeElement),true);

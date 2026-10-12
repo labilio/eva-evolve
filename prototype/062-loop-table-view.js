@@ -41,7 +41,7 @@
         document.addEventListener('keydown',onKey);
         return()=>document.removeEventListener('keydown',onKey);
       },[open,setOpen]);
-      return h(Popover,{trigger:'custom',visible:open,position,onClickOutSide:()=>setOpen(false),motion:false,
+      return h(Popover,{trigger:'custom',visible:open,position,onClickOutSide:()=>setOpen(false),
         content:h('div',{ref:menuRef,tabIndex:-1,className:'eva-task-table__menu'+(menuClassName?' '+menuClassName:''),role,
           onKeyDown:event=>{
             if(event.key==='Escape'){setOpen(false);return;}
