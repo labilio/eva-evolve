@@ -473,7 +473,6 @@ body[theme-mode="dark"] {
 }
 :root[data-theme="dark"] .wk-msg-system-tag-close { color: var(--eva-text-muted); }
 :root[data-theme="dark"] .wk-msg-system-tag-close:hover { color: var(--eva-text-primary); }
-:root[data-theme="dark"] .wk-msg-row-checkbox-inner { background: var(--eva-surface-primary); border-color: var(--eva-border-default); }
 
 /* —— 会话内引用卡（任务 / Loop / 文件等 refcard）——
    vendor 把整套状态写死为浅色：底 #fff、hover 叠「黑 2%」、图标槽叠「黑 5%」、

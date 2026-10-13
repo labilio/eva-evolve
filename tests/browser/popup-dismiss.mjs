@@ -137,7 +137,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     // 左侧默认只有一个「最近」列表，不再有四个入口 Tab
     assert.equal(await page.locator('.eva-fp-tabs').count(), 0, '消息·转发面板：仍保留四 Tab');
     const forwardGroupRow = page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ has: page.locator('.eva-fp-kind', { hasText: '群聊' }) }).first();
-    await forwardGroupRow.locator('input[type="checkbox"]').check();
+    await forwardGroupRow.locator('.semi-checkbox').click();
     // 群卡片默认只发本群，展开后才有「发送至」下拉
     assert.equal(await page.locator('.eva-fp-picker-control').count(), 0, '消息·转发群卡片：默认不应展开「发送至」');
     await page.locator('.eva-fp-selected--group .eva-fp-row-toggle').first().click();
@@ -145,7 +145,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     assert.equal((await page.locator('.eva-fp-picker-summary').first().innerText()).trim(), '本群', '消息·转发「发送至」：默认摘要应为「本群」');
     await page.locator('.eva-fp-picker-control').first().click();
     await page.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
-    assert.equal((await page.locator('.eva-fp-picker-menu .eva-fp-picker-option span').first().innerText()).trim(), '本群', '消息·转发「发送至」：第一个选项应为「本群」');
+    assert.equal((await page.locator('.eva-fp-picker-menu .eva-fp-picker-option > span:last-child').first().innerText()).trim(), '本群', '消息·转发「发送至」：第一个选项应为「本群」');
     assert.doesNotMatch(await page.locator('.eva-fp-picker-menu').innerText(), /大群本身/, '消息·转发「发送至」：不得出现「大群本身」');
     await page.waitForTimeout(900);
     assert.ok(await page.locator('.eva-fp-picker-menu').count(), '消息·转发「发送至」下拉：未点击时被自动关闭');
@@ -176,7 +176,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     assert.ok(await page.locator('.eva-fp-modal').count(), '消息·转发「发送至」下拉：Escape 收起下拉时误关了整个转发面板');
     // 子区选项带全站统一的子区图标（Lucide corner-down-right，与中栏「子区」同形），「本群」不加
     await page.locator('.eva-forward-search input').fill('每日进展同步确认');
-    await page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ hasText: '每日进展同步确认' }).first().locator('input[type="checkbox"]').check();
+    await page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({ hasText: '每日进展同步确认' }).first().locator('.semi-checkbox').click();
     const threadCard = page.locator('.eva-fp-selected--group').last();
     await threadCard.waitFor({ timeout: 5000 });
     if (!(await threadCard.locator('.eva-fp-picker-control').count())) await threadCard.locator('.eva-fp-row-toggle').click();
@@ -184,7 +184,7 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
     await threadCard.locator('.eva-fp-picker-menu').waitFor({ timeout: 5000 });
     const pickerRows = await threadCard.locator('.eva-fp-picker-option').evaluateAll(nodes => nodes.map(node => ({
       text: node.innerText.trim(),
-      icon: node.querySelector('svg') ? node.querySelector('svg').getAttribute('class') || '' : ''
+      icon: node.querySelector(':scope > svg') ? node.querySelector(':scope > svg').getAttribute('class') || '' : ''
     })));
     assert.ok(pickerRows.length > 1, '消息·转发「发送至」：搜索命中的子区应出现在父群卡片下拉里');
     assert.equal(pickerRows[0].icon, '', '消息·转发「发送至」：「本群」不加子区图标');
@@ -257,14 +257,14 @@ test('浮层：点击内容区空白处收起，未点击不自行关闭，Escap
 
     // ---- 云盘：行操作菜单 ----
     await page.goto(`${origin}/#/drive`);
-    await page.locator('.eva-drive__row-more').first().waitFor();
+    await page.getByRole('button',{name:/^更多操作：/}).first().waitFor();
     await closesOnBlank('云盘·行操作菜单', {
       open: async () => {
         await page.locator('.eva-drive__row').first().hover();
         await page.waitForTimeout(200);
-        await page.locator('.eva-drive__row-more').first().click();
+        await page.getByRole('button',{name:/^更多操作：/}).first().click();
       },
-      visible: '.eva-drive__row-menu',
+      visible: '.semi-dropdown-menu:visible',
       blank: () => page.evaluate(() => {
         const rect = document.querySelector('.eva-drive__table').getBoundingClientRect();
         return { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.bottom - 12) };

@@ -63,7 +63,6 @@
   .eva-faux-field--muted { color: var(--eva-text-secondary-accessible); }
   .eva-faux-field__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .eva-board-check { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-top: 8px; color: var(--eva-text-secondary); font: 14px/22px var(--eva-font-sans); }
-  .eva-board-check input { width: 16px; height: 16px; accent-color: var(--eva-action-primary); }
   .eva-board-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 16px 0 8px; scrollbar-gutter: stable; }
   .eva-board-columns { display: grid; width: max-content; min-width: 100%; grid-template-columns: repeat(5, minmax(240px, 1fr)); gap: 12px; }
   .eva-board-column { box-sizing: border-box; min-height: 320px; padding: 12px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-subtle); }

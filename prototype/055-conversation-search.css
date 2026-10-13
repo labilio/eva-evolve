@@ -318,7 +318,7 @@
   gap: var(--gds-space-1-5);
 }
 
-.eva-conversation-search__sender-options label {
+.eva-conversation-search__sender-options > div {
   display: flex;
   align-items: center;
   gap: var(--gds-space-2);
@@ -333,26 +333,18 @@
   border-radius: var(--wk-r-input, 8px);
 }
 
-.eva-conversation-search__sender-options label:hover,
-.eva-conversation-search__sender-options label.is-selected {
+.eva-conversation-search__sender-options > div:hover,
+.eva-conversation-search__sender-options > div.is-selected {
   color: var(--wk-text-primary, #1a1c24);
   background: var(--eva-search-accent-soft);
   border-color: var(--eva-search-accent-border);
 }
 
-.eva-conversation-search__sender-options label:has(input:focus-visible) {
+.eva-conversation-search__sender-options > div:has(input:focus-visible) {
   outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
   outline-offset: 2px;
 }
 
-.eva-conversation-search__sender-options input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-}
 
 .eva-conversation-search__sender-options img {
   flex: 0 0 auto;
@@ -362,7 +354,7 @@
   border-radius: 50%;
 }
 
-.eva-conversation-search__sender-options label > span:not(.ai-badge) {
+.eva-conversation-search__sender-options > div > span:not(.ai-badge) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -739,7 +731,6 @@
 .eva-conversation-search__tabs button:focus-visible,
 .eva-conversation-search__filter:focus-visible,
 .eva-conversation-search__filters button:focus-visible,
-.eva-conversation-search__sender-options input:focus-visible + img,
 .eva-conversation-search__result:focus-visible,
 .eva-conversation-search__more:focus-visible,
 .eva-conversation-search__empty button:focus-visible {

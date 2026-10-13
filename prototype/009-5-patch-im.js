@@ -512,8 +512,8 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
     const checked=isChecked(row),context=contextNode(row);
     return h('div',{key:row.id,className:'eva-fp-row-wrap'},
       h('div',{className:'eva-fp-row-head'+(checked?' is-checked':'')},
-        h('label',{className:'eva-fp-row'+(checked?' is-checked':'')},
-          h('input',{type:'checkbox',checked:!!checked,onChange:()=>onToggle(row)}),
+        h('div',{className:'eva-fp-row'+(checked?' is-checked':''),onClick:()=>onToggle(row)},
+          h('span',{onClick:event=>event.stopPropagation()},h(evaForms.Checkbox,{'aria-label':row.name,checked:!!checked,onChange:()=>onToggle(row)})),
           avatarNode(row),
           h('span',{className:'eva-fp-info'},
             context,
@@ -610,8 +610,8 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
           h('button',{type:'button',className:'eva-fp-picker-control','aria-expanded':picker===id,onClick:event=>openPicker(id,event.currentTarget,options.length+(creatable?1:0))},
             h('span',{className:'eva-fp-picker-summary'},summary),evaForwardIcon('chevron-down',{size:14})),
           picker===id?h('div',{className:'eva-fp-picker-menu',role:'group','aria-label':'选择 '+group.name+' 的发送目标'},
-            options.map(option=>h('label',{key:option.id,className:'eva-fp-picker-option'},
-              h('input',{type:'checkbox',checked:entry.sessions.includes(option.id),onChange:()=>toggleGroupDestination(group,option.id)}),
+            options.map(option=>h('div',{key:option.id,className:'eva-fp-picker-option',onClick:()=>toggleGroupDestination(group,option.id)},
+              h('span',{onClick:event=>event.stopPropagation()},h(evaForms.Checkbox,{'aria-label':option.name,checked:entry.sessions.includes(option.id),onChange:()=>toggleGroupDestination(group,option.id)})),
               option.id==='self'?null:evaForwardIcon('corner-down-right',{size:14,className:'eva-fp-picker-option-icon'}),
               h('span',null,option.name))),
             creatable?(draftThread&&draftThread.groupId===group.id
@@ -635,8 +635,8 @@ function EvaForwardMessagesDialog({request,store,actorId,onClose,onSent}){
         h('button',{type:'button',className:'eva-fp-picker-control','aria-expanded':picker===id,onClick:event=>openPicker(id,event.currentTarget,all.length)},
           h('span',{className:'eva-fp-picker-summary'},summary),evaForwardIcon('chevron-down',{size:14})),
         picker===id?h('div',{className:'eva-fp-picker-menu',role:'group','aria-label':'选择 '+agent.name+' 的发送会话'},
-          all.map(destination=>h('label',{key:destination.id,className:'eva-fp-picker-option'},
-            h('input',{type:'checkbox',checked:entry.sessions.includes(destination.id),onChange:()=>toggleDestination(agent,destination.id)}),
+          all.map(destination=>h('div',{key:destination.id,className:'eva-fp-picker-option',onClick:()=>toggleDestination(agent,destination.id)},
+            h('span',{onClick:event=>event.stopPropagation()},h(evaForms.Checkbox,{'aria-label':destination.name,checked:entry.sessions.includes(destination.id),onChange:()=>toggleDestination(agent,destination.id)})),
             h('span',null,destination.name)))):null));
   };
   const createSession=agent=>{
@@ -1287,7 +1287,7 @@ function EvaConversationSearch({conversationId,conversationName,messages,onClose
       h('button',{type:'button',className:'eva-conversation-search__filter'+(filtersOpen?' is-open':'')+(filterCount?' has-value':''),'aria-expanded':filtersOpen,'aria-controls':'eva-conversation-search-filters',onClick:()=>setFiltersOpen(value=>!value)},'筛选',filterCount?h('span',{className:'eva-conversation-search__filter-count','aria-label':filterCount+' 项筛选'},filterCount):h(ChevronDown,{size:15,'aria-hidden':true}))),
     filtersOpen&&h('section',{id:'eva-conversation-search-filters',className:'eva-conversation-search__filters','aria-label':'筛选聊天记录'},
       h('div',{className:'eva-conversation-search__filters-head'},h('strong',null,'筛选'),h('button',{type:'button',disabled:filterCount===0,onClick:resetFilters},'重置')),
-      h('fieldset',null,h('legend',null,'发送人'),h('div',{className:'eva-conversation-search__sender-options'},senderOptions.map(option=>h('label',{key:option.key,className:senders.includes(option.key)?'is-selected':''},h('input',{type:'checkbox',checked:senders.includes(option.key),onChange:()=>toggleSender(option.key)}),option.sender.identityAppearance?h(EvaAIIdentityAvatar,{appearance:option.sender.identityAppearance,size:24}):h('img',{src:window.EvaAvatar.personUri(option.sender.uid||option.key),alt:''}),h('span',null,option.name),option.sender.ai&&h(AiBadge,{size:'small'}))),!senderOptions.length&&h('span',{className:'eva-conversation-search__no-sender'},'当前对话暂无发送人'))),
+      h('fieldset',null,h('legend',null,'发送人'),h('div',{className:'eva-conversation-search__sender-options'},senderOptions.map(option=>h('div',{key:option.key,className:senders.includes(option.key)?'is-selected':'',onClick:()=>toggleSender(option.key)},h('span',{onClick:event=>event.stopPropagation()},h(evaForms.Checkbox,{'aria-label':option.name,checked:senders.includes(option.key),onChange:()=>toggleSender(option.key)})),option.sender.identityAppearance?h(EvaAIIdentityAvatar,{appearance:option.sender.identityAppearance,size:24}):h('img',{src:window.EvaAvatar.personUri(option.sender.uid||option.key),alt:''}),h('span',null,option.name),option.sender.ai&&h(AiBadge,{size:'small'}))),!senderOptions.length&&h('span',{className:'eva-conversation-search__no-sender'},'当前对话暂无发送人'))),
       h('fieldset',null,h('legend',null,'时间顺序'),h('div',{className:'eva-conversation-search__choice-row'},[['newest','最新优先'],['oldest','最早优先']].map(([value,label])=>h('button',{key:value,type:'button','aria-pressed':sort===value,className:sort===value?'is-selected':'',onClick:()=>setSort(value)},label)))),
       h('fieldset',null,h('legend',null,'发送时间'),h('div',{className:'eva-conversation-search__choice-row'},[['all','全部时间'],['today','今天'],['7d','最近 7 天'],['30d','最近 30 天']].map(([value,label])=>h('button',{key:value,type:'button','aria-pressed':timeRange===value,className:timeRange===value?'is-selected':'',onClick:()=>setTimeRange(value)},label)))),
       h('button',{type:'button',className:'eva-conversation-search__filters-done',onClick:()=>setFiltersOpen(false)},'完成')),
@@ -1443,7 +1443,7 @@ function EvaThreadList({group,active,archived,hidden,store,actorId,onOpen,onCrea
      h('div',{className:'eva-thread-list-card-head'},h('button',{type:'button',className:'eva-thread-list-open',onClick:()=>onOpen(thread.id)},prefs.top&&h('span',{className:'eva-topic-pin','aria-label':'已置顶'},evaRailIcon('Pin')),compact&&selectedId===thread.id&&h(Check,{size:16,'aria-label':'当前子区'}),h('strong',null,thread.name),compact&&h(EvaUnreadBadge,{count:evaRecentUnread(store,actorId,thread),className:'eva-recent-topic-tabs__unread'+(store.conversationMuted(thread.id,actorId)?' is-muted':'')})),
       h(Dropdown,{trigger:'click',position:'bottomRight',clickToHide:true,render:h(Dropdown.Menu,null,
        ...evaTopicMenus({store,actorId,group,thread,onRename,onArchive}).map((item,index)=>item.separator?h(Dropdown.Divider,{key:'separator-'+index}):h(Dropdown.Item,{key:item.title,onClick:item.onClick,icon:item.icon},item.title)),
-       h(Dropdown.Item,{onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:!prefs.hidden})},prefs.hidden?'恢复显示':'隐藏子区'))},h(Button,{theme:'borderless',size:'small',icon:h(Ellipsis,{size:16}),'aria-label':'子区操作 '+thread.name}))),
+       h(Dropdown.Item,{onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:!prefs.hidden})},prefs.hidden?'恢复显示':'隐藏子区'))},h(Button,{type:'tertiary',theme:'borderless',size:'small',icon:h(Ellipsis,{size:16}),'aria-label':'子区操作 '+thread.name}))),
      !compact&&h('button',{type:'button',className:'eva-thread-list-summary',onClick:()=>onOpen(thread.id)},thread.last_message_content?(thread.last_message_sender_name?thread.last_message_sender_name+'：':'')+thread.last_message_content:'暂无消息'),
      !compact&&h('div',{className:'eva-thread-list-meta'},h('span',null,(thread.message_count||0)+' 条回复'),tab==='hidden'&&thread.status===2&&h('span',null,'已归档'),h('time',null,formatRelativeTime(thread.updated_at))),
      !compact&&tab==='hidden'&&h(Button,{theme:'borderless',size:'small',className:'eva-thread-list-restore',onClick:()=>store.setChatPreferences(thread.id,actorId,{hidden:false})},'恢复显示'));
@@ -2338,8 +2338,10 @@ function EvaAITeamPage() {
       'va=fa?fa.id:Sa.id,evaSelectionReset=reactExports.useEffect(()=>setEvaSelection(null),[va,evaActorId,Mt]),evaAiFilterReset=reactExports.useEffect(()=>setEvaHideAi(false),[va,evaActorId]),ca=', '会话切换清理多选');
     cut('hi=(ci,Zi,Fi)=>{ci=evaRenderableMessage(ci);',
       'hi=(ci,Zi,Fi,evaScope=va)=>{if(ci&&typeof ci==="object")ci={...ci,evaSelectionKey:evaSelectionMessageKey(evaScope,ci,Zi,Fi)};ci=evaRenderableMessage(ci);', '消息选择键限定会话');
-    cut('className:"wk-msg-row-checkbox",onClick:mr=>',
-      'className:"wk-msg-row-checkbox",role:"checkbox",tabIndex:0,"aria-checked":!!ut,"aria-label":"选择 "+gt+" 的消息",onKeyDown:event=>{if(event.key===" "||event.key==="Enter"){event.preventDefault();event.stopPropagation();Vt?.(!ut)}},onClick:mr=>', '消息多选键盘与状态语义');
+    const checkboxStart=source.indexOf('jt&&React.createElement("div",{className:"wk-msg-row-checkbox"'),checkboxEnd=source.indexOf(',React.createElement("div",{className:"wk-msg-row-avatar"',checkboxStart);
+    if(checkboxStart<0||checkboxEnd<checkboxStart)throw new Error('消息复选框替换边界不匹配');
+    cut(source.slice(checkboxStart,checkboxEnd),
+      'jt&&React.createElement("div",{className:"wk-msg-row-checkbox",onClick:event=>event.stopPropagation()},React.createElement(evaForms.Checkbox,{checked:!!ut,"aria-label":"选择 "+gt+" 的消息",onChange:event=>Vt?.(event.target.checked)}))', '消息多选使用公共 Semi Checkbox');
     cut('className:"wk-msg-row-body"},!ir&&rn?',
       'className:"wk-msg-row-body",inert:ir?"":void 0},!ir&&rn?', '多选时卡片内容不接受键盘操作');
     cut('hi(ci,Zi,Cs)', 'hi(ci,Zi,Cs,Es.id)', '子区侧栏独立选择范围');

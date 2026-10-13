@@ -43,7 +43,7 @@ test('关注与置顶图标在真实页面跟随亮暗主题和公共 Semi 主�
   const folder=await colors('.eva-personal-folder-menu .is-pinned');
   assert.equal(folder.color,folder.fill,'个人文件夹置顶图标的描边和实心一致');
   const folderToken=await page.evaluate(()=>{const probe=document.createElement('span');probe.style.color='var(--eva-action-primary)';document.body.append(probe);const color=getComputedStyle(probe).color;probe.remove();return color;});
-  assert.equal(folder.color,folderToken,'个人文件夹置顶图标使用语义主色');
+  assert.notEqual(folder.color,folderToken,'取消置顶是普通菜单命令，不使用主色');
   assert.deepEqual(errors,[]);
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });

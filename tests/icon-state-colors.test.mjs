@@ -19,11 +19,11 @@ const value=(rule,property)=>{
 test('已关注和已置顶状态由 Eva 语义蓝色驱动，普通操作不按填充形态批量染蓝',()=>{
  for(const [file,selector] of [
   ['prototype/036-project-directory-v3.css','.eva-project-follow-button.is-followed'],
-  ['prototype/039-team-message-project-recent.css','.eva-topic-pin'],
-  ['prototype/043-final-layout-convergence.css','.eva-personal-folder-menu .is-pinned'],
   ['prototype/043-final-layout-convergence.css','.eva-personal-thread__actions [aria-pressed="true"]'],
   ['prototype/048-gds-components.css','.semi-button-primary:is(.semi-button-light,.semi-button-borderless)'],
  ])assert.equal(value(ruleFor(file,selector),'color'),'var(--eva-action-primary)',selector);
+ assert.equal(value(ruleFor('prototype/039-team-message-project-recent.css','.eva-topic-pin'),'color'),'var(--eva-text-secondary)');
+ assert.equal(value(ruleFor('prototype/043-final-layout-convergence.css','.eva-personal-folder-menu button'),'color'),'var(--eva-text-primary)');
  assert.equal(value(ruleFor('prototype/050-file-library.css','.eva-drive__pin-button.is-pinned svg'),'fill'),'currentColor');
  assert.equal(value(ruleFor('prototype/036-project-directory-v3.css','.eva-project-follow-button'),'color'),'var(--semi-color-text-2, #8a8f99)');
 });

@@ -495,14 +495,10 @@ body [data-eva-unread].is-muted {
 .wk-reply-block[role="button"]:focus-visible { outline: 2px solid var(--eva-im-accent); outline-offset: 2px; }
 .eva-forward-host { position:fixed; inset:var(--topbar-height,37px) 0 0; pointer-events:none; z-index:1100; }
 .eva-forward-host .eva-fp-veil { pointer-events:auto; }
-.eva-im-bubble-row .wk-msg-row-checkbox:focus-visible { outline:2px solid var(--eva-im-accent); outline-offset:3px; border-radius:4px; }
 
 .eva-im-batch-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); color: var(--eva-text-primary); }
 .eva-im-batch-action > span:last-child { color: var(--eva-text-secondary); }
 .eva-im-batch-action:disabled .eva-im-batch-icon { opacity: .4; }
-.eva-im-bubble-row .wk-msg-row-checkbox-inner { box-sizing: border-box; width: 16px; height: 16px; border-radius: var(--eva-radius-small); }
-.eva-im-bubble-row .wk-msg-row-checkbox-inner svg { width: 9px; height: 7px; }
-.eva-im-bubble-row .wk-msg-row-checkbox-inner--checked { background: var(--eva-action-primary); border-color: var(--eva-action-primary); }
 .eva-im-batch-toolbar { position: relative; }
 .eva-im-merged-history { min-width: 200px; max-width: 480px; }
 .eva-im-merged-history summary { cursor: pointer; display: flex; flex-direction: column; gap: 6px; }

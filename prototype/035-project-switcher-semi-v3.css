@@ -138,3 +138,9 @@
     margin-inline-start: auto;
     flex: none;
   }
+
+/* Context help shares the project header; the active tab owns its destination. */
+.collab-tabs .eva-project-help { margin-inline-start:auto; flex:none; white-space:nowrap; display:inline-flex; align-items:center; gap:var(--eva-space-2); padding:var(--eva-space-2); color:var(--semi-color-text-2); font-size:var(--semi-font-size-regular); text-decoration:none; border-radius:var(--eva-radius-control); }
+.collab-tabs .eva-project-help:hover { color:var(--semi-color-text-0); background:var(--semi-color-fill-0); }
+.collab-tabs .eva-project-help:focus-visible { outline:2px solid var(--eva-border-focus); outline-offset:2px; }
+.collab-tabs .eva-project-archive-status + .eva-project-help { margin-inline-start:var(--eva-space-3); }

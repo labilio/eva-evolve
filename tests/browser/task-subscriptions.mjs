@@ -1,0 +1,96 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+test('Edge: subscriptions, true filters, view persistence and explicit opt-out',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:'msedge'});
+ try{
+  const page=await browser.newPage({viewport:{width:1440,height:960}}),errors=[];
+  page.on('pageerror',e=>{errors.push(e.message);console.error(e.stack)});
+  await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
+  await page.goto(origin+'/#/collab?evaProject=prod');await page.locator('.loop-board').waitFor();
+  const chip=name=>page.getByRole('button',{name,exact:true});
+  const toggle=async name=>{await chip(name).click();};
+  await chip('我订阅的').click();
+  await page.waitForFunction(()=>!document.querySelector('.loop-board')?.textContent.includes('SC-126'));
+  assert.match(await page.locator('.loop-board').innerText(),/SC-130/);assert.match(await page.locator('.loop-board').innerText(),/SC-137/);
+  await chip('我负责的').click();
+  assert.equal(await chip('我订阅的').getAttribute('aria-pressed'),'false');
+  assert.equal(await chip('我负责的').getAttribute('aria-pressed'),'true');
+  await chip('我负责的').click();
+  assert.equal(await chip('我负责的').getAttribute('aria-pressed'),'true','重复点击不取消当前切片');
+  assert.equal(await page.locator('.eva-task-quick-chips [aria-pressed="true"]').count(),1);
+  await page.waitForFunction(()=>!document.querySelector('.loop-board')?.textContent.includes('SC-130'));
+  await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
+  const panel=page.locator('.loop-filter-panel');
+  assert.equal(await panel.getByLabel('任务范围',{exact:true}).count(),0);
+  assert.match(await panel.locator('.semi-select').nth(2).innerText(),/王宜林/);
+  assert.equal(await panel.getByRole('checkbox',{name:'我订阅的',exact:true}).isChecked(),false);
+  await page.keyboard.press('Escape');
+  await chip('我订阅的').click();
+  assert.equal(await chip('我负责的').getAttribute('aria-pressed'),'false');
+  assert.equal(await page.locator('.eva-task-quick-chips [aria-pressed="true"]').count(),1);
+  await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
+  assert.doesNotMatch(await panel.locator('.semi-select').nth(2).innerText(),/王宜林/);
+  assert.equal(await panel.getByRole('checkbox',{name:'我订阅的',exact:true}).isChecked(),true);
+  await page.keyboard.press('Escape');
+  await chip('全部任务').click();await page.getByText('SC-126',{exact:true}).click();
+  await chip('订阅').waitFor();
+  assert.equal(await page.locator('.loop-idp__topbar .eva-task-subscription').count(),1);
+  assert.equal(await page.locator('.loop-idp__feed-head button').count(),0);
+  await page.locator('.loop-idp__newcomment .ProseMirror').first().fill('参与评论后自动订阅此任务。');
+  await page.getByRole('button',{name:'发送',exact:true}).click();await chip('已订阅').waitFor();
+  await toggle('已订阅');await chip('订阅').waitFor();
+  await toggle('订阅');await chip('已订阅').waitFor();
+  assert.equal(await chip('已订阅').getAttribute('aria-pressed'),'true');
+
+  for(const theme of ['light','dark']){
+   await page.evaluate(value=>window.EvaTheme.apply(value),theme);
+   const activeColor=await chip('已订阅').evaluate(el=>getComputedStyle(el).color);
+   for(const name of ['更多操作','切换全屏','关闭任务详情']){
+    assert.notEqual(await chip(name).evaluate(el=>getComputedStyle(el).color),activeColor,`${name}在${theme}保持中性色`);
+   }
+  }
+  await page.evaluate(()=>window.EvaTheme.apply('light'));
+  await page.screenshot({path:'/tmp/eva-task-subscription-header.png'});
+  await page.reload();await page.getByText('SC-126',{exact:true}).click();await chip('已订阅').waitFor();
+  await toggle('已订阅');await chip('订阅').waitFor();
+  const editor=page.locator('.loop-idp__newcomment .ProseMirror').first();
+  await editor.fill('取消订阅后再次评论，不应重新订阅。');await page.getByRole('button',{name:'发送',exact:true}).click();
+  await page.getByText('取消订阅后再次评论，不应重新订阅。',{exact:true}).waitFor();await chip('订阅').waitFor();
+  await page.reload();await page.getByText('SC-126',{exact:true}).click();await chip('订阅').waitFor();
+  await chip('关闭任务详情').click();await page.locator('.loop-board').waitFor();
+  await chip('我订阅的').click();
+  await page.waitForFunction(()=>!document.querySelector('.loop-board')?.textContent.includes('SC-126'));
+  await chip('任务视图：看板').click();await page.getByRole('menuitem',{name:'表格',exact:true}).click();await page.locator('.eva-task-table').waitFor();
+  await page.reload();await page.locator('.eva-task-table').waitFor();assert.equal(await chip('我订阅的').getAttribute('aria-pressed'),'true');
+  await chip('任务视图：表格').click();await page.getByRole('menuitem',{name:'层级',exact:true}).click();await page.locator('.eva-issue-hierarchy').waitFor();
+  assert.doesNotMatch(await page.locator('.eva-issue-hierarchy').innerText(),/SC-126/);
+  await page.goto(origin+'/#/collab?evaProject=official');await page.locator('.eva-issue-hierarchy').waitFor();
+  assert.doesNotMatch(await page.locator('.eva-issue-hierarchy').innerText(),/SC-126|SC-130|SC-137/);
+  await page.goto(origin+'/#/collab?evaProject=prod');await page.locator('.eva-issue-hierarchy').waitFor();
+  assert.equal(await chip('我订阅的').getAttribute('aria-pressed'),'true');
+  await page.screenshot({path:'/tmp/eva-task-follow-filters.png'});
+  await chip('全部任务').click();await page.getByText('SC-135',{exact:true}).click();
+  await page.locator('.loop-idp__topbar .eva-task-subscription').waitFor();
+  await page.setViewportSize({width:1000,height:700});
+  await page.evaluate(()=>window.EvaTheme.apply('dark'));
+  const subscription=page.locator('.loop-idp__topbar .eva-task-subscription');
+  await subscription.click({trial:true});
+  await page.screenshot({path:'/tmp/eva-task-subscription-header-dark.png'});
+  const subBox=await subscription.boundingBox(),moreBox=await chip('更多操作').boundingBox(),closeBox=await chip('关闭任务详情').boundingBox();
+  assert.ok(subBox.x>=0&&subBox.x+subBox.width<=moreBox.x+1,'长标题不能挤压或覆盖订阅按钮');
+  assert.ok(closeBox.x+closeBox.width<=1000,'窄窗口关闭按钮保持可见');
+  await page.screenshot({path:'/tmp/eva-task-subscription-header-dark.png'});
+  await page.setViewportSize({width:1440,height:960});
+  await chip('切换全屏').click();await subscription.waitFor();
+  assert.equal(await page.locator('.eva-task-subscription').count(),1);
+  await chip('切换全屏').click();await chip('关闭任务详情').click();
+  await subscription.waitFor({state:'detached'});
+  assert.equal(await page.locator('.eva-task-subscription').count(),0);
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

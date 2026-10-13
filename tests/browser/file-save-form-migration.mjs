@@ -13,7 +13,7 @@ test('会话文件保存：选择目标项目、保存成功、打开位置与�
   await page.locator('.wk-message-file-name').filter({hasText:'A-2409现场复核清单.md'}).click({button:'right'});
   await page.getByText('转发',{exact:true}).click();await page.locator('.eva-fp-modal').waitFor();
   await page.locator('.eva-forward-search input').fill('高志远');
-  await page.locator('.eva-fp-row').filter({hasText:'高志远'}).first().locator('input[type=checkbox]').check();
+  await page.locator('.eva-fp-row').filter({hasText:'高志远'}).first().locator('.semi-checkbox').click();
   await page.locator('.eva-fp-modal').getByRole('button',{name:'发送',exact:true}).click();await page.locator('.eva-fp-modal').waitFor({state:'detached'});
   await page.getByText('高志远',{exact:true}).first().click();
   await page.locator('.wk-message-file-name').filter({hasText:'A-2409现场复核清单.md'}).click({button:'right'});

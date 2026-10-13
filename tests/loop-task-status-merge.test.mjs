@@ -1,3 +1,4 @@
+import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -8,6 +9,7 @@ function setup(){
  const issues=[{id:'a',status:'backlog',identifier:'SC-1',workspace_id:'prod'},{id:'b',status:'todo'},{id:'c',status:'done'}];
  const ctx={currentSpaceId:()=> 'prod',scoped:()=>issues,ISSUES_BY_SPACE:{prod:issues},issues,
    evaMembers:()=>({store:{isProjectArchived:()=>false,actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
+ attachTaskSubscriptions(ctx);
  const start=source.indexOf('issuesOf='),end=source.indexOf('function groupIssuesByAssignee',start);
  vm.runInNewContext(source.slice(start,end),ctx);
  return ctx;
@@ -44,4 +46,14 @@ test('指派AI或修改任何任务状态不进入启动执行确认',()=>{
   assert.equal(ctx.needsConfirm({assigneeType:'agent',assigneeId:'ai',status}),false);
   assert.equal(ctx.statusMightTrigger({assignee_type:'agent',assignee_id:'ai',status:'backlog'},status),false);
  }
+});
+
+test('旧任务范围仅作一次兼容读取，保存仅含负责人和关注条件',()=>{
+ const ctx=setup(),start=source.indexOf('const STATUSES='),end=source.indexOf('function scopeToAssigneeTypes',start);
+ vm.runInNewContext(source.slice(start,end),ctx);
+ const mine=ctx.normalizeFilters({taskScope:'mine',statuses:['todo']},false);
+ assert.deepEqual(plain(mine.assigneeIds),['u-wangyilin']);assert.deepEqual(plain(mine.statuses),['todo']);
+ const related=ctx.normalizeFilters({taskScope:'related',assigneeIds:['u-wangyilin']},false);
+ assert.equal(related.subscribedOnly,true);assert.deepEqual(plain(related.assigneeIds),['u-wangyilin']);
+ assert.equal('taskScope' in ctx.serializeState({filters:related,scope:'all'},false).filters,false);
 });

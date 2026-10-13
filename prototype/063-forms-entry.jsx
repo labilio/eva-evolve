@@ -25,3 +25,8 @@ export {InfoList} from './063-info-list.jsx';
 export {IdentityList} from './063-identity-list.jsx';
 
 export {ContentStack} from './063-content-stack.jsx';
+
+export {EvaLucideIcon} from './063-lucide-icon.jsx';
+
+// Native Semi Checkbox consumes the shared semantic tokens without extra CSS.
+export {default as Checkbox} from '@douyinfe/semi-ui/lib/es/checkbox';

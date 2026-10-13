@@ -24,7 +24,8 @@ test('任务身份公共选择器面板支持搜索、分组上限与滚动', ()
 
 test('任务列表与详情均复用公共选择器，旧 Loop 项目页死代码已移除', () => {
   const listStart = source.indexOf('function IssueList(');
-  const listEnd = source.indexOf('const listSubscribers=', listStart);
+  const listEnd = source.indexOf('const listTimeline=', listStart);
+  assert.ok(listStart >= 0 && listEnd > listStart, '任务列表边界必须存在');
   const taskList = source.slice(listStart, listEnd);
   assert.equal((taskList.match(/React\.createElement\(AssigneePicker,/g) || []).length, 2,
     '任务列表逐项指派与批量指派都应复用公共选择器');

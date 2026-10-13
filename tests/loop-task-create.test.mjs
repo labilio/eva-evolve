@@ -1,3 +1,4 @@
+import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -15,6 +16,7 @@ function setup() {
   const scope = {humans:[{id:'owner'},{id:'member'}],cloneIds:['clone'],employeeIds:['employee']};
   const store = {isProjectArchived:()=>false,actorId:()=>store.snapshot().actorId,identityRecords:()=>({people:store.snapshot().people,clones:store.snapshot().clones}),projectRecord:id=>store.snapshot().projects[id],taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',people:[{id:'owner',name:'项目所有者'},{id:'member',name:'当前成员'},{id:'outsider',name:'外部联系人'}],clones:[{id:'clone',name:'成员分身'},{id:'clone2',name:'未入项目分身'}],projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
   const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{pinyinPro:{pinyin}},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
+ attachTaskSubscriptions(ctx);
   vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
   const helperStart=runtime.indexOf('function evaNormalizeTaskStatus'),helperEnd=runtime.indexOf('function evaNormalizeTaskList',helperStart);
   vm.runInNewContext(runtime.slice(helperStart,helperEnd),ctx);
@@ -82,4 +84,9 @@ test('归档只阻止目标项目创建，其他项目仍可创建',async()=>{
  await assert.rejects(s.ctx.createIssue({workspace_id:'prod',title:'冻结项目任务'}),/已归档/);
  assert.equal(s.lists.prod.length,1);
  assert.equal((await s.ctx.createIssue({workspace_id:'q',title:'正常项目任务'})).workspace_id,'q');
+});
+
+test('实际创建者即使选择了其他来源者和署名创建者也自动关注',async()=>{
+ const s=setup();const issue=await s.ctx.createIssue({title:'关注创建事件',source_id:'owner',creator_id:'owner'});
+ assert.equal(s.ctx.evaTaskSubscriptions().has(issue),true);
 });

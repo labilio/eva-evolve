@@ -2,6 +2,10 @@
 (function () {
   'use strict';
 
+  var checkboxServices = null;
+  var checkboxCleanups = [];
+  function clearCheckboxes() { checkboxCleanups.splice(0).forEach(function (cleanup) { cleanup(); }); }
+
   var currentTab = 'connectors';
   var currentFilter = 'all';
   var searchQuery = '';
@@ -128,9 +132,13 @@
 
   function openModal(html) {
     var layer = ensureModalLayer();
+    clearCheckboxes();
     if (layer.hidden) modalReturnFocus = document.activeElement;
     layer.innerHTML = '<section class="eva-center-modal" role="dialog" aria-modal="true" aria-labelledby="eva-center-modal-title">' + html + '</section>';
     layer.hidden = false;
+    layer.querySelectorAll('[data-center-checkbox]').forEach(function (host) {
+      checkboxCleanups.push(checkboxServices.mountCheckbox(host, {children: host.dataset.centerCheckbox, defaultChecked: host.hasAttribute('data-checked')}));
+    });
     layer.querySelectorAll('.eva-center-field').forEach(function (field, index) {
       var control = field.querySelector('input, select, textarea');
       var label = field.querySelector('label');
@@ -141,6 +149,7 @@
   }
 
   function closeModal() {
+    clearCheckboxes();
     var layer = ensureModalLayer();
     layer.hidden = true;
     layer.innerHTML = '';
@@ -179,7 +188,7 @@
   function openAuthorization(id) {
     var item = getItem(id);
     if (!item) return;
-    openModal(modalHead('连接' + item.name) + '<div class="eva-center-modal__body"><p>确认授权范围后建立连接。Demo 不会访问真实账号。</p><div class="eva-center-field"><label>账号</label><input value="demo@geely.com" aria-label="授权账号"></div><div class="eva-center-permissions"><label><input type="checkbox" checked>读取基础资料</label><label><input type="checkbox" checked>读取业务内容</label><label><input type="checkbox">允许写入或执行操作</label></div></div><footer class="eva-center-modal__footer"><button class="eva-center-secondary" type="button" data-center-close>取消</button><button class="eva-center-primary" type="button" data-center-authorize="' + esc(id) + '">授权并连接</button></footer>');
+    openModal(modalHead('连接' + item.name) + '<div class="eva-center-modal__body"><p>确认授权范围后建立连接。Demo 不会访问真实账号。</p><div class="eva-center-field"><label>账号</label><input value="demo@geely.com" aria-label="授权账号"></div><div class="eva-center-permissions"><div data-center-checkbox="读取基础资料" data-checked></div><div data-center-checkbox="读取业务内容" data-checked></div><div data-center-checkbox="允许写入或执行操作"></div></div></div><footer class="eva-center-modal__footer"><button class="eva-center-secondary" type="button" data-center-close>取消</button><button class="eva-center-primary" type="button" data-center-authorize="' + esc(id) + '">授权并连接</button></footer>');
   }
 
   function createFields(tab, sourceMode) {
@@ -307,13 +316,16 @@
     }
   });
 
-  window.__evaNativePages.register('connection-center', function (host) {
+  window.__evaNativePages.register('connection-center', function (host, services) {
+    checkboxServices = services;
     var center = ensureShell();
     host.appendChild(center);
     center.classList.add('eva-connection-center--native');
     center.hidden = false;
     render();
     return function () {
+      clearCheckboxes();
+      checkboxServices = null;
       var layer = document.querySelector('.eva-center-modal-layer');
       if (layer) {
         layer.hidden = true;

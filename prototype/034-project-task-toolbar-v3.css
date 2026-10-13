@@ -1,12 +1,12 @@
 
   /* 项目任务页：使用 GDS 的工具栏层级；项目任务仍保留高密度布局。 */
-  .loop-page__toolbar:has(.eva-task-scope-chips) {
+  .loop-page__toolbar:has(.eva-task-quick-chips) {
     min-height: 32px;
     gap: 8px;
     padding: 2px 0 4px;
   }
 
-  .eva-task-scope-chips {
+  .eva-task-quick-chips {
     box-sizing: border-box;
     min-height: 32px;
     flex: 0 0 auto;
@@ -17,7 +17,7 @@
     background: transparent;
   }
 
-  .eva-task-scope-chips .semi-button.eva-task-scope-chip {
+  .eva-task-quick-chips .semi-button.eva-task-quick-chip {
     height: 32px;
     padding: 0 12px;
     border: 1px solid var(--eva-border-faint);
@@ -27,21 +27,21 @@
     font-size: var(--gds-type-label-font-size);
     font-weight: var(--gds-font-weight-medium);
   }
-  .eva-task-scope-chips .semi-button.eva-task-scope-chip:hover {
+  .eva-task-quick-chips .semi-button.eva-task-quick-chip:hover {
     background: var(--gds-color-surface-subtle);
   }
-  .eva-task-scope-chips .semi-button.eva-task-scope-chip[aria-pressed="true"] {
+  .eva-task-quick-chips .semi-button.eva-task-quick-chip[aria-pressed="true"] {
     color: var(--eva-action-primary);
     background: var(--eva-action-primary-08);
   }
 
-  .loop-page__toolbar:has(.eva-task-scope-chips) .loop-toolbtn svg {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .loop-toolbtn svg {
     width: var(--gds-icon-size-content);
     height: var(--gds-icon-size-content);
     flex: none;
   }
 
-  .loop-page__toolbar:has(.eva-task-scope-chips) .loop-toolbtn {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .loop-toolbtn {
     box-sizing: border-box;
     flex: 0 0 auto;
     height: 32px;
@@ -56,40 +56,40 @@
     line-height: var(--gds-type-label-line-height);
   }
 
-  .loop-page__toolbar:has(.eva-task-scope-chips) .loop-toolbtn:hover {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .loop-toolbtn:hover {
     background: var(--gds-color-surface-primary);
     color: var(--gds-color-text-primary);
   }
 
-  .loop-page__toolbar:has(.eva-task-scope-chips) .loop-toolbtn:focus-visible {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .loop-toolbtn:focus-visible {
     outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
     outline-offset: 2px;
   }
 
-  .loop-page:has(.eva-task-scope-chips) .loop-btn--primary {
+  .loop-page:has(.eva-task-quick-chips) .loop-btn--primary {
     border-color: var(--eva-action-primary-solid);
     background: var(--eva-action-primary-solid);
     color: var(--eva-action-primary-solid-text);
   }
 
-  .loop-page:has(.eva-task-scope-chips) .loop-btn--primary:hover {
+  .loop-page:has(.eva-task-quick-chips) .loop-btn--primary:hover {
     border-color: var(--eva-action-primary-solid-hover);
     background: var(--eva-action-primary-solid-hover);
   }
 
-  .loop-page__toolbar:has(.eva-task-scope-chips) > button:last-child {
+  .loop-page__toolbar:has(.eva-task-quick-chips) > button:last-child {
     flex: 0 0 auto;
     min-height: 32px;
     white-space: nowrap;
   }
 
   @media (max-width: 880px) {
-    .loop-page__toolbar:has(.eva-task-scope-chips) {
+    .loop-page__toolbar:has(.eva-task-quick-chips) {
       flex-wrap: wrap;
       row-gap: 8px;
     }
 
-    .loop-page__toolbar:has(.eva-task-scope-chips) .loop-page__spacer {
+    .loop-page__toolbar:has(.eva-task-quick-chips) .loop-page__spacer {
       min-width: 16px;
     }
 
@@ -97,12 +97,12 @@
   }
 
   /* 任务筛选：页面级快捷筛选按钮与生效条件条，沿用工具栏/GDS 语义 token。 */
-  .loop-page__toolbar:has(.eva-task-scope-chips) .eva-task-quickfilter {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .eva-task-quickfilter {
     flex: 0 0 auto;
   }
 
   /* 生效条件条并入第 1 行：限宽 + 内部横向滚动，不换行。 */
-  .loop-page__toolbar:has(.eva-task-scope-chips) .eva-task-filter-chips {
+  .loop-page__toolbar:has(.eva-task-quick-chips) .eva-task-filter-chips {
     flex: 0 1 auto;
     min-width: 0;
     max-width: min(640px, 52%);
@@ -214,7 +214,7 @@
   }
 
 /* Task views share GDS typography and spacing, while preserving status groups. */
-.loop-page:has(.eva-task-scope-chips) { font: 400 14px/22px var(--eva-font-sans); }
+.loop-page:has(.eva-task-quick-chips) { font: 400 14px/22px var(--eva-font-sans); }
 .loop-page .loop-board { gap: 16px; overscroll-behavior: contain; }
 .loop-page .loop-board__col { border-radius: var(--eva-radius-panel); padding: 0 12px 12px; background: var(--eva-surface-subtle); border-color: var(--eva-border-faint); }
 .loop-page .loop-board__col-head { min-height: 44px; font: 500 14px/22px var(--eva-font-sans); }
@@ -300,6 +300,7 @@
 /* Task detail remains a content pane plus its existing property inspector. */
 .loop-idp { font: 400 14px/22px var(--eva-font-sans); }
 .loop-idp .loop-idp__topbar { min-height: 52px; box-sizing: border-box; padding-inline: 24px; }
+.loop-idp .eva-task-subscription { flex-shrink: 0; white-space: nowrap; }
 .loop-idp .loop-idp__main { padding: 24px 24px 48px; }
 .loop-idp .loop-idp__main > * { max-width: var(--eva-main-col-w); }
 .loop-idp .loop-idp__title { display: block; box-sizing: border-box; width: 100%; min-height: 40px; overflow: hidden; resize: none; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 16px/24px var(--eva-font-sans); }
@@ -862,5 +863,3 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .loop-filter-panel .semi-select { min-height:32px; }
 .loop-filter-panel .semi-datepicker { min-width:0; }
 .eva-task-filter-identity { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
-
-.eva-task-scope-help { color:var(--eva-text-muted); font-size:var(--gds-type-label-font-size); line-height:1.5; }

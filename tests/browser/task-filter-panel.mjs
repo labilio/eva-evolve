@@ -15,7 +15,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');
   await page.locator('.loop-board').waitFor();
-  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.getByRole('button',{name:'任务视图：看板'}).click();await page.getByRole('menuitem',{name:'表格',exact:true}).click();
   await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
   const panel=page.locator('.loop-filter-panel');
   const offsets=await panel.locator('.semi-select-multiple').evaluateAll(els=>els.map(el=>{
@@ -105,8 +105,9 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   const panelBox=await panel.boundingBox();
   assert.ok(panelBox.x>=0&&panelBox.x+panelBox.width<=1000,'窄窗口面板不横向溢出');
   await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
-  await page.getByRole('tab',{name:'看板',exact:true}).click();
-  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.getByRole('button',{name:'任务视图：表格'}).click();await page.getByRole('menuitem',{name:'看板',exact:true}).click();
+  await page.getByRole('menuitem',{name:'看板',exact:true}).waitFor({state:'hidden'});await page.locator('.loop-board').waitFor();
+  await page.getByRole('button',{name:'任务视图：看板'}).click();await page.getByRole('menuitem',{name:'表格',exact:true}).click();
   await page.locator('.eva-task-table__row').first().waitFor();
   assert.equal(await page.locator('.loop-filter-panel:visible').count(),0,'视图往返不遗留浮层');
   assert.deepEqual(errors,[]);

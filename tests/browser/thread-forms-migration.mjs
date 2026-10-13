@@ -17,7 +17,7 @@ test('子区创建公共表单空提交、Enter保存、重新读取',()=>run(as
 }));
 test('转发内新建子区用公共表单，提交不关闭父转发面板',()=>run(async(page,origin)=>{
  await page.goto(origin+'/#/messages');await page.locator('.ch-list').getByText('采购与招投标',{exact:true}).click();await page.locator('.eva-im-bubble-row').first().click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('转发',{exact:true}).click();
- await page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({hasText:'采购与招投标'}).locator('input[type=checkbox]').check();
+ await page.locator('.eva-fp-candidates .eva-fp-row-wrap').filter({hasText:'采购与招投标'}).locator('.semi-checkbox').click();
  await page.locator('.eva-fp-selected--group .eva-fp-row-toggle').click();await page.locator('.eva-fp-picker-control').click();await page.locator('.eva-fp-picker-new-btn').click();
  const modal=page.locator('.eva-fp-modal');await modal.locator('.eva-fp-picker-new').getByRole('button',{name:'确定',exact:true}).click();await modal.getByText('请输入子区名称',{exact:true}).waitFor();
  const name=modal.getByRole('textbox',{name:'新子区名称',exact:true});await name.fill('转发内表单回归');await name.press('Enter');await modal.locator('.eva-fp-picker-new').waitFor({state:'hidden'});await modal.locator('.eva-fp-picker-option').filter({hasText:'转发内表单回归'}).waitFor();

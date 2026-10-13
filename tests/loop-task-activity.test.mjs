@@ -1,3 +1,4 @@
+import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -39,6 +40,7 @@ function setup() {
     evaIssueDescendantIds: () => new Set(),
     evaResolveTaskIdentity: id => people[id] && {type: 'member', name: people[id].name},
   };
+ attachTaskSubscriptions(ctx);
   vm.runInNewContext('var ' + source.slice(updateStart, updateEnd), ctx);
   vm.runInNewContext('var ' + source.slice(timelineStart, timelineEnd), ctx);
   return {ctx, issue, issues};
@@ -86,4 +88,12 @@ test('field-change activity uses spaces around old and new values', () => {
   for (const [entry, expected] of cases) {
     assert.equal(ctx.evaTaskActivityText(entry), expected);
   }
+});
+
+test('实际改派建立关注，取消后再改派不恢复关注',async()=>{
+ const {ctx,issue}=setup(),store=ctx.evaTaskSubscriptions();
+ assert.equal(store.has(issue),false);
+ await ctx.updateIssue(issue.id,{assignee_id:'u-wangyilin'});assert.equal(store.has(issue),true);
+ await ctx.updateIssue(issue.id,{assignee_id:'u-zhouyuan'});assert.equal(store.has(issue),true);
+ store.set(issue,false);await ctx.updateIssue(issue.id,{assignee_id:'u-wangyilin'});assert.equal(store.has(issue),false);
 });

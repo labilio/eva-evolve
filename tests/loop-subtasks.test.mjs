@@ -1,3 +1,4 @@
+import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -28,6 +29,7 @@ function setup() {
   const helperStart = runtime.indexOf('function evaIssueChildrenOf(');
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  attachTaskSubscriptions(ctx);
   vm.runInNewContext(runtime.slice(helperStart, helperEnd), ctx);
   const statusHelperStart = runtime.indexOf('function evaNormalizeTaskStatus');
   const statusHelperEnd = runtime.indexOf('function evaNormalizeTaskList', statusHelperStart);

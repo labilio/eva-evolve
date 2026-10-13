@@ -67,14 +67,6 @@
 .eva-task-table__td--add{width:auto;min-width:0}
 .eva-task-table__row:hover .eva-task-table__td:not(.eva-task-table__td--add){background-image:linear-gradient(var(--semi-color-fill-0,rgba(46,50,56,.05)),var(--semi-color-fill-0,rgba(46,50,56,.05)))}
 .eva-task-table__row.is-selected .eva-task-table__td:not(.eva-task-table__td--add){background-image:linear-gradient(var(--semi-color-fill-1,rgba(46,50,56,.09)),var(--semi-color-fill-1,rgba(46,50,56,.09)))}
-/* 复选框 hover：Semi 的 `.semi-checkbox-inner-display:hover{background:transparent}` 会盖掉选中态的
-   主色填充、未选中态同时丢掉边框环（未选中 hover 填充又与行悬停底色同为 --semi-color-fill-0），
-   导致悬停时复选框"消失"。在表格作用域内用更高优先级保住可见形态：未选中保留边框环并加深，
-   选中保留主色填充。 */
-.eva-task-table__td--select .semi-checkbox-unChecked:hover .semi-checkbox-inner-display,
-.eva-task-table__th--select .semi-checkbox-unChecked:hover .semi-checkbox-inner-display{background-color:transparent;box-shadow:inset 0 0 0 1px var(--semi-color-text-2,#6b6f76)}
-.eva-task-table__td--select .semi-checkbox-checked:hover .semi-checkbox-inner-display,
-.eva-task-table__th--select .semi-checkbox-checked:hover .semi-checkbox-inner-display{background-color:var(--semi-color-primary,#1563eb);box-shadow:inset 0 0 0 1px var(--semi-color-primary,#1563eb)}
 .eva-task-table__row{cursor:pointer}
 .eva-task-table__check{display:flex;align-items:center;justify-content:center;height:100%;padding:0}
 

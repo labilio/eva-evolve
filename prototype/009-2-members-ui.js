@@ -102,7 +102,7 @@
         onCreated(role);
       }});
       return h(Form,{...submission.formProps,className:'eva-role-create'},
-        h('div',{className:'eva-role-create-heading'},h('label',{htmlFor:'eva-new-project-role',className:'eva-role-field-label'},'新建角色'),h(Button,{theme:'borderless',size:'small',onClick:onCancel},'取消新建')),
+        h('div',{className:'eva-role-create-heading'},h('label',{htmlFor:'eva-new-project-role',className:'eva-role-field-label'},'新建角色'),h(Button,{type:'tertiary',theme:'borderless',size:'small',onClick:onCancel},'取消新建')),
         h('div',{className:'eva-role-create-row'},
         h(Form.Input,{field:'name',noLabel:true,id:'eva-new-project-role',autoFocus:true,'aria-label':'新角色名称',maxLength:20,placeholder:'例如：产品、前端',rules:[{required:true,whitespace:true,message:'请输入角色名称'}],onKeyDown:e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();onCancel();}}}),
         h(Button,{theme:'solid',htmlType:'submit',loading:submission.busy},'创建并选中')),
