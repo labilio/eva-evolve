@@ -30,3 +30,7 @@ export {EvaLucideIcon} from './063-lucide-icon.jsx';
 
 // Native Semi Checkbox consumes the shared semantic tokens without extra CSS.
 export {default as Checkbox} from '@douyinfe/semi-ui/lib/es/checkbox';
+
+export {TaskBreadcrumb} from "./063-task-breadcrumb.jsx";
+export {Notification,Typography,Space} from './063-notification.jsx';
+export {notifyTaskCreated} from './063-task-created-notification.jsx';

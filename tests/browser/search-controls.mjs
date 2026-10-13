@@ -594,7 +594,8 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.locator('.collab-frame').waitFor();
   await page.getByRole('tab', { name: /^任务/ }).click();
-  await page.getByRole('tab', { name: '表格', exact: true }).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   await page.locator('.eva-task-table__grid').waitFor();
   await page.waitForTimeout(400);
 

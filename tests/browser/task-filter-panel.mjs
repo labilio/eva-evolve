@@ -25,7 +25,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   assert.ok(offsets.every(n=>n<1),'全部多选提示应垂直居中：'+offsets);
   // 展开态必须使用任务业务视觉，而非只有纯文本。
   for (const [index, texts, glyph] of [[0,['待规划','待办','进行中','审核中','已完成','受阻','已取消'],'svg'],[1,['无','紧急','高','中','低'],'svg'],[4,null,'.eva-task-label-chip']]) {
-   const field=panel.locator('.semi-select').nth(index);
+   const field=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:new RegExp('^'+({0:'状态',1:'优先级',4:'标签'}[index])+'$')})}).locator('.semi-select');
    await field.click();
    const rows=page.locator('.semi-select-option-list:visible [role="option"]');
    await page.waitForFunction(()=>{const el=document.querySelector('.eva-select-option');if(!el)return false;let n=el,v=1;while(n){v*=Number(getComputedStyle(n).opacity);n=n.parentElement}return v>0.99},{},{timeout:3000});
@@ -36,13 +36,13 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
    assert.ok(await field.locator(glyph).count()>0,'已选回填保留业务视觉');
    await panel.locator('.loop-filter-panel__clear').click();
   }
-  const assignee=panel.locator('.semi-select').nth(2);
+  const assignee=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:/^负责人$/})}).locator('.semi-select');
   await assignee.click();
   const options=page.locator('.semi-select-option-list:visible [role="option"]');
   const expected=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot();return s.projects.prod.humans.map(h=>s.people.find(p=>p.id===h.id).name)});
-  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),expected.sort(),'负责人只能是项目联系人');
+  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),["无负责人",...expected].sort(),'负责人候选为无负责人及项目联系人');
   assert.equal(await options.locator('img').count(),expected.length,'每个候选都有头像');
-  const inset=await options.first().evaluate(el=>{
+  const inset=await options.filter({has:page.locator("img")}).first().evaluate(el=>{
    const r=el.getBoundingClientRect(),a=el.querySelector('img').getBoundingClientRect();return (a.x-r.x)/(r.width/el.offsetWidth);
   });
   assert.ok(inset<=12,'头像只保留标准菜单行内距，不能额外预留勾选槽：'+inset);
@@ -64,7 +64,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await panel.locator('.loop-filter-panel__head').click();
   assert.match(await page.locator('.eva-task-filter-chips').innerText(),/何静/);
   await panel.locator('.loop-filter-panel__clear').click();
-  const creator=panel.locator('.semi-select').nth(3);
+  const creator=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:/^创建者$/})}).locator('.semi-select');
   await creator.click();
   const expectedCreators=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot(),p=s.projects.prod;return [...s.people.map(p=>p.id),...p.cloneIds,...p.employeeIds]});
   const creatorIds=await options.locator('[data-identity-id]').evaluateAll(els=>els.map(el=>el.dataset.identityId));

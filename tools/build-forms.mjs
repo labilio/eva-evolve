@@ -4,7 +4,7 @@ import {typography,floatingSurface,infoListTheme} from '../prototype/063-ui-them
 import { build } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
-import {buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme,buildPopconfirmTheme,buildReadOnlyTagTheme} from './build-dialog-theme.mjs';
+import {buildNotificationTheme,buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme,buildPopconfirmTheme,buildReadOnlyTagTheme} from './build-dialog-theme.mjs';
 
 // Compile the official Semi Form; React/ReactDOM are supplied by Eva's existing
 // runtime. Never bundle a second renderer or run a compiler in the browser.
@@ -50,3 +50,5 @@ fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildCardTheme
 fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildReadOnlyTagTheme());
 
 fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildComponentTheme('list',infoListTheme,'.eva-info-list'));
+
+fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildNotificationTheme());

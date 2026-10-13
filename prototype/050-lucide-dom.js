@@ -25,6 +25,11 @@
   var NODES = {
     // lucide-react 0.577.0, icons/circle-question-mark.js (ISC).
     'circle-question-mark': [["circle", {cx:"12",cy:"12",r:"10",key:"1mglay"}], ["path", {d:"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3",key:"1u773s"}], ["path", {d:"M12 17h.01",key:"p32p05"}]],
+
+    // Notification status icons: official lucide-icons/lucide icons (ISC).
+    'info': [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["path", {"d": "M12 16v-4"}], ["path", {"d": "M12 8h.01"}]],
+    'triangle-alert': [["path", {"d": "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}], ["path", {"d": "M12 9v4"}], ["path", {"d": "M12 17h.01"}]],
+    'circle-alert': [["circle", {"cx": "12", "cy": "12", "r": "10"}], ["line", {"x1": "12", "x2": "12", "y1": "8", "y2": "12"}], ["line", {"x1": "12", "x2": "12.01", "y1": "16", "y2": "16"}]],
     'pin': [["path",{d:"M12 17v5",key:"pin-stem"}],["path",{d:"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z",key:"pin-head"}]],
     'trash-2': [["path",{d:"M10 11v6",key:"nco0om"}],["path",{d:"M14 11v6",key:"outv1u"}],["path",{d:"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6",key:"miytrc"}],["path",{d:"M3 6h18",key:"d0wm0j"}],["path",{d:"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",key:"e791ji"}]],
     'crosshair': [["circle", {cx:"12", cy:"12", r:"10"}], ["line", {x1:"22", x2:"18", y1:"12", y2:"12"}], ["line", {x1:"6", x2:"2", y1:"12", y2:"12"}], ["line", {x1:"12", x2:"12", y1:"6", y2:"2"}], ["line", {x1:"12", x2:"12", y1:"22", y2:"18"}]],

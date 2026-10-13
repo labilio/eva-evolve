@@ -1,0 +1,124 @@
+import {settleMotion} from '../helpers/settle-motion.mjs';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+
+test('Edge：详情只显示直接子任务，进度、编辑、逐级导航及空状态一致',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{
+  const page=await browser.newPage({viewport:{width:1440,height:960}}),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-101');
+  const section=page.locator('.eva-loop-subtasks'),rows=section.getByRole('listitem');
+  await rows.first().waitFor();
+  assert.equal(await rows.count(),3);
+  assert.doesNotMatch(await section.innerText(),/SC-112|SC-113|SC-114|开始分解/);
+  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'1/3');
+  assert.equal(await section.getByRole('button',{name:'添加子任务',exact:true}).count(),1);
+  await section.getByRole('button',{name:'子任务',exact:true}).press('Enter');
+  assert.equal(await rows.count(),0);
+  assert.equal(await section.locator('.eva-loop-subtasks__count').innerText(),'1/3');
+  await section.getByRole('button',{name:'子任务',exact:true}).click();
+  await page.getByRole('button',{name:'SC-110 状态',exact:true}).click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('已完成',{exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='2/3');
+  await page.locator('.eva-task-enum-menu:visible').waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'SC-110 状态',exact:true}).click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('已取消',{exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='1/3');
+  await page.locator('.eva-task-enum-menu:visible').waitFor({state:'hidden'});
+  assert.equal(await section.getByRole('button',{name:/优先级/}).count(),0);
+  const assignee=rows.filter({hasText:'SC-110'}).locator('.loop-assignee-trigger');
+  await assignee.click();
+  const memberSearch=page.locator('.eva-task-assignee-menu:visible input');
+  await memberSearch.fill('王宜林');
+  await page.locator('.eva-task-assignee-menu:visible .eva-task-assignee-scroll .semi-dropdown-item').filter({hasText:'王宜林'}).click();
+  await page.locator('.eva-task-assignee-menu:visible').waitFor({state:'hidden'});
+  assert.match(await assignee.innerText(),/王宜林/);
+  await page.getByRole('button',{name:/打开任务 SC-111 /}).click();
+  await page.getByRole('button',{name:/打开任务 SC-112 /}).waitFor();
+  assert.equal(await rows.count(),1);
+  assert.doesNotMatch(await section.innerText(),/SC-113|SC-114/);
+  await page.getByRole('button',{name:/打开任务 SC-112 /}).click();
+  await page.getByRole('button',{name:/打开任务 SC-113 /}).waitFor();
+  await page.getByRole('button',{name:/打开任务 SC-113 /}).click();
+  await page.getByRole('button',{name:/打开任务 SC-114 /}).waitFor();
+  await page.getByRole('button',{name:/打开任务 SC-114 /}).click();
+  await section.getByRole('button',{name:'添加子任务',exact:true}).waitFor();
+  assert.equal(await rows.count(),0);
+  assert.equal(await section.locator('.eva-loop-subtasks__count').count(),0);
+  await section.getByRole('button',{name:'添加子任务',exact:true}).click();
+  const modal=page.locator('.eva-loop-task-create');
+  await modal.waitFor();
+  assert.match(await modal.innerText(),/SC-114/);
+  await modal.locator('.loop-ci__title textarea').fill('验证直接子任务归属');
+  await modal.getByRole('button',{name:'创建',exact:true}).click();
+  await section.getByRole('button',{name:/打开任务 .*验证直接子任务归属/}).waitFor();
+  assert.equal(await rows.count(),1);
+  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'0/1');
+  await page.setViewportSize({width:1000,height:800});
+  assert.ok(await section.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'窄窗口列表不横向溢出');
+  await page.getByRole('button',{name:'关闭任务详情'}).click();
+  await page.getByRole('button',{name:'任务视图：看板'}).click();
+  await page.getByRole('menuitem',{name:'层级',exact:true}).click();
+  const hierarchy=page.getByRole('tree',{name:'任务层级'});
+  await hierarchy.waitFor();
+  for(const identifier of ['SC-111','SC-112','SC-113']){
+   const row=hierarchy.getByRole('treeitem').filter({has:page.locator('.eva-issue-hierarchy__id',{hasText:identifier})});
+   await row.getByRole('button',{name:'展开子任务',exact:true}).click();
+  }
+  assert.match(await hierarchy.innerText(),/SC-114/,'完整层级仍可展开到第四层');
+  await hierarchy.locator('.eva-issue-hierarchy__main').filter({hasText:'SC-101'}).click();
+  await section.waitFor();
+  await page.evaluate(()=>{const store=window.__evaGetFileContext().store;store.setProjectArchived('prod',store.actorId(),true)});
+  await page.waitForFunction(()=>!document.querySelector('.eva-loop-subtasks__add'));
+  assert.equal(await section.getByRole('button',{name:'SC-110 状态',exact:true}).count(),0);
+  await section.getByRole('button',{name:/打开任务 SC-111 /}).click();
+  await section.getByRole('button',{name:/打开任务 SC-112 /}).waitFor();
+  assert.equal(await section.getByRole('button',{name:'添加子任务',exact:true}).count(),0);
+  await page.evaluate(()=>{const store=window.__evaGetFileContext().store;store.setProjectArchived('prod',store.actorId(),false)});
+  await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-101');
+  await page.reload();
+  await rows.first().waitFor();
+  await page.setViewportSize({width:1440,height:960});
+  await settleMotion(page);
+  await page.screenshot({path:'/tmp/eva-direct-subtasks.png'});
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});
+
+test('Edge：表格直接子任务进度与详情一致，搜索不改变分母，明暗态可读',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  page.setDefaultTimeout(10000);
+  await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=tasks`);
+  await page.getByRole('button',{name:'任务视图：看板'}).click();
+  await page.getByRole('menuitem',{name:'表格',exact:true}).click();
+  await page.getByRole('button',{name:'配置列',exact:true}).click();
+  await page.getByRole('option',{name:'子任务进度',exact:true}).click();
+  await page.getByRole('textbox',{name:'搜索列',exact:true}).press('Escape');
+  const root=page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:/^SC-101$/})});
+  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/3');
+  await page.getByRole('textbox',{name:'搜索任务',exact:true}).fill('SC-101');
+  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/3');
+  await root.locator('.eva-task-table__title-btn').click();
+  const section=page.locator('.eva-loop-subtasks');
+  await section.waitFor();
+  for(const theme of ['light','dark']){
+   await page.evaluate(theme=>window.EvaTheme.apply(theme),theme);
+   await page.waitForFunction(theme=>document.documentElement.dataset.theme===theme,theme);
+   const colors=await section.locator('.eva-loop-subtasks__count').first().evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));
+   assert.notEqual(colors.color,colors.background);
+   await settleMotion(page);
+   await page.screenshot({path:`/tmp/eva-direct-${theme}.png`});
+  }
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

@@ -40,16 +40,14 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   await page.getByRole('tab',{name:/^任务/}).click();
   await page.getByText('完成本季度间接采购需求归集',{exact:true}).click();
   const detail=page.locator('.loop-idp').last();
-  const tree=detail.locator('.eva-loop-subtask-tree');
-  await tree.waitFor();
-  assert.match(await tree.innerText(),/SC-113/,'前3层子任务保持可见');
-  assert.doesNotMatch(await tree.innerText(),/SC-114/,'第4层初始收起');
-  await detail.getByRole('button',{name:'展开全部层级',exact:true}).click();
-  assert.match(await tree.innerText(),/SC-114/,'展开全部显示深层子任务');
-  await detail.getByRole('button',{name:'收起 SC-113 的子任务',exact:true}).click();
-  assert.doesNotMatch(await tree.innerText(),/SC-114/,'逐节点收起仍有效');
-  await detail.getByRole('button',{name:'展开 SC-113 的子任务',exact:true}).click();
-  assert.match(await tree.innerText(),/SC-114/);
+  const children=detail.locator('.loop-subissues');
+  await children.waitFor();
+  assert.match(await children.innerText(),/SC-111/,'直接子任务保持可见');
+  assert.doesNotMatch(await children.innerText(),/SC-112|SC-113|SC-114/,'后代只在层级视图或各自父任务详情查看');
+  await detail.getByRole('button',{name:'子任务',exact:true}).click();
+  assert.equal(await children.count(),0,'支持折叠子任务列表');
+  await detail.getByRole('button',{name:'子任务',exact:true}).click();
+  await children.waitFor();
   await page.goto(origin+'/#/contacts');
   await page.locator('.eva-contacts__columns').waitFor();
   const headerSpacing=await page.locator('.eva-contacts').evaluate(e=>{

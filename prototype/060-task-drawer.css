@@ -44,7 +44,7 @@
   box-shadow: var(--eva-shadow-drawer);
   overflow-y: auto;
   transform: none;
-  transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: transform var(--eva-drawer-duration) var(--eva-drawer-easing);
 }
 
 /* 首次挂载的起始态：从右侧滑入 */

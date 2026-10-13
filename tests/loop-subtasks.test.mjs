@@ -98,18 +98,14 @@ test('供应链演示数据提供超过默认展示深度的四级子任务链�
   for(const issue of issues)assert.ok(issue.due_date===null||/^2026-\d{2}-\d{2}$/.test(issue.due_date),issue.identifier+': 截止日期格式');
 });
 
-test('任务详情默认展示前三层，并只折叠仍有后代的第三层节点',()=>{
-  const {ctx}=setup(),issues=[
-    {id:'root',parent_issue_id:null},
-    {id:'level-1',parent_issue_id:'root'},
-    {id:'level-2',parent_issue_id:'level-1'},
-    {id:'level-3',parent_issue_id:'level-2'},
-    {id:'level-4',parent_issue_id:'level-3'},
-    {id:'level-5',parent_issue_id:'level-4'},
-    {id:'level-3-leaf',parent_issue_id:'level-2'},
-  ];
-  assert.deepEqual([...ctx.evaIssueDefaultCollapsedIds('root',issues)],['level-3']);
-  assert.deepEqual([...ctx.evaIssueDefaultCollapsedIds('level-2',issues)],[]);
+test('直接子任务进度不计入孙任务，取消不计入已完成，修改后立即重算',()=>{
+  const {ctx,issues}=setup();
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:0,total:1});
+  issues.push({id:'cancelled',parent_issue_id:'root',status:'cancelled'});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:0,total:2});
+  issues.find(i=>i.id==='child').status='done';
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:1,total:2});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('grandchild',issues))),{done:0,total:0});
 });
 
 test('任务祖先链按根任务到直接父任务排序，并在异常循环关系下安全终止',()=>{
@@ -119,7 +115,7 @@ test('任务祖先链按根任务到直接父任务排序，并在异常循环�
   assert.deepEqual(Array.from(ctx.evaIssueAncestorChain(issues.find(issue=>issue.id==='grandchild'),issues),issue=>issue.id),['root','child']);
 });
 
-test('任务面包屑只保留离当前任务最近的三级',()=>{
+test('任务面包屑完整保留所有祖先',()=>{
   const {ctx}=setup(),issues=[
     {id:'root',identifier:'SC-101',title:'根任务',parent_issue_id:null},
     {id:'level-1',identifier:'SC-102',title:'一级任务',parent_issue_id:'root'},
@@ -127,13 +123,13 @@ test('任务面包屑只保留离当前任务最近的三级',()=>{
     {id:'level-3',identifier:'SC-104',title:'三级任务',parent_issue_id:'level-2'},
     {id:'current',identifier:'SC-105',title:'当前任务',parent_issue_id:'level-3'},
   ];
-  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[4],issues),issue=>issue.id),['level-2','level-3','current']);
+  assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[4],issues),issue=>issue.id),['root','level-1','level-2','level-3','current']);
   assert.deepEqual(Array.from(ctx.evaIssueBreadcrumbChain(issues[1],issues),issue=>issue.id),['root','level-1']);
 });
 
 test('层级、看板、分组、列表和详情均接入统一父子任务运行时',()=>{
   assert.ok(runtime.includes('["board","grouped","list","hierarchy"]'));
-  assert.ok(runtime.includes('className:"eva-loop-subtasks__empty"'));
+  assert.ok(runtime.includes('className:"eva-loop-subtasks__head"'));
   assert.ok(runtime.includes('父任务完成不会自动完成子任务，子任务状态保持不变。'));
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rt})'));
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rn,variant:"list"})'));
@@ -167,57 +163,32 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);
 });
 
-test('任务详情递归展示全部后代并按整棵子任务树统计进度',()=>{
-  assert.ok(runtime.includes('function EvaIssueDetailSubtaskTree('));
-  assert.ok(runtime.includes('function evaIssueDefaultCollapsedIds('));
-  assert.ok(runtime.includes('evaIssueDefaultCollapsedIds(rt.id,mt)'));
-  assert.ok(runtime.includes('[rt.id,evaTreeSignature]'));
-  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__depth-note"'));
-  assert.ok(runtime.includes('"第 4 层及更深任务已收起"'));
-  assert.ok(runtime.includes('"展开全部层级"'));
-  assert.ok(runtime.includes('onClick:()=>evaSetCollapsedIds(new Set)'));
-  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__toggle"'));
-  assert.ok(runtime.includes('"aria-expanded":Pt.length?evaExpanded:void 0'));
-  assert.ok(runtime.includes('className:"loop-subissues eva-loop-subtask-tree",role:"tree","aria-label":rt.identifier+" 的全部子任务"'));
-  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__item",role:"treeitem","aria-level":Ct+1'));
-  assert.ok(runtime.includes('className:"eva-loop-subtask-tree__children",role:"group"'));
-  assert.ok(runtime.includes('evaExpanded&&Pt.length>0&&React.createElement("div",{className:"eva-loop-subtask-tree__children"'));
-  assert.ok(runtime.includes('onClick:ut?void 0:()=>ct(St.id)'));
-  assert.ok(runtime.includes('evaDetailSubtaskIds=evaIssueDescendantIds(xt.id,issuesOf())'));
-  assert.ok(runtime.includes('evaDetailSubtasks=issuesOf().filter(ki=>evaDetailSubtaskIds.has(ki.id))'));
-  assert.ok(runtime.includes('evaSubtaskTotal=evaDetailSubtasks.length'));
-  assert.ok(runtime.includes('"aria-valuemax":evaSubtaskTotal'));
-  assert.ok(runtime.includes('width:evaSubtaskTotal?Oi/evaSubtaskTotal*100+"%":"0%"'));
-  assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
-  assert.match(taskStyles,/\.eva-loop-subtask-tree__children\s*\{[\s\S]*margin-left:\s*8px;[\s\S]*padding-left:\s*12px;[\s\S]*border-left:/);
-  assert.match(taskStyles,/\.eva-loop-subtask-tree__children > \.eva-loop-subtask-tree__branch::before\s*\{[\s\S]*left:\s*-12px;[\s\S]*border-top:/);
-  assert.match(taskStyles,/\.eva-loop-subtask-tree__item\s*\{[\s\S]*grid-template-columns:\s*24px minmax\(0, 1fr\)/);
-  assert.match(taskStyles,/\.eva-loop-subtask-tree__depth-note\s*\{[\s\S]*justify-content:\s*flex-end/);
+test('任务详情只呈现直接子任务列表，移除递归树与重复空状态入口',()=>{
+  assert.ok(runtime.includes('function EvaIssueDetailSubtasks('));
+  assert.ok(runtime.includes('evaIssueChildProgress(rootIssue.id,allIssues)'));
+  assert.ok(runtime.includes('evaIssueChildrenOf(rootIssue.id,allIssues)'));
+  assert.ok(runtime.includes('添加子任务'));
+  assert.ok(runtime.includes('aria-expanded'));
+  for(const obsolete of ['EvaIssueDetailSubtaskTree','evaIssueDefaultCollapsedIds','evaDetailSubtaskIds','开始分解','eva-loop-subtask-tree','eva-loop-subtasks__empty'])assert.equal(runtime.includes(obsolete),false,obsolete);
+  assert.doesNotMatch(taskStyles,/eva-loop-subtask-tree|eva-loop-subtasks__empty|eva-loop-subtasks__progress/);
 });
 
-test('任务详情只保留层级树，并通过最近三级可点击面包屑原位切换详情',()=>{
+test('任务详情通过完整 Semi 面包屑原位切换详情',()=>{
   assert.ok(runtime.includes('function evaIssueAncestorChain('));
   assert.ok(runtime.includes('function evaIssueBreadcrumbChain('));
-  assert.ok(runtime.includes('evaAncestorIssues=evaIssueAncestorChain(xt)'));
   assert.ok(runtime.includes('evaBreadcrumbIssues=evaIssueBreadcrumbChain(xt)'));
-  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues=evaBreadcrumbIssues.slice(0,-1)'));
-  assert.ok(runtime.includes('evaBreadcrumbHasHiddenAncestors=evaAncestorIssues.length>evaBreadcrumbAncestorIssues.length'));
-  assert.ok(runtime.includes('evaBreadcrumbAncestorIssues.map(ki=>React.createElement(React.Fragment'));
-  assert.ok(runtime.includes('className:"loop-idp__crumb-task"'));
-  assert.ok(runtime.includes('className:"loop-idp__crumb-id"},ki.identifier'));
-  assert.ok(runtime.includes('className:"loop-idp__crumb-title"},ki.title'));
-  assert.ok(runtime.includes('"aria-label":"已省略更早的任务层级"'));
-  assert.ok(runtime.includes('"aria-current":"page"'));
-  assert.ok(runtime.includes('onClick:Ct?void 0:()=>Ea(ki.id)'));
+  assert.ok(runtime.includes('React.createElement(evaForms.TaskBreadcrumb,'));
+  assert.ok(runtime.includes('...evaBreadcrumbIssues.map(issue=>'));
+  assert.equal(runtime.includes('evaBreadcrumbHasHiddenAncestors'),false);
   assert.ok(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'));
   assert.ok(runtime.includes('WKApp$1.routeRight.pop(),WKApp$1.routeRight.push'));
-  assert.ok(runtime.includes('React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:ut})'));
+  assert.ok(runtime.includes('React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:ut,breadcrumbViewport:evaBreadcrumbViewport.current})'));
   assert.ok(runtime.includes('function evaRestoreFleetProjectRoute('));
   assert.ok(runtime.includes('writeBrowserPath("/#/collab?evaProject="+encodeURIComponent(rt),"replace")'));
   assert.ok(runtime.includes('Qa=()=>{const Wi=currentWorkspaceSlug();Wi&&evaRestoreFleetProjectRoute(Wi)'));
-  assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtaskTree,{rootIssue:xt,onOpen:Ea,readOnly:Ct})'));
+  assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtasks,{key:xt.id,rootIssue:xt,onOpen:Ea,readOnly:Ct'));
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
-  assert.ok(runtime.includes('"开始分解"'));
+  assert.equal(runtime.includes('"开始分解"'),false);
   assert.ok(runtime.includes('className:"loop-idp__prop loop-idp__prop--inline loop-idp__prop--due"'));
   assert.ok(runtime.includes('window.EvaLoopTaskComponents.dateField(React,DatePicker,{className:"loop-idp__due-picker"'),
     '详情截止日期应使用任务公共日期字段，保留选择与清空能力');
@@ -234,9 +205,15 @@ test('任务详情只保留层级树，并通过最近三级可点击面包屑�
   ])assert.equal(runtime.includes(obsolete),false,`已移除能力不应残留：${obsolete}`);
   assert.doesNotMatch(taskStyles,/\.eva-task-breakdown/);
   assert.doesNotMatch(taskStyles,/\.loop-idp__boardbtn\.is-contextual/);
-  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task,\s*[\s\S]*display:\s*inline-flex;[\s\S]*gap:\s*6px/);
-  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-task \.loop-idp__crumb-title,[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap/);
-  assert.match(taskStyles,/\.loop-idp \.loop-idp__crumb-ellipsis\s*\{[\s\S]*width:\s*24px;[\s\S]*color:\s*var\(--eva-text-secondary-accessible\)/);
-  assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-task:hover,[\s\S]*color:\s*var\(--eva-action-primary\)/);
-  assert.match(taskStyles,/\.loop-idp button\.loop-idp__crumb-cur:focus-visible\s*\{[\s\S]*outline:\s*var\(--eva-border-focus-w\) solid var\(--eva-border-focus\)/);
+});
+
+test('表格进度只计算直接子任务且不受视图筛选影响',()=>{
+  const source=fs.readFileSync('prototype/062-loop-table-view.js','utf8');
+  const start=source.indexOf('      const descendantIds=')>=0?source.indexOf('      const descendantIds='):source.indexOf('      const progressOf=');
+  const end=source.indexOf('      const hideIds=',start);
+  const allIssues=[{id:'child',parent_issue_id:'root',status:'todo'},{id:'grand',parent_issue_id:'child',status:'done'},{id:'cancel',parent_issue_id:'root',status:'cancelled'}];
+  const childMap=new Map([['root',[allIssues[0],allIssues[2]]],['child',[allIssues[1]]]]);
+  const ctx={allIssues,childMap};
+  vm.runInNewContext(source.slice(start,end)+';globalThis.result=progressOf("root");',ctx);
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.result)),{done:0,total:2});
 });

@@ -130,7 +130,7 @@
     return React.createElement(Field,props);
   }
 
-  function create(React,{CircleDashed,Circle,CircleCheck}){
+  function create(React,{CircleDashed,Circle,CircleCheck,CircleSlash}){
     const h=React.createElement;
     const visualProps=(props,color)=>({
       ...props,style:{...props.style,color},'aria-hidden':props['aria-label']?undefined:true,
@@ -163,7 +163,15 @@
       const filled={low:1,medium:2,high:3}[value];
       return h('svg',{...visual,fill:'currentColor'},[6,9,12].map((height,i)=>h('rect',{key:i,x:2+i*4.25,y:14-height,width:3.5,height,rx:1,opacity:i<filled?1:0.35})));
     }
-    return {StatusIcon,PriorityIcon};
+    function IdentityOption({icon,label,unassigned=false}){
+      return h('span',{className:'eva-task-identity-option'+(unassigned?' eva-task-unassigned-option':'')},
+        h('span',{className:'eva-task-identity-option__visual'},icon),
+        h('span',{className:'eva-task-identity-option__label'},label));
+    }
+    function UnassignedOption({label}){
+      return h(IdentityOption,{unassigned:true,icon:h(CircleSlash,{size:20,'aria-hidden':true}),label});
+    }
+    return {StatusIcon,PriorityIcon,IdentityOption,UnassignedOption};
   }
 
   root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});

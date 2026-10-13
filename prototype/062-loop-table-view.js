@@ -186,17 +186,10 @@
         if(!childMap.has(parent))childMap.set(parent,[]);
         childMap.get(parent).push(issue);
       }
-      const descendantIds=issueId=>{
-        const direct=childMap.get(issueId)||[],seen=new Set(direct.map(item=>item.id));
-        for(const item of direct)for(const id of descendantIds(item.id))seen.add(id);
-        return seen;
-      };
       const progressOf=issueId=>{
-        const ids=descendantIds(issueId);
-        if(!ids.size)return null;
-        const all=Array.from(ids).map(id=>(allIssues||[]).find(item=>item.id===id)).filter(Boolean);
-        const done=all.filter(item=>item.status==='done').length;
-        return {done,total:all.length};
+        const children=childMap.get(issueId)||[];
+        if(!children.length)return null;
+        return {done:children.filter(item=>item.status==='done').length,total:children.length};
       };
       const hideIds=new Set();
       if(hierarchy){

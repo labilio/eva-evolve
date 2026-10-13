@@ -575,214 +575,44 @@ body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field
   outline-offset: -2px;
 }
 
-/* Detail page exposes decomposition even before the first child exists. */
-.loop-idp .eva-loop-subtasks__head { min-height: 32px; }
-.loop-idp .eva-loop-subtasks__actions {
-  display: inline-flex;
-  align-items: center;
-  margin-left: auto;
-  gap: 2px;
-}
-.loop-idp .eva-loop-subtasks__progress {
-  width: 100%;
-  height: 4px;
-  margin: 8px 0 10px;
-  overflow: hidden;
-  border-radius: var(--eva-radius-full);
-  background: var(--eva-surface-subtle);
-}
-.loop-idp .eva-loop-subtasks__progress > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--eva-action-primary);
-  transition: width 160ms ease;
-}
-.loop-idp .loop-subissues { display: grid; gap: 4px; }
-.loop-idp .loop-subissue {
-  display: grid;
-  grid-template-columns: 16px 64px minmax(0, 1fr) 152px 24px;
-  align-items: center;
-  gap: 8px;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 40px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: var(--eva-radius-control);
-  background: transparent;
-  color: var(--eva-text-primary);
-  font: inherit;
-  text-align: left;
-}
-.loop-idp button.loop-subissue { cursor: pointer; }
-.loop-idp button.loop-subissue:hover { background: var(--eva-surface-subtle); }
-.loop-idp button.loop-subissue:focus-visible { outline: var(--eva-border-focus-w) solid var(--eva-border-focus); outline-offset: -2px; }
-.loop-idp .loop-subissue__id { color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
+/* Detail shows one generation; the project hierarchy owns the full tree. */
+.loop-idp .eva-loop-subtasks__head { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-bottom: 8px; }
+.loop-idp .eva-loop-subtasks__toggle { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: var(--eva-text-primary); font: inherit; font-weight: var(--eva-fw-medium); cursor: pointer; }
+.loop-idp .eva-loop-subtasks__count { display: inline-flex; align-items: center; flex-shrink: 0; gap: 4px; padding: 2px 6px; border-radius: var(--eva-radius-full); background: var(--eva-surface-subtle); color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); font-variant-numeric: tabular-nums; }
+.loop-idp .eva-loop-subtasks__add { margin-left: auto; }
+.loop-idp .loop-subissues { display: grid; gap: 0; overflow: hidden; border: var(--eva-border-hairline-w) solid var(--eva-border-default); border-radius: var(--eva-radius-control); }
+.loop-idp .loop-subissue { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 40px; padding: 4px 8px; border: 0; border-radius: 0; background: transparent; color: var(--eva-text-primary); }
+.loop-idp .loop-subissue + .loop-subissue { border-top: var(--eva-border-hairline-w) solid var(--eva-border-subtle); }
+.loop-idp .loop-subissue:hover { background: var(--eva-surface-subtle); }
+.loop-idp .eva-loop-subtasks__field { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 28px; flex: none; padding: 0; border: 0; border-radius: var(--eva-radius-control); background: transparent; color: inherit; }
+.loop-idp button.eva-loop-subtasks__field { cursor: pointer; }
+.loop-idp button.eva-loop-subtasks__field:hover { background: var(--eva-overlay-hover); }
+.loop-idp .loop-subissue__open { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; padding: 4px 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.loop-idp .loop-subissue__id { flex: none; color: var(--eva-text-secondary-accessible); font: 400 12px/16px var(--eva-font-sans); }
 .loop-idp .loop-subissue__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.loop-idp .loop-subissue__priority { display: inline-flex; align-items: center; justify-content: center; }
-.loop-idp .eva-loop-subtask-tree__branch,
-.loop-idp .eva-loop-subtask-tree__item { min-width: 0; }
-.loop-idp .eva-loop-subtask-tree__branch { position: relative; }
-.loop-idp .eva-loop-subtask-tree__item {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  align-items: center;
-}
-.loop-idp .eva-loop-subtask-tree__toggle,
-.loop-idp .eva-loop-subtask-tree__toggle-spacer {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 32px;
-}
-.loop-idp .eva-loop-subtask-tree__toggle {
-  padding: 0;
-  border: 0;
-  border-radius: var(--eva-radius-control);
-  background: transparent;
-  color: var(--eva-text-secondary-accessible);
-  cursor: pointer;
-}
-.loop-idp .eva-loop-subtask-tree__toggle:hover { background: var(--eva-surface-subtle); }
-.loop-idp .eva-loop-subtask-tree__toggle:focus-visible {
-  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
-  outline-offset: -2px;
-}
-.loop-idp .eva-loop-subtask-tree__toggle svg { transition: transform 160ms ease; }
-.loop-idp .eva-loop-subtask-tree__toggle svg.is-open { transform: rotate(90deg); }
-.loop-idp .eva-loop-subtask-tree__depth-note {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  min-height: 32px;
-  color: var(--eva-text-secondary-accessible);
-  font: 400 12px/16px var(--eva-font-sans);
-}
-.loop-idp .eva-loop-subtask-tree__expand-all { flex: none; }
-.loop-idp .eva-loop-subtask-tree__children {
-  display: grid;
-  gap: 4px;
-  margin-left: 8px;
-  padding-left: 12px;
-  border-left: var(--eva-border-hairline-w) solid var(--eva-border-default);
-}
-.loop-idp .eva-loop-subtask-tree__children > .eva-loop-subtask-tree__branch::before {
-  position: absolute;
-  top: 20px;
-  left: -12px;
-  width: 10px;
-  border-top: var(--eva-border-hairline-w) solid var(--eva-border-default);
-  content: "";
-}
-.loop-idp .eva-loop-subtasks__empty {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  box-sizing: border-box;
-  min-height: 56px;
-  padding: 10px 12px;
-  border: var(--eva-border-hairline-w) dashed var(--eva-border-subtle);
-  border-radius: var(--eva-radius-control);
-  color: var(--eva-text-secondary-accessible);
-  font: 400 13px/20px var(--eva-font-sans);
-}
-.loop-idp .loop-idp__crumbs {
-  max-width: calc(100% - 156px);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-.loop-idp .loop-idp__crumbs::-webkit-scrollbar { display: none; }
-.loop-idp .loop-idp__crumbs > .loop-idp__crumb {
-  display: inline-flex;
-  align-items: center;
-  box-sizing: border-box;
-  height: 32px;
-  gap: 6px;
-  padding: 3px 6px;
-  flex: none;
-}
-.loop-idp .loop-idp__project-icon { flex: none; }
-.loop-idp .loop-idp__crumb-task,
-.loop-idp button.loop-idp__crumb-cur {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  min-height: 32px;
-  padding: 3px 6px;
-  border: 0;
-  border-radius: var(--eva-radius-key);
-  background: transparent;
-  font: inherit;
-}
-.loop-idp .loop-idp__crumb-task {
-  flex: none;
-  max-width: min(280px, 28vw);
-  overflow: hidden;
-  color: var(--eva-text-secondary-accessible);
-  white-space: nowrap;
-}
-.loop-idp .loop-idp__crumb-task .loop-idp__crumb-id,
-.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-id {
-  flex: none;
-  font-family: var(--eva-font-sans);
-  font-size: 13px;
-}
-.loop-idp .loop-idp__crumb-task .loop-idp__crumb-title,
-.loop-idp button.loop-idp__crumb-cur .loop-idp__crumb-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.loop-idp .loop-idp__crumb-task .loop-idp__crumb-title {
-  color: var(--eva-text-primary);
-  font-weight: 500;
-}
-.loop-idp .loop-idp__crumb-ellipsis {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 32px;
-  flex: none;
-  color: var(--eva-text-secondary-accessible);
-}
-.loop-idp button.loop-idp__crumb-task,
-.loop-idp button.loop-idp__crumb-cur { cursor: pointer; }
-.loop-idp button.loop-idp__crumb-task:hover,
-.loop-idp button.loop-idp__crumb-cur:hover {
-  background: var(--eva-overlay-hover);
-  color: var(--eva-action-primary);
-}
-.loop-idp button.loop-idp__crumb-task:focus-visible,
-.loop-idp button.loop-idp__crumb-cur:focus-visible {
-  outline: var(--eva-border-focus-w) solid var(--eva-border-focus);
-  outline-offset: 0;
-}
-.loop-idp button.loop-idp__crumb-cur {
-  min-width: 112px;
-  max-width: min(420px, 45vw);
-  overflow: hidden;
-  white-space: nowrap;
-}
-.loop-idp .loop-idp__prop--parent { align-items: flex-start; }
-.loop-idp .loop-idp__parent-link {
-  min-width: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
-  color: var(--eva-action-primary);
-  font: 400 12px/18px var(--eva-font-sans);
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
+.loop-idp .loop-subissue.is-finished .loop-subissue__title { color: var(--eva-text-secondary-accessible); }
+.loop-idp .loop-subissue__assignee { min-width: 0; max-width: 120px; flex-shrink: 0; }
+.loop-idp .eva-loop-subtasks :is(button):focus-visible { outline: var(--eva-border-focus-w) solid var(--eva-border-focus); outline-offset: -2px; }
+
+/* Semi owns breadcrumb layout; Eva supplies its existing identity tokens. */
+.loop-idp .eva-task-breadcrumb-shell { display:flex; align-items:center; min-width:0; flex:1; }
+.loop-idp .eva-task-breadcrumb-scroll { min-width:0; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; }
+.loop-idp .eva-task-breadcrumb-scroll::-webkit-scrollbar { display:none; }
+.loop-idp .eva-task-breadcrumb { width:max-content; white-space:nowrap; font-family:var(--eva-font-sans); color:var(--eva-text-primary); }
+.loop-idp .eva-task-breadcrumb .semi-breadcrumb-item { max-width:none; }
+.loop-idp .eva-task-breadcrumb .semi-breadcrumb-separator { color:var(--eva-text-secondary); }
+.loop-idp .eva-task-breadcrumb-item { display:inline-flex; align-items:center; gap:6px; padding:3px 6px; min-height:32px; border:0; border-radius:var(--eva-radius-key); background:transparent; color:var(--eva-text-primary); font:inherit; white-space:nowrap; cursor:pointer; }
+.loop-idp .eva-task-breadcrumb-item:disabled { cursor:default; }
+.loop-idp .eva-task-breadcrumb-item:hover:not(:disabled) { background:var(--eva-overlay-hover); }
+.loop-idp .eva-task-breadcrumb-item:focus-visible { outline:var(--eva-border-focus-w) solid var(--eva-border-focus); outline-offset:-2px; }
+.loop-idp .eva-task-breadcrumb-id { color:var(--eva-text-secondary); font-weight:var(--eva-fw-regular); }
+.loop-idp .eva-task-breadcrumb-title { font-weight:var(--eva-fw-medium); }
+.loop-idp .eva-task-parent-section .loop-idp__asec-head { justify-content:flex-start; color:var(--eva-text-primary); }
+.loop-idp .eva-task-parent-section .loop-idp__asec-body { align-items:stretch; }
+.loop-idp .loop-idp__parent-link { min-width:0; max-width:100%; height:auto; min-height:32px; padding-inline:0; text-align:left; color:var(--eva-text-primary); font-family:var(--eva-font-sans); }
+.loop-idp .loop-idp__parent-link .semi-button-content,
+.loop-idp span.loop-idp__parent-link { display:flex; align-items:center; justify-content:flex-start; gap:8px; min-width:0; width:100%; }
+.loop-idp .loop-idp__parent-link svg { flex:none; }
 
 @media (max-width: 980px) {
   .eva-issue-hierarchy__head,
@@ -790,14 +620,12 @@ body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field
   .eva-issue-hierarchy__head { min-width: 760px; }
   .eva-issue-hierarchy__head span:nth-child(4),
   .eva-issue-hierarchy__row > .eva-issue-assignee { display: none; }
-  .loop-idp .loop-subissue { grid-template-columns: 16px 60px minmax(0, 1fr) 24px; }
-  .loop-idp .loop-subissue > .eva-issue-assignee { display: none; }
+
 }
 
 @media (prefers-reduced-motion: reduce) { .loop-page .loop-card { transition: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .eva-issue-hierarchy__toggle svg,
-  .loop-idp .eva-loop-subtasks__progress > span { transition: none; }
+  .eva-issue-hierarchy__toggle svg { transition: none; }
 }
 
 /* Shared task assignee identity keeps the public AI badge visible beside the name. */
@@ -863,3 +691,9 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .loop-filter-panel .semi-select { min-height:32px; }
 .loop-filter-panel .semi-datepicker { min-width:0; }
 .eva-task-filter-identity { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
+
+/* 空负责人选项：详情单选与筛选多选直接共用同一业务组件。 */
+.eva-task-identity-option { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
+.eva-task-identity-option__visual { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; flex:0 0 20px; }
+.eva-task-identity-option__label { min-width:0; }
+.eva-task-unassigned-option .eva-task-identity-option__visual { color:var(--eva-text-secondary-accessible); }
