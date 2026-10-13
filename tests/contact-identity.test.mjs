@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 function setup(saved){
  const window={EvaAIIdentity:{projectAgentAppearance:()=>({markerKind:'bot'})},EvaAvatar:{personUri:id=>'avatar:'+id},__EVA_CURRENT_USER_PORTRAIT:'me',__EVA_COLLEAGUE_PORTRAIT:'eva'};
- loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window,URLSearchParams});
  const store=window.EvaMembership.create(saved||{actorId:'me',people:[{id:'me',name:'本人'},{id:'a',name:'同名'},{id:'b',name:'同名'},{id:'gone',name:'已停用',active:false}],clones:[{id:'clone-a',ownerId:'a',name:'分身'}],projects:{p:{id:'p',name:'可见项目',humans:[{id:'me'}],cloneIds:[]},secret:{id:'secret',name:'不可见项目',humans:[],cloneIds:[]}}});
  const file='prototype/009-3-contact-identities.js';if(existsSync(file))vm.runInNewContext(readFileSync(file,'utf8'),{window});
  const team={getSnapshot:()=>({identities:[{id:'mine',role:'persona',name:'我的分身',configuration:{description:'简介'}},{id:'assistant',role:'assistant',name:'我的助理',configuration:{avatar:'🍌',identity:'私有配置',description:'不应展示'}}]})},digital={get:id=>id==='staff'?{id,kind:'staff',name:'数字员工',ownership:'organization',scope:'org',desc:'岗位职责'}:null,hasInTeam:id=>id==='staff',appearance:()=>({ownerName:'组织'})};
@@ -115,7 +115,7 @@ test('身份渲染不复制全量聊天状态，切换账号后仍实时更新',
 
 test('联系人带「联系人」副标题与部门全路径，AI 身份不带部门',()=>{
  const window={EvaAIIdentity:{projectAgentAppearance:()=>({markerKind:'bot'})},EvaAvatar:{personUri:id=>'avatar:'+id},__EVA_CURRENT_USER_PORTRAIT:'me',__EVA_COLLEAGUE_PORTRAIT:'eva',__EVA_ORG_UNITS:{'AI 产品共创':'吉利汽车集团/数智化中心/AI 中台/AI 产品共创'}};
- loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});
+ loadIdentityEnvironment(window);vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window,URLSearchParams});
  const store=window.EvaMembership.create({actorId:'me',people:[{id:'me',name:'王宜林',dept:'AI 产品共创'},{id:'other',name:'白宇',dept:'数据与算法',deptFull:'吉利汽车集团/数智化中心/数据与算法部'}],clones:[{id:'clone-a',ownerId:'me',name:'分身'}],projects:{}});
  vm.runInNewContext(readFileSync('prototype/009-3-contact-identities.js','utf8'),{window});
  const model=window.EvaContactIdentities.create(store,{team:{getSnapshot:()=>({identities:[]})},digital:{get:()=>null,hasInTeam:()=>false,appearance:()=>({})},ownerId:'me'});
@@ -129,4 +129,19 @@ test('联系人带「联系人」副标题与部门全路径，AI 身份不带�
  assert.equal(model.resolve('me').departmentL2,'AI 产品共创');
  assert.equal(model.resolve('other').departmentL2,'数据与算法部');
  assert.equal(model.resolve('clone-a').deptFull,undefined);
+});
+
+
+test('任务链接转发复用消息投递，校验源项目及目标权限并保留稳定任务 ID',()=>{
+ const {store}=setup(),url='http://localhost/#/collab?evaProject=p&evaTab=tasks&evaTask=issue-p-102';
+ const direct=store.openDirect('me','a');
+ store.shareTaskLink('p',direct,'me',url,'请核对');
+ const messages=store.directMessages('me')[direct];
+ assert.equal(messages.at(-2).text,url);assert.equal(messages.at(-1).text,'请核对');
+ assert.equal(messages.at(-2).sender.uid,'me');assert.equal(messages.length,2);
+ store.shareTaskLink('p','all:p','me',url);assert.equal(store.messagesFor('all:p','me').at(-1).text,url);
+ assert.throws(()=>store.shareTaskLink('secret',direct,'me',url),/项目访问权限/);
+ assert.throws(()=>store.shareTaskLink('p','all:secret','me',url),/目标会话/);
+ assert.throws(()=>store.shareTaskLink('p',direct,'me',url.replace('evaProject=p','evaProject=secret')),/链接无效/);
+ assert.equal(store.directMessages('me')[direct].length,2);
 });

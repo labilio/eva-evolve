@@ -90,6 +90,8 @@
 
 /* Eva motion adapter tokens; original customer GDS tokens remain unchanged. */
 :root {
+  --eva-drawer-duration: 260ms;
+  --eva-drawer-easing: cubic-bezier(0.22, 0.61, 0.36, 1);
   --eva-switch-duration: 220ms;
   --eva-switch-color-duration: 180ms;
   --eva-switch-easing: cubic-bezier(.22, 1, .36, 1);

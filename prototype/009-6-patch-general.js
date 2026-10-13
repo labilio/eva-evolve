@@ -78,7 +78,7 @@
   }
   root.__evaPatch('general', function (source) {
     source = 'import {createForms as evaCreateForms} from "./eva-forms.module.js";\n' + source;
-    source = root.__evaCut(source, 'var reactDomExports=requireReactDom();', 'var reactDomExports=requireReactDom();const evaForms=evaCreateForms(reactExports,reactDomExports);', '统一 Semi Form 实例');
+    source = root.__evaCut(source, 'var reactDomExports=requireReactDom();', 'var reactDomExports=requireReactDom();const evaForms=evaCreateForms(reactExports,{...reactDomExports,createRoot:(...args)=>requireClient().createRoot(...args)});', '统一 Semi Form 实例');
     // Semi's insertion guard must accept keyboard focus as well as pointer hover.
     // Keep its own show/hide lifecycle; this exact anchor fails on upstream drift.
     source = root.__evaCut(source,
@@ -774,10 +774,27 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       const issues=ISSUES_BY_SPACE[pid]||[],index=issues.findIndex(item=>item.id===issueId);if(!evaTaskLabels(project).some(item=>item.id===labelId)||index<0)throw new Error('标签或任务不存在');
       const issue=issues[index],next={...issue,labels:(issue.labels||[]).filter(item=>item.id!==labelId)};issues[index]=next;return next;
     }
+    function evaCreatedTaskAccess(projectId,issueId,actorId){
+      const store=evaMembers().store;
+      if(store.actorId()!==actorId)throw new Error('当前账号已切换，请重新打开任务');
+      const project=loadSpaces().find(p=>p.id===projectId);
+      if(!project)throw new Error('任务所属项目不存在或已删除');
+      if(!store.canRead(projectId,actorId))throw new Error('你不是该任务所属项目的成员，无法查看任务');
+      const issue=evaTaskLinkIssue({projectId,identifier:issueId});
+      if(!issue)throw new Error('任务不存在或已失效');
+      return issue;
+    }
+    function evaNotifyTaskCreated(issue,projectId){
+      const actorId=evaMembers().store.actorId(),issueId=issue.id;
+      const access=action=>()=>{try{return action(evaCreatedTaskAccess(projectId,issueId,actorId));}catch(error){Toast.error(error.message);return false;}};
+      evaForms.notifyTaskCreated({issue,projectId,viewUrl:evaTaskLinkUrl(projectId,issueId),
+        onView:access(()=>evaTaskLinkOpen({projectId,identifier:issueId})),
+        onForward:access(()=>{if(!window.__evaOpenTaskForward)throw new Error('转发组件尚未准备好，请稍后重试');window.__evaOpenTaskForward({projectId,issueId,actorId});return true;})});
+    }
     function CreateIssueModal(props){
       const store=evaMembers().store;reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot);
       const project=loadSpaces().find(p=>p.id===(props.projectId||currentSpaceId()));
-      return window.EvaLoopTaskCreateUI.render({...props,parentIssue:props.parentIssue||issuesOf().find(issue=>issue.id===props.parentIssueId)},{React:reactExports,forms:evaForms,Modal:evaForms.Dialog,Button,LoopButton,Input:ForwardInput,AutoGrowTextarea,Select,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions:ISSUE_STATUS_ORDER.map(value=>({value,label:({backlog:"待规划",todo:"待办",in_progress:"进行中",in_review:"审核中",done:"已完成",blocked:"受阻",cancelled:"已取消"})[value],icon:React.createElement(ISSUE_STATUS_ICON[value],{size:14,style:{color:ISSUE_STATUS_HEX[value]}})})),priorityOptions:window.EvaLoopTaskComponents.priorityDisplayOrder.map(value=>({value,label:({urgent:"紧急",high:"高",medium:"中",low:"低",none:"无"})[value],icon:React.createElement(PRIORITY_ICON[value],{size:14,style:{color:PRIORITY_HEX[value]}})})),icons:{X,Plus:Plus$c,Settings2,Check:EvaCheckIcon,ChevronRight,ChevronDown,CalendarClock,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue({...payload,source_conversation_id:props.conversationId||null}),uploadAttachment:file=>evaRegisterLoopAttachment(file),listLabels:()=>Promise.resolve(evaTaskLabels(project)),createLabel:name=>Promise.resolve(evaCreateTaskLabel(project,name)),attachLabel:(issueId,labelId)=>Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))});
+      return window.EvaLoopTaskCreateUI.render({...props,onCreated:issue=>{props.onCreated?.(issue);evaNotifyTaskCreated(issue,project.id);},parentIssue:props.parentIssue||issuesOf().find(issue=>issue.id===props.parentIssueId)},{React:reactExports,forms:evaForms,Modal:evaForms.Dialog,Button,LoopButton,Input:ForwardInput,AutoGrowTextarea,Select,AssigneePicker,DatePicker,Popover,LoopPropertyPill,statusOptions:ISSUE_STATUS_ORDER.map(value=>({value,label:({backlog:"待规划",todo:"待办",in_progress:"进行中",in_review:"审核中",done:"已完成",blocked:"受阻",cancelled:"已取消"})[value],icon:React.createElement(ISSUE_STATUS_ICON[value],{size:14,style:{color:ISSUE_STATUS_HEX[value]}})})),priorityOptions:window.EvaLoopTaskComponents.priorityDisplayOrder.map(value=>({value,label:({urgent:"紧急",high:"高",medium:"中",low:"低",none:"无"})[value],icon:React.createElement(PRIORITY_ICON[value],{size:14,style:{color:PRIORITY_HEX[value]}})})),icons:{X,Plus:Plus$c,Settings2,Check:EvaCheckIcon,ChevronRight,ChevronDown,CalendarClock,Paperclip:Paperclip$3,Trash2},members:store,HumanIdentity:evaMembers().ui.HumanIdentity,project,getPrefix:()=>project?evaProjectIssuePrefix(project):'',createIssue:payload=>props.canCreate&&!props.canCreate()?Promise.reject(new Error('已失去当前会话或项目的访问权限')):createIssue({...payload,source_conversation_id:props.conversationId||null}),uploadAttachment:file=>evaRegisterLoopAttachment(file),listLabels:()=>Promise.resolve(evaTaskLabels(project)),createLabel:name=>Promise.resolve(evaCreateTaskLabel(project,name)),attachLabel:(issueId,labelId)=>Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))});
     }`,'项目 Loop 任务完整创建表单');
     source=root.__evaCut(source,'uploadAttachment=()=>Promise.resolve({url:""})','uploadAttachment=(rt,ct)=>evaRegisterLoopAttachment(rt,ct)','已有任务附件上传写回任务数据');
     source=root.__evaCut(source,'listLabels=()=>Promise.resolve([]),createLabel=()=>Promise.resolve(),updateLabel=()=>Promise.resolve(),deleteLabel=()=>Promise.resolve(),attachLabel=()=>Promise.resolve(),detachLabel=()=>Promise.resolve()',String.raw`listLabels=()=>Promise.resolve(evaTaskLabels(evaCurrentTaskProject())),createLabel=(name,color)=>Promise.resolve(evaCreateTaskLabel(evaCurrentTaskProject(),name,color)),updateLabel=()=>Promise.resolve(),deleteLabel=()=>Promise.resolve(),attachLabel=(issueId,labelId)=>{const project=evaCurrentTaskProject();return Promise.resolve(evaAttachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))},detachLabel=(issueId,labelId)=>{const project=evaCurrentTaskProject();return Promise.resolve(evaDetachTaskLabel(project,evaTaskProjectId(project),issueId,labelId))}`,'任务详情标签使用项目数据');
@@ -856,7 +873,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       '项目任务层级视图渲染');
     source=root.__evaCut(source,
       'React.createElement(CreateIssueModal,{visible:Ua,onClose:()=>Ca(!1),onCreated:()=>{Ca(!1),Oa(),Toast.success(pt("loop.toast.created"))}})',
-      'React.createElement(CreateIssueModal,{visible:Ua,parentIssueId:evaCreateParent?.id,parentIssue:evaCreateParent,defaultStatus:evaCreateStatus,onClose:()=>{Ca(!1),evaSetCreateParent(null)},onCreated:$a=>{Ca(!1),evaSetCreateParent(null),Oa(),Toast.success(evaCreateParent?"子任务 "+($a?.identifier||"")+" 已创建":pt("loop.toast.created"))}})',
+      'React.createElement(CreateIssueModal,{visible:Ua,parentIssueId:evaCreateParent?.id,parentIssue:evaCreateParent,defaultStatus:evaCreateStatus,onClose:()=>{Ca(!1),evaSetCreateParent(null)},onCreated:$a=>{Ca(!1),evaSetCreateParent(null),Oa()}})',
       '项目任务创建弹窗传递父任务');
     source=root.__evaCut(source,
       'Ea=ki=>{const Wi=currentWorkspaceSlug(),no=Ht.find(ls=>ls.id===ki);Wi&&no?.identifier&&pushFleetIssueDeepLink(Wi,no.identifier),WKApp$1.routeRight.push(React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:()=>{Wi&&xt?.identifier?replaceFleetIssueDeepLink(Wi,xt.identifier):ut?.()}}))}',
@@ -872,7 +889,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       '右侧路由栈新增 replace（任务抽屉原地切换上一条/下一条，不叠加返回层）');
     source=root.__evaCut(source,
       'RouteRightHost=()=>{const[rt,ct]=reactExports.useState([]);return reactExports.useEffect(()=>(rrNotify=ct,ct([...rrStack]),()=>{rrNotify=null}),[]),rt.length===0?null:React.createElement("div",{className:"collab-route-right"},React.createElement("div",{className:"mask",onClick:()=>WKApp$1.routeRight.popAll()}),React.createElement("div",{className:"panel"},rt[rt.length-1]))}',
-      'RouteRightHost=()=>{const[rt,ct]=reactExports.useState([]),[evaExiting,evaSetExiting]=reactExports.useState(null),evaLast=reactExports.useRef(null);reactExports.useEffect(()=>(rrNotify=ct,ct([...rrStack]),()=>{rrNotify=null}),[]);reactExports.useEffect(()=>{if(rt.length>0)evaLast.current=rt[rt.length-1],evaExiting&&evaSetExiting(null);else if(evaLast.current){const el=evaLast.current;evaSetExiting(el);const ti=setTimeout(()=>{evaSetExiting(null),evaLast.current=null},240);return()=>clearTimeout(ti)}},[rt]);const evaShow=rt.length>0?rt[rt.length-1]:evaExiting,evaClosing=rt.length===0&&!!evaExiting;if(!evaShow)return null;const evaIsIssue=evaShow&&evaShow.type===IssueDetailPage,evaCls="collab-route-right"+(evaIsIssue?" eva-route-drawer":"")+(evaClosing?" eva-drawer-closing":"");return React.createElement("div",{className:evaCls},React.createElement("div",{className:"mask",onClick:()=>WKApp$1.routeRight.popAll()}),React.createElement("div",{className:"panel"},evaShow))}',
+      'RouteRightHost=()=>{const[rt,ct]=reactExports.useState([]),[evaExiting,evaSetExiting]=reactExports.useState(null),evaLast=reactExports.useRef(null);reactExports.useEffect(()=>(rrNotify=ct,ct([...rrStack]),()=>{rrNotify=null}),[]);reactExports.useEffect(()=>{if(rt.length>0)evaLast.current=rt[rt.length-1],evaExiting&&evaSetExiting(null);else if(evaLast.current){const el=evaLast.current;evaSetExiting(el);const motion=getComputedStyle(document.documentElement).getPropertyValue("--eva-drawer-duration").trim(),duration=el.type===IssueDetailPage?(parseFloat(motion)||0)*(motion.endsWith("ms")?1:1000):240;const ti=setTimeout(()=>{evaSetExiting(null),evaLast.current=null},duration);return()=>clearTimeout(ti)}},[rt]);const evaShow=rt.length>0?rt[rt.length-1]:evaExiting,evaClosing=rt.length===0&&!!evaExiting;if(!evaShow)return null;const evaIsIssue=evaShow&&evaShow.type===IssueDetailPage,evaCls="collab-route-right"+(evaIsIssue?" eva-route-drawer":"")+(evaClosing?" eva-drawer-closing":"");return React.createElement("div",{className:evaCls},React.createElement("div",{className:"mask",onClick:()=>WKApp$1.routeRight.popAll()}),React.createElement("div",{className:"panel"},evaShow))}',
       '任务详情右滑抽屉：出栈时保留末屏做滑出动画，并按顶层元素类型标记 eva-route-drawer（仅任务详情抽屉化，不影响其它右侧路由）');
     source=root.__evaCut(source,
       'React.createElement("div",{className:"panel"},evaShow))}',
@@ -981,7 +998,7 @@ const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择
       '父任务选择器排除后代任务');
     source=root.__evaCut(source,
       'React.createElement(CreateIssueModal,{visible:tn,parentIssueId:rt,onClose:()=>Kt(!1),onCreated:()=>{Toast.success(St("loop.toast.created")),listChildren(rt).then(jt).catch(()=>{}),ct?.()}})',
-      'React.createElement(CreateIssueModal,{visible:tn,parentIssueId:evaChildParent?.id||rt,parentIssue:evaChildParent||xt,onClose:()=>{Kt(!1),evaSetChildParent(null)},onCreated:ki=>{Toast.success("子任务 "+(ki?.identifier||"")+" 已创建"),Kt(!1),evaSetChildParent(null),ca(),ct?.()}})',
+      'React.createElement(CreateIssueModal,{visible:tn,parentIssueId:evaChildParent?.id||rt,parentIssue:evaChildParent||xt,onClose:()=>{Kt(!1),evaSetChildParent(null)},onCreated:ki=>{Kt(!1),evaSetChildParent(null),ca(),ct?.()}})',
       '任务详情创建任意节点的子任务');
     source=root.__evaCut(source,'function IssueDetailPage({issueId:rt,onChanged:ct,onClose:ut,onBack:evaBack,snapshot:pt,presentation:mt="page",sourceUrl:gt}){',String.raw`function IssueDetailPage({issueId:rt,onChanged:ct,onClose:ut,onBack:evaBack,snapshot:pt,presentation:mt="page",sourceUrl:gt}){reactExports.useEffect(()=>{getIssue(rt).then(issue=>{if(issue)window.EvaProjectReminderDemo.markRead(issue.workspace_id,issue.id)}).catch(()=>{})},[rt]);`,'查看任务详情清除对应演示未读');
     source=root.__evaCut(source,'function IssueDetailPage({issueId:rt,onChanged:ct,onClose:ut,onBack:evaBack,snapshot:pt,presentation:mt="page",sourceUrl:gt}){','function IssueDetailPage({issueId:rt,onChanged:ct,onClose:ut,onBack:evaBack,snapshot:pt,presentation:mt="page",sourceUrl:gt,breadcrumbViewport:evaInheritedBreadcrumb}){const evaBreadcrumbViewport=reactExports.useRef(evaInheritedBreadcrumb||{left:0,currentId:null});','面包屑滚动状态由当前详情导航链持有');

@@ -201,6 +201,34 @@
       event.messageScopeIds=scopes;
       return scopes;
     };
+    function deliverForwarded(targetId,uid,messages,mode,note){
+        const direct=state.directConversations?.[targetId];
+        if(direct?!direct.memberIds.includes(uid):!api.canReadForwardSource(targetId,uid))fail('无目标会话发送权限');
+        if(direct&&!person(direct.memberIds.find(id=>id!==uid)))fail('对方账号不可用');
+        if(!Array.isArray(messages)||!messages.length)fail('请选择要转发的消息');
+        // Prepare the entire batch before mutation; forwarded mentions do not invoke sendMessage.
+        const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+        let copies=messages.map(message=>{
+          if(!message||!['text','file'].includes(message.kind))fail('该消息类型暂不支持转发');
+          if(message.kind==='text'&&typeof message.text!=='string')fail('消息内容无效');
+          if(message.kind==='file'&&(!message.file||typeof message.file.name!=='string'))fail('附件内容无效');
+          return {kind:message.kind,sender:{...person(uid),uid},time,
+            ...(message.kind==='text'?{text:message.text}:{file:JSON.parse(JSON.stringify(message.file))}),
+            ...(message.mergedMessages?{mergedMessages:JSON.parse(JSON.stringify(message.mergedMessages))}:{}),forwarded:true};
+        });
+        if(mode==='merge')copies=[{kind:'text',sender:{...person(uid),uid},time,text:'聊天记录',forwarded:true,mergedMessages:messages.map(message=>({name:message.sender?.name||'未知成员',time:message.time||'',text:message.text||'',file:message.file?JSON.parse(JSON.stringify(message.file)):undefined}))}];
+        copies.forEach(message=>{message.id='forward:'+uid+':'+(++state.sequence);});
+        const deliver=batch=>{
+          if(direct){direct.messages.push(...batch);direct.lastAt=new Date().toISOString();}
+          else if(api.canRead(targetId,uid))(state.messages[targetId]||(state.messages[targetId]=[])).push(...batch);
+          else if(![root.EvaAITeam,root.EvaMyAITeamGroup,root.EvaDigitalEmployeesStore].some(store=>store?.receiveForwarded(targetId,batch)))fail('目标会话已不可用');
+        };
+        deliver(copies);
+        // 附带留言作为一条独立文本消息发送给同一目标；同一份留言发送给所有已选目标。
+        const message=String(note||'').trim();
+        if(message)deliver([{id:'forward-note:'+uid+':'+(++state.sequence),kind:'text',sender:{...person(uid),uid},time,text:message}]);
+        notify();return copies.map(message=>message.id);
+    }
     const api={
       owningProject,isProjectArchived,assertProjectWritable,
       isProjectDeleted:id=>!!state.deletedProjects?.[id],
@@ -449,32 +477,14 @@
       forwardMessages(sourceId,targetId,uid,messages,mode="individual",note=""){
         requireHuman(uid);
         if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
-        const direct=state.directConversations?.[targetId];
-        if(direct?!direct.memberIds.includes(uid):!api.canReadForwardSource(targetId,uid))fail('无目标会话发送权限');
-        if(direct&&!person(direct.memberIds.find(id=>id!==uid)))fail('对方账号不可用');
-        if(!Array.isArray(messages)||!messages.length)fail('请选择要转发的消息');
-        // Prepare the entire batch before mutation; forwarded mentions do not invoke sendMessage.
-        const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-        let copies=messages.map(message=>{
-          if(!message||!['text','file'].includes(message.kind))fail('该消息类型暂不支持转发');
-          if(message.kind==='text'&&typeof message.text!=='string')fail('消息内容无效');
-          if(message.kind==='file'&&(!message.file||typeof message.file.name!=='string'))fail('附件内容无效');
-          return {kind:message.kind,sender:{...person(uid),uid},time,
-            ...(message.kind==='text'?{text:message.text}:{file:JSON.parse(JSON.stringify(message.file))}),
-            ...(message.mergedMessages?{mergedMessages:JSON.parse(JSON.stringify(message.mergedMessages))}:{}),forwarded:true};
-        });
-        if(mode==='merge')copies=[{kind:'text',sender:{...person(uid),uid},time,text:'聊天记录',forwarded:true,mergedMessages:messages.map(message=>({name:message.sender?.name||'未知成员',time:message.time||'',text:message.text||'',file:message.file?JSON.parse(JSON.stringify(message.file)):undefined}))}];
-        copies.forEach(message=>{message.id='forward:'+uid+':'+(++state.sequence);});
-        const deliver=batch=>{
-          if(direct){direct.messages.push(...batch);direct.lastAt=new Date().toISOString();}
-          else if(api.canRead(targetId,uid))(state.messages[targetId]||(state.messages[targetId]=[])).push(...batch);
-          else if(![root.EvaAITeam,root.EvaMyAITeamGroup,root.EvaDigitalEmployeesStore].some(store=>store?.receiveForwarded(targetId,batch)))fail('目标会话已不可用');
-        };
-        deliver(copies);
-        // 附带留言作为一条独立文本消息发送给同一目标；同一份留言发送给所有已选目标。
-        const message=String(note||'').trim();
-        if(message)deliver([{id:'forward-note:'+uid+':'+(++state.sequence),kind:'text',sender:{...person(uid),uid},time,text:message}]);
-        notify();return copies.map(message=>message.id);
+        return deliverForwarded(targetId,uid,messages,mode,note);
+      },
+      shareTaskLink(projectId,targetId,uid,url,note=""){
+        requireHuman(uid);
+        if(!state.projects[projectId]||!api.canRead(projectId,uid))fail('无任务所属项目访问权限');
+        const hash=String(url).split('#')[1]||'',params=new URLSearchParams(hash.slice('/collab?'.length));
+        if(!hash.startsWith('/collab?')||params.get('evaProject')!==projectId||params.get('evaTab')!=='tasks'||!params.get('evaTask'))fail('任务链接无效');
+        return deliverForwarded(targetId,uid,[{kind:'text',text:url}],"individual",note);
       },
       deleteSelectedMessages(sourceId,uid,messages){
         requireHuman(uid);if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
@@ -786,7 +796,7 @@
       setCloneMentionFree:2,setGroupMd:0,deleteGroupMd:0,setChatSettings:0,
       createGroup:2,createThread:1,updateThread:0,sendMessage:0,
       addMember:0,addClone:0,removeClone:0,transfer:0,setAdmin:0,leaveGroup:0,remove:0,dissolveGroup:0,
-      forwardMessages:1,deleteSelectedMessages:0
+      forwardMessages:1,shareTaskLink:1,deleteSelectedMessages:0
     };
     for(const [name,index] of Object.entries(archiveWriteScopes)){
       const command=api[name];

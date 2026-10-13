@@ -3,7 +3,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import * as sass from 'sass';
 import postcss from 'postcss';
-import {floatingFormTheme,cardTheme,popconfirmTheme,readOnlyTagTheme} from '../prototype/063-ui-theme.js';
+import {typography,notificationTheme,floatingFormTheme,cardTheme,popconfirmTheme,readOnlyTagTheme} from '../prototype/063-ui-theme.js';
 import {modalTheme,dialogText} from '../prototype/063-dialog-theme.js';
 
 // Compile the locked Semi source twice and retain only configured differences.
@@ -75,5 +75,23 @@ export function buildPopconfirmTheme() {
   if(!rule.selector.includes('.semi-popconfirm-body-withIcon'))return;
   rule.walkDecls('margin-left',decl=>{decl.value=`calc(${popconfirmTheme['width-popconfirm-icon']} + ${popconfirmTheme['spacing-popconfirm_header_icon-marginRight']})`;});
  });
+ return css.toString();
+}
+
+export function buildNotificationTheme() {
+ const css=postcss.parse(buildComponentTheme('notification',notificationTheme,''));
+ css.walkRules(rule=>{rule.selectors=rule.selectors.map(selector=>selector.replace(/^(\.semi-notification-notice)(?=[^\w-]|$)/,'.eva-notification$1').replace(/^(\.semi-notification-notice-)/,'.eva-notification $1'));});
+ // Semi has no component-level font-size/line-height Sass tokens here.
+ // Generate the same shared typography used by Dialog/Form in one owner.
+ for(const [selector,text] of [
+  ['.eva-notification .semi-notification-notice-title',typography.title],
+  ['.eva-notification .semi-notification-notice-content, .eva-notification .semi-notification-notice-content .semi-typography',typography.body],
+ ]){
+  const rule=postcss.rule({selector});
+  for(const [prop,value] of Object.entries({'font-size':text.fontSize+'px','line-height':text.lineHeight,'font-weight':String(text.fontWeight)}))rule.append({prop,value});
+  css.append(rule);
+ }
+ css.append(postcss.rule({selector:'.eva-notification'}).append({prop:'font-family',value:'var(--eva-font-sans)'},{prop:'box-shadow',value:'var(--eva-popover-shadow)'}));
+ css.append(postcss.rule({selector:'.eva-notification strong'}).append({prop:'font-weight',value:'var(--eva-fw-medium)'}));
  return css.toString();
 }

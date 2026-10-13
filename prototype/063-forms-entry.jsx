@@ -27,3 +27,5 @@ export {IdentityList} from './063-identity-list.jsx';
 export {ContentStack} from './063-content-stack.jsx';
 
 export {TaskBreadcrumb} from "./063-task-breadcrumb.jsx";
+export {Notification,Typography,Space} from './063-notification.jsx';
+export {notifyTaskCreated} from './063-task-created-notification.jsx';

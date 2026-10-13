@@ -98,3 +98,22 @@ export const infoListTheme = Object.freeze({
  'spacing-list_header-marginRight':'var(--eva-space-3)',
  'spacing-list_header-marginLeft':'var(--eva-space-3)',
 });
+
+// Shared Eva typography and spacing, with native Semi notification behavior.
+export const notificationLayout=Object.freeze({contentGap:'var(--eva-space-2)',actionGap:space.content});
+export const notificationTheme=Object.freeze({
+ 'color-notification-bg-default':'var(--eva-surface-primary)',
+ 'color-notification_title-text':'var(--eva-text-primary)',
+ 'color-notification_content-text':'var(--eva-text-secondary)',
+ 'color-notification_closeBtn-icon':'var(--eva-text-secondary)',
+ 'radius-notification_notice':'var(--eva-radius-panel)',
+ 'spacing-notification_notice-paddingTop':space.compact,
+ 'spacing-notification_notice-paddingBottom':space.compact,
+ 'spacing-notification_notice-paddingLeft':space.content,
+ 'spacing-notification_notice-paddingRight':space.compact,
+ 'spacing-notification_notice_title-marginBottom':notificationLayout.contentGap,
+ 'spacing-notification_notice_icon-marginRight':'var(--eva-space-3)',
+ 'spacing-notification_notice_content_wrapper-marginRight':'var(--eva-space-2)',
+ 'font-notification_notice_title-fontWeight':String(typography.title.fontWeight),
+ 'font-notification_notice_content-fontWeight':String(typography.body.fontWeight),
+});

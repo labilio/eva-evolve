@@ -193,10 +193,10 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
 
     const headerActions=await page.locator('.loop-idp__topbar').evaluate(header=>
       [...header.querySelectorAll('.loop-idp__morebtn,.loop-idp__copybtn,.loop-idp__fsbtn,.loop-idp__closebtn')]
-        .map(button=>({className:button.className,tooltip:button.getAttribute('data-eva-tooltip')})));
+        .map(button=>({className:button.className,label:button.getAttribute('aria-label')})));
     assert.deepEqual(headerActions.map(action=>action.className.split(' ').find(name=>name.startsWith('loop-idp__'))),
       ['loop-idp__morebtn','loop-idp__copybtn','loop-idp__fsbtn','loop-idp__closebtn']);
-    assert.deepEqual(headerActions.map(action=>action.tooltip),['更多操作','复制任务链接','切换全屏',null]);
+    assert.deepEqual(headerActions.map(action=>action.label),['更多操作','复制任务链接','切换全屏','关闭任务详情']);
     await page.locator('.loop-idp__copybtn').hover();
     await page.getByRole('tooltip').getByText('复制任务链接').waitFor();
     await page.getByRole('button',{name:'更多操作'}).click();

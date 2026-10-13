@@ -11,6 +11,7 @@ export const owners = Object.freeze({
  '063-file-controls.jsx':['button','tag','breadcrumb','dropdown'],
  '063-task-breadcrumb.jsx':['breadcrumb'],
  '063-select.jsx':['select'],
+ '063-notification.jsx':['notification','typography','space'],
  '063-card.jsx':['card'],
  '063-info-list.jsx':['list'],
  '063-identity-list.jsx':['list'],
