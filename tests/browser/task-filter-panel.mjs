@@ -40,9 +40,9 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await assignee.click();
   const options=page.locator('.semi-select-option-list:visible [role="option"]');
   const expected=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot();return s.projects.prod.humans.map(h=>s.people.find(p=>p.id===h.id).name)});
-  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),expected.sort(),'负责人只能是项目联系人');
+  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),["无负责人",...expected].sort(),'负责人候选为无负责人及项目联系人');
   assert.equal(await options.locator('img').count(),expected.length,'每个候选都有头像');
-  const inset=await options.first().evaluate(el=>{
+  const inset=await options.filter({has:page.locator("img")}).first().evaluate(el=>{
    const r=el.getBoundingClientRect(),a=el.querySelector('img').getBoundingClientRect();return (a.x-r.x)/(r.width/el.offsetWidth);
   });
   assert.ok(inset<=12,'头像只保留标准菜单行内距，不能额外预留勾选槽：'+inset);

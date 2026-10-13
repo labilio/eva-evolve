@@ -864,3 +864,8 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .eva-task-filter-identity { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
 
 .eva-task-scope-help { color:var(--eva-text-muted); font-size:var(--gds-type-label-font-size); line-height:1.5; }
+/* 空负责人选项：详情单选与筛选多选直接共用同一业务组件。 */
+.eva-task-identity-option { display:inline-flex; align-items:center; gap:8px; min-width:0; max-width:100%; vertical-align:middle; }
+.eva-task-identity-option__visual { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; flex:0 0 20px; }
+.eva-task-identity-option__label { min-width:0; }
+.eva-task-unassigned-option .eva-task-identity-option__visual { color:var(--eva-text-secondary-accessible); }

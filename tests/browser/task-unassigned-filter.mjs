@@ -1,0 +1,61 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+test('Edge：无负责人作为负责人选项，支持并集、恢复和清空',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const origin=`http://127.0.0.1:${server.address().port}`;
+ const browser=await chromium.launch({channel:'msedge'});
+ try {
+ const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
+ const open=async()=>{await page.locator('.loop-board').waitFor();await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click()};
+ await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');await open();
+ const panel=page.locator('.loop-filter-panel'),field=panel.locator('.semi-select').nth(2),options=page.locator('.semi-select-option-list:visible [role="option"]');
+ assert.equal(await panel.getByText('含无负责人',{exact:true}).count(),0);
+ await field.click();assert.equal((await options.first().innerText()).trim(),'无负责人');
+ assert.equal(await options.first().locator('.lucide-circle-slash').count(),1);
+ const geometry=el=>{const icon=el.querySelector('svg').getBoundingClientRect(),label=el.querySelector('.eva-task-identity-option__label').getBoundingClientRect();return {width:icon.width,height:icon.height,gap:label.x-icon.right}};
+ await page.waitForTimeout(350);
+ const filterGeometry=await options.first().locator('.eva-task-unassigned-option').evaluate(geometry);
+ const aligned=async(rows)=>{const values=await rows.locator('.eva-task-identity-option').evaluateAll(els=>els.map(el=>{const r=el.closest('[role=option],.semi-dropdown-item').getBoundingClientRect(),v=el.querySelector('.eva-task-identity-option__visual').getBoundingClientRect(),label=el.querySelector('.eva-task-identity-option__label').getBoundingClientRect(),glyph=el.querySelector('svg,img').getBoundingClientRect();return [v.x-r.x,label.x-r.x,glyph.width,glyph.height]}));assert.ok(values.length>1);values.forEach(value=>assert.deepEqual(value,values[0],'空值与人员行图形尺寸、文字起点一致'));};
+ await aligned(options);
+ await page.screenshot({path:'/tmp/eva-unassigned-filter.png'});
+ await options.getByText('无负责人',{exact:true}).click();await panel.locator('.loop-filter-panel__head').click();
+ assert.match(await field.innerText(),/无负责人/);
+ assert.equal(await field.locator('.lucide-circle-slash').count(),1);
+ const saved=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.startsWith('loop.issue.filters:')).map(([,value])=>JSON.parse(value)));
+ assert.ok(saved.some(state=>state.filters.noAssignee===true&&state.filters.assigneeIds.length===0));
+ assert.ok(saved.every(state=>!state.filters.assigneeIds.includes('__eva_unassigned__')));
+ const ids=async()=>page.locator('.loop-card').evaluateAll(es=>es.map(e=>e.textContent));
+ await page.waitForTimeout(350);const unassigned=await ids();assert.ok(unassigned.length>0,"演示数据应有无负责人任务");
+ await field.click();await options.filter({hasText:'王宜林'}).click();await panel.locator('.loop-filter-panel__head').click();
+ await page.waitForTimeout(350);const union=await ids();assert.ok(union.length>unassigned.length,"并集应增加已选负责人的任务");assert.ok(unassigned.every(x=>union.includes(x)),'组合必须保留所有无负责人任务');
+ assert.match(await page.locator('.eva-task-filter-chips').innerText(),/无负责人/);
+ await page.reload();await open();assert.match(await page.locator(".eva-task-filter-chips").innerText(),/无负责人/);
+ await field.click();await field.locator('input').fill('无负责人');assert.equal(await options.count(),1);await options.first().click();await panel.locator('.loop-filter-panel__head').click();
+ assert.doesNotMatch(await field.innerText(),/无负责人/);
+ await panel.locator('.loop-filter-panel__clear').click();assert.equal(await page.locator('.eva-task-filter-chip').count(),0);
+ await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
+ await page.locator('.loop-card').first().click();
+ await page.locator('.loop-idp__prop:has-text("负责人") .loop-assignee-trigger').click();
+ const detailOption=page.locator('.eva-task-assignee-menu:visible .eva-task-unassigned-option');
+ await detailOption.waitFor();
+ await page.waitForTimeout(350);
+ assert.deepEqual(await detailOption.evaluate(geometry),filterGeometry,'详情和筛选共用空负责人组件的图标尺寸和间距');
+ assert.equal(await detailOption.locator('.lucide-circle-slash').count(),1);
+ await aligned(page.locator('.eva-task-assignee-menu:visible .semi-dropdown-item'));
+ for(const theme of ['light','dark']){
+  await page.evaluate(theme=>window.EvaTheme.apply(theme),theme);
+  const colors=await detailOption.evaluate(el=>{const visual=el.querySelector('.eva-task-identity-option__visual'),icon=el.querySelector('svg'),probe=document.createElement('span');probe.style.color='var(--eva-text-secondary-accessible)';el.append(probe);const expected=getComputedStyle(probe).color;probe.remove();return {expected,actual:getComputedStyle(icon).color,stroke:getComputedStyle(icon).stroke}});
+  assert.equal(colors.actual,colors.expected,'空负责人图标使用语义灰色：'+theme);
+  assert.equal(colors.stroke,colors.expected,'Lucide 描边继承语义灰色：'+theme);
+ }
+ await page.evaluate(()=>window.EvaTheme.apply('light'));
+ await page.screenshot({path:'/tmp/eva-unassigned-detail-shared.png'});
+ assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(r=>server.close(r))}
+});
