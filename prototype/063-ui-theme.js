@@ -1,6 +1,7 @@
 // Shared Eva control typography. Personal conversation typography remains in GDS.
 // Colors/radii/space keep their existing single source: 047 + 049 + 057.
 export const typography = Object.freeze({
+ taskReference:Object.freeze({fontSize:13,fontWeight:'var(--eva-fw-regular)',lineHeight:'22px'}),
  title:Object.freeze({fontSize:16,fontWeight:'var(--eva-fw-medium)',lineHeight:'25.144px'}),
  fieldLabel:Object.freeze({fontSize:14,fontWeight:'var(--eva-fw-medium)',lineHeight:'22px'}),
  section:Object.freeze({fontSize:14,fontWeight:'var(--eva-fw-medium)',lineHeight:'22px'}),

@@ -25,3 +25,5 @@ export {InfoList} from './063-info-list.jsx';
 export {IdentityList} from './063-identity-list.jsx';
 
 export {ContentStack} from './063-content-stack.jsx';
+
+export {TaskBreadcrumb} from "./063-task-breadcrumb.jsx";

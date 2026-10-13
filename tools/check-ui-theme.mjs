@@ -9,6 +9,7 @@ export const owners = Object.freeze({
  '063-popover.jsx':['popover','button'],
  '063-popconfirm.jsx':['popconfirm'],
  '063-file-controls.jsx':['button','tag','breadcrumb','dropdown'],
+ '063-task-breadcrumb.jsx':['breadcrumb'],
  '063-select.jsx':['select'],
  '063-card.jsx':['card'],
  '063-info-list.jsx':['list'],
