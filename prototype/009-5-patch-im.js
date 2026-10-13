@@ -63,8 +63,8 @@ function evaReminderTabRecords(mode,records,store,actor,categories){
   return !!parent&&visibleCategories.has(parent.category)&&store.conversationFollowed(record.id,actor);
  });
 }
-function EvaReminderToolbar({value,onChange,records,scope}){
- const h=React.createElement,unread=records.filter(r=>r.count>0),mentions=unread.filter(r=>r.mentioned);
+function EvaReminderToolbar({value,onChange,records,scope,showMentions=true}){
+ const h=React.createElement,unread=records.filter(r=>r.count>0);
  const menuRef=reactExports.useRef(null),[menuFilter,setMenuFilter]=reactExports.useState('all');
  const Menus=reactExports.useMemo(()=>reactExports.forwardRef(EvaSharedContextMenus),[]);
  const targets=unread.filter(r=>evaReminderMatches(r,menuFilter));
@@ -75,7 +75,7 @@ function EvaReminderToolbar({value,onChange,records,scope}){
  };
  // Telegram macOS filterContextMenuItems: Read All belongs to the filter's context menu.
  return h('div',{className:'eva-reminder-toolbar','aria-label':scope+'提醒筛选'},
-  h('div',{className:'eva-reminder-filters'},[['all','全部',null],['unread','未读',unread.length],['mentions','@我',mentions.length]].map(([id,label,count])=>h(Button,{key:id,theme:'borderless',type:value===id?'primary':'tertiary',size:'small','aria-pressed':value===id,'aria-haspopup':unread.some(r=>evaReminderMatches(r,id))?'menu':undefined,onClick:()=>{menuRef.current?.hide();onChange(id);},onContextMenu:event=>openMenu(event,id),onKeyDown:event=>{if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10'))openMenu(event,id);}},label,h(EvaUnreadBadge,{count,className:'eva-reminder-filter-count',unit:'个未读会话'})))),
+  h('div',{className:'eva-reminder-filters'},[['all','全部'],['unread','未读'],['mentions','@我']].filter(([id])=>showMentions||id!=='mentions').map(([id,label])=>h(Button,{key:id,theme:'borderless',type:value===id?'primary':'tertiary',size:'small','aria-pressed':value===id,'aria-haspopup':unread.some(r=>evaReminderMatches(r,id))?'menu':undefined,onClick:()=>{menuRef.current?.hide();onChange(id);},onContextMenu:event=>openMenu(event,id),onKeyDown:event=>{if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10'))openMenu(event,id);}},label))),
   h(Menus,{ref:menuRef,menus:targets.length?[{title:'全部标为已读',icon:evaRailIcon('BrushCleaning'),onClick:()=>{targets.forEach(r=>evaReminderMark(r));Toast.success(scope+' · '+({'all':'全部','unread':'未读','mentions':'@我'}[menuFilter])+'已标为已读');}}]:[]}));
 }
 function evaReminderMatches(record,filter){return filter==='all'||(record.count>0&&(filter!=='mentions'||record.mentioned));}
@@ -1758,8 +1758,8 @@ function EvaAITeamPage() {
         else if(event.key==='Enter'){event.preventDefault();const row=(searchRowsRef.current||[])[searchActive];if(row){choose(row.identityId,row.sessionId);closeSearch({refocus:false});}}
         else if(event.key==='Escape'){event.stopPropagation();closeSearch();}
       }},h(ForwardInput,{className:'eva-ai-team__search-input',placeholder:'搜索会话',value:searchQuery,onChange:value=>{setSearchQuery(value);setSearchActive(-1);},showClear:true,autoFocus:true,'aria-label':'搜索会话'})),
-      h(EvaReminderToolbar,{value:reminderFilter,onChange:setReminderFilter,records:reminderRecords,scope:'我的 Agent'}),
-      reminderFilter!=='all'&&!reminderRecords.some(r=>evaReminderMatches(r,reminderFilter))&&h('div',{className:'eva-reminder-hint'},reminderFilter==='mentions'?'没有未读的提及':'未读消息已看完'),
+      h(EvaReminderToolbar,{value:reminderFilter,onChange:setReminderFilter,records:reminderRecords,scope:'我的 Agent',showMentions:false}),
+      reminderFilter!=='all'&&!reminderRecords.some(r=>evaReminderMatches(r,reminderFilter))&&h('div',{className:'eva-reminder-hint'},'未读消息已看完'),
       h('div',{className:'eva-ai-team__roles'},searchOpen&&searchValue?(searchMatches.length?searchResultView:searchEmptyView):h(React.Fragment,null,
         h('section',{className:'eva-ai-team__team-group'},aiTeamSectionHeading({label:'AI 小队'}),h('div',{className:'eva-ai-team__teams'},teamGroups.map(teamGroupItem))),
         h('div',{className:'eva-ai-team__direct-groups'},roleGroup('persona','云端分身',personas),roleGroup('assistant','个人助理',teamIdentities.filter(i=>i.role==='assistant')),roleGroup('digital','数字员工',digitalEmployees))),
@@ -2520,6 +2520,13 @@ function EvaAITeamPage() {
     cut('React.createElement(Dropdown.Item,{type:"danger",onClick:()=>Ia(Es)}', '(ct?.onUpdateThread||evaMemberStore.canManageThread(Es.id,evaActorId))&&React.createElement(Dropdown.Item,{type:"danger",onClick:()=>Ia(Es)}', '已有子区侧栏删除权限一致');
     cut('unreadOfSpace=rt=>unreadOf(channelsOfSpace(rt))','unreadOfSpace=rt=>evaReminderRecords("all",channelsOfSpace(rt),false).filter(record=>record.count>0&&(!record.muted||record.mentioned)).length','项目群聊页签共享提醒状态');
     cut('gt=ct&&!ct.conversationOnly?', 'evaReminderRows=reactExports.useMemo(()=>ct?.conversationOnly?[]:evaReminderRecords("all",pt),[pt,evaMemberStore.revisionFor("list"),evaActorId,ct?.conversationOnly]),evaReminderMap=new Map(evaReminderRows.map(r=>[r.id,r])),gt=ct&&!ct.conversationOnly?', '列表共享未读数据与已读状态');
+    cut('[Cn,ir]=reactExports.useState("follow"),','[Cn,ir]=reactExports.useState("follow"),[evaListReminderFilter,setEvaListReminderFilter]=reactExports.useState("all"),','团队消息筛选由当前列表组件持有');
+    cut('evaReminderMap=new Map(evaReminderRows.map(r=>[r.id,r])),','evaReminderMap=new Map(evaReminderRows.map(r=>[r.id,r])),evaListReminderMatches=channel=>evaListReminderFilter==="all"||[channel,...(channel.threads||[]).filter(t=>t.status===1&&!evaMemberStore.chatPreferences(t.id,evaActorId).hidden)].some(item=>evaReminderMatches(evaReminderMap.get(item.id)||{count:0},evaListReminderFilter)),','父群按当前消息及可见子区匹配提醒');
+    cut('.filter(ns=>!Zi||ns.name.includes(Zi)||za(ns).some(Ms=>Ms.name.includes(Zi)));if(Zi&&Fi.length===0)', '.filter(ns=>!Zi||ns.name.includes(Zi)||za(ns).some(Ms=>Ms.name.includes(Zi))).filter(evaListReminderMatches);if((Zi||evaListReminderFilter!=="all")&&Fi.length===0)', '关注筛选保留项目父群层级');
+    cut('.map(ci=>{const Zi=ci.isThread?Pt===ci.th.id:ci.ch.id===Ct,Fi=', '.filter(ci=>!evaTeamGlobal||evaListReminderMatches(ci.th||ci.ch)).map(ci=>{const Zi=ci.isThread?Pt===ci.th.id:ci.ch.id===Ct,Fi=', '最近按会话聚合筛选');
+    cut('evaTeamGlobal&&Cn==="recent"&&evaRailSearchOpen&&React.createElement(ForwardInput,', 'evaTeamGlobal&&React.createElement(EvaReminderToolbar,{value:evaListReminderFilter,onChange:setEvaListReminderFilter,records:evaReminderTabRecords(Cn,evaReminderRows,evaMemberStore,evaActorId,evaFollowCategories),scope:"我的消息"}),evaTeamGlobal&&Cn==="recent"&&evaRailSearchOpen&&React.createElement(ForwardInput,', '团队消息复用三项提醒筛选');
+    cut('Si=ci=>{const Zi=Kt[ci.id]??!0,Fi=Va.trim(),Ki=za(ci).filter(', 'Si=ci=>{const Zi=evaListReminderFilter!=="all"||(Kt[ci.id]??!0),Fi=Va.trim(),Ki=za(ci).filter(evaListReminderMatches).filter(', '筛选时展开并仅显示匹配子区');
+    cut('const Ki=unreadOf(Fi),ro=jt[ci.id]??!1;', 'const Ki=unreadOf(Fi),ro=evaListReminderFilter==="all"&&(jt[ci.id]??!1);', '筛选时展开匹配分类');
     cut('selected:ci.id===Ct&&!Pt,unread:ci.unread,hasMention:ci.atMe,','selected:ci.id===Ct&&!Pt,unread:Zi?ci.unread:ci.unread+ci.threads.reduce((n,t)=>n+(t.unread||0),0),muted:ci.muted,hasMention:ci.atMe||(!Zi&&ci.threads.some(t=>t.atMe)),','折叠群汇总子区未读与提及');
     cut('name:ro.name,unread:ro.unread??0,selected:Pt===ro.id','name:ro.name,unread:ro.unread??0,muted:ro.muted,hasMention:ro.atMe,selected:Pt===ro.id','子区静音与提及独立展示');
 
