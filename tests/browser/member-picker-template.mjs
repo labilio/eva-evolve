@@ -25,7 +25,13 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await dialog.getByText('项目管理员',{exact:true}).waitFor();
     assert.equal(await dialog.getByText('加入后拥有群管理权限',{exact:true}).count(),0,'项目建群候选只显示短治理身份');
 
-    const first=picker.locator('.eva-member-picker__candidate').first();
+    assert.match(await picker.locator('.eva-member-picker__candidate-group').first().innerText(),/^我的 AI 分身\s+1/);
+    assert.match(await picker.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/);
+    await dialog.getByRole('button',{name:'清空',exact:true}).click();
+    await dialog.getByRole('textbox',{name:'搜索可选成员'}).fill('周');
+    await dialog.getByRole('textbox',{name:'搜索可选成员'}).fill('');
+    assert.equal(await picker.locator('.eva-member-picker__selected-item').count(),0,'手动清空后搜索不得重新预选');
+    const first=picker.locator('.eva-member-picker__candidate-group').filter({hasText:/联系人/}).locator('.eva-member-picker__candidate').first();
     assert.deepEqual(await first.locator('img.eva-members-human-avatar').evaluate(image=>{
       const style=getComputedStyle(image);
       return [style.width,style.height];
@@ -106,7 +112,8 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await groupAdd.getByText('00',{exact:true}).count(),0,'空候选分组不能渲染神秘数字');
     await groupAdd.getByText(/^联系人 \d+$/).waitFor();
     await groupAdd.getByText('我的 AI 分身 1',{exact:true}).waitFor();
-    await groupAdd.getByText('王宜林的 AI 分身',{exact:true}).waitFor();
+    assert.match(await groupAdd.locator('.eva-member-picker__candidate-group').first().innerText(),/^我的 AI 分身\s+1/);
+    await groupAdd.locator('.eva-member-picker__available').getByText('王宜林的 AI 分身',{exact:true}).waitFor();
     assert.equal(await groupAdd.getByText('同事',{exact:true}).count(),0,'联系人候选分组不使用“同事”称呼');
     const humanGroup=groupAdd.locator('.eva-member-picker__candidate-group').filter({hasText:/联系人/});
     assert.ok(await humanGroup.locator('.eva-member-picker__candidate').count()>0,'普通群应保留可拉入的项目联系人');
@@ -118,7 +125,9 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).fill('不存在的成员');
     await groupAdd.getByText('没有匹配的成员',{exact:true}).waitFor();
     await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).fill('');
-    for(const candidate of await groupAdd.locator('.eva-member-picker__candidate').all())await candidate.click();
+    assert.match(await groupAdd.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/,'添加群成员默认选择自己的分身');
+    for(const candidate of await groupAdd.locator('.eva-member-picker__candidate').all())if(!await candidate.locator('input').isChecked())await candidate.click();
+    assert.match(await groupAdd.locator('.eva-member-picker__selected-item').first().innerText(),/王宜林的 AI 分身/);
     await groupAdd.getByRole('button',{name:'确认添加',exact:true}).click();
     await page.getByRole('button',{name:'添加群聊成员',exact:true}).click();
     await groupAdd.getByText('项目内可选成员均已加入当前群聊',{exact:true}).waitFor();
@@ -156,9 +165,12 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await page.getByRole('menuitem',{name:'新建群聊',exact:true}).click();
     const createGroup=page.getByRole('dialog').filter({hasText:'新建群聊'});
     await createGroup.waitFor();
+    assert.match(await createGroup.locator('.eva-member-picker__candidate-group').first().innerText(),/^我的 AI 分身\s+1/);
     assert.equal(await createGroup.locator('.eva-member-picker').count(),1,'新建群聊入口必须使用模板 A');
     assert.equal(await createGroup.locator('.eva-member-picker--selection-only').count(),0,'带名称的创建流程保留表单形态');
     assert.equal(await createGroup.getByLabel('群聊名称',{exact:true}).count(),1);
+    assert.match(await createGroup.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/,'新建群聊默认选择自己的分身');
+    await createGroup.getByRole('button',{name:'清空',exact:true}).click();
     // 提交时校验：空名/未选成员点击必须有行内反馈并聚焦名称框，而不是按钮静默禁用
     await createGroup.getByRole('button',{name:'创建群聊',exact:true}).click();
     const createGroupError=createGroup.locator('.eva-member-picker__field .semi-form-field-error-message');
@@ -221,3 +233,59 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
 // 「拉人模板 A：新建项目创建形态」用例已移除（2026-09-21）：新建项目弹窗选人组件类名由
 // eva-member-picker* 重命名为 eva-picker-*，本用例断言面覆盖 55 处旧类名，随该重构同步退役；
 // 模板 A 字段（项目名称/共同目标/分身置顶）在现行弹窗中仍存在。
+
+test('拉人预选兼容全部本人分身：项目与群聊、清空搜索、重新打开和零候选', async () => {
+  const server=createServer(new URL('../../dist',import.meta.url).pathname);
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try {
+    const context=await browser.newContext({viewport:{width:1200,height:800}});
+    await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+    // 隔离候选读取夹具验证未来多分身，不改变生产身份数量限制，也不提交虚拟身份。
+    await context.addInitScript(()=>{
+      let api;
+      Object.defineProperty(window,'EvaMembership',{configurable:true,get:()=>api,set:value=>{
+        api={...value,bootstrap(...args){
+          const store=value.bootstrap(...args),read=store.cloneRecords;
+          store.cloneRecords=()=>{
+            const records=read.call(store),own=records.find(item=>item.ownerId===store.actorId());
+            if(window.__noCloneCandidates)return records.filter(item=>item.ownerId!==store.actorId());
+            return own?[...records,{...own,id:'fixture-second-own-clone',name:'第二个本人分身'}]:records;
+          };
+          return store;
+        }};
+      }});
+    });
+    const page=await context.newPage();
+    for(const kind of ['project','group']){
+      await page.goto(origin+(kind==='project'?'/#/collab':'/#/messages'));
+      await page.evaluate(()=>{window.__noCloneCandidates=false;});
+      const open=async()=>{
+        if(kind==='project')await page.getByRole('button',{name:'新建项目',exact:true}).click();
+        else {await page.locator('.eva-message-invite').click();await page.getByRole('menuitem',{name:'新建群聊',exact:true}).click();}
+      };
+      await open();
+      const dialog=page.getByRole('dialog').filter({hasText:kind==='project'?'新建项目':'新建群聊'});
+      const chosen=dialog.locator('.eva-member-picker__selected-item');
+      await chosen.nth(1).waitFor();
+      assert.equal(await chosen.count(),2,'全部本人分身均预选，联系人和他人分身不预选');
+      assert.match(await chosen.nth(1).innerText(),/第二个本人分身/);
+      await dialog.getByRole('button',{name:'清空',exact:true}).click();
+      await dialog.getByRole('textbox',{name:'搜索可选成员'}).fill('分身');
+      await dialog.getByRole('textbox',{name:'搜索可选成员'}).fill('');
+      assert.equal(await chosen.count(),0,'清空后搜索不得重新勾选');
+      await dialog.getByRole('button',{name:'取消',exact:true}).click();
+      await open();
+      await chosen.nth(1).waitFor();
+      assert.equal(await chosen.count(),2,'重新打开按当前候选预选全部分身');
+      await dialog.getByRole('button',{name:'取消',exact:true}).click();
+      await page.evaluate(()=>{window.__noCloneCandidates=true;});
+      await open();
+      await dialog.waitFor();
+      assert.equal(await chosen.count(),0,'没有本人分身时不预选任何人');
+      assert.equal(await dialog.getByText(/^我的 AI 分身/).count(),0,'没有合资格分身时隐藏该组');
+      await dialog.getByRole('button',{name:'取消',exact:true}).click();
+    }
+  } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

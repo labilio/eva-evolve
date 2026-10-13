@@ -103,9 +103,9 @@
       quality:{id:'quality',name:'质量缺陷专家',kind:'digital',color:'#111'}
     };
     const scenarios=[
-      {id:'create-group',label:'新建群聊',note:'创建形态 · 联系人与 AI 分身',title:'新建群聊',field:{label:'群聊名称',placeholder:'输入群聊名称'},memberLabel:'群成员',submit:'创建群聊',groups:[['联系人',[people.zhou,people.lin,people.su,people.he]],['我的 AI 分身',[ais.wangai]]]},
+      {id:'create-group',label:'新建群聊',note:'创建形态 · 联系人与 AI 分身',title:'新建群聊',field:{label:'群聊名称',placeholder:'输入群聊名称'},memberLabel:'群成员',submit:'创建群聊',groups:[['我的 AI 分身',[ais.wangai]],['联系人',[people.zhou,people.lin,people.su,people.he]]]},
       {id:'add-project',label:'添加项目成员',note:'纯拉人形态 · 仅联系人',title:'添加项目成员',submit:'确认添加',groups:[['联系人',[people.yan,people.hui]]]},
-      {id:'add-group',label:'添加项目群成员',note:'纯拉人形态 · 联系人与 AI 分身',title:'添加群聊成员',submit:'确认添加',groups:[['联系人',[people.he,people.tang,people.yan]],['我的 AI 分身',[ais.wangai]]]},
+      {id:'add-group',label:'添加项目群成员',note:'纯拉人形态 · 联系人与 AI 分身',title:'添加群聊成员',submit:'确认添加',groups:[['我的 AI 分身',[ais.wangai]],['联系人',[people.he,people.tang,people.yan]]]},
       {id:'empty-group',label:'群聊无人可拉',note:'业务空状态',title:'添加群聊成员',submit:'确认添加',empty:['项目内可选成员均已加入当前群聊','如需添加其他人，请先将其加入项目']},
       {id:'create-ai-team',label:'新建 AI 小队',note:'创建形态 · AI 分类',title:'新建 AI 小队',field:{label:'AI 小队名称',placeholder:'输入 AI 小队名称'},memberLabel:'AI 小队成员',search:'搜索我的 AI 成员',submit:'创建',groups:[['云端分身',[ais.wangai]],['个人助理',[ais.general,ais.dev]],['数字员工',[ais.hr,ais.supply,ais.quality]]]},
       {id:'edit-ai-team',label:'编辑 AI 小队成员',note:'纯拉人形态 · 带初始选择',title:'编辑 AI 小队成员',search:'搜索我的 AI 成员',submit:'保存',selected:['wangai','general'],groups:[['云端分身',[ais.wangai]],['个人助理',[ais.general,ais.dev]],['数字员工',[ais.hr,ais.supply,ais.quality]]]}
@@ -138,8 +138,8 @@
       document.querySelector('.clear').addEventListener('click',()=>{selected.clear();render()});
       const name=document.querySelector('.text-input');if(name)name.addEventListener('input',()=>{document.querySelector('#submit').disabled=!name.value.trim()||!selected.size});
     }
-    document.querySelector('.scenario-list').addEventListener('click',event=>{const button=event.target.closest('[data-index]');if(!button)return;active=Number(button.dataset.index);selected=new Set(scenarios[active].selected||[]);query='';render()});
-    selected=new Set(scenarios[0].selected||[]);render();
+    document.querySelector('.scenario-list').addEventListener('click',event=>{const button=event.target.closest('[data-index]');if(!button)return;active=Number(button.dataset.index);selected=new Set(scenarios[active].selected??scenarios[active].groups.filter(([label])=>label==='我的 AI 分身').flatMap(([,items])=>items.map(item=>item.id)));query='';render()});
+    selected=new Set(scenarios[0].selected??scenarios[0].groups.filter(([label])=>label==='我的 AI 分身').flatMap(([,items])=>items.map(item=>item.id)));render();
   </script>
 </body>
 </html>
