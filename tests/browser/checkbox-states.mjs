@@ -47,6 +47,8 @@ test('共享 Checkbox：筛选与表格在亮暗主题下保留悬停边框和�
   const dialog=page.getByRole('dialog').filter({hasText:'新建群聊'});
   const member=dialog.locator('.eva-member-picker__candidate').first();
   const memberBox=member.locator('.semi-checkbox');
+  // 本人分身现在默认选中；显式切到未选中，再验证两种完整状态。
+  if(await memberBox.locator('input').isChecked())await member.click();
   for(const theme of ['light','dark']){
    await page.evaluate(t=>window.EvaTheme.apply(t),theme);
    await checkHover(memberBox,false,theme+'成员选择');await member.click();await checkHover(memberBox,true,theme+'成员选择');await member.click();
