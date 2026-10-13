@@ -14,7 +14,7 @@ test('Edge：无负责人作为负责人选项，支持并集、恢复和清空'
  await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
  const open=async()=>{await page.locator('.loop-board').waitFor();await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click()};
  await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');await open();
- const panel=page.locator('.loop-filter-panel'),field=panel.locator('.semi-select').nth(2),options=page.locator('.semi-select-option-list:visible [role="option"]');
+ const panel=page.locator('.loop-filter-panel'),field=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:/^负责人$/})}).locator('.semi-select'),options=page.locator('.semi-select-option-list:visible [role="option"]');
  assert.equal(await panel.getByText('含无负责人',{exact:true}).count(),0);
  await field.click();assert.equal((await options.first().innerText()).trim(),'无负责人');
  assert.equal(await options.first().locator('.lucide-circle-slash').count(),1);

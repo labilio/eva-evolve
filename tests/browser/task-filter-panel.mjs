@@ -15,7 +15,8 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
   await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');
   await page.locator('.loop-board').waitFor();
-  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
   const panel=page.locator('.loop-filter-panel');
   const offsets=await panel.locator('.semi-select-multiple').evaluateAll(els=>els.map(el=>{
@@ -25,7 +26,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   assert.ok(offsets.every(n=>n<1),'全部多选提示应垂直居中：'+offsets);
   // 展开态必须使用任务业务视觉，而非只有纯文本。
   for (const [index, texts, glyph] of [[0,['待规划','待办','进行中','审核中','已完成','受阻','已取消'],'svg'],[1,['无','紧急','高','中','低'],'svg'],[4,null,'.eva-task-label-chip']]) {
-   const field=panel.locator('.semi-select').nth(index);
+   const field=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:new RegExp('^'+({0:'状态',1:'优先级',4:'标签'}[index])+'$')})}).locator('.semi-select');
    await field.click();
    const rows=page.locator('.semi-select-option-list:visible [role="option"]');
    await page.waitForFunction(()=>{const el=document.querySelector('.eva-select-option');if(!el)return false;let n=el,v=1;while(n){v*=Number(getComputedStyle(n).opacity);n=n.parentElement}return v>0.99},{},{timeout:3000});
@@ -36,7 +37,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
    assert.ok(await field.locator(glyph).count()>0,'已选回填保留业务视觉');
    await panel.locator('.loop-filter-panel__clear').click();
   }
-  const assignee=panel.locator('.semi-select').nth(2);
+  const assignee=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:/^负责人$/})}).locator('.semi-select');
   await assignee.click();
   const options=page.locator('.semi-select-option-list:visible [role="option"]');
   const expected=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot();return s.projects.prod.humans.map(h=>s.people.find(p=>p.id===h.id).name)});
@@ -64,7 +65,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await panel.locator('.loop-filter-panel__head').click();
   assert.match(await page.locator('.eva-task-filter-chips').innerText(),/何静/);
   await panel.locator('.loop-filter-panel__clear').click();
-  const creator=panel.locator('.semi-select').nth(3);
+  const creator=panel.locator('.loop-fields__row').filter({has:page.locator('.loop-fields__label',{hasText:/^创建者$/})}).locator('.semi-select');
   await creator.click();
   const expectedCreators=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot(),p=s.projects.prod;return [...s.people.map(p=>p.id),...p.cloneIds,...p.employeeIds]});
   const creatorIds=await options.locator('[data-identity-id]').evaluateAll(els=>els.map(el=>el.dataset.identityId));
@@ -105,8 +106,12 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   const panelBox=await panel.boundingBox();
   assert.ok(panelBox.x>=0&&panelBox.x+panelBox.width<=1000,'窄窗口面板不横向溢出');
   await page.locator('.loop-toolbtn').filter({hasText:'筛选'}).click();
-  await page.getByRole('tab',{name:'看板',exact:true}).click();
-  await page.getByRole('tab',{name:'表格',exact:true}).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('看板',{exact:true}).click();
+  await page.locator('.loop-board').waitFor();
+  await page.waitForTimeout(350);
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   await page.locator('.eva-task-table__row').first().waitFor();
   assert.equal(await page.locator('.loop-filter-panel:visible').count(),0,'视图往返不遗留浮层');
   assert.deepEqual(errors,[]);
