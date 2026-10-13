@@ -32,7 +32,7 @@
     function projectCreateCandidates(actorId){return {items:[...cloneItems(actorId),...humanItems(store.people().filter(person=>person.id!==actorId))],groups:[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:'联系人'}]};}
     // 身份渲染是选择器家族共用的唯一实现：候选与已选、拉人与选人都走这里。
     const identity=(item,selected=false)=>{if(item.kind==='project'){const tone=root.EvaProjectAppearance.css(item.project||{id:item.id,name:item.name});return h('span',{className:'eva-member-picker__project-identity'},h('span',{className:'eva-member-picker__project-icon','aria-hidden':true,style:{backgroundColor:tone.surface,color:tone.accent}},ProjectIcon?h(ProjectIcon,{size:16}):null),h('span',{className:'eva-member-picker__project-text'},h('span',{className:'eva-member-picker__project-name','data-eva-tooltip':item.name,'data-eva-tooltip-clamp':''},item.name),selected?null:h('span',{className:'eva-member-picker__project-detail'},item.detail)));}if(item.kind==='channel'){const channel=item.channel||{id:item.id,personId:item.personId,identityAvatarUrl:item.identityAvatarUrl,color:item.color};const appearance=item.appearance||channel.identityAppearance;const avatar=appearance?root.EvaAIIdentity.avatar(appearance,28,h):h('img',{className:'eva-members-human-avatar',alt:'',src:root.EvaAvatar.conversationUri(channel),draggable:false});return item.ai?h('span',{className:'eva-members-ai-identity'},avatar,h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text','data-eva-tooltip':item.name,'data-eva-tooltip-clamp':''},item.name),root.EvaAIIdentity.badge(h)))):h('span',{className:'eva-members-human-identity is-compact'},avatar,h('span',{className:'eva-members-human-copy'},h('span',{className:'eva-members-human-name','data-eva-tooltip':item.name,'data-eva-tooltip-clamp':''},item.name)));}return item.kind==='human'?h(HumanIdentity,{id:item.id,detail:selected?'':item.detail,compact:true}):h('span',{className:'eva-members-ai-identity'},root.EvaAIIdentity.avatar(item.appearance||root.EvaAIIdentity.cloneAppearance(store.person(item.ownerId)),28,h),h('span',{className:'eva-identity-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text','data-eva-tooltip':item.name,'data-eva-tooltip-clamp':''},item.name),root.EvaAIIdentity.badge(h))));};
-    function MemberPicker({visible,title,items,onCancel,onSubmit,single=false,allowEmpty=false,submit='确认添加',withName=false,nameField,fields,memberLabel='成员',groups,initialSelectedIds=[],minimumSelection,search,searchLabel='搜索可选成员',searchPlaceholder='搜索可选成员',emptyTitle='暂无可选成员',emptyDescription='',noResultsText='没有匹配的成员',className='',getPopupContainer,zIndex,humanHint,itemNoun}){
+    function MemberPicker({visible,title,items,onCancel,onSubmit,single=false,allowEmpty=false,submit='确认添加',withName=false,nameField,fields,memberLabel='成员',groups,initialSelectedIds,minimumSelection,search,searchLabel='搜索可选成员',searchPlaceholder='搜索可选成员',emptyTitle='暂无可选成员',emptyDescription='',noResultsText='没有匹配的成员',className='',getPopupContainer,zIndex,humanHint,itemNoun}){
       const legacyField=nameField||(withName?{label:'群聊名称',maxLength:50,required:true}:null),configuredFields=Array.isArray(fields)&&fields.length?fields:(legacyField?[legacyField]:[]);
       // 创建形态既可只有一个名称字段（新建群聊），也可承载「名称 + 附加字段」（新建项目的共同目标），仍复用同一套双栏选择区与同一提交校验。
       const fieldList=configuredFields.map((field,index)=>({...field,key:field.key||(index===0?'name':'field-'+index),id:field.id||(index===0?'eva-member-picker-name':'eva-member-picker-'+index)})),hasFields=fieldList.length>0,primaryKey=fieldList[0]?.key,fieldSignature=fieldList.map(field=>String(field.initialValue||'')).join('|'),searchEnabled=search??!single;
@@ -40,17 +40,19 @@
       const ids=form.memberIds||[];
       const setIds=next=>formApi.setValue('memberIds',typeof next==='function'?next(ids):next);
       const [query,setQuery]=R.useState(''),[groupId]=R.useState(()=>'eva-member-picker-'+Math.random().toString(36).slice(2,8));
-      const initialValues={memberIds:initialSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled))};
+      // 只在打开时预选业务层提供的全部可用分身；显式初始快照（含空数组）优先。
+      const defaultSelectedIds=initialSelectedIds??(single?[]:items.filter(item=>item.kind==='clone'&&!item.disabled).map(item=>item.id));
+      const initialValues={memberIds:defaultSelectedIds.filter(id=>items.some(item=>item.id===id&&!item.disabled))};
       fieldList.forEach(field=>{initialValues[field.key]=field.initialValue||'';});
-      const submission=useSubmission({active:visible,resetKey:title+fieldSignature+initialSelectedIds.join('|'),onSubmit:values=>{
+      const submission=useSubmission({active:visible,resetKey:title+fieldSignature+(initialSelectedIds?.join('|')??'default-clones'),onSubmit:values=>{
         const clean={};fieldList.forEach(field=>{clean[field.key]=String(values[field.key]||'').trim();});
         return onSubmit(chosen,primaryKey?clean[primaryKey]:'',clean);
       }});
-      R.useEffect(()=>{if(visible){setQuery('');formApi.reset();formApi.setValues(initialValues);}},[visible,title,fieldSignature,initialSelectedIds.join('|')]);
+      R.useEffect(()=>{if(visible){setQuery('');formApi.reset();formApi.setValues(initialValues);}},[visible,title,fieldSignature,initialSelectedIds?.join('|')??'default-clones']);
       const toggle=id=>setIds(value=>single?[id]:value.includes(id)?value.filter(item=>item!==id):[...value,id]);
       const normalized=query.trim().normalize('NFKC').toLocaleLowerCase();
       const visibleItems=items.filter(item=>!normalized||item.name.normalize('NFKC').toLocaleLowerCase().includes(normalized));
-      const declaredGroups=groups||[{kind:'human',label:'联系人'},{kind:'clone',label:'我的 AI 分身'}];
+      const declaredGroups=groups||[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:'联系人'}];
       const groupRank=new Map(declaredGroups.map((group,index)=>[group.kind,index])),itemRank=new Map(items.map((item,index)=>[item.id,index]));
       // 已选栏与左侧候选保持同一分组顺序，配置「我的 AI 分身」置顶时两栏都会置顶。
       const chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled).sort((a,b)=>{const rankA=groupRank.has(a.kind)?groupRank.get(a.kind):declaredGroups.length,rankB=groupRank.has(b.kind)?groupRank.get(b.kind):declaredGroups.length;return rankA-rankB||(itemRank.get(a.id)??0)-(itemRank.get(b.id)??0);});
