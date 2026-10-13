@@ -376,16 +376,16 @@ body.eva-message-hierarchy-ready .eva-msg .eva-list-scroll-overlay > .ch-list__s
 
 .eva-topic-pin { display:inline-flex; align-items:center; flex:none; color:var(--eva-action-primary); }
 .eva-topic-pin .ctx-icon { width:13px; height:13px; }
-/* Keep the group type visible while long group names truncate. Tag owns its
-   geometry and color through Semi props and the scoped Semi Sass theme. */
-.eva-msg .wk-conv-compact-item:has(> .eva-project-all-tag) { gap: var(--eva-space-2); }
-.eva-msg .wk-conv-compact-item > .eva-project-all-tag { flex: none; }
-.eva-msg .wk-conv-compact-item:has(> .eva-project-all-tag) .wk-conv-compact-name { min-width: 0; flex: 0 1 auto; }
-.eva-msg .eva-project-all-recent-name,
-.eva-msg .eva-project-all-title { display: inline-flex; align-items: center; gap: var(--eva-space-2); min-width: 0; }
-.eva-msg .eva-project-all-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eva-msg .eva-project-all-recent-name > .eva-project-all-tag,
-.eva-msg .eva-project-all-title > .eva-project-all-tag { flex: none; }
+/* Shared by message and project channel surfaces. Keep the group type visible
+   while long names truncate; Semi owns the Tag geometry and theme. */
+:is(.eva-msg, .eva-channel-surface) .wk-conv-compact-item:has(> .eva-project-all-tag) { gap: var(--eva-space-2); }
+:is(.eva-msg, .eva-channel-surface) .wk-conv-compact-item > .eva-project-all-tag { flex: none; }
+:is(.eva-msg, .eva-channel-surface) .wk-conv-compact-item:has(> .eva-project-all-tag) .wk-conv-compact-name { min-width: 0; flex: 0 1 auto; }
+:is(.eva-msg, .eva-channel-surface) .eva-project-all-recent-name,
+:is(.eva-msg, .eva-channel-surface) .eva-project-all-title { display: inline-flex; align-items: center; gap: var(--eva-space-2); min-width: 0; }
+:is(.eva-msg, .eva-channel-surface) .eva-project-all-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:is(.eva-msg, .eva-channel-surface) .eva-project-all-recent-name > .eva-project-all-tag,
+:is(.eva-msg, .eva-channel-surface) .eva-project-all-title > .eva-project-all-tag { flex: none; }
 
 /* 站内提醒使用公共控件与颜色，不改变原有两种组织视图。 */
 .eva-reminder-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 6px 12px; flex-shrink: 0; }
