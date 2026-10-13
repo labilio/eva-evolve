@@ -66,7 +66,7 @@ test('看板列、子任务、聊天创建均使用同一通知；空提交和�
  await page.keyboard.press('Escape');await modal.waitFor({state:'hidden'});assert.equal(await notice.count(),0);
  await page.getByRole('button',{name:'在进行中新建任务',exact:true}).click();await save('看板状态通知验收');
  await notice.getByRole('link',{name:'查看任务'}).click();await page.locator('.loop-idp').waitFor();assert.match(await page.locator('.loop-idp').innerText(),/进行中/);
- await page.getByRole('button',{name:'新建子任务',exact:true}).click();await save('子任务通知验收');
+ await page.getByRole('button',{name:'添加子任务',exact:true}).click();await save('子任务通知验收');
  await notice.getByRole('link',{name:'查看任务'}).click();await page.waitForFunction(()=>document.querySelector('.loop-idp__title')?.value==='子任务通知验收');
  await page.goto(base+'/#/collab?evaProject=prod&evaTab=channels');await page.getByRole('button',{name:'查看聊天任务',exact:true}).click();
  const composer=page.locator('[contenteditable=true][role=textbox]').first();await composer.fill('保留当前会话草稿');

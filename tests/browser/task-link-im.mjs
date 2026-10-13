@@ -68,11 +68,11 @@ test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转'
     assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
     await allowed.click();
     await page.locator('[data-eva-project-id="lab"]').waitFor();
-    await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').getByText('CLIENT-103').waitFor();
+    await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').getByText('CLIENT-103').waitFor();
     assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
     assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
     assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
-    assert.equal(await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').innerText(),'CLIENT-103');
+    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').innerText(),'CLIENT-103');
     assert.deepEqual(errors,[]);
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
@@ -130,7 +130,7 @@ test('Edge：跨项目任务链接按入口打开，项目名称跟随任务所�
     assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
     assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
     assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
-    assert.equal(await page.locator('.loop-idp__crumb-cur .loop-idp__crumb-id').innerText(),'CLIENT-103');
+    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').innerText(),'CLIENT-103');
     assert.deepEqual(errors,[]);
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
@@ -166,7 +166,7 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     await page.locator('.loop-idp__title').waitFor();
     await page.waitForTimeout(300);
     assert.equal(await page.locator('.loop-idp__title').inputValue(),'处理关键供应商来料质量异常');
-    const projectIcon=page.locator('.loop-idp__crumb .loop-idp__project-icon');
+    const projectIcon=page.locator('.eva-task-breadcrumb-item svg.lucide-layout-grid');
     await projectIcon.waitFor();
     assert.equal(await projectIcon.getAttribute('aria-hidden'),'true','项目面包屑图标不重复朗读项目名');
     assert.equal(page.url(),origin+'/#/messages','点击后保留消息路由');
@@ -178,13 +178,13 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     assert.equal(layout.railVisible,true,'左侧消息列表保持可见');
     assert.ok(layout.drawerX>layout.projectX&&layout.drawerWidth<layout.projectWidth-120,'任务以项目右侧的窄抽屉展示');
     assert.ok(Math.abs(layout.drawerRight-layout.projectRight)<1,'任务抽屉贴住项目面板右缘');
-    const taskCrumbs=await page.evaluate(()=>['.loop-idp__crumb','.loop-idp__crumb-cur'].map(selector=>{
+    const taskCrumbs=await page.evaluate(()=>['.eva-task-breadcrumb .semi-breadcrumb-item-wrap:first-child .eva-task-breadcrumb-item','.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-item'].map(selector=>{
       const {y,height}=document.querySelector('.loop-idp__topbar '+selector).getBoundingClientRect();
       return {y,height};
     }));
     assert.deepEqual(taskCrumbs[0],taskCrumbs[1],'任务抽屉的项目名与任务标题共用同一高度和中心线');
-    const taskText=await page.evaluate(()=>['.loop-idp__crumb-id','.loop-idp__crumb-title'].map(selector=>{
-      const node=document.querySelector('.loop-idp__crumb-cur '+selector),range=document.createRange();
+    const taskText=await page.evaluate(()=>['.eva-task-breadcrumb-id','.eva-task-breadcrumb-title'].map(selector=>{
+      const node=document.querySelector('.eva-task-breadcrumb [aria-current="page"] '+selector),range=document.createRange();
       range.selectNodeContents(node);
       const {y,height}=range.getBoundingClientRect();
       return {y,height};
