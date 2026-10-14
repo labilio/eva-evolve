@@ -1,6 +1,6 @@
 import {checkThemeImports} from './check-ui-theme.mjs';
 checkThemeImports();
-import {typography,floatingSurface,infoListTheme} from '../prototype/063-ui-theme.js';
+import {typography,floatingSurface,infoListTheme,pickerIdentity} from '../prototype/063-ui-theme.js';
 import { build } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,3 +52,6 @@ fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildReadOnlyT
 fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildComponentTheme('list',infoListTheme,'.eva-info-list'));
 
 fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildNotificationTheme());
+
+// Both picker layouts consume the same identity geometry as their React renderers.
+fs.appendFileSync(path.join(output,"../prototype/063-dialog.css"),`\n.eva-member-picker__panel,.eva-picker-body{--picker-avatar-size:${pickerIdentity.avatarSize}px}\n`);

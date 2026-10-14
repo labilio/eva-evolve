@@ -11,7 +11,7 @@ export {dialogText} from "./063-dialog-theme.js";
 
 export {FileDetail,FileConfirmation,FileToolbar,FileRowActions,FileButton,FilePath,FilePreviewActions} from './063-file-controls.jsx';
 
-export {typography} from './063-ui-theme.js';
+export {typography,pickerIdentity,pickerNavigation} from './063-ui-theme.js';
 export {Popconfirm} from './063-popconfirm.jsx';
 export {Popover} from './063-popover.jsx';
 
@@ -34,3 +34,6 @@ export {default as Checkbox} from '@douyinfe/semi-ui/lib/es/checkbox';
 export {TaskBreadcrumb} from "./063-task-breadcrumb.jsx";
 export {Notification,Typography,Space} from './063-notification.jsx';
 export {notifyTaskCreated} from './063-task-created-notification.jsx';
+
+// Native Breadcrumb uses the existing global Semi semantic theme.
+export {default as Breadcrumb} from "@douyinfe/semi-ui/lib/es/breadcrumb";

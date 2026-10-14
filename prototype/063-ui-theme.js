@@ -117,3 +117,14 @@ export const notificationTheme=Object.freeze({
  'font-notification_notice_title-fontWeight':String(typography.title.fontWeight),
  'font-notification_notice_content-fontWeight':String(typography.body.fontWeight),
 });
+
+// One geometry for human and AI identities throughout the shared picker.
+export const pickerIdentity = Object.freeze({avatarSize:28});
+export const pickerNavigation = Object.freeze({
+  iconSlot: {display:"inline-flex",alignItems:"center",justifyContent:"center",width:pickerIdentity.avatarSize,height:pickerIdentity.avatarSize,flex:"0 0 "+pickerIdentity.avatarSize+"px"},
+  status: {...typography.auxiliary, color: 'var(--semi-color-text-2)'},
+ hint:Object.freeze({...typography.auxiliary,color:"var(--semi-color-text-2)",margin:0,padding:"var(--eva-space-2) var(--eva-space-4)",flexShrink:0}),
+ row:Object.freeze({...typography.body,width:"100%",height:52,padding:"0 var(--eva-space-2)",justifyContent:"flex-start"}),
+ content:Object.freeze({display:"flex",alignItems:"center",gap:"var(--eva-space-2)",width:"100%",minWidth:0}),
+ breadcrumb:Object.freeze({...typography.body,padding:0,flex:"1 1 0",minWidth:0,overflow:"hidden",flexWrap:"nowrap",whiteSpace:"nowrap"}),
+});
