@@ -9,7 +9,7 @@ function setup(storage, data=true){
 }
 function memory(){let value;return{getItem(){return value},setItem(_,v){value=v}}}
 test('review stories cover every seeded AI with concise human requests and useful responses',()=>{
- const s=setup(memory()).getSnapshot(); assert.equal(s.sessions.length,3);
+ const s=setup(memory()).getSnapshot(); assert.equal(s.sessions.length,9);
  for(const i of s.identities)assert.ok(s.sessions.some(x=>x.identityId===i.id&&x.messages.length>=4));
  const cloud=s.sessions.find(x=>x.identityId==='persona-initial');assert.ok(cloud.messages.some(x=>x.text.includes('复测')));assert.ok(cloud.messages.some(x=>x.text.includes('不提前承诺')));assert.ok(cloud.messages.every(x=>!Number.isNaN(Date.parse(x.time))));
 });

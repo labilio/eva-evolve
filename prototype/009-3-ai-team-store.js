@@ -325,6 +325,17 @@
       identity.name = local.name;
     });
     if(addPickerAssistants)try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
+    if(options.profile==='review'&&!state.pickerAssistantStoriesV1&&window.__EVA_PICKER_ASSISTANT_STORIES){
+      const time=window.__EVA_DEMO_TIME.AI_REVIEW_START;
+      for(const [key,title,texts] of window.__EVA_PICKER_ASSISTANT_STORIES){
+        const identity=state.identities.find(item=>item.role==='assistant'&&item.sourceAssistantId==='assistant-demo-'+key);
+        if(!identity)continue;
+        const id='picker-assistant-'+key;
+        if(!state.sessions.some(item=>item.id===id))state.sessions.push({id,identityId:identity.id,title,updatedAt:time,messages:texts.map((text,index)=>({id:id+'-'+index,kind:'text',text,time,sender:{uid:index%2?identity.id:'self',name:index%2?identity.name:'我',color:'#1563EB',ai:!!(index%2)}}))});
+      }
+      state.pickerAssistantStoriesV1=true;
+      try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
+    }
     // Initialize unread tracking without turning historical conversations into unread.
     state.sessions.forEach(session => normalizeReadState(session, true));
     // The review profile ships two controlled unread examples so notification states
