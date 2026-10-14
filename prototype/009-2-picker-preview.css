@@ -91,7 +91,8 @@
 .eva-member-picker__candidate-group-rule{flex:1 1 auto;min-width:16px;height:1px;background:var(--gds-color-border-faint)}
 /* 分割线是组间的区分手段，第一个分组上方没有可区分的对象：由父容器决定只在组间出现，
    分组自身不判断序号，也不为“首组少一条线”单独改内边距。 */
-.eva-member-picker__candidates>.eva-member-picker__candidate-group:first-child .eva-member-picker__candidate-group-rule{display:none}
+.eva-member-picker__candidates>.eva-member-picker__candidate-group:first-child .eva-member-picker__candidate-group-rule,
+.eva-member-picker__selected-list>.eva-member-picker__candidate-group:first-child .eva-member-picker__candidate-group-rule{display:none}
 .eva-member-picker__group-count{color:var(--gds-color-text-muted);font-weight:var(--gds-font-weight-regular)}
 .eva-member-picker__selected-item{display:flex;min-height:40px;align-items:center;gap:var(--gds-space-2);padding:0 var(--gds-space-1);font-size:var(--gds-type-label-font-size);line-height:var(--gds-type-label-line-height)}
 .eva-member-picker__selected-avatar{display:inline-flex;width:var(--picker-avatar-size);height:var(--picker-avatar-size);flex:0 0 var(--picker-avatar-size);align-items:center;justify-content:flex-start;overflow:hidden}
@@ -120,3 +121,7 @@
 .eva-member-picker__category-toolbar>.semi-button{flex:0 0 auto}
 
 .eva-member-picker__category-toolbar .semi-breadcrumb-item{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Membership consequence belongs to the fixed submission area, outside both lists. */
+.eva-member-picker__submission{display:flex;align-items:center;justify-content:flex-end;gap:var(--eva-space-3);min-width:0}
+.eva-member-picker__project-notice{flex:1;min-width:0;margin:0;text-align:left;color:var(--semi-color-text-1);overflow-wrap:anywhere}

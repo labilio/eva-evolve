@@ -391,7 +391,7 @@
   font: inherit;
 }
 .eva-ai-team__sidebar .semi-button,
-.eva-ai-team__modal-host .semi-button:not(.semi-modal-close) { min-height: var(--gds-space-8); border-radius: var(--gds-radius-control); }
+.eva-ai-team__modal-host .semi-button:not(.semi-modal-close):not(.eva-member-picker-modal .semi-button) { min-height: var(--gds-space-8); border-radius: var(--gds-radius-control); }
 .eva-ai-team__sidebar .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled),
 .eva-ai-team__modal-host .semi-button-primary:not(.semi-button-borderless):not(.semi-button-light):not(.semi-button-disabled) {
   background: var(--eva-action-primary-solid);
@@ -502,7 +502,8 @@
 .eva-editor-source p { margin: 0; line-height: 20px; }
 
 /* One control scale across the connection form and shared assistant/persona editor. */
-.eva-ai-team__modal .semi-button,
+/* Shared member picker controls retain their public size and typography. */
+.eva-ai-team__modal:not(.eva-member-picker-modal) .semi-button,
 .eva-ai-team__modal .semi-select,
 .eva-ai-team__modal .semi-select-option,
 .eva-ai-team__sidebar .semi-dropdown-item,

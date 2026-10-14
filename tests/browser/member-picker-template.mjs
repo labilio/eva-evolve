@@ -134,9 +134,11 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await groupAdd.getByText('没有匹配的成员',{exact:true}).waitFor();
     await groupAdd.getByRole('textbox',{name:'搜索可选成员'}).fill('');
     assert.match(await groupAdd.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/,'添加群成员默认选择自己的分身');
-    for(const candidate of await groupAdd.locator('.eva-member-picker__candidate').all())if(!await candidate.locator('input').isChecked())await candidate.click();
-    assert.match(await groupAdd.locator('.eva-member-picker__selected-item').first().innerText(),/王宜林的 AI 分身/);
-    await groupAdd.getByRole('button',{name:'确认添加',exact:true}).click();
+    const beforeGroupAll=await page.evaluate(()=>localStorage.getItem('eva:project-members:v1'));
+    await groupAdd.getByRole('button',{name:'全选',exact:true}).click();
+    assert.deepEqual(await groupAdd.locator('.eva-member-picker__selected-list .eva-member-picker__group-title').allTextContents(),['未加入项目','已加入项目']);
+    assert.equal(await groupAdd.getByRole('group',{name:'已加入项目',exact:true}).locator('.eva-member-picker__selected-item').filter({hasText:'王宜林的 AI 分身'}).count(),1);
+    await groupAdd.getByRole('button',{name:'加入项目并添加到群聊',exact:true}).click();
     await page.getByRole('button',{name:'添加群聊成员',exact:true}).click();
     await groupAdd.getByRole('button',{name:'联系人 已全部添加',exact:true}).click();
     assert.ok(await groupAdd.locator('.eva-member-picker__candidate').count()>0,'全部添加后保留成员');
@@ -144,6 +146,9 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await groupAdd.locator('.eva-member-picker__selected-item').count(),0,'已添加不计入本次选择');
     await groupAdd.getByRole('button',{name:'取消',exact:true}).click();
 
+    // 群全选现在会同步加入项目；恢复本场景前的数据，让项目添加独立验证其未加入候选。
+    await page.evaluate(value=>localStorage.setItem('eva:project-members:v1',value),beforeGroupAll);
+    await page.reload();
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
     await page.getByRole('tab',{name:'成员管理',exact:true}).click();
     await page.getByRole('button',{name:'添加成员',exact:true}).click();

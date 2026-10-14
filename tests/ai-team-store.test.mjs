@@ -104,7 +104,7 @@ test('storage failure remains usable with visible warning',()=>{
  const s=make({storage:{getItem(){throw Error('denied');},setItem(){throw Error('denied');}}}); assert.ok(s.getSnapshot().storageWarning); assert.ok(s.sendMessage('ai-general',null,'works'));
 });
 test('local edits sanitize configuration, update assistant names, and one-way sync personas',async()=>{
- const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,4);
+ const s=make(); const persona=s.getSnapshot().identities.find(x=>x.role==='persona'); const l=s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理',configuration:{identity:'测试',personality:'简洁',skills:['文档'],privateContext:'secret'}}); assert.equal(l.version,2); assert.equal(l.configuration.privateContext,undefined); await tick(); const snap=s.getSnapshot(); assert.equal(snap.identities.find(x=>x.id==='ai-general').name,'通用助理'); const p=snap.identities.find(x=>x.id===persona.id); assert.equal(p.name,persona.name); assert.equal(p.configVersion,2); assert.equal(p.configuration.identity,'测试'); assert.equal(p.syncStatus,'synced'); const created=s.saveLocalAssistant({mode:'create',name:'新本地'}); assert.ok(created.id); assert.equal(s.getSnapshot().identities.length,10);
 });
 test('offline updates wait and reconnect synchronizes latest configuration',async()=>{
  const s=make(); s.setLocalOnline('assistant-general',false); s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'通用助理'}); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').syncStatus,'waiting'); s.setLocalOnline('assistant-general',true); await tick(); assert.equal(s.getSnapshot().identities.find(x=>x.id==='persona-initial').configVersion,2);
@@ -182,8 +182,8 @@ test('new users receive one protected named assistant and no personas',()=>{
  assert.throws(()=>s.saveLocalAssistant({mode:'edit',id:'assistant-general',name:'改名'}),/不可改名/);
  assert.equal(s.getSnapshot().identities[0].name,'林晓的通用助理');
 });
-test('review account has two assistants and one protected persona',()=>{
- const s=make();assert.equal(s.getSnapshot().identities.filter(i=>i.role==='assistant').length,2);assert.equal(s.getSnapshot().identities.filter(i=>i.role==='persona').length,1);
+test('review account has eight assistants and one protected persona',()=>{
+ const s=make();assert.equal(s.getSnapshot().identities.filter(i=>i.role==='assistant').length,8);assert.equal(s.getSnapshot().identities.filter(i=>i.role==='persona').length,1);
  assert.equal(s.getSnapshot().identities.find(i=>i.role==='persona').name,'王宜林的 AI 分身');
  assert.throws(()=>s.savePersona({id:'persona-initial',name:'新分身名字'}),/不可修改/);assert.equal(s.getSnapshot().identities.find(i=>i.id==='persona-initial').name,'王宜林的 AI 分身');
 });
@@ -223,7 +223,7 @@ test('隐藏本地助理入口留下的状态会恢复本地身份和独立首�
  storage.setItem('',JSON.stringify(saved));
  const restored=make({storage}).getSnapshot();
  const locals=restored.identities.filter(i=>i.role==='assistant');
- assert.equal(locals.length,2);
+ assert.equal(locals.length,8);
  locals.forEach(identity=>assert.ok(restored.sessions.some(session=>session.identityId===identity.id)));
  const created=make({storage}).createThread(locals[0].id);
  assert.ok(make({storage}).getSnapshot().sessions.some(session=>session.id===created));
@@ -295,4 +295,14 @@ test('AI 私聊引用保留原会话关系，正文触发回执且其他子区�
  reply.digest='外部修改';assert.equal(record.messages.at(-2).replyTo.digest,'待确认内容');
  assert.equal(make({storage}).getSnapshot().sessions.find(item=>item.id===thread).messages.at(-2).replyTo.conversationId,channel);
  const other=s.createThread(identity.id);assert.throws(()=>s.sendMessage(identity.id,other,'跨区',reply));assert.equal(s.getSnapshot().sessions.find(item=>item.id===other).messages.length,0);
+});
+
+test('review picker assistants persist once and preserve edits',()=>{
+ const storage=memory(),s=make({storage});
+ assert.equal(s.getSnapshot().localAssistants.length,8);
+ s.saveLocalAssistant({mode:'edit',id:'assistant-demo-writing',name:'我的写作助理'});
+ const restored=make({storage}).getSnapshot();
+ assert.equal(restored.localAssistants.length,8);
+ assert.equal(restored.localAssistants.find(a=>a.id==='assistant-demo-writing').name,'我的写作助理');
+ assert.equal(restored.identities.filter(i=>i.role==='assistant').length,8);
 });

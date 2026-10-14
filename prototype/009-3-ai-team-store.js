@@ -307,6 +307,15 @@
       const general = state.localAssistants.find(item => item.id === 'assistant-general');
       if (general?.name === '王宜林的通用助理') general.name = '通用助理';
     }
+    // Review fixtures live in the shared assistant store; existing user records stay intact.
+    const addPickerAssistants=options.profile==='review'&&!state.pickerAssistantsV1;
+    if(addPickerAssistants){
+      for(const [key,name] of [['writing','文案写作助理'],['meeting','会议纪要助理'],['research','资料研究助理'],['data','数据分析助理'],['translation','翻译助理'],['planning','工作规划助理']]){
+        const id='assistant-demo-'+key;
+        if(!state.localAssistants.some(item=>item.id===id))state.localAssistants.push({id,name,version:1,online:true,configuration:configuration({identity:name})});
+      }
+      state.pickerAssistantsV1=true;
+    }
     state.localAssistants.forEach(local => {
       let identity = state.identities.find(item => item.role === 'assistant' && item.sourceAssistantId === local.id);
       if (!identity) {
@@ -315,6 +324,7 @@
       }
       identity.name = local.name;
     });
+    if(addPickerAssistants)try{storage?.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){}
     // Initialize unread tracking without turning historical conversations into unread.
     state.sessions.forEach(session => normalizeReadState(session, true));
     // The review profile ships two controlled unread examples so notification states

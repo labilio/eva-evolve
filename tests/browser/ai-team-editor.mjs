@@ -39,7 +39,17 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     await dialog.getByLabel('AI 小队名称',{exact:true}).fill('双栏验收团队');
     assert.equal(await dialog.getByText('AI 小队头像',{exact:true}).count(),0);
     assert.equal(await dialog.getByRole('button',{name:'点击修改',exact:true}).count(),0);
-    const search=dialog.getByRole('textbox',{name:'搜索我的 Agent 成员'});
+    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),1,'新建默认只选本人分身');
+    assert.match(await dialog.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/);
+    await dialog.getByRole('button',{name:'移除 王宜林的 AI 分身',exact:true}).click();
+    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),0,'默认分身允许取消');
+    const search=dialog.getByRole('textbox',{name:'搜索 AI 分身、个人助理、数字员工'});
+    await dialog.getByRole('button',{name:'个人助理',exact:true}).click();
+    assert.equal(await search.getAttribute('placeholder'),'搜索个人助理');
+    assert.equal(await dialog.locator('.eva-member-picker__candidate').count(),8);
+    await dialog.getByRole('button',{name:'全选',exact:true}).click();
+    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),8);
+    await dialog.getByRole('button',{name:'取消全选',exact:true}).click();
     await search.fill('通用助理');
     assert.equal(await dialog.locator('.eva-member-picker__candidate').count(),1);
     await dialog.locator('.eva-member-picker__candidate').click();
@@ -83,6 +93,7 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     await membersDialog.waitFor();
     assert.equal(await membersDialog.locator('#eva-ai-team-name').count(),0);
     assert.equal(await membersDialog.locator('.eva-member-picker__selected-item').count(),1);
+    await membersDialog.getByRole('button',{name:/^个人助理/}).click();
     await membersDialog.locator('.eva-member-picker__candidate').filter({hasText:'Eva 研发助理'}).click();
     await membersDialog.getByRole('button',{name:'保存',exact:true}).click();
     await membersDialog.waitFor({state:'hidden'});
@@ -98,7 +109,8 @@ test('AI 小队编辑器：双栏选择、搜索、创建与重新编辑', async
     await page.getByRole('menuitem',{name:'新建 AI 小队',exact:true}).click();
     await dialog.waitFor();
     assert.equal(await dialog.getByLabel('AI 小队名称',{exact:true}).inputValue(),'');
-    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),0);
+    assert.equal(await dialog.locator('.eva-member-picker__selected-item').count(),1,'重新新建恢复默认分身，不沿用上次选择');
+    assert.match(await dialog.locator('.eva-member-picker__selected-item').innerText(),/王宜林的 AI 分身/);
     await page.screenshot({path:'artifacts/ai-team-editor/empty.png',animations:'disabled'});
     assert.deepEqual(errors,[]);
   } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

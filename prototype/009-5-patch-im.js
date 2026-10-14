@@ -1375,13 +1375,13 @@ function EvaAITeamGroupEditor({visible,record,membersOnly=false,candidates,onClo
     title:membersOnly?'编辑 AI 小队成员':record?'编辑 AI 小队':'新建 AI 小队',
     className:'eva-ai-team__modal eva-ai-team-editor',
     items:candidates,
-    groups:[{kind:'persona',label:'云端分身'},{kind:'assistant',label:'个人助理'},{kind:'digital',label:'数字员工'}],
-    initialSelectedIds:(record?.memberIds||[]).filter(id=>candidates.some(item=>item.id===id)),
+    groups:[{kind:'persona',label:'我的 AI 分身'},{kind:'assistant',label:'个人助理'},{kind:'digital',label:'数字员工'}],
+    initialSelectedIds:record?(record.memberIds||[]):undefined,
     minimumSelection:1,
     memberLabel:'AI 小队成员',
     nameField:membersOnly?null:{id:'eva-ai-team-name',label:'AI 小队名称',initialValue:record?.name||'',required:true,maxLength:50},
-    searchLabel:'搜索我的 Agent 成员',
-    searchPlaceholder:'搜索我的 Agent 成员',
+    searchLabel:'搜索 AI 分身、个人助理、数字员工',
+    searchPlaceholder:'搜索 AI 分身、个人助理、数字员工',
     emptyTitle:'暂无可用的 AI 成员',
     emptyDescription:'请先创建或接入 AI 成员',
     submit:record?'保存':'创建',
@@ -1711,7 +1711,7 @@ function EvaAITeamPage() {
       expanded&&h('div',{className:'eva-ai-team__team-threads',id:threadsId},visibleThreads.map(item=>aiTeamThreadRow(group.id,item,{selected:selected&&selection.sessionId===item.id,actions:teamThreadMenu(group,item)})),hasMore&&h('button',{type:'button',className:'eva-ai-team__team-threads-more','aria-expanded':showAll,'aria-label':(showAll?'收起 ':'展开查看 ')+group.name+' 子区',onClick:()=>setShowAllTeamThreads(value=>({...value,[group.id]:!showAll}))},h('span',null,showAll?'收起':'展开查看'),h(ChevronDown,{size:12,className:'eva-ai-team__team-threads-more-chevron'+(showAll?' is-expanded':''),'aria-hidden':true}))));
   }
   const personas=snapshot.identities.filter(i=>i.role==='persona');
-  const groupCandidates=[...teamIdentities.map(item=>({id:item.id,name:item.name,kind:item.role,appearance:evaIdentityAppearance(item)})),...digitalEmployees.map(item=>({id:item.id,name:item.name,kind:'digital',appearance:digitalStore.appearance(item)}))];
+  const groupCandidates=[...teamIdentities.map(item=>({id:item.id,name:item.name,kind:item.role,appearance:evaIdentityAppearance(item)})),...digitalEmployees.map(item=>({id:item.id,name:item.name,kind:'digital',domain:item.domain?.trim()||'未设置',appearance:digitalStore.appearance(item)}))];
   const openPersonalAssistant=()=>window.__evaOpenAssistantEditor?.({mode:'create',role:'assistant',returnFocus:groupEditorOpener.current});
   const closeGroupEditor=()=>{setGroupEditor(null);requestAnimationFrame(()=>groupEditorOpener.current?.focus());};
   const saveGroup=record=>{if(groupEditor?.mode==='members'){groupStore.updateGroup(groupEditor.record.id,{memberIds:record.memberIds});Toast.success('AI 小队成员已更新');}else{const groupId=groupStore.createGroup(record);setCollapsed(value=>({...value,[groupId]:false}));choose(groupId,null);Toast.success('AI 小队已创建');}closeGroupEditor();};
