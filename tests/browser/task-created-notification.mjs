@@ -6,7 +6,7 @@ import path from 'node:path';
 
 test('真实任务创建：唯一通知、查看详情、转发及取消',async()=>{
  const server=createServer(path.resolve('dist'));await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const browser=await chromium.launch({channel:'msedge'}),page=await browser.newPage({viewport:{width:1440,height:900}});
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),page=await browser.newPage({viewport:{width:1440,height:900}});
  page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base=`http://127.0.0.1:${server.address().port}`,project=base+'/#/collab?evaProject=prod&evaTab=tasks',notice=page.locator('.eva-notification');
  const create=async title=>{
@@ -28,6 +28,7 @@ test('真实任务创建：唯一通知、查看详情、转发及取消',async(
  assert.match(href,/evaTask=issue-prod-/);
  await notice.getByRole('link',{name:'查看任务'}).click();await notice.waitFor({state:'hidden'});
  await page.locator('.loop-idp').waitFor();assert.match(await page.locator('.loop-idp').innerText(),/核对通知查看链路/);
+ await page.getByRole('button',{name:'关闭任务详情',exact:true}).click();
  await page.goto(project);await create('核对通知转发链路');
  const taskUrl=await notice.getByRole('link',{name:'查看任务'}).getAttribute('href');
  await notice.getByRole('link',{name:'转发'}).click();
@@ -46,8 +47,8 @@ test('真实任务创建：唯一通知、查看详情、转发及取消',async(
  await page.goto(base+'/#/messages?evaDM='+encodeURIComponent(target));
  const taskId=new URLSearchParams(taskUrl.split('?')[1]).get('evaTask');
  const sharedLink=page.locator('[data-eva-task-link="'+taskId+'"]');await sharedLink.waitFor();
- await sharedLink.click();await page.locator('.eva-inline-project-panel .loop-idp__title').waitFor();
- assert.match(await page.locator('.eva-inline-project-panel .loop-idp__title').inputValue(),/核对通知转发链路/);
+ await sharedLink.click();await page.locator('.eva-task-detail-host .loop-idp__title:visible').waitFor();
+ assert.match(await page.locator('.eva-task-detail-host .loop-idp__title:visible').inputValue(),/核对通知转发链路/);
  assert.match(page.url(),/#\/messages/);
  assert.deepEqual(errors,[]);
  }catch(error){console.error(await page.locator('body').innerText());throw error;}finally{await browser.close();await new Promise(r=>server.close(r));}
@@ -55,7 +56,7 @@ test('真实任务创建：唯一通知、查看详情、转发及取消',async(
 
 test('看板列、子任务、聊天创建均使用同一通知；空提交和取消不通知',async()=>{
  const server=createServer(path.resolve('dist'));await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const browser=await chromium.launch({channel:'msedge'}),page=await browser.newPage({viewport:{width:1440,height:900}});
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),page=await browser.newPage({viewport:{width:1440,height:900}});
  page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base=`http://127.0.0.1:${server.address().port}`,project=base+'/#/collab?evaProject=prod&evaTab=tasks';
  const notice=page.locator('.eva-notification'),modal=page.locator('.eva-loop-task-create .semi-modal-content');
@@ -67,7 +68,7 @@ test('看板列、子任务、聊天创建均使用同一通知；空提交和�
  await page.getByRole('button',{name:'在进行中新建任务',exact:true}).click();await save('看板状态通知验收');
  await notice.getByRole('link',{name:'查看任务'}).click();await page.locator('.loop-idp').waitFor();assert.match(await page.locator('.loop-idp').innerText(),/进行中/);
  await page.getByRole('button',{name:'添加子任务',exact:true}).click();await save('子任务通知验收');
- await notice.getByRole('link',{name:'查看任务'}).click();await page.waitForFunction(()=>document.querySelector('.loop-idp__title')?.value==='子任务通知验收');
+ await notice.getByRole('link',{name:'查看任务'}).click();await page.waitForFunction(()=>Array.from(document.querySelectorAll('.loop-idp__title')).some(el=>el.getClientRects().length&&el.value==='子任务通知验收'));
  await page.goto(base+'/#/collab?evaProject=prod&evaTab=channels');await page.getByRole('button',{name:'查看聊天任务',exact:true}).click();
  const composer=page.locator('[contenteditable=true][role=textbox]').first();await composer.fill('保留当前会话草稿');
  await page.locator('.eva-chat-task-list').getByRole('button',{name:'新建任务',exact:true}).click();await save('聊天创建通知验收');

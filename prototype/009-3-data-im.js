@@ -422,11 +422,29 @@ window.__EVA_OFFICIAL_COMMUNITY_DEMO = {
   }
 };
 
+// Task-reference examples share existing supply-chain records across personal surfaces.
+window.__EVA_PERSONAL_TASK_STORIES = [
+  {id:'task-quality-review',name:'来料异常与排产核对',request:'把来料异常和排产相关任务列出来，我先看看详情。',intro:'先核对异常处理，再查看排产影响；采购成本也可以一起对照。',taskIds:['supply-3','supply-5','supply-4']},
+  {id:'task-contract-review',name:'合同与供应商评审',request:'整理合同续签和供应商评审相关任务，方便我逐项查看。',intro:'这里是合同续签、招投标评审和供应商准入的任务入口，结论仍需人工确认。',taskIds:['supply-7','supply-2','supply-6']},
+  {id:'task-purchase-review',name:'采购需求与维保核对',request:'让我看看采购需求和维保计划的相关任务，包括需要补齐的材料。',intro:'可以先看采购总任务，再看维保计划及其预算清单子任务。',taskIds:['supply-1','supply-11','supply-12']}
+].map(story=>({...story,taskLinks:story.taskIds.map(id=>{
+  const task=window.__EVA_SUPPLY_CHAIN_DEMO.issues.find(item=>item.id===id);
+  if(!task)throw new Error('Missing personal task demo: '+id);
+  return {label:task.identifier+' · '+task.title,url:'#/collab?evaProject=prod&evaTab=tasks&evaTask='+encodeURIComponent(task.id)};
+})}));
+
 window.__EVA_MY_AI_GROUP_STORIES=[
  {id:'supply-brief',name:'保供晨会',request:'请把供应链运营协同的晨会重点整理出来，按风险、证据、下一步排列。',reply:'## 今日保供晨会\n\n**先处理影响排产的事项，再讨论常规进度。**\n\n| 事项 | 当前风险 | 下一步 |\n| --- | --- | --- |\n| A-2409 来料异常 | 放行证据待补 | 复核 8D 与验证照片 |\n| 关键件交期 | 齐套窗口待确认 | 核对排产需求 |\n| 到期合同 | 续签条款待评审 | 汇总待决策项 |\n\n> 以上是演示材料整理，交期和放行结论仍由人工确认。',follow:'很好，请把晨会行动清单做成文件，每项写清需要确认什么。',file:'供应链晨会行动清单.md',content:'# 供应链晨会行动清单\n\n演示样本，不代表真实业务结论。\n\n- [ ] A-2409：确认隔离范围、复测结果和放行签字。\n- [ ] 关键件：确认需求日期、供应商交期和运输窗口。\n- [ ] 合同：确认续签范围、价格条款和审批材料。\n'},
  {id:'supplier-evidence',name:'供应商整改',request:'帮我检查 A-2409 整改证据是否完整，不要直接给放行结论。',reply:'## 整改证据核对\n\n### 已具备\n- 隔离措施说明\n- 初步原因分析\n\n### 仍需补充\n1. **长期措施验证**：复测样本与统计结果。\n2. **现场证据**：措施实施前后的照片。\n3. **签字记录**：质量负责人确认。\n\n**建议：保持待复核，暂不承诺恢复交付。**',follow:'按这个结构生成一份证据检查表，我来补齐材料并确认。',file:'A-2409整改证据检查表.csv',content:'检查项,当前情况,待补材料\n隔离措施,已有说明,隔离范围确认\n长期措施,待验证,复测样本与统计结果\n现场证据,待补充,实施前后照片\n放行签字,待确认,质量负责人签字\n'},
  {id:'contract-review',name:'合同评审',request:'整理本轮采购合同评审要点，区分已经明确和需要我决策的事项。',reply:'## 合同评审摘要\n\n**已明确**\n- 本轮先核对续签范围与到期节点。\n- 保留现有履约记录作为评审依据。\n\n**需要你决策**\n| 条目 | 待确认内容 |\n| --- | --- |\n| 价格调整 | 是否接受新的计价口径 |\n| 交付窗口 | 是否与实际排产一致 |\n| 违约责任 | 是否需要进一步评审 |\n\n> 我只整理条款差异，不代你确认商务条件。',follow:'生成评审提纲文件，保留待确认项，我会发给同事讨论。',file:'采购合同评审提纲.md',content:'# 采购合同评审提纲\n\n演示样本，仅供场景讨论。\n\n## 核对事项\n- 续签范围和到期节点\n- 计价口径与价格调整\n- 交付窗口与排产需求\n- 违约责任与履约记录\n\n## 人工确认\n逐项记录结论、依据与后续动作，未确认前不作对外承诺。\n'}
 ];
+
+window.__EVA_MY_AI_GROUP_STORIES.push(...window.__EVA_PERSONAL_TASK_STORIES.map(story=>({
+  id:story.id,name:story.name,taskReferenceDemo:true,request:story.request,
+  reply:story.intro+'\n\n'+story.taskLinks.map(link=>'['+link.label+']('+link.url+')').join('\n\n'),
+  follow:'请保留这些任务入口，我核对后再继续讨论。',
+  file:story.name+'.md',content:story.intro+'\n\n'+story.taskLinks.map(link=>'['+link.label+']('+link.url+')').join('\n\n')
+})));
 
 // User-approved Evolve trial group. Existing supply-chain identities and file fixtures only.
 window.__EVA_IM_BUBBLE_DEMO = (()=>{
@@ -644,6 +662,7 @@ window.__EVA_PERSONAL_AUTOMATION_DEMO = Object.freeze([
 // Additional personal requests are distinct from cron runs and use stable
 // conversation IDs so local edits and deletions survive later demo updates.
 window.__EVA_PERSONAL_CONVERSATION_DEMO = Object.freeze([
+  ...window.__EVA_PERSONAL_TASK_STORIES.map(story=>({id:'personal-'+story.id,title:story.name,time:'今天',messages:[{role:'user',text:story.request},{role:'assistant',intro:story.intro,taskLinks:story.taskLinks}]})),
   {id:'personal-supplier-delivery',title:'核对供应商交期风险',time:'2 小时',messages:[
     {role:'user',text:'帮我梳理供应链运营协同里两家供应商的交期变化，哪些会影响下周排产？'},
     {role:'assistant',intro:'目前需要重点核对合同 C 延长的 7 天交期，以及关键件第二批的材质证明。',paragraphs:['建议先确认第一批到货窗口，再让采购与仓库核对第二批是否需要分批交付；在人工确认前不要把预计到货写成承诺。']}

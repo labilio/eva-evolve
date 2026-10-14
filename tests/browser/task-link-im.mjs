@@ -45,7 +45,7 @@ test('Edge：消息里的失效任务链接点击后提示并保留会话',async
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
 
-test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转',async()=>{
+test('Edge：项目任务描述中的跨项目链接沿用权限并保留来源项目',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin=`http://127.0.0.1:${server.address().port}`;
@@ -67,12 +67,12 @@ test('Edge：项目任务描述中的跨项目链接沿用权限和项目跳转'
     await page.getByText('你不是该任务所属项目的成员，无法查看任务').waitFor();
     assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
     await allowed.click();
-    await page.locator('[data-eva-project-id="lab"]').waitFor();
-    await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').getByText('CLIENT-103').waitFor();
-    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
-    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
+    await page.locator('.eva-task-detail-host .loop-idp__title:visible').waitFor();
+    await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id:visible').getByText('CLIENT-103').waitFor();
+    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'prod');
+    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'供应链运营协同');
     assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
-    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').innerText(),'CLIENT-103');
+    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id:visible').innerText(),'CLIENT-103');
     assert.deepEqual(errors,[]);
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
@@ -102,9 +102,9 @@ test('Edge：供应链项目群预置可访问、无权限与已删除项目任�
     assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=channels');
     await allowed.click();
     await page.locator('.loop-idp__title').waitFor();
-    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
-    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
-    assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'prod');
+    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'供应链运营协同');
+    assert.equal(await page.getByRole('tab',{name:'群聊'}).getAttribute('aria-selected'),'true');
     assert.deepEqual(errors,[]);
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
@@ -122,15 +122,15 @@ test('Edge：跨项目任务链接按入口打开，项目名称跟随任务所�
     await page.goto(origin+'/#/messages');
     await send();
     assert.equal(page.url(),origin+'/#/messages');
-    assert.equal(await page.locator('.eva-inline-project-panel [data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
-    assert.equal(await page.locator('.eva-inline-project-panel .collab-tabs button').nth(1).innerText(),'客户联合交付');
+    assert.equal(await page.locator('.eva-inline-project-panel').count(),0);
+    assert.equal(await page.locator('.loop-idp__title:visible').inputValue(),'联调客户演示环境与核心流程');
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=channels');
     await send();
-    assert.equal(page.url(),origin+'/#/collab?evaProject=lab&evaTab=tasks&evaTask=client-103');
-    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'lab');
-    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'客户联合交付');
-    assert.equal(await page.getByRole('tab',{name:'任务'}).getAttribute('aria-selected'),'true');
-    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id').innerText(),'CLIENT-103');
+    assert.equal(page.url(),origin+'/#/collab?evaProject=prod&evaTab=channels');
+    assert.equal(await page.locator('[data-eva-project-id]').getAttribute('data-eva-project-id'),'prod');
+    assert.equal(await page.locator('.collab-tabs button').nth(1).innerText(),'供应链运营协同');
+    assert.equal(await page.getByRole('tab',{name:'群聊'}).getAttribute('aria-selected'),'true');
+    assert.equal(await page.locator('.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-id:visible').innerText(),'CLIENT-103');
     assert.deepEqual(errors,[]);
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
@@ -172,12 +172,12 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
     assert.equal(page.url(),origin+'/#/messages','点击后保留消息路由');
     const layout=await page.evaluate(()=>{
       const rect=selector=>document.querySelector(selector)?.getBoundingClientRect();
-      const rail=rect('.eva-msg .ch-list'),project=rect('.eva-inline-project-panel'),drawer=rect('.eva-inline-project-panel .collab-route-right .panel');
+      const rail=rect('.eva-msg .ch-list'),project=rect('.eva-task-outlet'),drawer=rect('.eva-task-detail-host .panel');
       return {railVisible:!!rail&&rail.width>0,projectX:project?.x,projectWidth:project?.width,drawerX:drawer?.x,drawerWidth:drawer?.width,drawerRight:drawer?.right,projectRight:project?.right};
     });
     assert.equal(layout.railVisible,true,'左侧消息列表保持可见');
-    assert.ok(layout.drawerX>layout.projectX&&layout.drawerWidth<layout.projectWidth-120,'任务以项目右侧的窄抽屉展示');
-    assert.ok(Math.abs(layout.drawerRight-layout.projectRight)<1,'任务抽屉贴住项目面板右缘');
+    assert.ok(Math.abs(layout.drawerWidth-Math.min(900,Math.max(640,layout.projectWidth*0.7)))<1,'任务宽度取自统一内容区，不再按聊天区域计算');
+    assert.ok(Math.abs(layout.drawerRight-layout.projectRight)<1,'任务抽屉贴住统一内容区右缘');
     const taskCrumbs=await page.evaluate(()=>['.eva-task-breadcrumb .semi-breadcrumb-item-wrap:first-child .eva-task-breadcrumb-item','.eva-task-breadcrumb [aria-current="page"] .eva-task-breadcrumb-item'].map(selector=>{
       const {y,height}=document.querySelector('.loop-idp__topbar '+selector).getBoundingClientRect();
       return {y,height};
@@ -195,21 +195,18 @@ test('Edge：项目任务链接在 IM 显示标题并打开原任务',async()=>{
       [...header.querySelectorAll('.loop-idp__morebtn,.loop-idp__copybtn,.loop-idp__fsbtn,.loop-idp__closebtn')]
         .map(button=>({className:button.className,label:button.getAttribute('aria-label')})));
     assert.deepEqual(headerActions.map(action=>action.className.split(' ').find(name=>name.startsWith('loop-idp__'))),
-      ['loop-idp__morebtn','loop-idp__copybtn','loop-idp__fsbtn','loop-idp__closebtn']);
-    assert.deepEqual(headerActions.map(action=>action.label),['更多操作','复制任务链接','切换全屏','关闭任务详情']);
-    await page.locator('.loop-idp__copybtn').hover();
-    await page.getByRole('tooltip').getByText('复制任务链接').waitFor();
+      ['loop-idp__morebtn','loop-idp__fsbtn','loop-idp__closebtn']);
+    assert.deepEqual(headerActions.map(action=>action.label),['更多操作','切换全屏','关闭任务详情']);
     await page.getByRole('button',{name:'更多操作'}).click();
     await page.getByText('关联父任务',{exact:true}).waitFor();
-    assert.equal(await page.locator('.semi-dropdown-menu').getByText('复制任务链接').count(),0,'复制入口只保留在标题栏');
-    await page.keyboard.press('Escape');
-    await page.getByRole('button',{name:'复制任务链接'}).click();
+    assert.equal(await page.locator('.semi-dropdown-menu').getByText('复制任务链接').count(),1,'已发布基线的复制入口位于更多菜单');
+    await page.locator('.semi-dropdown-menu').getByText('复制任务链接',{exact:true}).click();
     const copied=await page.evaluate(()=>navigator.clipboard.readText());
     assert.equal(copied,origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=supply-3');
 
     await page.locator('.collab-route-right .loop-idp__closebtn').click();
     await page.locator('.collab-route-right').waitFor({state:'detached'});
-    assert.equal(await page.locator('.eva-inline-project-panel').count(),1,'关闭任务后仍在右侧项目中');
+    assert.equal(await page.locator('.eva-inline-project-panel').count(),0,'关闭任务回到原聊天');
     await page.locator('.ch-list').getByText('供应链运营协同',{exact:true}).last().click();
     await page.locator('.eva-inline-project-panel').waitFor({state:'detached'});
     await link.waitFor();

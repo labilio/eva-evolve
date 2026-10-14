@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,6 +11,7 @@ function setup(){
  const ctx={currentSpaceId:()=> 'prod',scoped:()=>issues,ISSUES_BY_SPACE:{prod:issues},issues,
    evaMembers:()=>({store:{isProjectArchived:()=>false,actorId:()=> 'u-wangyilin',snapshot:()=>({actorId:'u-wangyilin'}),person:()=>({name:'王宜林'})}})};
  attachTaskSubscriptions(ctx);
+  attachTaskScope(ctx,source);
  const start=source.indexOf('issuesOf='),end=source.indexOf('function groupIssuesByAssignee',start);
  vm.runInNewContext(source.slice(start,end),ctx);
  return ctx;

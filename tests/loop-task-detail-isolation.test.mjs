@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,6 +12,7 @@ function setup(){
  const window={};
  for(const name of ['009-0-demo-time','009-1-data-drive','009-2-data-supply'])vm.runInNewContext(readPrototype(name),{window});
  const ctx={issuesOf:()=>issues,window,evaLoopCommentsByTask:new Map()};
+ attachTaskScope(ctx,source);
  const baseCommentsStart=source.indexOf('evaBaseListComments='),baseCommentsEnd=source.indexOf(',listComments=',baseCommentsStart);
  assert.ok(baseCommentsStart>=0&&baseCommentsEnd>baseCommentsStart,'base comment fixture extraction');
  vm.runInNewContext(source.slice(baseCommentsStart,baseCommentsEnd),ctx);
@@ -27,7 +29,7 @@ test('评论、子任务、动态在新任务为空，预置任务内容仍存�
  const {ctx}=setup();for(const fn of ['listComments','listChildren','listTimeline'])assert.equal((await ctx[fn]('new-task')).length,0);
  assert.equal((await ctx.listComments('supply-1')).length,4);assert.equal((await ctx.listChildren('supply-1'))[0].id,'child');assert.equal((await ctx.listComments()).length,0);
 });
-test('切到其他项目后旧任务运行、评论和子任务均不泄露',async()=>{
+test('任务不在可访问数据中时运行、评论和子任务均不泄露',async()=>{
  const s=setup();s.setIssues([{id:'other-project-task'},{id:'orphan',parent_issue_id:'supply-1'}]);
  for(const fn of ['listRuns','listComments','listChildren','listTimeline'])assert.equal((await s.ctx[fn]('supply-1')).length,0);
 });
