@@ -40,7 +40,7 @@ test('消息右栏注册 Markdown、HTML、Word 和 PDF 阅读器', async () => 
   assert.match(patch, /EvaFilePreviewExitFullscreenIcon=createLucideIcon\("Minimize2"/);
   assert.match(patch, /aria-label":evaFullscreen\?"退出全屏预览":"进入全屏预览"/);
   assert.match(patch, /className:"wk-file-preview-panel"\+\(evaFullscreen\?" is-fullscreen":""\)/);
-  assert.match(patch, /if\(evaFullscreen\)\{evaEvent\.preventDefault\(\);evaEvent\.stopPropagation\(\);evaSetFullscreen\(!1\)/);
+  assert.match(patch, /if\(evaEvent\.key!=="Escape"\|\|evaEvent\.isComposing\|\|evaEvent\.defaultPrevented\)return;evaEvent\.preventDefault\(\);evaEvent\.stopPropagation\(\);if\(evaFullscreen\)\{evaSetFullscreen\(!1\)/);
   assert.match(patch, /addEventListener\("keydown",evaOnKeyDown,!0\)/);
 });
 

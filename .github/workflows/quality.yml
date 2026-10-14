@@ -43,6 +43,9 @@ jobs:
       - name: Verify shared task navigation and drawer sizes
         run: npm run test:task-navigation
 
+      - name: Verify Escape layers and focus restoration
+        run: npm run test:escape
+
       - name: Verify search controls in browser
         run: npm run test:search
 

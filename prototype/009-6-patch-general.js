@@ -62,6 +62,13 @@
     const h=React.createElement,nav=evaTaskNavigation(),state=reactExports.useSyncExternalStore(nav.subscribe,nav.getSnapshot);
     const location=useLocation(),store=evaMembers().store,revision=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot),actor=store.actorId();
     const [narrow,setNarrow]=reactExports.useState(false),lastActor=reactExports.useRef(actor);
+    const panel=reactExports.useRef(null),nestedEscape=reactExports.useRef(false);
+    const activeTask=state.layers.at(-1)?.props.issueId;
+    reactExports.useLayoutEffect(()=>{
+      const root=panel.current;if(!root||!activeTask)return;
+      const close=Array.from(root.querySelectorAll('[aria-label="关闭任务详情"]')).find(el=>el.getClientRects().length);
+      (close||root).focus({preventScroll:true});
+    },[activeTask]);
     reactExports.useEffect(()=>{
       const current=nav.getSnapshot();
       if(current.layers.length&&(current.sourceRoute!==window.location.hash||lastActor.current!==actor||current.layers.some(el=>!evaTaskRecord(el.props.issueId))))nav.close();
@@ -78,7 +85,14 @@
       nav.close();WKApp$1.routeRight.popAll();window.location.hash=evaTaskLinkUrl(project.id,issue.id).split('#')[1];
     }};
     return reactDomExports.createPortal(h(evaTaskDetailContext().Provider,{value},
-      h('div',{className:'collab-route-right eva-route-drawer eva-task-detail-host'+(state.expanded?' eva-drawer-expanded':'')+(narrow?' eva-drawer-full':''),'aria-label':'任务详情'},
+      h('div',{className:'collab-route-right eva-route-drawer eva-task-detail-host'+(state.expanded?' eva-drawer-expanded':'')+(narrow?' eva-drawer-full':''),'aria-label':'任务详情',role:'dialog','aria-modal':false,tabIndex:-1,ref:panel,
+        onKeyDownCapture:event=>{
+          if(!panel.current?.contains(event.target))return;
+          nestedEscape.current=evaForms.captureDialogEscape(event,panel.current,nav.close);
+        },onKeyDown:event=>{
+          if(event.key!=='Escape'||event.nativeEvent.isComposing||event.defaultPrevented||nestedEscape.current||!panel.current?.contains(event.target))return;
+          event.preventDefault();event.stopPropagation();nav.close();
+        }},
         h('div',{className:'panel'},state.layers.map((element,index)=>
           h('div',{key:element.props.issueId,className:'eva-task-link-layer',style:{display:index===state.layers.length-1?'contents':'none'}},
             React.cloneElement(element,{onBack:index>0?nav.pop:undefined}))))

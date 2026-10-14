@@ -4,7 +4,7 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 async function run(check){
  const server=createServer(new URL('../../dist',import.meta.url).pathname);await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const browser=await chromium.launch({channel:'msedge'}),p=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),p=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
  p.setDefaultTimeout(5000);p.on('pageerror',e=>errors.push(e.stack));
  try{await check(p,`http://127.0.0.1:${server.address().port}`);assert.deepEqual(errors,[]);}finally{await browser.close();await new Promise(r=>server.close(r));}
 }
@@ -61,4 +61,29 @@ test('消息/我的 AI/项目往返：共享侧栏关闭，不残留上一入口
   await p.locator('.eva-chat-search-entry').click();await p.locator('#eva-conversation-search-panel').waitFor();await p.keyboard.press('Escape');await p.locator('#eva-conversation-search-panel').waitFor({state:'hidden'});
   assert.equal(await p.locator('.app-titlebar').count(),1);
  }
+}));
+test('任务详情抽屉：入口焦点、输入法保护、子表单和下拉逐层 Esc',()=>run(async(p,url)=>{
+ await p.goto(url+'/#/messages');
+ const entry=p.locator('[data-eva-task-link="CLIENT-103"]').first(),drawer=p.locator('.eva-task-detail-host');
+ await entry.click();await p.locator('.loop-idp__title:visible').waitFor();
+ assert.equal(await drawer.evaluate(el=>el.contains(document.activeElement)),true,'打开任务后焦点应进入详情');
+ await ime(p);assert.equal(await drawer.isVisible(),true);
+ await p.getByRole('button',{name:'添加子任务',exact:true}).click();
+ const modal=p.locator('.eva-loop-task-create .semi-modal-content');await modal.waitFor();
+ await p.keyboard.press('Escape');await modal.waitFor({state:'hidden'});assert.equal(await drawer.isVisible(),true);
+ assert.equal(await focused(p.getByRole('button',{name:'添加子任务',exact:true})),true);
+ await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});assert.equal(await focused(entry),true);
+ await entry.click();await p.locator('.loop-idp__title:visible').waitFor();
+ await p.locator('.loop-idp__prop--labels:visible button').first().click();
+ const menu=p.locator('.semi-dropdown-menu:visible');await menu.waitFor();await menu.getByRole('textbox',{name:'搜索或新建标签'}).focus();
+ await p.keyboard.press('Escape');await menu.waitFor({state:'hidden'});assert.equal(await drawer.isVisible(),true);
+ await p.keyboard.press('Escape');await drawer.waitFor({state:'hidden'});
+}));
+test('聊天任务详情关闭返回任务卡，下一次 Esc 才关闭聊天任务列表',()=>run(async(p,url)=>{
+ await p.goto(url+'/#/collab?evaProject=prod&evaTab=channels');
+ const entry=p.getByRole('button',{name:'查看聊天任务',exact:true});await entry.click();
+ const list=p.locator('.eva-chat-task-list'),card=list.locator('.eva-chat-task-card').filter({hasText:'SC-103'});await card.click();
+ await p.locator('.loop-idp__title:visible').waitFor();await p.keyboard.press('Escape');await p.locator('.eva-task-detail-host').waitFor({state:'hidden'});
+ assert.equal(await list.isVisible(),true);assert.equal(await focused(card),true);
+ await p.keyboard.press('Escape');await list.waitFor({state:'hidden'});assert.equal(await focused(entry),true);
 }));

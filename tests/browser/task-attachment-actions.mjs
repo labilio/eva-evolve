@@ -55,6 +55,8 @@ test('任务附件上传后展示，并支持预览、下载和保存到项目�
     const preview = page.getByRole('dialog', {name:'任务附件预览', exact:true});
     await preview.waitFor();
     assert.equal(await preview.getByText('核心品类采购成本偏差.csv', { exact: true }).count(), 1);
+    await page.evaluate(()=>document.activeElement.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',isComposing:true,bubbles:true,cancelable:true})));
+    assert.equal(await preview.isVisible(),true,'输入法 Escape 不关闭附件预览');
     await page.keyboard.press('Escape');
     await preview.waitFor({ state: 'detached' });
     assert.equal(await detail.isVisible(),true,'关闭附件预览保留任务详情');

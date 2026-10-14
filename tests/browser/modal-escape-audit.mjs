@@ -5,7 +5,7 @@ import {createServer} from '../../tools/serve.mjs';
 
 async function run(check){
  const server=createServer(new URL('../../dist',import.meta.url).pathname);await new Promise(r=>server.listen(0,'127.0.0.1',r));
- const browser=await chromium.launch({channel:'msedge'}),page=await browser.newPage({viewport:{width:1280,height:860}}),errors=[];
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),page=await browser.newPage({viewport:{width:1280,height:860}}),errors=[];
  page.setDefaultTimeout(4000);page.on('pageerror',e=>errors.push(e.stack));
  try{await check(page,`http://127.0.0.1:${server.address().port}`);assert.deepEqual(errors,[]);}finally{await browser.close();await new Promise(r=>server.close(r));}
 }
