@@ -66,6 +66,81 @@
     outline-offset: 2px;
   }
 
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox {
+    position: relative;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    flex: 0 0 32px;
+    padding: 0;
+    border-radius: var(--gds-radius-control);
+    color: var(--gds-color-text-secondary);
+  }
+
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox:hover {
+    background: var(--gds-color-surface-primary);
+    color: var(--gds-color-text-primary);
+  }
+
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox:focus-visible {
+    outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .eva-task-inbox [data-eva-unread] {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .eva-task-inbox-divider {
+    width: 1px;
+    height: 20px;
+    flex: 0 0 1px;
+    margin: 0 4px;
+    background: var(--eva-border-faint);
+  }
+
+  .eva-task-inbox-popover {
+    box-sizing: border-box;
+    width: 280px;
+    padding: 12px 14px 14px;
+    color: var(--gds-color-text-primary);
+    font-family: var(--gds-font-family-sans);
+  }
+
+  .eva-task-inbox-popover__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .eva-task-inbox-popover__title {
+    font-size: var(--gds-type-label-font-size);
+    font-weight: var(--gds-font-weight-medium);
+    line-height: var(--gds-type-label-line-height);
+  }
+
+  .eva-task-inbox-popover .semi-button.eva-task-inbox-popover__close {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    flex: 0 0 24px;
+    padding: 0;
+    color: var(--gds-color-text-secondary);
+  }
+
+  .eva-task-inbox-popover__body {
+    margin: 12px 0 0;
+    color: var(--gds-color-text-secondary);
+    font-size: var(--gds-type-body-font-size);
+    line-height: var(--gds-type-body-line-height);
+  }
+
   .loop-page:has(.eva-task-quick-chips) .loop-btn--primary {
     border-color: var(--eva-action-primary-solid);
     background: var(--eva-action-primary-solid);
