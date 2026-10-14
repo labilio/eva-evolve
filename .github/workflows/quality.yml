@@ -40,6 +40,9 @@ jobs:
       - name: Install browser for search regression
         run: npx playwright install --with-deps chromium
 
+      - name: Verify shared task navigation and drawer sizes
+        run: npm run test:task-navigation
+
       - name: Verify search controls in browser
         run: npm run test:search
 

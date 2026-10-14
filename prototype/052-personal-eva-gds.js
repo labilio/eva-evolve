@@ -377,6 +377,9 @@
         return '<p class="eva-history-message__text eva-t-body">' + escapeHTML(paragraph) + '</p>';
       }).join('');
     }
+    if (Array.isArray(message.taskLinks)) body += message.taskLinks.map(function (link) {
+      return '<p class="eva-history-message__text eva-t-body"><a class="eva-task-message-link" data-eva-personal-task-link href="' + escapeHTML(link.url) + '">' + escapeHTML(link.label) + '</a></p>';
+    }).join('');
     if (message.note) body += '<div class="eva-history-message__note eva-t-label">' + escapeHTML(message.note) + '</div>';
     if (message.artifact) {
       body += '<div class="eva-history-artifact"><span class="eva-history-artifact__icon">' + icon('file-text', 16, 'eva-i') + '</span><span><span class="eva-history-artifact__name eva-t-label-medium">' + escapeHTML(message.artifact[0]) + '</span><span class="eva-history-artifact__meta eva-t-caption">' + escapeHTML(message.artifact[1]) + '</span></span><span class="eva-history-artifact__action">' + icon('download', 16, 'eva-i') + '</span></div>';
@@ -633,6 +636,14 @@
     if (!root || !root.isConnected) return;
     var inside = event.target.closest && event.target.closest('#eva-personal-workspace');
     if (!inside) return;
+
+    var taskLink = event.target.closest('[data-eva-personal-task-link]');
+    if (taskLink) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      pageServices?.openTaskLink(taskLink.getAttribute('href'));
+      return;
+    }
 
     if (event.target.closest('[data-eva-edit-text]')) {
       editing = !editing;

@@ -31,7 +31,7 @@ test('任务列表与详情均复用公共选择器，旧 Loop 项目页死代�
     '任务列表逐项指派与批量指派都应复用公共选择器');
   const detailStart = source.indexOf('function IssueDetailPage(');
   const detailEnd = source.indexOf('function readView(', detailStart);
-  assert.match(source.slice(detailStart, detailEnd), /React\.createElement\(AssigneePicker,\{size:"small",candidates:evaTaskProjectIdentities\(xt\.workspace_id\|\|currentSpaceId\(\),"member"\),value:xt\.assignee_id/);
+  assert.match(source.slice(detailStart, detailEnd), /React\.createElement\(AssigneePicker,\{size:"small",candidates:evaTaskProjectIdentities\(xt\.workspace_id\|\|evaTaskRecord\(rt\)\?\.workspace_id,"member"\),value:xt\.assignee_id/);
   assert.doesNotMatch(source, /function ProjectPage\(/, '不可达的旧 Loop 项目页已删除');
   assert.doesNotMatch(source, /loop-project-list/, '旧 Loop 项目列表标记不再存在');
 });

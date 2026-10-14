@@ -13,7 +13,7 @@ function bootstrap(saved = null) {
     }
   };
   loadIdentityEnvironment(window);
-  for (const file of ['009-0-demo-time.js', '009-3-data-im.js', '009-2-membership.js']) {
+  for (const file of ['009-0-demo-time.js', '009-1-data-drive.js','009-2-data-supply.js','009-3-data-im.js', '009-2-membership.js']) {
     vm.runInNewContext(fs.readFileSync(new URL('../prototype/' + file, import.meta.url), 'utf8'), {window});
   }
   const people = [

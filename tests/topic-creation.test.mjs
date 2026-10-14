@@ -35,7 +35,7 @@ test('创建者和群管理员可治理，其余成员只能参与，不能篡�
 });
 function demo(saved){
  const values=new Map(saved?[['eva:project-members:v1',saved]]:[]),window={localStorage:{getItem:key=>values.get(key)||null,setItem:(key,v)=>values.set(key,v)}};
- loadIdentityEnvironment(window);for(const f of ['009-0-demo-time.js','009-3-data-im.js','009-2-membership.js'])vm.runInNewContext(readFileSync('prototype/'+f,'utf8'),{window});
+ loadIdentityEnvironment(window);for(const f of ['009-0-demo-time.js','009-1-data-drive.js','009-2-data-supply.js','009-3-data-im.js','009-2-membership.js'])vm.runInNewContext(readFileSync('prototype/'+f,'utf8'),{window});
  const people=[{uid:'u-wangyilin',name:'王宜林'},{uid:'u-hejing',name:'何静'},{uid:'u-linxiao',name:'林晓'}];
  const channels={prod:[{id:'c-weekly',name:'合规与合同',threads:[{id:'th-vendor-onboarding',name:'新供应商准入复核',status:1},{id:'th-contract-renewal',name:'到期采购合同续签',status:1}]}]};
  const store=window.EvaMembership.bootstrap(people,[{id:'prod',name:'供应链运营协同',members:people}],channels);

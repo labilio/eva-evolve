@@ -197,7 +197,7 @@ EvaSidebarNavigation=rt=>{const ct={isMobile:rt.isMobile,collapsed:rt.collapsed,
   const[railRequest,setRailRequest]=reactExports.useState(null),[actionRequest,setActionRequest]=reactExports.useState(null),[request,setRequest]=reactExports.useState(null),[formReady,setFormReady]=reactExports.useState(false),formApi=reactExports.useRef(null);
   const close=reactExports.useCallback(()=>{const target=typeof request?.returnFocus==="function"?request.returnFocus():request?.returnFocus;setRequest(null);formApi.current=null;requestAnimationFrame(()=>{target?.isConnected&&target.focus()})},[request]);
   const create=ut=>{const id=window.EvaPersonal.createFolder(ut);request?.onCreated?.(id);close()};
-  const services=reactExports.useMemo(()=>({showRailForm:setRailRequest,showActionConfirm:setActionRequest,openCreateFolder:options=>{formApi.current=null;setFormReady(false);setRequest(options||{})}}),[]);
+  const services=reactExports.useMemo(()=>({openTaskLink:href=>{const target=evaTaskLinkTarget(href);return target?evaTaskLinkOpen(target):false},showRailForm:setRailRequest,showActionConfirm:setActionRequest,openCreateFolder:options=>{formApi.current=null;setFormReady(false);setRequest(options||{})}}),[]);
   return React.createElement(React.Fragment,null,
     React.createElement(EvaNativePage,{pageId:"personal",services}),
     railRequest&&React.createElement(evaForms.PersonalRenamePopover,{key:railRequest.detail.id,request:railRequest}),

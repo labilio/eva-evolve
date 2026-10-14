@@ -120,6 +120,9 @@ function EvaSharedAutomationPage({scope:rt,items:ct,loading:ut,onCreate:pt,onOpe
     for(const name of ['triggerAutopilot','createAutopilotTrigger','updateAutopilotTrigger','deleteAutopilotTrigger'])source=root.__evaCut(source,name+'=()=>Promise.resolve()',name+'=()=>evaMembers().store.isProjectArchived(currentSpaceId())?Promise.reject(new Error("所属项目已归档")):Promise.resolve()','归档禁止自动化操作：'+name);
     source=root.__evaCut(source,'onClick:()=>St(true)},rt("loop.automation.create")','onClick:()=>St(true),disabled:evaMembers().store.isProjectArchived(currentSpaceId())},rt("loop.automation.create")','归档禁用自动化创建入口');
     source=root.__evaCut(source,'onClick:()=>St(true),style:{marginTop:12}},rt("loop.automation.create")','onClick:()=>St(true),disabled:evaMembers().store.isProjectArchived(currentSpaceId()),style:{marginTop:12}},rt("loop.automation.create")','归档禁用自动化空态创建');
+    const taskRunStart=source.indexOf('listAutopilotRuns='),taskRunEnd=source.indexOf(',createAutopilotTrigger=',taskRunStart);
+    if(taskRunStart<0||taskRunEnd<0)throw new Error('自动化关联任务记录边界缺失');
+    source=root.__evaCut(source,source.slice(taskRunStart,taskRunEnd),String.raw`listAutopilotRuns=(id)=>{const automation=autopilotsOf().find(item=>item.id===id),runs=(automation?.runs||[]).map(run=>{const task=evaTaskRecord(run.taskId);return{id:run.id,autopilot_id:id,source:"schedule",status:run.status==="failed"?"failed":"completed",issue_id:task?.workspace_id===automation.workspace_id?task.id:null,triggered_at:run.at,completed_at:run.completedAt||null,failure_reason:run.status==="failed"?run.summary:null,created_at:run.at}});return Promise.resolve({runs,total:runs.length})}`,'自动化历史引用既有演示记录的真实任务，不再打开失效 mock 任务');
     return source;
   });
 })(window);
