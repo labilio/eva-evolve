@@ -38,13 +38,13 @@ try {
   assert.match(await page.locator('.wk-chat-conversation-header-channel-info').innerText(), /产品共创交流群/);
   assert.doesNotMatch(await page.locator('.wk-chat-conversation-header-channel-info').innerText(), /近期体验反馈整理/, '群内切换保持群标题稳定');
   assert.match(await group.getAttribute('class'), /wk-conversationlist-item-selected/, '进入子区仍选中所属大群');
-  await page.getByRole('textbox', {name: '输入消息，群聊中可 @ AI 与它对话'}).fill('独立草稿验收');
+  await page.getByRole('textbox', {name: '群聊中可 @ AI 与它对话'}).fill('独立草稿验收');
   await tabs.getByRole('tab', {name: '主聊天'}).click();
   assert.equal(await tabs.getByRole('tab', {name: '主聊天'}).getAttribute('aria-selected'), 'true');
-  assert.doesNotMatch(await page.getByRole('textbox', {name: '输入消息，群聊中可 @ AI 与它对话'}).innerText(), /独立草稿验收/);
+  assert.doesNotMatch(await page.getByRole('textbox', {name: '群聊中可 @ AI 与它对话'}).innerText(), /独立草稿验收/);
   await tabs.getByRole('tab', {name: '近期体验反馈整理'}).click();
-  assert.match(await page.getByRole('textbox', {name: '输入消息，群聊中可 @ AI 与它对话'}).innerText(), /独立草稿验收/, '群内切换恢复各自草稿');
-  await page.getByRole('textbox', {name: '输入消息，群聊中可 @ AI 与它对话'}).fill('');
+  assert.match(await page.getByRole('textbox', {name: '群聊中可 @ AI 与它对话'}).innerText(), /独立草稿验收/, '群内切换恢复各自草稿');
+  await page.getByRole('textbox', {name: '群聊中可 @ AI 与它对话'}).fill('');
   await page.getByRole('button', {name: '搜索会话'}).click();
   await page.getByRole('textbox', {name: '搜索群聊或子区'}).fill('近期体验反馈整理');
   const topicResult = page.locator('.wk-conversationlist-item').filter({has: page.getByRole('heading', {name: '产品共创交流群 / 近期体验反馈整理', exact: true})});
@@ -52,7 +52,7 @@ try {
   await topicResult.click();
   assert.equal(await tabs.getByRole('tab', {name: '近期体验反馈整理'}).getAttribute('aria-selected'), 'true', '搜索结果同步群内选中态');
   await page.getByRole('button', {name: '搜索会话'}).click();
-  const editor = page.getByRole('textbox', {name: '输入消息，群聊中可 @ AI 与它对话'});
+  const editor = page.getByRole('textbox', {name: '群聊中可 @ AI 与它对话'});
   await editor.fill('最近聚合验收：子区新消息');
   await editor.press('Enter');
   await page.waitForFunction(() => document.querySelector('.wk-conversationlist-item h3')?.textContent === '采购与招投标' && document.querySelectorAll('.wk-conversationlist-item h3')[1]?.textContent === '产品共创交流群');

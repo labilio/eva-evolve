@@ -21,7 +21,7 @@ test('群头像上传本地图片先进入圆形裁剪，保存后再写回群�
     page.on('pageerror',error=>pageErrors.push(String(error)));
     await page.goto(origin+'/#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
-    await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+    await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
     const panel=page.locator('.eva-chat-settings');
     await panel.waitFor();
@@ -64,7 +64,7 @@ test('群头像与更多按钮打开同一个聊天信息面板，私聊头像�
     page.setDefaultTimeout(10000);
     await page.goto(origin+'/#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
-    await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+    await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
 
     const groupAvatar=page.locator('.ch-head .wk-chat-conversation-header-channel-avatar');
     assert.equal(await groupAvatar.getAttribute('role'),'button');
@@ -83,7 +83,7 @@ test('群头像与更多按钮打开同一个聊天信息面板，私聊头像�
 
     const direct=page.locator('.wk-conv-compact-item').filter({hasText:'何静'}).first();
     await direct.click();
-    await page.getByRole('textbox',{name:'输入消息',exact:true}).waitFor();
+    await page.getByRole('textbox',{name:'消息输入框',exact:true}).waitFor();
     assert.notEqual(await page.locator('.ch-head .wk-chat-conversation-header-channel-avatar').getAttribute('role'),'button');
   }finally{
     await browser.close();

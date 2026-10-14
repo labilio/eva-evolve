@@ -98,7 +98,7 @@ test('群成员行支持悬停、键盘任免管理员和移除确认，角色�
   // Opening settings must preserve the underlying composer and its draft.
   await panel.getByRole('button',{name:'返回聊天信息'}).click();
   await panel.getByRole('button',{name:'关闭聊天信息'}).click();
-  const composer=page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'});
+  const composer=page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'});
   await composer.fill('保留草稿');
   await page.getByRole('button',{name:'打开聊天信息',exact:true}).last().click();
   await panel.getByRole('button',{name:/^查看全部/}).click();

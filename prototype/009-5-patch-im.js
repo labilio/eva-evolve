@@ -1039,7 +1039,7 @@ function EvaAssistantEditor({request,host,onClose}) {
 // AI two-person sessions keep direct-chat copy even when stored as group subzones.
 function evaIMPlaceholder(channel, presentation) {
   const isDirect = presentation === 'ai-direct' || channel?.chatType === 'direct' || channel?.id?.startsWith('dm-');
-  return isDirect ? '输入消息' : '输入消息，群聊中可 @ AI 与它对话';
+  return isDirect ? '' : '群聊中可 @ AI 与它对话';
 }
 function EvaDeleteMessagesDialog({count,onCancel,onDelete}){
  const h=React.createElement,[host,setHost]=reactExports.useState(null),[error,setError]=reactExports.useState('');
@@ -2170,6 +2170,8 @@ function EvaAITeamPage() {
       'className:"ch-right-panel ch-right-panel--overlay"},fa&&ct?.presentation!=="ai-direct"?React.createElement', 'AI topics reuse direct chat settings');
     cut('channel:Sa,sessionInfoOnly:!!ct?.conversationOnly',
       'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,fixedGroupActions:ct?.fixedGroupActions,sessionInfoOnly:!!ct?.conversationOnly,projectScoped:!!evaMembershipProjectId&&evaMembershipProjectId===evaTaskProjectId', 'AI settings topic identity and actions');
+    // Keep an accessible name when direct-chat placeholders are visually empty.
+    cut('"aria-label":rt,"data-placeholder":rt', '"aria-label":rt||"消息输入框","data-placeholder":rt', 'Empty direct placeholder keeps accessible name');
     // Copy follows the conversation semantics; AI two-person topics remain direct chats.
     cut('placeholder:ct?.composerDisabled?"个人助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
       'placeholder:evaIMPlaceholder(Sa,ct?.presentation)', 'Unified conversation placeholder');

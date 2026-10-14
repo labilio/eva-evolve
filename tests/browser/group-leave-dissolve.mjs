@@ -19,7 +19,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
 
     const groupRow=page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first();
     await groupRow.click();
-    await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+    await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
     await page.getByRole('button',{name:'打开聊天信息'}).first().click();
     let panel=page.locator('.eva-chat-settings');
     await panel.getByRole('heading',{name:/^聊天信息（\d+）$/}).waitFor();
@@ -106,7 +106,7 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await removePanel.getByRole('button',{name:'关闭聊天信息',exact:true}).click();
     const soloRow=page.locator('.wk-conv-compact-item').filter({hasText:'单人退出测试群'}).first();
     await soloRow.click();
-    await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+    await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
     await page.getByRole('button',{name:'打开聊天信息'}).first().click();
     panel=page.locator('.eva-chat-settings');
     await panel.getByRole('button',{name:'群聊管理',exact:true}).click();

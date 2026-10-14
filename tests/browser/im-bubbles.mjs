@@ -32,7 +32,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
    await page.keyboard.press('Escape');await page.locator('.wk-contextmenus-open').waitFor({state:'hidden'});
  }
  await page.screenshot({path:'/tmp/eva-bubble-1200.png'});
- const editor=page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'});
+ const editor=page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'});
  const markdown='# 气泡验证\n\n**中文粗体**与普通正文。\n\n> 引用保持左对齐\n\n- 第一项\n- 第二项\n\n```js\nconst value = "'+ 'long_value_'.repeat(35)+'";\n```\n\n|项目|描述|\n|---|---|\n|测试|'+ '宽表格内容'.repeat(40)+'|';
  await editor.fill(markdown);await page.getByRole('button',{name:'发送',exact:true}).click();
  const sent=page.locator('.eva-im-bubble-row').last();
@@ -89,13 +89,13 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  await editor.fill('未发送的草稿');await page.locator('.wk-chat-conversation-header-channel-avatar.is-settings-trigger').click();assert.equal(await editor.innerText(),'未发送的草稿');await page.locator('.eva-chat-settings-head button').first().click();
  await page.getByRole('button',{name:'最近',exact:true}).click();await page.getByRole('button',{name:'关注',exact:true}).click();assert.equal(await editor.innerText(),'未发送的草稿');
  await page.locator('[data-eva-nav-id="new-chat"]').click();await page.waitForURL('**/#/guid');await page.locator('.eva-im-bubble-row').first().waitFor({state:'detached'});assert.equal(await page.locator('.eva-im-bubble-row').count(),0);await page.screenshot({path:'/tmp/eva-bubble-personal.png'});
- await page.locator('[data-eva-nav-id="my-ai"]').click();await page.waitForURL('**evaIM=my-ai');await page.getByRole('heading',{name:'我的 Agent',exact:true}).waitFor();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row.wk-msg-row--send').count()>0);assert.ok(await page.locator('.eva-im-bubble-row:not(.wk-msg-row--send)').count()>0);await page.screenshot({path:'/tmp/eva-bubble-my-ai.png'});
+ await page.locator('[data-eva-nav-id="my-ai"]').click();await page.waitForURL('**evaIM=my-ai');await page.getByRole('heading',{name:'我的 Agent',exact:true}).waitFor();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row.wk-msg-row--send').count()>0);assert.ok(await page.locator('.eva-im-bubble-row:not(.wk-msg-row--send)').count()>0);await page.screenshot({path:'/tmp/eva-bubble-my-ai.png'});
  const aiOriginal=page.locator('.eva-im-bubble-row').first();await aiOriginal.click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('回复',{exact:true}).click();
- await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).fill('团队引用回归');await page.getByRole('button',{name:'发送',exact:true}).click();
+ await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).fill('团队引用回归');await page.getByRole('button',{name:'发送',exact:true}).click();
  await page.locator('.eva-im-bubble-row').last().getByText('团队引用回归',{exact:true}).waitFor();assert.equal(await page.locator('.eva-im-bubble-row').last().locator('.wk-reply-block').count(),1);
- await page.locator('.wk-conv-compact-item--thread').filter({hasText:'供应商整改'}).click();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row').count()>0);
+ await page.locator('.wk-conv-compact-item--thread').filter({hasText:'供应商整改'}).click();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();assert.ok(await page.locator('.eva-im-bubble-row').count()>0);
  await page.locator('[data-eva-nav-id="messages"]').click();await page.locator('.eva-im-bubble-row').first().waitFor();
- await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
  assert.equal(await page.locator('.eva-im-bubble-row pre').count(),6);assert.equal(await page.locator('.eva-im-bubble-row table').count(),6);
  const palettes=await page.locator('.eva-im-bubble-row pre [class*="hljs-"]').evaluateAll(nodes=>nodes.map(e=>({fg:getComputedStyle(e).color,bg:getComputedStyle(e.closest('.wk-markdown-pre-wrapper')).backgroundColor})));
  const luminance=rgb=>rgb.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=rgb.startsWith("color(srgb")?1:255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
@@ -117,7 +117,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('eva:project-members:v1')).messages['im-bubble-basic'].filter(m=>m.forwarded&&m.kind==='file').map(m=>m.file.name)),['A-2409现场复核清单.md','A-2409排产影响测算.html']);
  assert.equal(await page.locator('.wk-msg-row--selection-mode').count(),0,'转发成功后退出多选');
  await fileRows.nth(0).click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('多选',{exact:true}).click();
- await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
  assert.equal(await page.locator('.wk-msg-row--selection-mode').count(),0,'切换会话清理多选');
  await page.getByRole('button',{name:'04 图片与文件',exact:true}).click();await page.locator('.wk-message-file').first().waitFor();
  assert.equal(await page.locator('.wk-message-file').count(),8);await page.screenshot({path:'/tmp/eva-bubble-lab-files.png'});
@@ -129,8 +129,8 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  const messagePreview=page.locator('.ch-right-panel--file-preview'),messageResize=messagePreview.getByRole('separator',{name:'调整文件预览宽度'}),messagePreviewBefore=await messagePreview.evaluate(element=>element.getBoundingClientRect().width),messageContentBefore=await page.locator('.ch-main__col').evaluate(element=>element.getBoundingClientRect().width),messageResizeBox=await messageResize.boundingBox();assert.ok(messageResizeBox);await page.mouse.move(messageResizeBox.x+messageResizeBox.width/2,messageResizeBox.y+80);await page.mouse.down();await page.mouse.move(messageResizeBox.x+messageResizeBox.width/2+64,messageResizeBox.y+80,{steps:4});await page.mouse.up();const messagePreviewAfter=await messagePreview.evaluate(element=>element.getBoundingClientRect().width),messageContentAfter=await page.locator('.ch-main__col').evaluate(element=>element.getBoundingClientRect().width);assert.ok(messagePreviewAfter<messagePreviewBefore-40,'消息文件预览支持向右拖拽缩小');assert.ok(messageContentAfter>messageContentBefore+40,'消息主内容获得释放的宽度');assert.equal(Number(await messageResize.getAttribute('aria-valuenow')),Math.round(messagePreviewAfter));
  await page.screenshot({path:'/tmp/eva-bubble-file-preview.png'});await page.keyboard.press('Escape');await page.locator('.wk-file-preview-panel').waitFor({state:'detached'});
 
- await page.getByRole('button',{name:'01 日常聊天与连续消息',exact:true}).click();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();await page.locator('.eva-im-bubble-row').getByText('引用测试正文',{exact:true}).waitFor();await page.screenshot({path:'/tmp/eva-bubble-lab-basic.png'});
- await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
+ await page.getByRole('button',{name:'01 日常聊天与连续消息',exact:true}).click();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();await page.locator('.eva-im-bubble-row').getByText('引用测试正文',{exact:true}).waitFor();await page.screenshot({path:'/tmp/eva-bubble-lab-basic.png'});
+ await page.getByRole('button',{name:'03 Markdown 与长内容',exact:true}).click();await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话'}).waitFor();
  assert.equal(await page.locator('.eva-im-bubble-row').count(),22);
  const quotes=await page.locator('.eva-im-bubble-row .wk-markdown blockquote').evaluateAll(nodes=>nodes.map(e=>({bg:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderInlineStartWidth,radius:getComputedStyle(e).borderRadius})));
  assert.ok(quotes.length>=4);for(const q of quotes){assert.equal(q.bg,'rgba(0, 0, 0, 0)');assert.equal(q.border,'3px');assert.equal(q.radius,'0px');}
@@ -150,7 +150,7 @@ test('共享 IM 气泡：方向、Markdown、消息操作、草稿及入口往�
  for(const index of [1,5,7,9,11,13,15]){await page.locator('.eva-im-bubble-row').nth(index).scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/eva-style-audit-'+index+'.png'});}
  const employee=await page.evaluate(()=>{const store=window.EvaDigitalEmployeesStore;const id=store.teamIds().find(id=>store.sessions(id).length);return{id,sessionId:store.sessions(id)[0].id,name:store.get(id).name};});
  await page.goto(origin+'/#/messages?evaIM=my-ai&evaIdentity='+encodeURIComponent(employee.id)+'&evaSession='+encodeURIComponent(employee.sessionId));
- const employeeEditor=page.getByRole('textbox',{name:'输入消息',exact:true});await employeeEditor.waitFor();
+ const employeeEditor=page.getByRole('textbox',{name:'消息输入框',exact:true});await employeeEditor.waitFor();
  await page.locator('.eva-im-bubble-row').first().click({button:'right'});await page.locator('.wk-contextmenus-open').getByText('回复',{exact:true}).click();
  await employeeEditor.fill('数字员工引用回归');await page.getByRole('button',{name:'发送',exact:true}).click();
  const employeeReply=page.locator('.eva-im-bubble-row').filter({hasText:'数字员工引用回归'});await employeeReply.locator('.wk-reply-block').waitFor();
