@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 
 // Exact import owners, not a blanket exemption for a folder or file prefix.
 export const owners = Object.freeze({
- '063-forms-entry.jsx':['checkbox'],
+ '063-forms-entry.jsx':['checkbox','breadcrumb'],
  '063-forms.jsx':['form','button','_utils/semi-global'],
  '063-dialog.jsx':['modal','button'],
  '063-popover.jsx':['popover','button'],

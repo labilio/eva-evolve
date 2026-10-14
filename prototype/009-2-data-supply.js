@@ -129,6 +129,26 @@ window.__EVA_PEOPLE = [
   {"id":"u-weishao","uid":"u-weishao","name":"威少","active":true,"internal":true,"activated":true,"deptFull":"吉利汽车集团/研发中心/软件研发部/软件架构师","title":"软件架构师"}
 ];
 
+// 300 selectable contacts for the member-picker volume review (self excluded).
+// Seed only account identities; project/group eligibility still belongs to membership.
+(function seedContactVolumeDemo(){
+  const people=window.__EVA_PEOPLE;
+  const surnames=['赵','钱','孙','李','周','吴','郑','王','冯','陈','褚','卫','蒋','沈','韩','杨','朱','秦','尤','许'];
+  const givenNames=['明远','思宁','嘉禾','景行','知夏','予安','书言','亦辰','清和','若溪','星宇','文澜','沐阳','安然','云舒'];
+  const departments=['采购管理','供应商质量','生产计划','仓储物流','成本管理','合同合规'];
+  const colors=['#4c6ef5','#0ca678','#e8590c','#1d5bd6','#9c36b5','#0b7285'];
+  const names=new Set(people.map(person=>person.name));
+  let candidates=people.filter(person=>person.id!=='u-wangyilin'&&person.active&&person.internal&&person.activated).length;
+  for(let index=0;candidates<300;index++){
+    const id='u-supply-volume-'+String(index+1).padStart(3,'0');
+    const name=surnames[index%surnames.length]+givenNames[Math.floor(index/surnames.length)%givenNames.length];
+    if(names.has(name)||people.some(person=>person.id===id))continue;
+    const dept=departments[index%departments.length];
+    people.push({id,uid:id,name,color:colors[index%colors.length],dept,title:dept+'专员',deptFull:'吉利汽车集团/供应链中心/'+dept+'/'+dept+'专员',active:true,internal:true,activated:true,demoFixture:'member-picker-volume-300'});
+    names.add(name);candidates++;
+  }
+})();
+
 // Isolated permission fixture: Zhou can share this task link in a non-project group;
 // Wang can read that group but is not a member of the task's project.
 window.__EVA_TASK_LINK_PERMISSION_DEMO = {

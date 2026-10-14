@@ -122,6 +122,9 @@
       });
     };
     const employee=id=>{const a=root.EvaDigitalEmployeesStore?.get(id);return a?{...a,kind:'employee',ai:true,identityAppearance:root.EvaDigitalEmployeesStore.appearance(a)}:null;};
+    const employeeAvailable=(a,uid,pid)=>!!a&&a.kind==='staff'&&a.active!==false&&a.published!==false&&
+      (!(a.ownership==='personal'||a.scope==='self')||a.by===uid)&&
+      (!(a.ownership==='project'||a.scope==='project')||a.projectId===pid);
     const employeeRows=s=>(s.employeeIds||[]).map(employee).filter(Boolean);
     const agentFor=pid=>state.projects[pid]?{id:'project-agent:'+pid,name:root.EvaAIIdentity.projectAgentName(projectInfo(pid)),kind:'project-agent',ai:true,projectId:pid,cloud:true,removable:true,ownership:'project',identityAppearance:root.EvaAIIdentity.projectAgentAppearance(projectInfo(pid))}:null;
     const agentIn=id=>{id=state.threads[id]||id;const pid=id.startsWith('all:')?id.slice(4):projectId(id),agent=agentFor(pid);return agent&&![state.projects[pid],state.groups[id]].some(s=>s?.removedAIIds?.includes(agent.id))?agent:null;};
@@ -431,7 +434,20 @@
         notify();
       },
 
-      addEmployee(id,uid,eid){requireHuman(uid);const sid=id.startsWith("all:")?id.slice(4):id,s=state.projects[sid]||fail("数字员工只能放进项目，不能拉进群聊"),a=employee(eid)||fail("数字员工不存在");if(!member(sid,uid))fail("请先加入项目");if((a.ownership==="personal"||a.scope==="self")&&a.by!==uid)fail("只有创建者能邀请自己的数字员工");if(a.ownership==="project"&&a.projectId!==projectId(sid))fail("项目助手只能在所属项目中使用");s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();},
+      employeeCandidates(id,uid,pid){
+        const sid=id?.startsWith('all:')?id.slice(4):id,s=sid?scope(sid):null;
+        const project=state.projects[sid]?sid:s?.projectId||pid;
+        if(s&&!member(sid,uid))return [];
+        return (root.EvaDigitalEmployeesStore?.agents()||[]).filter(a=>employeeAvailable(a,uid,project)).map(a=>({...employee(a.id),domain:a.domain?.trim()||(a.scope==='org'?'全公司':'未设置'),joined:!!s?.employeeIds?.includes(a.id)}));
+      },
+      addEmployee(id,uid,eid){
+        requireHuman(uid);const sid=id.startsWith('all:')?id.slice(4):id;
+        const s=writable(sid);
+        if(!member(sid,uid))fail('请先加入');
+        const a=root.EvaDigitalEmployeesStore?.get(eid);
+        if(!employeeAvailable(a,uid,state.projects[sid]?sid:s.projectId))fail('数字员工不可用');
+        s.employeeIds=[...new Set([...(s.employeeIds||[]),eid])];notify();
+      },
       removeEmployee(id,uid,eid){const s=writable(id),a=employee(eid)||(agentIn(id)?.id===eid?agentIn(id):null)||fail("数字员工不存在");if(!member(id,uid)||(!manager(id,uid)&&a.by!==uid))fail("无移除权限");s.employeeIds=(s.employeeIds||[]).filter(x=>x!==eid);if(a.kind==='project-agent')s.removedAIIds=[...new Set([...(s.removedAIIds||[]),eid])];if(state.projects[id]&&s.memberRoleIds)delete s.memberRoleIds[eid];const keys=[state.projects[id]?'all:'+id:id];if(state.projects[id])Object.values(state.groups).filter(g=>g.projectId===id).forEach(g=>{g.employeeIds=(g.employeeIds||[]).filter(x=>x!==eid);keys.push(g.id);});keys.forEach(key=>{const record=state.groupGovernance?.[key];if(record)record.botAdminIds=(record.botAdminIds||[]).filter(x=>x!==eid);});notify();},
       openDirect(uid,target){
         requireHuman(uid);const p=requireHuman(target);if(uid===target)fail('不能给自己发消息');
@@ -758,7 +774,7 @@
         const name=projectInfo(pid).name||'',groupName=state.chatSettings[gid]?.name||(gid.startsWith('all:')?(name||'全员群'):state.groups[gid]?.name||'');
         return {projectId:pid,colorKey:root.EvaProjectAppearance?.keyFor(projectInfo(pid)),projectName:name,groupId:gid,groupName,path:state.threads[id]?[name,groupName].filter(Boolean).join(' / '):name};
       },
-      candidates(id,uid){const s=writable(id);if(!member(id,uid))fail('请先加入');return people().filter(p=>!member(id,p.id)&&(!s.projectId||member(s.projectId,p.id)));},
+      candidates(id,uid,includeJoined=false){const s=writable(id);if(!member(id,uid))fail('请先加入');return people().filter(p=>p.id!==uid&&(includeJoined||!member(id,p.id))&&(!s.projectId||member(s.projectId,p.id))).map(p=>includeJoined?{...p,joined:member(id,p.id),disabled:member(id,p.id)}:p);},
       addMember(id,uid,target){
         requireHuman(uid);requireHuman(target);const s=writable(id);
         if(!member(id,uid))fail('请先加入');
