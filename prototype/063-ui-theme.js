@@ -128,3 +128,9 @@ export const pickerNavigation = Object.freeze({
  content:Object.freeze({display:"flex",alignItems:"center",gap:"var(--eva-space-2)",width:"100%",minWidth:0}),
  breadcrumb:Object.freeze({...typography.body,padding:0,flex:"1 1 0",minWidth:0,overflow:"hidden",flexWrap:"nowrap",whiteSpace:"nowrap"}),
 });
+
+// Update-ready actions preserve the reference product's primary/secondary hierarchy.
+export const updateNotificationActions=Object.freeze({
+ contentGap:'var(--eva-space-4)',buttonGap:'var(--eva-space-2)',
+ secondary:Object.freeze({border:'1px solid var(--eva-border-faint)'}),
+});

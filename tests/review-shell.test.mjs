@@ -112,7 +112,7 @@ test('review panel and launcher can move and collapse with one close action with
 });
 
 test('review launcher starts below the top bar at the right edge without a comment count', () => {
-  assert.match(styles, /\.eva-review-launcher\{[^}]*right:0;bottom:112px;/);
+  assert.match(styles, /\.eva-review-launcher\{[^}]*right:0;bottom:50%;/);
   assert.doesNotMatch(source, /data-review-badge/);
   assert.match(source, /eva-review-launcher-position-v3/);
   assert.doesNotMatch(source, /['"]eva-review-launcher-position['"]/);

@@ -9,6 +9,7 @@ import {createSubmissionGate, createValidationQueue, formDefaults} from './063-f
 // Forms must expose that value before an immediately following save click.
 semiGlobal.config.overrideDefaultProps = {Form: formDefaults, Select: {motion: false}};
 export {Form, withField, useFormState, useFormApi};
+export {default as Button} from '@douyinfe/semi-ui/lib/es/button';
 export {requiredLabelPolicy} from './063-form-policy.js';
 
 export function useSubmission({onSubmit, resetKey, active = true}) {

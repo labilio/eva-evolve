@@ -79,6 +79,14 @@
   root.__evaPatch('general', function (source) {
     source = 'import {createForms as evaCreateForms} from "./eva-forms.module.js";\n' + source;
     source = root.__evaCut(source, 'var reactDomExports=requireReactDom();', 'var reactDomExports=requireReactDom();const evaForms=evaCreateForms(reactExports,{...reactDomExports,createRoot:(...args)=>requireClient().createRoot(...args)});', '统一 Semi Form 实例');
+    source = root.__evaCut(source,
+      'React.cloneElement(rt)},PanelRoute=',
+      'React.createElement(evaForms.UpdateNotificationHost,null,React.cloneElement(rt))},PanelRoute=',
+      '更新通知挂载在已登录应用宿主，跨路由保留');
+    source=root.__evaCut(source,
+      'React.createElement(Row,{label:"检查更新"},React.createElement(ButtonComponent$1,{size:"small"},"检查"))',
+      'React.createElement(Row,{label:"检查更新"},React.createElement(evaForms.CheckUpdateButton,null))',
+      '设置检查更新复用应用更新通知');
     // Semi's insertion guard must accept keyboard focus as well as pointer hover.
     // Keep its own show/hide lifecycle; this exact anchor fails on upstream drift.
     source = root.__evaCut(source,
