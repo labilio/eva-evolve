@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,6 +31,7 @@ function setup() {
   const helperEnd = runtime.indexOf('const EvaHierarchyIcon=', helperStart);
   assert.ok(helperStart >= 0 && helperEnd > helperStart);
   attachTaskSubscriptions(ctx);
+  attachTaskScope(ctx,runtime);
   vm.runInNewContext(runtime.slice(helperStart, helperEnd), ctx);
   const statusHelperStart = runtime.indexOf('function evaNormalizeTaskStatus');
   const statusHelperEnd = runtime.indexOf('function evaNormalizeTaskList', statusHelperStart);
@@ -180,12 +182,9 @@ test('任务详情通过完整 Semi 面包屑原位切换详情',()=>{
   assert.ok(runtime.includes('React.createElement(evaForms.TaskBreadcrumb,'));
   assert.ok(runtime.includes('...evaBreadcrumbIssues.map(issue=>'));
   assert.equal(runtime.includes('evaBreadcrumbHasHiddenAncestors'),false);
-  assert.ok(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'));
-  assert.ok(runtime.includes('WKApp$1.routeRight.pop(),WKApp$1.routeRight.push'));
-  assert.ok(runtime.includes('React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:ut,breadcrumbViewport:evaBreadcrumbViewport.current})'));
-  assert.ok(runtime.includes('function evaRestoreFleetProjectRoute('));
-  assert.ok(runtime.includes('writeBrowserPath("/#/collab?evaProject="+encodeURIComponent(rt),"replace")'));
-  assert.ok(runtime.includes('Qa=()=>{const Wi=currentWorkspaceSlug();Wi&&evaRestoreFleetProjectRoute(Wi)'));
+  assert.ok(runtime.includes('evaTaskNavigation().open(React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,breadcrumbViewport:evaBreadcrumbViewport.current}),true)'));
+  assert.ok(runtime.includes('Qa=()=>{if(evaTaskDetail){evaTaskNavigation().close();return}'));
+  assert.equal(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'),false,'层级切换不再修改来源路由');
   assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtasks,{key:xt.id,rootIssue:xt,onOpen:Ea,readOnly:Ct'));
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));
   assert.equal(runtime.includes('"开始分解"'),false);

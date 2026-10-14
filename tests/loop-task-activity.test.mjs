@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,6 +42,7 @@ function setup() {
     evaResolveTaskIdentity: id => people[id] && {type: 'member', name: people[id].name},
   };
  attachTaskSubscriptions(ctx);
+  attachTaskScope(ctx,source);
   vm.runInNewContext('var ' + source.slice(updateStart, updateEnd), ctx);
   vm.runInNewContext('var ' + source.slice(timelineStart, timelineEnd), ctx);
   return {ctx, issue, issues};

@@ -570,7 +570,7 @@
     const blankGroup = (record = {}) => ({id:record.id || id, name:record.system === false ? record.name || 'AI 小队' : '我的 AI 小队', avatar:record.avatar || '', system:record.system !== false,
       memberIds:record.system === false ? [...new Set((record.memberIds || []).filter(Boolean))] : null,
       messages:Array.isArray(record.messages) ? record.messages : [], draft:typeof record.draft === 'string' ? record.draft : '',
-      threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1,
+      threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1, taskReferenceStoriesV1:!!record.taskReferenceStoriesV1,
       readAiMessageCount:Number.isInteger(record.readAiMessageCount) ? record.readAiMessageCount : undefined,
       teamUnreadNotificationsV1:!!record.teamUnreadNotificationsV1,
       createdAt:record.createdAt || new Date().toISOString(), updatedAt:record.updatedAt || record.createdAt || new Date().toISOString()});
@@ -678,15 +678,16 @@
         const owner=all.find(member=>member.kind==='human'||member.id==='u-wangyilin');
         const ai=all.filter(member=>member.kind!=='human'&&member.id!=='u-wangyilin');
         const unique=group.system?[...(owner?[owner]:[]),...ai]:[...(owner?[owner]:[]),...memberIds(group).map(memberId=>ai.find(member=>member.id===memberId)).filter(Boolean)];
-        if(group.system&&!group.collaborationStoriesV1&&ai.length&&window.__EVA_MY_AI_GROUP_STORIES){
+        if(group.system&&(!group.collaborationStoriesV1||!group.taskReferenceStoriesV1)&&ai.length&&window.__EVA_MY_AI_GROUP_STORIES){
           const human={uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT};
           window.__EVA_MY_AI_GROUP_STORIES.forEach((story,index)=>{
+            if(group.collaborationStoriesV1&&!story.taskReferenceDemo)return;
             const member=ai[index%ai.length],sender={uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},channelId=group.id+'____demo-'+story.id;
             const messages=[{id:channelId+':1',kind:'text',sender:human,time:'09:00',text:'@'+member.name+' '+story.request},{id:channelId+':2',kind:'text',sender,time:'09:01',text:story.reply},{id:channelId+':3',kind:'text',sender:human,time:'09:03',text:'@'+member.name+' '+story.follow},{id:channelId+':4',kind:'text',sender,time:'09:04',text:'已整理为 **'+story.file+'**，请下载补充并确认。'},{id:channelId+':5',kind:'file',sender,time:'09:04',file:{name:story.file,size:new TextEncoder().encode(story.content).length,extension:story.file.split('.').pop()}}];
             if(!group.threads.some(t=>t.id===channelId))group.threads.push({id:channelId,short_id:'demo-'+story.id,group_no:group.id,channel_id:channelId,channel_type:5,name:story.name,status:1,created_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:window.__EVA_DEMO_TIME.AI_REVIEW_START,messages,draft:''});
           });
-          const member=ai[0];group.messages.unshift({id:group.id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:group.id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
-          group.collaborationStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
+          const member=ai[0];if(!group.collaborationStoriesV1)group.messages.unshift({id:group.id+':demo-start',kind:'text',sender:human,time:'08:55',text:'今天围绕供应链运营协同推进三件事：保供晨会、供应商整改、合同评审。各项材料放到对应子区。\n@'+member.name+' 请帮我整理协作安排。'},{id:group.id+':demo-plan',kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time:'08:56',text:'## 今日协作安排\n\n- **保供晨会**：风险排序和行动清单。\n- **供应商整改**：核对证据，保留待确认项。\n- **合同评审**：整理条款差异与人工决策事项。\n\n各子区已准备讨论材料和文件示例，业务结论由你确认。'});
+          group.collaborationStoriesV1=true;group.taskReferenceStoriesV1=true;try{storage?.setItem(key,JSON.stringify(state));}catch(_){}
         }
         if(!group.teamUnreadNotificationsV1&&(!group.system||group.collaborationStoriesV1)){
           [group,...group.threads].forEach(item=>normalizeReadState(item,true));

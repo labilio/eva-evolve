@@ -76,6 +76,7 @@
     });
   });
   var demoLeadIds = [
+    'personal-task-quality-review', 'personal-task-contract-review', 'personal-task-purchase-review',
     'personal-supplier-delivery', 'personal-automation-daily-supply-brief',
     'personal-afternoon-sync', 'personal-automation-weekly-supply-review'
   ];

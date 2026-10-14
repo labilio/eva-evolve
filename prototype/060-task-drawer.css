@@ -1,29 +1,14 @@
-/* ============================================================
-   060 · 任务详情右滑抽屉（仅容器 + 交互，不改内容）
-   ------------------------------------------------------------
-   作用域限定 .collab-route-right.eva-route-drawer —— 仅任务详情
-   （IssueDetailPage）走抽屉化；Agent/Skill/Squad/Project/Autopilot
-   等其它右侧路由保持原整屏覆盖，不受影响（标记类由 RouteRightHost
-   依顶层元素类型注入）。
-   尺寸模型（与定稿 mock 一致）：
-     抽屉宽 = clamp(640px, 卡片×0.70, 900px)
-     卡片 = .collab-route-right（= .eva-native-page-host 浮卡满幅）
-     卡片 < 1000px 时漏出 < 300px → 熔断为整屏（.eva-drawer-full）
-   面板 position:absolute，其 width:70% 相对包含块（.collab-route-right =
-   卡片）解析，即卡片×0.70，无需容器查询。熔断由 060 控制器按卡片宽切换
-   .eva-drawer-full 类。
-   ⚠ 不使用 container-type：那会使 .collab-route-right 成为 position:fixed
-   的包含块，令任务内「附件全屏预览」（fixed 锚定视口）错位。
-   ============================================================ */
+/* Shared task drawer presentation. EvaTaskDetailHost owns fullscreen and
+ * ResizeObserver-based narrow-layout state; all entrances reuse these styles.
+ * All entries portal into the one Router Outlet below the system titlebar.
+ * Percentage widths and fullscreen therefore share the same reference box.
+ * Avoid container-type: attachment fullscreen must not be trapped by a new
+ * fixed-position containing block. */
 
-/* 蒙层：不再压暗底层——层次改由面板左缘投影表达（见 .panel box-shadow）。
-   这里保留一层透明的点击捕获面（vendor 已接 popAll），使点击抽屉外区域仍可关闭。 */
-.collab-route-right.eva-route-drawer .mask {
-  display: block;
-  position: absolute;
-  inset: 0;
-  background: transparent;
-}
+/* Nonblocking drawer: the shared Outlet handles outside pointer actions.
+ * The exposed source navigation remains clickable, including conversation changes. */
+.eva-task-detail-host { pointer-events: none; }
+.eva-task-detail-host > .panel { pointer-events: auto; }
 
 /* 面板：右锚定 + 宽度模型 + 滑入。
    左缘投影 + hairline 是抽屉族的唯一分层写法，由 --eva-shadow-drawer
@@ -61,11 +46,6 @@
   box-shadow: none;
 }
 
-/* 退场（由 RouteRightHost 在出栈时加 .eva-drawer-closing，过渡结束再卸载） */
-.collab-route-right.eva-route-drawer.eva-drawer-closing .panel {
-  transform: translateX(100%);
-}
-
 /* ---- 顶栏动作按钮（更多 / 全屏 / 关闭）---- */
 .loop-idp__fsbtn .eva-fs-ico {
   display: inline-flex;
@@ -94,3 +74,14 @@
 .collab-route-right.eva-route-drawer.eva-drawer-full .loop-idp__fsbtn {
   display: none;
 }
+
+/* Single sizing boundary for every task entry; never use chat/project children. */
+.eva-task-outlet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.eva-task-detail-host { z-index: 70; }

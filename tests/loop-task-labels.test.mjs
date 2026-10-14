@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -15,8 +16,8 @@ function setup(){
   let current='prod';
   const projects=[{id:'prod',name:'供应链'},{id:'other',name:'其他项目'}];
   const issues={
-    prod:[{id:'issue-prod',labels:[]}],
-    other:[{id:'issue-other',labels:[]}]
+    prod:[{id:'issue-prod',workspace_id:'prod',labels:[]}],
+    other:[{id:'issue-other',workspace_id:'other',labels:[]}]
   };
   const window={__EVA_SUPPLY_CHAIN_DEMO:{taskLabels:[
     {id:'label-procurement',project_id:'p-supply',name:'采购',color:'#1563eb'}
@@ -31,6 +32,7 @@ function setup(){
     Date,
     Math
   };
+  attachTaskScope(ctx,runtime);
   const source=`${runtime.slice(helpersStart,helpersEnd)}
     let listLabels,createLabel,updateLabel,deleteLabel,attachLabel,detachLabel;
     ${runtime.slice(apiStart,apiEnd)};

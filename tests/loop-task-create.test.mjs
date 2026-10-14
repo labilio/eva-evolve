@@ -1,3 +1,4 @@
+import {attachTaskScope} from './helpers/task-scope.mjs';
 import {attachTaskSubscriptions} from './helpers/task-subscriptions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,6 +18,7 @@ function setup() {
   const store = {isProjectArchived:()=>false,actorId:()=>store.snapshot().actorId,identityRecords:()=>({people:store.snapshot().people,clones:store.snapshot().clones}),projectRecord:id=>store.snapshot().projects[id],taskIssuer:()=>({issuer_role_id:null,issuer_role_name:null}),snapshot:()=>({actorId:'member',people:[{id:'owner',name:'项目所有者'},{id:'member',name:'当前成员'},{id:'outsider',name:'外部联系人'}],clones:[{id:'clone',name:'成员分身'},{id:'clone2',name:'未入项目分身'}],projects:{prod:scope,q:scope}}),canRead:()=>true,person:id=>['owner','member'].includes(id)?({id,name:'当前成员'}):null,clone:id=>id==='clone'?({id,name:'成员分身'}):null,employee:id=>id==='employee'?({id,name:'数字员工'}):null,projectAgent:pid=>({id:'project-agent:'+pid,name:'项目专员'})};
   const ctx = {ISSUES_BY_SPACE:lists,loadSpaces:()=>projects,currentSpaceId:()=>current,evaMembers:()=>({store}),evaProjectIssuePrefix:p=>p.issue_prefix,evaLoopTaskAttachments:new Map(),window:{pinyinPro:{pinyin}},MOCK_ISSUES:[{run_id:'should-not-copy',labels:['old']}],issuesOf:()=>lists[current]};
  attachTaskSubscriptions(ctx);
+  attachTaskScope(ctx,runtime);
   vm.runInNewContext(readFileSync('prototype/009-2-task-prefix.js','utf8'),ctx);
   const helperStart=runtime.indexOf('function evaNormalizeTaskStatus'),helperEnd=runtime.indexOf('function evaNormalizeTaskList',helperStart);
   vm.runInNewContext(runtime.slice(helperStart,helperEnd),ctx);
