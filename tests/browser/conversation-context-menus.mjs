@@ -9,7 +9,7 @@ test('conversation menus: real actions, object boundaries, drafts, keyboard and 
  try{
   await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);await page.locator('.eva-follow-category').first().waitFor();
   const follow=page.locator('.eva-follow-channel > .wk-conv-compact-item').filter({hasText:'采购与招投标'}).first();await follow.click();
-  const editor=page.getByRole('textbox',{name:'发送给 采购与招投标'});await editor.fill('菜单验收草稿');
+  const editor=page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'});await editor.fill('菜单验收草稿');
   const menu=page.locator('.eva-context-menu');const texts=()=>menu.getByRole('menuitem').allTextContents();
   await follow.click({button:'right'});assert.ok(!(await texts()).includes('置顶会话'));assert.ok(!(await texts()).includes('移动到分组'));await menu.getByRole('menuitem',{name:'清除未读',exact:true}).click();
   await follow.click({button:'right'});assert.ok(!(await texts()).includes('清除未读'));await page.keyboard.press('Escape');assert.equal(await menu.count(),0);assert.equal(await editor.innerText(),'菜单验收草稿');

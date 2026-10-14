@@ -1035,9 +1035,11 @@ function EvaAssistantEditor({request,host,onClose}) {
     ? ReactDOM.createPortal(h('div',{className:'eva-assistant-editor-inline'},editor),inlineTarget)
     : h(evaForms.Dialog,{visible:true,accessibleName:persona?'配置 AI 分身':'配置个人助理',title:null,footer:null,closable:false,onCancel:onClose,size:'editor',className:'eva-editor-dialog',getPopupContainer:()=>host.current},editor);
 }
-// Mirrors Octo ChatComposer.buildPlaceholder and its zh-CN translation keys.
-function evaIMPlaceholder(name) {
-  return name ? '发送给 ' + name : '发送消息';
+// Classify only direct vs group conversations; never inspect AI membership or availability.
+// AI two-person sessions keep direct-chat copy even when stored as group subzones.
+function evaIMPlaceholder(channel, presentation) {
+  const isDirect = presentation === 'ai-direct' || channel?.chatType === 'direct' || channel?.id?.startsWith('dm-');
+  return isDirect ? '输入消息' : '输入消息，群聊中可 @ AI 与它对话';
 }
 function EvaDeleteMessagesDialog({count,onCancel,onDelete}){
  const h=React.createElement,[host,setHost]=reactExports.useState(null),[error,setError]=reactExports.useState('');
@@ -2168,11 +2170,11 @@ function EvaAITeamPage() {
       'className:"ch-right-panel ch-right-panel--overlay"},fa&&ct?.presentation!=="ai-direct"?React.createElement', 'AI topics reuse direct chat settings');
     cut('channel:Sa,sessionInfoOnly:!!ct?.conversationOnly',
       'channel:ct?.presentation==="ai-direct"?{...Sa,id:va,chatType:"direct"}:Sa,conversationActions:ct?.conversationActions,fixedGroupActions:ct?.fixedGroupActions,sessionInfoOnly:!!ct?.conversationOnly,projectScoped:!!evaMembershipProjectId&&evaMembershipProjectId===evaTaskProjectId', 'AI settings topic identity and actions');
-    // Octo directWithName copy applies to every IM target; AI topics display the AI identity.
+    // Copy follows the conversation semantics; AI two-person topics remain direct chats.
     cut('placeholder:ct?.composerDisabled?"个人助理离线":Sa.chatType==="direct"?`发送给 ${Sa.name}…`:`在 ${fa?fa.name:Sa.name} 中回复…`',
-      'placeholder:evaIMPlaceholder(ct?.presentation==="ai-direct"?Sa.name:(fa?.name??Sa.name))', 'Unified recipient placeholder');
+      'placeholder:evaIMPlaceholder(Sa,ct?.presentation)', 'Unified conversation placeholder');
     cut('placeholder:`在 ${Es.name} 中回复…`',
-      'placeholder:evaIMPlaceholder(Es.name)', 'Thread side composer recipient placeholder');
+      'placeholder:evaIMPlaceholder(Sa,ct?.presentation)', 'Thread side composer conversation placeholder');
     // Contact identity navigation shares the existing IM patch registry entry.
   cut('const{search:evaMessageSearch}=useLocation(),evaMessageMode=', 'const{search:evaMessageSearch,key:evaContactRequestKey}=useLocation(),evaMessageMode=', '身份卡导航请求');
   cut('rt=reactExports.useMemo(()=>messageSource(evaMessageMode),[evaMessageMode,evaLiveMemberRevision])', 'rt=reactExports.useMemo(()=>({...messageSource(evaMessageMode),openChannelId:new URLSearchParams(evaMessageSearch).get("evaDM"),openMessageId:new URLSearchParams(evaMessageSearch).get("evaMessage"),openThreadId:new URLSearchParams(evaMessageSearch).get("evaThread"),openRequestKey:evaContactRequestKey}),[evaMessageMode,evaLiveMemberRevision,evaMessageSearch,evaContactRequestKey])', '私聊路由数据');
@@ -2263,7 +2265,7 @@ function EvaAITeamPage() {
     cut('vi=(ci,Zi)=>{if(ci.startsWith("dm-"))', 'vi=(ci,Zi)=>{if(ct?.onSend){ct.onSend(Zi,ci);return;}if(ci.startsWith("dm-"))', '侧面子区消息按频道发送');
     cut('initialDraft:Sa.personId?', 'initialDraft:ct?.getDraft?ct.getDraft(va):Sa.personId?', '固定群主消息流草稿隔离');
     cut(':ct?.onDraftChange,disabled:', ':ct?.getDraft?text=>ct.onDraftChange(text,va):ct?.onDraftChange,disabled:', '固定群草稿写入当前频道');
-    cut('placeholder:evaIMPlaceholder(Es.name),onSend:ci=>vi(Es.id,ci)', 'placeholder:evaIMPlaceholder(Es.name),initialDraft:ct?.getDraft?ct.getDraft(Es.id):evaMemberStore.conversationDraft(Es.id,evaActorId),onDraftChange:ct?.getDraft?text=>ct.onDraftChange(text,Es.id):text=>evaMemberStore.setConversationDraft(Es.id,evaActorId,text),onSend:ci=>{const sent=vi(Es.id,ci);if(sent!==false&&!ct?.getDraft)evaMemberStore.setConversationDraft(Es.id,evaActorId,"");return sent}', '侧面子区草稿隔离');
+    cut('placeholder:evaIMPlaceholder(Sa,ct?.presentation),onSend:ci=>vi(Es.id,ci)', 'placeholder:evaIMPlaceholder(Sa,ct?.presentation),initialDraft:ct?.getDraft?ct.getDraft(Es.id):evaMemberStore.conversationDraft(Es.id,evaActorId),onDraftChange:ct?.getDraft?text=>ct.onDraftChange(text,Es.id):text=>evaMemberStore.setConversationDraft(Es.id,evaActorId,text),onSend:ci=>{const sent=vi(Es.id,ci);if(sent!==false&&!ct?.getDraft)evaMemberStore.setConversationDraft(Es.id,evaActorId,"");return sent}', '侧面子区草稿隔离');
     cut('Za=(ci,Zi)=>{setEvaInlineProjectId(null),xt(ci),Nt(Zi)', 'Za=(ci,Zi)=>{ct?.onSelectThread?.(Zi);setEvaInlineProjectId(null),xt(ci),Nt(Zi)', '固定群中栏子区选择同步');
     cut('[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),', '[evaCategoryEditor,setEvaCategoryEditor]=reactExports.useState(null),[evaCategoryToDelete,setEvaCategoryToDelete]=reactExports.useState(null),[evaCreateGroupCategory,setEvaCreateGroupCategory]=reactExports.useState(null),[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false),', '自定义分类菜单状态');
     cut('return {...evaC,...evaS,name:', 'return {...evaC,...evaS,category:ct&&!ct.conversationOnly?evaMemberStore.conversationCategory(evaActorId,evaC):evaC.category,name:', '非项目会话分类来源');

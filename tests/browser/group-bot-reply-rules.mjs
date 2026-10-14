@@ -14,7 +14,7 @@ test('群聊治理中的管理员、AI 管理员和 GROUP.md 可编辑保存（�
     page.setDefaultTimeout(10000);
     await page.goto(origin+'/#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
-    await page.getByRole('textbox',{name:'发送给 采购与招投标'}).waitFor();
+    await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'}).waitFor();
     await page.getByRole('button',{name:'打开聊天信息',exact:true}).last().click();
     const panel=page.locator('.eva-chat-settings');
     await panel.getByRole('heading',{name:/^聊天信息（\d+）$/}).waitFor();

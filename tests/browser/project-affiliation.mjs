@@ -13,7 +13,7 @@ test('项目归属在聊天信息和管家资料中一致，导航往返保留�
     const page=await browser.newPage({viewport:{width:1200,height:800}});
     await page.goto(origin+'/#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
-    const input=page.getByRole('textbox',{name:'发送给 采购与招投标'});
+    const input=page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话'});
     await input.fill('保留项目归属验收草稿');
     await page.getByRole('button',{name:'聊天信息',exact:true}).click();
     const panel=page.locator('.eva-chat-settings');

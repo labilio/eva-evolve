@@ -211,7 +211,7 @@ test('我的 Agent：默认层级、分层未读与已读回收保持一致', as
     });
     await page.locator('[data-eva-nav-id="my-ai"] [data-eva-nav-unread]').waitFor({ state: 'detached' });
 
-    const editor = page.getByRole('textbox', { name: /^发送给 / });
+    const editor = page.getByRole('textbox', { name: /^输入消息/ });
     await editor.fill('当前会话未读回归');
     await page.getByRole('button', { name: '发送', exact: true }).click();
     await page.locator('.eva-im-bubble-row').getByText('当前会话未读回归', { exact: true }).waitFor();
@@ -300,7 +300,7 @@ test('所有 AI 身份行切换全部会话列表且不新建', async () => {
     await page.locator('.eva-ai-team').waitFor();
     const systemTeamButton = page.locator('.eva-ai-team__team:has(.eva-ai-team__team-default) .eva-ai-team__team-button');
     await systemTeamButton.click();
-    const composerPlaceholder = await page.getByRole('textbox', { name: /^发送给 / }).getAttribute('placeholder');
+    const composerPlaceholder = await page.getByRole('textbox', { name: /^输入消息/ }).getAttribute('placeholder');
     for (const label of ['个人助理', '云端分身', '数字员工']) {
       const identity = page.locator(`.eva-ai-team__role-group[aria-label="${label}"] .eva-ai-team__identity`).first();
       assert.equal(await identity.count(), 1, `${label}身份必须存在并参与验收`);
@@ -325,12 +325,12 @@ test('所有 AI 身份行切换全部会话列表且不新建', async () => {
       assert.equal(await identity.locator('.eva-ai-team__sessions').isHidden(), true, `${label}收起时隐藏全部会话`);
       assert.equal(await sessions.count(), before, `${label}收起时保留受控列表节点`);
       assert.equal(await systemTeamButton.getAttribute('aria-current'), 'true', `${label}收起列表不切换当前团队会话`);
-      assert.equal(await page.getByRole('textbox', { name: /^发送给 / }).getAttribute('placeholder'), composerPlaceholder, `${label}收起列表不改变输入对象`);
+      assert.equal(await page.getByRole('textbox', { name: /^输入消息/ }).getAttribute('placeholder'), composerPlaceholder, `${label}收起列表不改变输入对象`);
       await identityButton.click();
       assert.equal(await identityButton.getAttribute('aria-expanded'), 'true', `${label}再次点击身份行展开列表`);
       assert.equal(await identity.locator('.eva-ai-team__sessions').isVisible(), true, `${label}再次展开时恢复全部会话`);
       assert.equal(await systemTeamButton.getAttribute('aria-current'), 'true', `${label}展开列表不切换当前团队会话`);
-      assert.equal(await page.getByRole('textbox', { name: /^发送给 / }).getAttribute('placeholder'), composerPlaceholder, `${label}展开列表不改变输入对象`);
+      assert.equal(await page.getByRole('textbox', { name: /^输入消息/ }).getAttribute('placeholder'), composerPlaceholder, `${label}展开列表不改变输入对象`);
       const after = await page.evaluate(({ label, name }) => {
         if (label === '数字员工') {
           const item = window.EvaDigitalEmployeesStore.teamIds().map(id => window.EvaDigitalEmployeesStore.get(id)).find(candidate => candidate?.name === name);
@@ -401,7 +401,7 @@ test('云端分身删空后身份入口不新建会话，加号仍可新建', as
     assert.equal(await page.evaluate(id => window.EvaAITeam.getSnapshot().sessions.filter(session => session.identityId === id).length, fixture.id), 1, '点击加号立即创建一条新会话');
     assert.match(await persona.locator('.eva-ai-team__session-title').innerText(), /^新对话/, '新会话立即显示在身份下');
     assert.equal(await persona.locator('.eva-ai-team__identity-sessions-more').count(), 0, '新建后的单条会话不显示展开查看');
-    const editor = page.getByRole('textbox', { name: '发送给 ' + fixture.name, exact: true });
+    const editor = page.getByRole('textbox', { name: '输入消息', exact: true });
     await editor.fill('删空后的第一次消息');
     await page.getByRole('button', { name: '发送', exact: true }).click();
     const createdSession = persona.locator('.eva-ai-team__session-row');

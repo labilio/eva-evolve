@@ -49,9 +49,9 @@ try {
  await measure(page.getByRole('button',{name:'拖动排序：质量与排产 质量与排产 99+ 收起子区',exact:true}),['all:prod','c-review']);
  await page.getByRole('button',{name:'最近',exact:true}).click();
  await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();
- await page.getByRole('textbox',{name:'发送给 采购与招投标',exact:true}).fill('性能回归：发送后摘要必须更新');
+ await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话',exact:true}).fill('性能回归：发送后摘要必须更新');
  await settle();await page.evaluate(()=>window.__evaMessageReads=[]);
- await page.getByRole('textbox',{name:'发送给 采购与招投标',exact:true}).press('Enter');
+ await page.getByRole('textbox',{name:'输入消息，群聊中可 @ AI 与它对话',exact:true}).press('Enter');
  await page.locator('.wk-conversationlist-item').filter({has:page.getByRole('heading',{name:'采购与招投标',exact:true})}).getByText(/性能回归：发送后摘要必须更新/).waitFor();
  await settle();assert.deepEqual(await page.evaluate(()=>[...new Set(window.__evaMessageReads)].filter(id=>id!=='c-eva')),[],'新消息只重新读取所属会话，不扫描其他群历史');
  assert.deepEqual(errors,[]);
