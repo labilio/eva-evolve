@@ -88,7 +88,10 @@ try {
  await page.reload();await editor().waitFor();assert.equal(await editor().innerText(),'AI 现场');assert.equal(await aiGroup.getAttribute('aria-expanded'),aiExpanded);
  // Restore each real middle-list scroller, not its outer shell.
  const restoreList=async(selector,returnRoute,ready)=>{
-   await page.locator(selector).evaluate(el=>el.scrollTop=100);
+   await page.locator(selector).evaluate(async el=>{
+     if(el.scrollTop===100)return;
+     await new Promise(resolve=>{el.addEventListener('scroll',resolve,{once:true});el.scrollTop=100;});
+   });
    await page.waitForFunction(selector=>document.querySelector(selector)?.scrollTop>0,selector);
    const top=await page.locator(selector).evaluate(el=>el.scrollTop);
    await route('/guid');await page.locator('.eva-composer-prompt').waitFor();await route(returnRoute);await page.locator(ready).waitFor();
