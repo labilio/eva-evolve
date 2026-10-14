@@ -164,8 +164,46 @@
   var revision = 0;
   var deleted = saved && Array.isArray(saved.deleted) ? saved.deleted : [];
   conversations = conversations.filter(function (c) { return !deleted.includes(c.id); });
-  var collapsed = []; // 每次打开个人 Eva 默认展开全部文件夹，当前页面仍可手动收起。
+  var collapsed = saved && Array.isArray(saved.collapsed) ? saved.collapsed.filter(folderExists) : [];
   var folderPins = saved && Array.isArray(saved.folderPins) ? saved.folderPins : [];
+  // Drafts belong to this personal store, but use a small record so typing does
+  // not serialize message histories or notify/remount the conversation page.
+  var draftStorageKey = 'eva:personal-drafts:v1';
+  var drafts = Object.create(null);
+  var newDraftFolderId = '';
+  try {
+    var draftRecord = JSON.parse(localStorage.getItem(draftStorageKey) || '{}');
+    var savedDrafts = draftRecord && draftRecord.drafts;
+    if (draftRecord && typeof draftRecord.folderId === 'string' && folderExists(draftRecord.folderId)) newDraftFolderId = draftRecord.folderId;
+    if (savedDrafts && typeof savedDrafts === 'object' && !Array.isArray(savedDrafts)) {
+      Object.keys(savedDrafts).forEach(function (id) {
+        if (typeof savedDrafts[id] === 'string' && draftTargetExists(id)) drafts[id] = savedDrafts[id];
+      });
+    }
+  } catch (_) {}
+  function draftTargetExists(id) {
+    return id.startsWith('new:') ? folderExists(id.slice(4)) : conversations.some(function (c) { return c.id === id; });
+  }
+  function setDraft(id, text) {
+    if (!draftTargetExists(id)) return;
+    text = String(text == null ? '' : text);
+    var folderChanged = id.startsWith('new:') && newDraftFolderId !== id.slice(4);
+    if ((drafts[id] || '') === text && !folderChanged) return;
+    if (id.startsWith('new:')) newDraftFolderId = id.slice(4);
+    if (text) drafts[id] = text; else delete drafts[id];
+    saveDrafts();
+  }
+  function saveDrafts() {
+    try { localStorage.setItem(draftStorageKey, JSON.stringify({drafts:drafts, folderId:newDraftFolderId})); }
+    catch (_) { /* Keep the in-memory draft if browser storage is unavailable. */ }
+  }
+  const memory = window.EvaWorkspaceMemory;
+  const demo = window.__EVA_WORKSPACE_MEMORY_DEMO;
+  if (memory && demo && memory.seed('personal', demo.version, {
+    ['personal:' + demo.personal.conversationId]: {attachments:[demo.attachment],cursor:{start:8,end:8}},
+  })) {
+    if (!drafts[demo.personal.conversationId]) setDraft(demo.personal.conversationId, demo.personal.text);
+  }
   var listeners = new Set();
   function snapshot() { return JSON.parse(JSON.stringify({folders:folders, conversations:conversations, collapsed:collapsed, deleted:deleted, folderPins:folderPins, demoUnreadSeeded:demoUnreadSeeded, demoUnreadSeededV2:demoUnreadSeededV2, demoUnreadSeededV3:demoUnreadSeededV3})); }
   var committed = snapshot();
@@ -180,6 +218,13 @@
   function conversation(id) { var c = conversations.find(function (c) { return c.id === id; }); if (!c) throw new Error('对话不存在'); return c; }
   window.EvaPersonal = Object.freeze({
     getSnapshot: snapshot,
+    getDraft: function (id) { return draftTargetExists(id) ? drafts[id] || '' : ''; },
+    setDraft: setDraft,
+    entryRoute: function () {
+      var id = memory?.read('personal','navigation','conversationId','');
+      return conversations.some(function (c) { return c.id === id; }) ? '/conversation/' + encodeURIComponent(id) : '/guid';
+    },
+    newDraftFolder: function () { return folderExists(newDraftFolderId) ? newDraftFolderId : ''; },
     getRevision: function () { return revision; },
     unreadCount: function (id) { var c = conversations.find(function (item) { return item.id === id; }); return c ? Math.max(0, c.messages.filter(function (m) { return m.role === 'assistant'; }).length - c.readAssistantCount) : 0; },
     totalUnread: function () { return conversations.reduce(function (sum, c) { return sum + window.EvaPersonal.unreadCount(c.id); }, 0); },
@@ -203,19 +248,20 @@
       folders = folders.filter(function (f) { return f.id !== id; });
       conversations.forEach(function (c) { if (c.folderId === id) c.folderId = ''; });
       collapsed = collapsed.filter(function (x) { return x !== id; }); persist();
+      delete drafts['new:' + id]; saveDrafts();
     },
     toggleFolderPin: function (id) { if (!folderExists(id)) throw new Error('文件夹不存在'); folderPins = folderPins.includes(id) ? folderPins.filter(function (x) { return x !== id; }) : folderPins.concat(id); persist(); },
     togglePin: function (id) { var c = conversation(id); c.pinned = !c.pinned; persist(); },
-    deleteConversation: function (id) { conversation(id); deleted.push(id); conversations = conversations.filter(function (c) { return c.id !== id; }); persist(); },
+    deleteConversation: function (id) { conversation(id); deleted.push(id); conversations = conversations.filter(function (c) { return c.id !== id; }); persist(); delete drafts[id]; saveDrafts(); },
     toggleFolder: function (id) { collapsed = collapsed.includes(id) ? collapsed.filter(function (x) { return x !== id; }) : collapsed.concat(id); persist(); },
     moveConversation: function (id, folderId) { if (!folderExists(folderId)) throw new Error('文件夹不存在'); conversation(id).folderId = folderId; persist(); },
     renameConversation: function (id, title) { title = String(title || '').trim(); if (!title || title.length > 120) throw new Error('请输入 1–120 字的对话名称'); conversation(id).title = title; persist(); },
     createConversation: function (folderId, text) {
       if (!folderExists(folderId)) throw new Error('文件夹不存在');
       var c = {id:'personal-' + crypto.randomUUID(), title:text.slice(0,120), folderId:folderId || '', assistantId:'assistant-general', assistant:'Eva 同学', time:'刚刚', messages:[{role:'user', text:text}]};
-      conversations.unshift(c); persist(); return c.id;
+      conversations.unshift(c); persist(); setDraft('new:' + (folderId || ''), ''); return c.id;
     },
-    appendMessage: function (id, message) { conversation(id).messages.push(message); conversation(id).time = '刚刚'; persist(); }
+    appendMessage: function (id, message) { conversation(id).messages.push(message); conversation(id).time = '刚刚'; persist(); if (message.role === 'user') setDraft(id, ''); }
   });
   Object.defineProperty(window, '__EVA_PERSONAL_CONVERSATIONS', {configurable:true, get:function () { return snapshot().conversations; }});
 })();

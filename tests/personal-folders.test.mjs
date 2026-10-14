@@ -31,7 +31,7 @@ test('最近也是可折叠分类，历史会话稳定 ID 全部保留，个人�
  assert.equal(a.document.querySelector('.eva-personal-folder__main span').textContent,'最近');
  assert.equal(a.q('[data-eva-selected-assistant]'),null);assert.doesNotMatch(a.document.body.textContent,/通用助理|研发助理|创建助理|未归类/);
  a.q('[data-eva-toggle-folder=""]').click();assert.equal(a.q('[data-eva-personal-conversation-id="personal-ui-designer-ppt"]'),null);
- const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'true');
+ const b=setup(a.saved);assert.equal(b.q('[data-eva-toggle-folder=""]').getAttribute('aria-expanded'),'false');
  b.route('personal-ui-designer-ppt');assert.match(b.q('.eva-history-flow').textContent,/设计团队/);
 });
 
@@ -118,4 +118,36 @@ test('输入框下拉可选择最近或本地目录，不丢失草稿，发送�
  Object.defineProperty(picker,'value',{configurable:true,value:folder.id});picker.dispatchEvent(new a.window.Event('change',{bubbles:true}));
  assert.equal(a.q('.eva-composer-prompt'),textarea);assert.equal(textarea.value,'保留这段中文输入');
  a.q('[data-eva-personal-send]').click();assert.equal(a.store.getSnapshot().conversations.find(c=>c.title==='保留这段中文输入').folderId,folder.id);
+});
+
+test('个人文字草稿输入即持久化，刷新与直接路由往返不会丢失或串会话',()=>{
+ const a=setup();a.input('首页中文草稿\n第二行');
+ assert.equal(setup(a.saved).q('.eva-composer-prompt').value,'首页中文草稿\n第二行');
+ a.route('personal-api-regression');a.input('接口草稿');
+ a.route('personal-product-copy');a.input('文案草稿');
+ a.route('personal-api-regression');assert.equal(a.q('.eva-composer-prompt').value,'接口草稿');
+ assert.equal(setup(a.saved,'#/conversation/personal-product-copy').q('.eva-composer-prompt').value,'文案草稿');
+ a.input('');assert.equal(setup(a.saved,'#/conversation/personal-api-regression').q('.eva-composer-prompt').value,'');
+});
+
+test('个人发送只清当前草稿，失败保留，删除会话不复活草稿',()=>{
+ const a=setup();a.input('首页保留');a.route('personal-api-regression');a.input('发送内容');
+ a.q('[data-eva-personal-send]').click();
+ assert.equal(setup(a.saved,'#/conversation/personal-api-regression').q('.eva-composer-prompt').value,'');
+ assert.equal(setup(a.saved).q('.eva-composer-prompt').value,'首页保留');
+ a.route('personal-product-copy');a.input('失败保留');
+ const originalSet=a.saved.set.bind(a.saved);a.saved.set=()=>{throw Error('quota');};
+ assert.throws(()=>a.q('[data-eva-personal-send]').click(),/无法保存/);
+ a.saved.set=originalSet;
+ assert.equal(setup(a.saved,'#/conversation/personal-product-copy').q('.eva-composer-prompt').value,'失败保留');
+ a.store.deleteConversation('personal-product-copy');
+ assert.equal(a.store.getDraft('personal-product-copy'),'');
+});
+
+test('分组内未发送的新对话刷新后恢复同一分组和文字',()=>{
+ const a=setup();a.q('[data-eva-new-folder-chat="personal-supply"]').click();a.input('采购草稿');
+ const b=setup(a.saved);assert.equal(b.q('.eva-composer-prompt').value,'采购草稿');
+ b.q('[data-eva-personal-send]').click();
+ assert.equal(b.store.getSnapshot().conversations.find(c=>c.title==='采购草稿').folderId,'personal-supply');
+ assert.equal(setup(b.saved).q('.eva-composer-prompt').value,'');
 });

@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+
+const server=createServer(new URL('../../dist',import.meta.url).pathname);
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin=`http://127.0.0.1:${server.address().port}`;
+const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+try {
+ const context=await browser.newContext({viewport:{width:1200,height:800}});
+ await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+ let page=await context.newPage();
+ const errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ const route=async hash=>{await page.evaluate(hash=>location.hash=hash,hash);};
+ const personal=()=>page.locator('.eva-composer-prompt');
+ const im=()=>page.locator('[contenteditable="true"][role="textbox"]').last();
+ const check=async(locator,text)=>{await locator.waitFor();await page.waitForFunction(({selector,text})=>{const el=document.querySelector(selector);return el&&(el.value??el.innerText)===text;},{selector:await locator.evaluate(el=>el.matches('textarea')?'.eva-composer-prompt':'[contenteditable="true"][role="textbox"]'),text});};
+ await page.goto(origin+'/#/guid');await personal().fill('首页中文草稿\n第二行');
+ await route('/messages');await im().waitFor();await route('/guid');await check(personal(),'首页中文草稿\n第二行');
+ await page.reload();await check(personal(),'首页中文草稿\n第二行');
+ await route('/conversation/personal-api-regression');await personal().fill('接口草稿');
+ await route('/conversation/personal-product-copy');await personal().fill('文案草稿');
+ await route('/conversation/personal-api-regression');await check(personal(),'接口草稿');
+ await page.reload();await check(personal(),'接口草稿');
+ await page.locator('[data-eva-personal-send]').click();await check(personal(),'');
+ await route('/conversation/personal-product-copy');await check(personal(),'文案草稿');
+ await personal().fill('');await page.reload();await check(personal(),'');
+ // Closing and reopening the page restores browser-local storage.
+ await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(origin+'/#/guid');await check(personal(),'首页中文草稿\n第二行');
+ console.log('PASS personal: navigation, reload, close/reopen, isolation, send and manual clear');
+ await route('/messages');await page.getByRole('button',{name:'最近',exact:true}).click();
+ await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();await im().fill('采购群草稿');
+ await page.getByRole('heading',{name:'质量与排产',exact:true}).click();await im().fill('质量群草稿');
+ await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();await check(im(),'采购群草稿');
+ await page.reload();await page.getByRole('button',{name:'最近',exact:true}).click();
+ await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();await check(im(),'采购群草稿');
+ await page.getByRole('navigation',{name:'群聊子区'}).getByRole('tab').nth(1).click();await im().fill('子区草稿');
+ await page.getByRole('tab',{name:/^主聊天/}).click();await check(im(),'采购群草稿');
+ await im().press('Enter');await check(im(),'');
+ await page.getByRole('navigation',{name:'群聊子区'}).getByRole('tab').nth(1).click();await check(im(),'子区草稿');
+ console.log('PASS team: reload, parent/topic isolation and send clear');
+ await route('/messages?evaIM=my-ai');await page.locator('.eva-ai-team__team-button').first().click();
+ await im().fill('小队草稿');await route('/guid');await personal().waitFor();
+ await route('/messages?evaIM=my-ai');await page.locator('.eva-ai-team__team-button').first().click();await check(im(),'小队草稿');
+ await page.reload();await page.locator('.eva-ai-team__team-button').first().click();await check(im(),'小队草稿');
+ await im().press('Enter');await check(im(),'');
+ assert.deepEqual(errors,[]);
+ console.log('PASS my AI: navigation, reload and send clear; no page errors');
+} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

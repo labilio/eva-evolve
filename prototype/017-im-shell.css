@@ -590,3 +590,10 @@ body [data-eva-unread].is-muted {
 }
 .eva-project-archive-notice > span { flex: 1; min-width: 0; }
 .eva-project-archive-notice > svg { flex-shrink: 0; }
+
+/* Shared pending demo attachments: personal and team composers. */
+.eva-draft-attachments { display:flex; flex-wrap:wrap; gap:8px; padding:8px 12px 0; }
+.eva-draft-attachment { display:flex; align-items:center; gap:6px; min-width:0; max-width:100%; padding:4px 8px; border:1px solid var(--eva-border-subtle); border-radius:var(--eva-radius-control,8px); background:var(--eva-surface-subtle); color:var(--eva-text-primary); font-size:12px; }
+.eva-draft-attachment > span:first-of-type { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eva-draft-attachment__meta { flex-shrink:0; color:var(--eva-text-secondary-accessible); }
+.eva-draft-attachment > button { flex-shrink:0; }

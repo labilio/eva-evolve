@@ -719,3 +719,9 @@ body[theme-mode="dark"] {
   border-color: var(--semi-color-border);
   color: var(--semi-color-text-2);
 }
+
+:root[data-theme="dark"] .eva-draft-attachment { background:var(--eva-surface-paper); border-color:var(--eva-border-subtle); color:var(--eva-text-primary); }
+:root[data-theme="dark"] .eva-draft-attachment__meta { color:var(--eva-text-secondary-accessible); }
+:root[data-theme="dark"] .eva-draft-attachment svg { color:currentColor; }
+:root[data-theme="dark"] .eva-draft-attachment button:hover { background:var(--eva-overlay-hover); }
+:root[data-theme="dark"] .eva-draft-attachment button:active { background:var(--eva-overlay-pressed); }

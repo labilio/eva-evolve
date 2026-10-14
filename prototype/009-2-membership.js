@@ -1233,6 +1233,7 @@
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
     const store=create(saved,undefined,resolveProjectInfo,json=>{try{root.localStorage.setItem(key,json);}catch{}});
+
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
     root.EvaAIIdentity?.setCloneAvatarResolver?.(ownerId=>store.cloneAvatar(ownerId));
     root.EvaAvatar?.setGroupAppearanceResolver(id=>{
@@ -1240,7 +1241,17 @@
       const settings=store.chatSettings(context?.groupId||id);
       return {avatar:settings?.avatar,project:context};
     });
-    store.seedSupplyChatContent();store.seedProjectAgents();store.initializeUnreadBaseline();return store;
+    store.seedSupplyChatContent();store.seedProjectAgents();store.initializeUnreadBaseline();
+    const memoryDemo=root.__EVA_WORKSPACE_MEMORY_DEMO,memory=root.EvaWorkspaceMemory;
+    if(memoryDemo&&memory&&store.canRead(memoryDemo.team.conversationId,store.actorId())){
+      const id=memoryDemo.team.conversationId,actor=store.actorId();
+      const message=store.messagesFor(id,actor).find(m=>m.kind==='text'&&m.sender&&m.sender.uid!==actor&&(m.id||m.fixtureId));
+      const scopes={['im:'+id]:{attachments:[memoryDemo.attachment],scroll:{top:memoryDemo.team.scrollTop,left:0,bottom:false},cursor:{start:8,end:8}}};
+      if(message)scopes.im={replies:{[id]:{conversationId:id,messageId:message.id||message.fixtureId,fromName:message.sender.name,fromUID:message.sender.uid,digest:message.text,autoMention:false,restored:true}}};
+      if(memory.seed(actor,memoryDemo.version,scopes)&&!store.conversationDraft(id,actor))store.setConversationDraft(id,actor,memoryDemo.team.text);
+    }
+
+    return store;
   }
   root.EvaMembership=Object.freeze({create,bootstrap});
 })(window);

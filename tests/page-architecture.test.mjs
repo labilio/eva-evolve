@@ -50,7 +50,7 @@ test('个人 Eva 主入口进入 GDS 工作区且加号仅作提示', () => {
   assert.match(source, /EvaPersonalEntry=/);
   assert.doesNotMatch(source, /eva-personal-entry__plus|EvaPersonalPlusIcon/);
   assert.match(source, /case"new-chat":return React\.createElement\(EvaPersonalEntry,/);
-  assert.match(source, /onClick:\(\)=>rt\.navigate\("\/guid"\)/);
+  assert.match(source, /onClick:\(\)=>rt\.navigate\(window\.EvaPersonal\.entryRoute\(\)\)/);
   assert.doesNotMatch(source, /case"new-chat":return[^;]+SiderToolbar/);
   assert.doesNotMatch(hierarchy, /syncPersonalAssistantNav/);
   assert.match(workspace, /register\('personal'/);
@@ -85,7 +85,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /eva-ai-team__edit-config/);
   assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
-  assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=reactExports\.useState\(\{\}\)/);
+  assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=useEvaRememberedState\('my-ai','identities',\{\}\)/);
   assert.match(imPatch, /const newConversation = id => \{setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[id\]:false\}\)\);choose\(id,digitalEmployees\.some/);
   assert.match(imPatch, /const toggleIdentitySessions = id => setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[id\]:!value\[id\]\}\)\)/);
   assert.doesNotMatch(imPatch, /openLatestConversation|identitySessionsDisclosure|showAllIdentitySessions/);
@@ -436,8 +436,8 @@ test('我的 AI 小队保留三条预览，AI 身份行控制全部会话的收�
   const aiTeamCss = read('prototype/046-ai-team.css') + read('prototype/056-heading-system.css');
 
   assert.match(imPatch, /Object\.fromEntries\(\[\.\.\.teamGroups\.map\(group=>\[group\.id,!group\.system\]\),\.\.\.\(requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)\?\[\[requestedIdentity\.id,false\]\]:\[\]\)\]\)/);
-  assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=reactExports\.useState\(\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
-  assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=reactExports\.useState\(\{\}\)/);
+  assert.match(imPatch, /const \[showAllTeamThreads,setShowAllTeamThreads\]=useEvaRememberedState\('my-ai','expandedThreads',\(\)=>requestedIdentity&&groupIds\.has\(requestedIdentity\.id\)&&requestedSessionId\?\{\[requestedIdentity\.id\]:true\}:\{\}\)/);
+  assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=useEvaRememberedState\('my-ai','identities',\{\}\)/);
   assert.match(imPatch, /if\(requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
   assert.match(imPatch, /else setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:false\}\)\)/);
   assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2&&!threadPreferenceStore\.chatPreferences\(item\.id,threadPreferenceActor\)\.hidden\)\.sort/);
@@ -681,7 +681,7 @@ test('个人 Eva GDS 设计采用规范首页、原生输入和单一生命周�
   assert.match(workspace, /\+ '<\/div><\/div>' \+ railHTML\(\) \+ '<\/div><\/div>';/);
   assert.match(workspace, /state === 'completed' \? '' : assistantRailHTML\(\)/);
   assert.match(workspace, /aria-activedescendant/);
-  assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*selectedConversation = '';/);
+  assert.match(workspace, /if \(hash\.indexOf\('#\/guid'\) === 0\) \{\s*window\.EvaWorkspaceMemory\?\.write\('personal','navigation','conversationId',''\);\s*selectedConversation = '';/);
   assert.match(workspaceCss, /width: min\(100%, var\(--eva-main-col-w\)\)/);
   assert.doesNotMatch(workspaceCss, /order:\s*[123];|width:\s*218px|height:\s*292px/);
   assert.match(workspaceCss, /container-type:\s*size/);

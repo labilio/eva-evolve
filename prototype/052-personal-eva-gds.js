@@ -58,13 +58,32 @@
   var editing = false;
   var root = null;
   var selectedConversation = '';
-  var selectedFolderId = '';
+  var selectedFolderId = window.EvaPersonal?.newDraftFolder() || '';
   var railForm = null;
   var folderMenu = null;
-  var expandedLists = new Set();
+  var expandedLists = new Set(window.EvaWorkspaceMemory?.read('personal','rail','expanded',[]) || []);
   var activeConversationId = '';
-  var personalDrafts = Object.create(null);
+  function saveCurrentDraft() { window.EvaPersonal?.setDraft(activeConversationId || 'new:' + selectedFolderId, draft); }
   var pageServices = null;
+  var memoryCleanup = [];
+  var renderedMemoryScope = '';
+  function memoryScope() { return 'personal:' + (activeConversationId || 'new:' + selectedFolderId); }
+  function attachments() { return window.EvaWorkspaceMemory?.read('personal',memoryScope(),'attachments',[]) || []; }
+  function stopMemory() { memoryCleanup.forEach(function (fn) { fn(); }); memoryCleanup = []; }
+  function bindMemory() {
+    if (!root || !window.EvaWorkspaceMemory) return;
+    renderedMemoryScope = memoryScope();
+    var memory = window.EvaWorkspaceMemory;
+    memoryCleanup.push(memory.bindScroll(root.querySelector('.eva-personal-sider-panel__body'),'personal','rail',{followBottom:false}));
+    memoryCleanup.push(memory.bindScroll(root.querySelector('.eva-personal-workspace__stream'),'personal',renderedMemoryScope,{bottom:true}));
+    if (!skillPickerOpen()) memoryCleanup.push(memory.bindCursor(root.querySelector('.eva-composer-prompt'),'personal',renderedMemoryScope));
+  }
+  function attachmentHTML() {
+    var files = attachments();
+    return files.length ? '<div class="eva-draft-attachments" aria-label="待发送附件">' + files.map(function (file) {
+      return '<div class="eva-draft-attachment">' + icon('paperclip',14,'eva-i') + '<span>' + escapeHTML(file.name) + '</span><span class="eva-draft-attachment__meta">示例附件</span><button type="button" class="eva-personal-rail-icon" data-eva-remove-attachment="' + escapeHTML(file.id) + '" aria-label="移除附件 ' + escapeHTML(file.name) + '">' + icon('x',14,'eva-i') + '</button></div>';
+    }).join('') + '</div>' : '';
+  }
 
   function icon(name, size, className) {
     return window.__evaLucide(name, { size: size || 16, className: className || '' });
@@ -101,8 +120,10 @@
   // The personal page owns the picker. Within a conversation it only updates
   // the composer, leaving the result DOM, selection and editor undo stack intact.
   function updateConversationComposer() {
+    stopMemory();
     var composer = root.querySelector('[data-eva-personal-composer]');
     if (composer) composer.outerHTML = composerPanelHTML(state === 'completed' ? 'eva-composer-narrow' : '');
+    bindMemory();
     var input = root.querySelector('.eva-composer-prompt');
     if (input) { input.focus({preventScroll:true}); input.setSelectionRange(input.value.length, input.value.length); }
   }
@@ -208,7 +229,7 @@
   // Rail actions update only the rail; composition, selection and scroll stay intact.
   function renderRail() {
     var rail = root && root.querySelector('.eva-personal-sider-panel');
-    if (rail) { var scroll = rail.querySelector('.eva-personal-sider-panel__body').scrollTop; rail.outerHTML = assistantRailHTML(); root.querySelector('.eva-personal-sider-panel__body').scrollTop = scroll; syncRailForm(); }
+    if (rail) { stopMemory(); var scroll = rail.querySelector('.eva-personal-sider-panel__body').scrollTop; rail.outerHTML = assistantRailHTML(); root.querySelector('.eva-personal-sider-panel__body').scrollTop = scroll; syncRailForm(); bindMemory(); }
   }
 
   /* ---- hero ------------------------------------------------ */
@@ -240,7 +261,7 @@
       return '<button class="eva-send" type="button" data-state="running" data-eva-personal-stop aria-label="停止生成">'
         + '<span class="eva-personal-tool__icon">' + icon('square', 12, 'eva-i') + '</span></button>';
     }
-    var ready = !skillPickerOpen() && Boolean(draft.trim());
+    var ready = !skillPickerOpen() && Boolean(draft.trim() || attachments().length);
     return '<button class="eva-send" type="button" data-state="' + (ready ? 'enabled' : 'disabled') + '"'
       + (ready ? ' data-eva-personal-send' : ' disabled')
       + ' aria-label="' + (ready ? '发送' : '发送（输入后可用）') + '">'
@@ -260,7 +281,7 @@
   function actionsHTML() {
     if (isNewConversationState()) {
       return '<div class="eva-composer-actions eva-newchat-actions">'
-        + '<button class="eva-newchat-icon-action" type="button" disabled aria-label="添加附件">' + icon('plus', 20, 'eva-i') + '</button>'
+        + '<button class="eva-newchat-icon-action" type="button" data-eva-add-attachment aria-label="添加示例附件">' + icon('plus', 20, 'eva-i') + '</button>'
         + folderPickerHTML()
         + '<span class="eva-newchat-actions__spacer"></span>'
         + '<button class="eva-newchat-model" type="button" disabled><span>Qwen3.8 Max</span>' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
@@ -268,7 +289,7 @@
         + '</div>';
     }
     return '<div class="eva-composer-actions">'
-      + '<button class="eva-round eva-round-ghost" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="添加附件">' + icon('plus', 16, 'eva-i') + '</button>'
+      + '<button class="eva-round eva-round-ghost" type="button" data-eva-add-attachment data-eva-tooltip="添加示例附件" aria-label="添加示例附件">' + icon('plus', 16, 'eva-i') + '</button>'
       + '<span style="flex:1 1 auto"></span>'
       + '<button class="eva-model eva-t-label" type="button" disabled data-eva-tooltip="当前原型使用 Auto">Auto' + icon('chevron-down', 12, 'eva-i-chevron') + '</button>'
       + '<button class="eva-round eva-round-plain" type="button" disabled data-eva-tooltip="原型暂未实现此操作" aria-label="语音输入">' + icon('mic', 16, 'eva-i') + '</button>'
@@ -281,7 +302,7 @@
     var mention = activeSkill && !skillPickerOpen()
       ? '<span class="eva-mention eva-t-body-medium">' + icon(activeSkill.icon, 16, 'eva-i') + escapeHTML(activeSkill.name) + '</span>' : '';
     return '<div class="eva-composer' + (extraClass ? ' ' + extraClass : '') + '" data-eva-personal-composer>'
-      + (conversationPickerOpen ? pickerHTML() : '')
+      + (conversationPickerOpen ? pickerHTML() : '') + attachmentHTML()
       + '<div class="eva-composer-input-area">' + (skillPickerOpen() ? '<span aria-hidden="true">@</span>' : '') + mention
       + '<textarea class="eva-composer-prompt" aria-label="向 Eva 同学提问"' + (skillPickerOpen() ? ' role="combobox" aria-expanded="true" aria-controls="eva-skill-list" aria-activedescendant="eva-skill-option-' + pickerIndex + '"' : '') + ' placeholder="' + (skillPickerOpen() ? '输入技能名称' : isNewConversationState() ? '分配一个任务或提问任何问题' : '要我帮你做些什么？ @ 调用技能与指令') + '"'
       + (state === 'generating' ? ' disabled' : '') + '>' + escapeHTML(value) + '</textarea></div>'
@@ -535,18 +556,20 @@
 
   function render() {
     if (!root) return;
+    stopMemory();
     var input = root.querySelector('.eva-composer-prompt');
-    var focused = input && document.activeElement === input;
+    var focused = renderedMemoryScope === memoryScope() && input && document.activeElement === input;
     var caret = input ? input.selectionStart : 0;
     root.setAttribute('data-eva-state', state);
     root.innerHTML = workspaceHTML();
     syncRailForm();
     if (state === 'completed') syncEditor();
+    bindMemory();
     if (focused) {
       input = root.querySelector('.eva-composer-prompt');
       if (input && !input.disabled) {
         input.focus({preventScroll:true});
-        input.setSelectionRange(Math.min(caret,input.value.length), Math.min(caret,input.value.length));
+        if (skillPickerOpen()) input.setSelectionRange(Math.min(caret,input.value.length), Math.min(caret,input.value.length));
       }
     }
   }
@@ -600,14 +623,16 @@
   }
 
   function startGenerating() {
-    if (!draft.trim()) return;
-    submitted = {text:draft.trim(), skill:activeSkill};
+    var files = attachments(), sentScope = memoryScope();
+    if (!draft.trim() && !files.length) return;
+    submitted = {text:[draft.trim()].concat(files.map(function (file) { return '示例附件：' + file.name; })).filter(Boolean).join('\n'), skill:activeSkill};
     if (window.EvaPersonal) {
       if (!activeConversationId) activeConversationId = window.EvaPersonal.createConversation(selectedFolderId, submitted.text);
       else window.EvaPersonal.appendMessage(activeConversationId, {role:'user', text:submitted.text});
-      personalDrafts[activeConversationId] = '';
-      personalDrafts['new:' + selectedFolderId] = '';
     }
+    stopMemory();
+    window.EvaWorkspaceMemory?.write('personal',sentScope,'attachments',[]);
+    window.EvaWorkspaceMemory?.write('personal',sentScope,'cursor',null);
     draft = ''; activeSkill = null; feedback = ''; slideIndex = 0; zoom = 100;
     slideDrafts = Object.create(null); editing = false;
     activeDocument = isPresentation() ? 'presentation' : 'document';
@@ -636,6 +661,13 @@
     if (!root || !root.isConnected) return;
     var inside = event.target.closest && event.target.closest('#eva-personal-workspace');
     if (!inside) return;
+    if (event.target.closest('[data-eva-add-attachment]')) {
+      if (state === 'generating') return;
+      window.EvaWorkspaceMemory?.write('personal',memoryScope(),'attachments',[window.__EVA_WORKSPACE_MEMORY_DEMO.attachment]); render(); return;
+    }
+    var removeFile = event.target.closest('[data-eva-remove-attachment]');
+    if (removeFile) { window.EvaWorkspaceMemory?.write('personal',memoryScope(),'attachments',attachments().filter(function (file) { return file.id !== removeFile.dataset.evaRemoveAttachment; })); render(); return; }
+
 
     var taskLink = event.target.closest('[data-eva-personal-task-link]');
     if (taskLink) {
@@ -684,6 +716,7 @@
         : null;
       activeSkill = skill || null;
       draft = skill ? TASK_TITLE : (picked ? picked.label + '：' : '');
+      saveCurrentDraft();
       setState(skill && skill.operation ? 'operation' : 'input');
       return;
     }
@@ -694,6 +727,7 @@
       activeSkill = SKILLS.filter(function (item) { return item.id === skillRow.dataset.evaSkill; })[0] || null;
       pickerQuery = '';
       draft = !draft.trim() && activeSkill && activeSkill.id === 'ppt' ? TASK_TITLE : draft;
+      saveCurrentDraft();
       closeSkillPicker();
       var input = root.querySelector('.eva-composer-prompt');
       if (input) { input.focus(); input.setSelectionRange(input.value.length,input.value.length); }
@@ -715,6 +749,7 @@
     if (event.target.closest('[data-eva-personal-stop]')) {
       event.preventDefault();
       draft = submitted ? submitted.text : ''; activeSkill = submitted ? submitted.skill : null;
+      saveCurrentDraft();
       setState('input');
       return;
     }
@@ -764,27 +799,27 @@
       var deletedId = deletion.dataset.evaDeleteConversation;
       var conversationToDelete = conversationForId(deletedId);
       if (conversationToDelete) pageServices.showActionConfirm({kind:'delete-conversation', target:deletion, detail:conversationToDelete,
-        onApply:function () { window.EvaPersonal.deleteConversation(deletedId); delete personalDrafts[deletedId]; if (activeConversationId === deletedId) { activeConversationId = ''; selectedConversation = ''; resetToHome(); location.hash = '#/guid'; } renderRail(); }});
+        onApply:function () { window.EvaPersonal.deleteConversation(deletedId); if (activeConversationId === deletedId) { activeConversationId = ''; selectedConversation = ''; resetToHome(); location.hash = '#/guid'; } renderRail(); }});
       return;
     }
     if (folderMenu !== null) { folderMenu = null; renderRail(); }
     var toggle = event.target.closest('[data-eva-toggle-folder]');
     if (toggle) { window.EvaPersonal.toggleFolder(toggle.dataset.evaToggleFolder); renderRail(); return; }
     var expand = event.target.closest('[data-eva-expand-list]');
-    if (expand) { var key = expand.dataset.evaExpandList; if (expandedLists.has(key)) expandedLists.delete(key); else expandedLists.add(key); renderRail(); return; }
+    if (expand) { var key = expand.dataset.evaExpandList; if (expandedLists.has(key)) expandedLists.delete(key); else expandedLists.add(key); window.EvaWorkspaceMemory?.write('personal','rail','expanded',Array.from(expandedLists)); renderRail(); return; }
     var newChat = event.target.closest('[data-eva-new-folder-chat]');
     if (newChat) {
-      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      saveCurrentDraft();
       selectedFolderId = newChat.dataset.evaNewFolderChat;
       selectedConversation = ''; activeConversationId = ''; railForm = null;
-      resetToHome(); draft = personalDrafts['new:' + selectedFolderId] || ''; render();
+      resetToHome(); draft = window.EvaPersonal?.getDraft('new:' + selectedFolderId) || ''; saveCurrentDraft(); state = draft ? 'input' : 'home'; render();
       if (location.hash.indexOf('#/guid') !== 0) location.hash = '#/guid';
       root.querySelector('.eva-composer-prompt').focus(); return;
     }
     var conversation = event.target.closest('[data-eva-personal-conversation-id]');
     if (conversation) {
       event.preventDefault();
-      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      saveCurrentDraft();
       var detail = conversationForId(conversation.dataset.evaPersonalConversationId);
       if (detail && location.hash !== '#/conversation/' + detail.id) location.hash = '#/conversation/' + detail.id;
       else setState('history');
@@ -842,6 +877,7 @@
       else event.target.removeAttribute('aria-activedescendant');
     } else {
       draft = event.target.value;
+      saveCurrentDraft();
       if (isNewConversationState() && state !== 'operation') {
         state = draft || activeSkill ? 'input' : 'home';
         root.dataset.evaState = state;
@@ -910,18 +946,21 @@
       if (activeConversationId === detail.id && (state === 'generating' || state === 'completed')) return;
       selectedConversation = detail.title;
       activeConversationId = detail.id;
+      window.EvaWorkspaceMemory?.write('personal','navigation','conversationId',detail.id);
       selectedFolderId = detail.folderId || '';
-      draft = personalDrafts[detail.id] || '';
+      draft = window.EvaPersonal?.getDraft(detail.id) || '';
       activeSkill = null;
       pickerQuery = '';
       state = 'history';
       return;
     }
     if (hash.indexOf('#/guid') === 0) {
+      window.EvaWorkspaceMemory?.write('personal','navigation','conversationId','');
       selectedConversation = '';
       activeConversationId = '';
       if (state !== 'home') resetToHome();
-      draft = personalDrafts['new:' + selectedFolderId] || '';
+      draft = window.EvaPersonal?.getDraft('new:' + selectedFolderId) || '';
+      state = draft ? 'input' : 'home';
     }
   }
 
@@ -929,6 +968,13 @@
     syncRouteState();
     if (root && root.isConnected) render();
   });
+
+  function retainNewDraftWorkspace(nextFolder) {
+    if (activeConversationId || nextFolder === selectedFolderId) return;
+    stopMemory();
+    var memory = window.EvaWorkspaceMemory, previous = memoryScope(), next = 'personal:new:' + nextFolder;
+    ['attachments','cursor'].forEach(function (field) { memory?.write('personal',next,field,memory.read('personal',previous,field,field === 'attachments' ? [] : null)); });
+  }
 
   async function browseLocalFolder() {
     if (!window.showDirectoryPicker) { window.alert('请在 Edge 或 Chrome 中打开本地目录选择器。'); return; }
@@ -940,7 +986,7 @@
       var existing = personalSnapshot().folders.find(function (folder) { return folder.name === directory.name; });
       var folderId = directory.name === '最近' ? '' : existing ? existing.id : window.EvaPersonal.createFolder(directory.name);
       if (activeConversationId) window.EvaPersonal.moveConversation(activeConversationId, folderId);
-      selectedFolderId = folderId; personalDrafts['new:' + folderId] = draft;
+      retainNewDraftWorkspace(folderId); selectedFolderId = folderId; saveCurrentDraft();
       renderRail();
       var picker = root.querySelector('.eva-personal-folder-picker'); if (picker) picker.outerHTML = folderPickerHTML();
     } catch (error) { if (error.name !== 'AbortError') window.alert(error.message || '无法打开本地目录，请重试。'); }
@@ -954,12 +1000,12 @@
       browseLocalFolder(); return;
     }
     if (activeConversationId && window.EvaPersonal) window.EvaPersonal.moveConversation(activeConversationId, next);
-    selectedFolderId = next;
+    retainNewDraftWorkspace(next); selectedFolderId = next;
     var picker = event.target.closest('.eva-personal-folder-picker');
     var selected = [{id:'',name:'最近'}].concat(personalSnapshot().folders).find(function (folder) { return folder.id === next; });
     picker.querySelector('.eva-personal-folder-picker__label').textContent = selected.name;
     picker.title = selected.name;
-    personalDrafts['new:' + next] = draft;
+    saveCurrentDraft();
     renderRail();
   });
 
@@ -1010,7 +1056,8 @@
     syncRouteState();
     render();
     return function () {
-      personalDrafts[activeConversationId || 'new:' + selectedFolderId] = draft;
+      stopMemory();
+      saveCurrentDraft();
       pageServices?.showRailForm?.(null);
       pageServices = null;
       railForm = null;

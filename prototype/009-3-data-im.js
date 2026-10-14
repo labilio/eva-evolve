@@ -672,3 +672,11 @@ window.__EVA_PERSONAL_CONVERSATION_DEMO = Object.freeze([
     {role:'assistant',intro:'议程分为采购进展、质量异常、合同交期和待拍板事项四段。',paragraphs:['每段只保留一项结论和一项下一步，最后请采购确认交期，请质量负责人确认异常批次的复核条件。']}
   ]}
 ]);
+
+// Review-only checkpoints. They are applied once and never overwrite user edits.
+window.__EVA_WORKSPACE_MEMORY_DEMO = Object.freeze({
+  version:'supply-resume-1',
+  attachment:{id:'supply-resume-checklist',name:'供应链周会核对清单.md',url:'/prototype/fixtures/supply-resume-checklist.md'},
+  team:{conversationId:'c-eva',text:'采购周会草稿：第一批交期已确认，第二批材质证明还需补齐。\n稍后继续核对附件中的三项内容。',scrollTop:180},
+  personal:{conversationId:'personal-supplier-delivery',text:'请继续核对第二批关键件的交期，我已经整理了周会清单。'}
+});
