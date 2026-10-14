@@ -300,7 +300,7 @@
   document.addEventListener('keydown', function (event) {
     var layer = document.querySelector('.eva-center-modal-layer:not([hidden])');
     if (layer) {
-      if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; }
+      if (event.key === 'Escape' && !event.isComposing && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); closeModal(); return; }
       if (event.key === 'Tab') {
         var nodes = Array.from(layer.querySelectorAll('button, input, select, textarea, [tabindex]')).filter(function (node) { return !node.disabled && node.tabIndex >= 0 && node.getClientRects().length; });
         var first = nodes[0], last = nodes[nodes.length - 1];

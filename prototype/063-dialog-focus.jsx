@@ -5,16 +5,38 @@ const candidateSelector='input:not([type="hidden"]):not([disabled]),textarea:not
 const available=el=>el&&el.getClientRects().length&&!el.closest('[hidden],[inert],[aria-hidden="true"]');
 const first=(root,selector)=>Array.from(root?.querySelectorAll(selector)||[]).find(available);
 
+// Shared by themed Dialog and the legacy native Semi Modal adapter. This is
+// event-local routing, not another popup state or document dismissal controller.
+export function captureDialogEscape(event,panel,onCancel) {
+ const native=event.nativeEvent||event;
+ if(event.key!=='Escape'||native.isComposing||event.defaultPrevented)return false;
+ const owner=event.target.closest('[role="dialog"]');
+ if(owner&&owner!==panel)return true;
+ const nested=!!first(panel,'[aria-expanded="true"],[role="listbox"],[role="menu"]');
+ // Closed Select and Dropdown triggers swallow Escape before bubbling.
+ if(!nested&&event.target.closest('.semi-select,[aria-expanded="false"][aria-controls],[aria-expanded="false"][aria-haspopup]')){
+  event.preventDefault();event.stopPropagation();onCancel?.(event);
+ }
+ return nested;
+}
+
 // modalRender is Semi's public composition hook. Run inside the mounted native
 // content before ModalContent's lifecycle selects its first button. No timeout,
 // MutationObserver, second focus trap or per-business focus controller.
 export function DialogContent({node,initialFocus='field',selectInitialText=false,onCancel,visible,dialogId,accessibleName,description,opener,returnFocus}) {
- const root=React.useRef(null),opened=React.useRef(false),nestedEscape=React.useRef(false);
+ const root=React.useRef(null),opened=React.useRef(false),nestedEscape=React.useRef(false),lastFocus=React.useRef(null);
  const originalRef=node.ref;
  const ref=React.useCallback(el=>{root.current=el;if(typeof originalRef==='function')originalRef(el);else if(originalRef)originalRef.current=el;},[originalRef]);
  React.useLayoutEffect(()=>{
   if(!visible){opened.current=false;return;}
-  if(opened.current||!root.current)return;opened.current=true;
+  if(!root.current)return;
+  if(opened.current){
+   // Disabling/removing a focused submit button can leave focus on body.
+   // Keep keyboard dismissal reachable while the existing save continues.
+   if(document.activeElement===document.body&&lastFocus.current&&(!lastFocus.current.isConnected||lastFocus.current.matches(':disabled')))(first(root.current,'[data-eva-dialog-cancel]')||first(root.current,candidateSelector))?.focus({preventScroll:true});
+   return;
+  }
+  opened.current=true;
   const panel=root.current,body=panel.querySelector('.semi-modal-body');
   let target=initialFocus==='title'?panel.querySelector('.semi-modal-title'):
    initialFocus==='cancel'?first(panel,'[data-eva-dialog-cancel]'):
@@ -22,7 +44,7 @@ export function DialogContent({node,initialFocus='field',selectInitialText=false
   target=target||panel.querySelector('.semi-modal-title')||first(panel,candidateSelector);
   target?.focus({preventScroll:true});
   if(selectInitialText&&target?.matches('input,textarea'))target.select();
- },[visible,initialFocus,selectInitialText]);
+ });
  const restore=React.useRef({opener,returnFocus});restore.current={opener,returnFocus};
  React.useLayoutEffect(()=>()=>{
   const saved=restore.current;if(saved.opener?.isConnected&&available(saved.opener))return;
@@ -40,6 +62,7 @@ export function DialogContent({node,initialFocus='field',selectInitialText=false
   ref,'aria-label':accessibleName||node.props['aria-label'],
   'aria-labelledby':accessibleName||node.props['aria-label']?undefined:dialogId+'-title',
   'aria-describedby':description?dialogId+'-body':undefined,
+  onFocusCapture:event=>{lastFocus.current=event.target;},
   onKeyDownCapture:event=>{
    const owner=event.target.closest('[role="dialog"]');
    if(owner&&owner!==root.current)return;
@@ -47,9 +70,7 @@ export function DialogContent({node,initialFocus='field',selectInitialText=false
     const nodes=Array.from(root.current.querySelectorAll(candidateSelector)).filter(el=>available(el)&&el.tabIndex>=0);
     if(nodes.length){event.preventDefault();event.stopPropagation();nodes.at(-1).focus();}return;
    }
-   if(event.key!=='Escape'||event.nativeEvent.isComposing)return;
-   nestedEscape.current=!!first(root.current,'[aria-expanded="true"],[role="listbox"],[role="menu"]');
-   if(!nestedEscape.current&&event.target.closest('.semi-select,[aria-expanded="false"][aria-controls]')){event.preventDefault();event.stopPropagation();onCancel?.(event);}
+   nestedEscape.current=captureDialogEscape(event,root.current,onCancel);
   },
   onKeyDown:event=>{
    if(event.key!=='Escape'||event.nativeEvent.isComposing)return;

@@ -134,19 +134,20 @@
       return h(Form,{...submission.formProps,className:'eva-role-create'},
         h('div',{className:'eva-role-create-heading'},h('label',{htmlFor:'eva-new-project-role',className:'eva-role-field-label'},'新建角色'),h(Button,{type:'tertiary',theme:'borderless',size:'small',onClick:onCancel},'取消新建')),
         h('div',{className:'eva-role-create-row'},
-        h(Form.Input,{field:'name',noLabel:true,id:'eva-new-project-role',autoFocus:true,'aria-label':'新角色名称',maxLength:20,placeholder:'例如：产品、前端',rules:[{required:true,whitespace:true,message:'请输入角色名称'}],onKeyDown:e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();onCancel();}}}),
+        h(Form.Input,{field:'name',noLabel:true,id:'eva-new-project-role',autoFocus:true,'aria-label':'新角色名称',maxLength:20,placeholder:'例如：产品、前端',rules:[{required:true,whitespace:true,message:'请输入角色名称'}],onKeyDown:e=>{e.stopPropagation();if(e.key==='Escape'&&!e.nativeEvent.isComposing){e.preventDefault();onCancel();}}}),
         h(Button,{theme:'solid',htmlType:'submit',loading:submission.busy},'创建并选中')),
         h(SubmissionError,{submission}));
     }
     function RoleAssignment({projectId,memberId,onMemberChange,onClose}){
-      const s=useState(),[formApi]=Form.useForm(),[creating,setCreating]=R.useState(false);
+      const s=useState(),[formApi]=Form.useForm(),[creating,setCreating]=R.useState(false),roleArea=R.useRef(null),wasCreating=R.useRef(false);
+      R.useLayoutEffect(()=>{if(wasCreating.current&&!creating)roleArea.current?.querySelector('.eva-role-new')?.focus();wasCreating.current=creating;},[creating]);
       const initialValues={roleIds:store.memberRoles(projectId,memberId).map(r=>r.id)};
       const submission=useSubmission({active:!!memberId,resetKey:projectId+':'+memberId+':'+s.actorId,onSubmit:values=>{
         store.setMemberRoles(projectId,s.actorId,memberId,values.roleIds||[]);onClose();
       }});
       R.useEffect(()=>{if(memberId){formApi.reset();formApi.setValues(initialValues);}setCreating(false);},[projectId,memberId,s.actorId]);
       const member=memberId&&store.members(projectId).find(m=>m.id===memberId);
-      const newRoleMenu=h('div',{className:'eva-role-create-area'},creating?
+      const newRoleMenu=h('div',{className:'eva-role-create-area',ref:roleArea},creating?
         h(RoleCreator,{projectId,actor:s.actorId,onCancel:()=>setCreating(false),onCreated:role=>{formApi.setValue('roleIds',[...new Set([...(formApi.getValue('roleIds')||[]),role.id])]);setCreating(false);}}):
         h(Button,{className:'eva-role-new',theme:'borderless',icon:h(PlusIcon,{size:16}),onClick:()=>setCreating(true)},'新建角色'));
       return h(Modal,{className:'eva-members-modal eva-project-role-modal',width:480,title:'设置项目角色',visible:!!memberId,onCancel:onClose,okText:'保存',cancelText:'取消',confirmLoading:submission.busy,onOk:submission.submit},member&&h('div',{className:'eva-project-role-content'},h(Form,{...submission.formProps,form:formApi,initValues:initialValues,className:'eva-project-role-form'},

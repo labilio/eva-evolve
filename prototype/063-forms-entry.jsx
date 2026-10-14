@@ -38,3 +38,5 @@ export {notifyTaskCreated} from './063-task-created-notification.jsx';
 // Native Breadcrumb uses the existing global Semi semantic theme.
 export {default as Breadcrumb} from "@douyinfe/semi-ui/lib/es/breadcrumb";
 export {UpdateNotificationHost,CheckUpdateButton} from './063-update-notification.jsx';
+
+export {captureDialogEscape} from './063-dialog-focus.jsx';

@@ -87,6 +87,23 @@
       'React.createElement(Row,{label:"检查更新"},React.createElement(ButtonComponent$1,{size:"small"},"检查"))',
       'React.createElement(Row,{label:"检查更新"},React.createElement(evaForms.CheckUpdateButton,null))',
       '设置检查更新复用应用更新通知');
+    // The compatibility observer defers delivery to rAF. Native disconnect must
+    // also cancel that queued delivery, or a closed form is resized after unmount.
+    source = root.__evaCut(source,
+      'class ct extends rt{constructor(pt){let mt=0;super((gt,St)=>{mt&&cancelAnimationFrame(mt),mt=requestAnimationFrame(()=>{mt=0;try{pt(gt,St)}catch(Ct){if(!shouldSilence(extractMessage$1(Ct)))throw Ct}})})}}window.ResizeObserver=ct',
+      'class ct extends rt{constructor(pt){let mt=0;super((gt,St)=>{mt&&cancelAnimationFrame(mt),mt=requestAnimationFrame(()=>{mt=0;try{pt(gt,St)}catch(Ct){if(!shouldSilence(extractMessage$1(Ct)))throw Ct}})});this.evaCancelResize=()=>{if(mt)cancelAnimationFrame(mt);mt=0}}disconnect(){this.evaCancelResize();super.disconnect()}}window.ResizeObserver=ct',
+      '关闭表单时取消兼容 ResizeObserver 的延迟回调');
+    // Legacy native Modal/confirm keeps its existing shell and focus trap. Its
+    // document listener must not cancel IME composition or another dialog.
+    source = root.__evaCut(source,
+      'addKeyDownEventListener:()=>{this.props.closeOnEsc&&document.addEventListener("keydown",this.foundation.handleKeyDown)},removeKeyDownEventListener:()=>{this.props.closeOnEsc&&document.removeEventListener("keydown",this.foundation.handleKeyDown)}',
+      'addKeyDownEventListener:()=>{this.evaEscapeCapture=event=>{this.evaNestedEscape=evaForms.captureDialogEscape(event,this.modalDialogRef.current,e=>this.foundation.close(e))};this.evaEscapeListener=event=>{if(event.isComposing||event.defaultPrevented||this.evaNestedEscape)return;const owner=event.target?.closest?.(\'[role="dialog"]\');if(owner&&owner!==this.modalDialogRef.current)return;if(event.key==="Escape"||event.keyCode===27)event.preventDefault();this.foundation.handleKeyDown(event)};if(this.props.closeOnEsc){this.modalDialogRef.current?.addEventListener("keydown",this.evaEscapeCapture,true);document.addEventListener("keydown",this.evaEscapeListener)}},removeKeyDownEventListener:()=>{this.modalDialogRef.current?.removeEventListener("keydown",this.evaEscapeCapture,true);document.removeEventListener("keydown",this.evaEscapeListener)}',
+      '原生 Semi Modal Escape 仅取消所属弹窗并保护输入法');
+    // A settings Select can finish a queued resize after Escape unmounts it.
+    source = root.__evaCut(source,
+      'onResize:function(){return Na.current.updatePopupPosition()}',
+      'onResize:function(){return Na.current?.updatePopupPosition()}',
+      '设置弹窗关闭后忽略已卸载选择器的延迟 resize');
     // Semi's insertion guard must accept keyboard focus as well as pointer hover.
     // Keep its own show/hide lifecycle; this exact anchor fails on upstream drift.
     source = root.__evaCut(source,
