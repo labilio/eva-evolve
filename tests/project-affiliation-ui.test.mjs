@@ -67,7 +67,7 @@ test('身份资料卡用所属项目名称和项目色 icon 表达项目归属',
 test('聊天信息中的所属项目复用同一项目身份展示',()=>{
   const {window,React,Button,Modal,BackIcon,store,state,cards}=setup();
   const Placeholder=()=>null;
-  const ChatSettings=window.EvaChatSettings.create({React,Button,Modal,Input:'input',Switch:'switch',PlusIcon:Placeholder,CloseIcon:Placeholder,BackIcon,SearchIcon:Placeholder,HumanIdentity:Placeholder,CloneIdentity:Placeholder,ProjectAgentIdentity:Placeholder,MemberPicker:Placeholder,SinglePersonPicker:Placeholder,humanItems:()=>[],cloneItems:()=>[],useState:()=>state,IdentityCard:Placeholder,ProjectIdentity:cards.ProjectIdentity,useNavigate:()=>()=>{}},store);
+  const ChatSettings=window.EvaChatSettings.create({React,Button,Modal,Input:'input',Switch:'switch',PlusIcon:Placeholder,CloseIcon:Placeholder,BackIcon,SearchIcon:Placeholder,HumanIdentity:Placeholder,CloneIdentity:Placeholder,ProjectAgentIdentity:Placeholder,MemberPicker:Placeholder,SinglePersonPicker:Placeholder,humanItems:()=>[],cloneItems:()=>[],employeeItems:()=>[],useState:()=>state,IdentityCard:Placeholder,ProjectIdentity:cards.ProjectIdentity,useNavigate:()=>()=>{}},store);
   const tree=ChatSettings({channel:{id:'group',name:'采购与招投标'},onClose:()=>{},onClear:()=>{}});
   assert.match(text(tree),/所属项目/);
   const flat=text(tree);
