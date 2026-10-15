@@ -113,3 +113,12 @@ test('forwarded AI content is authored by the current user and does not create t
 });
 
 test('手打 AI 不触发，明确所有 AI 仅触发群内 AI',()=>{const group=window.EvaMyAITeamGroup.createStore({storage:null});group.source(members).onSend('@通用助理 @所有 AI 成员');let rows=group.source(members).messages[group.id];assert.equal(rows.length,1);assert.equal(rows[0].mentions.length,0);group.source(members).onSend('@所有 AI 成员',undefined,undefined,[{uid:'ai',name:'@所有 AI 成员',start:0}]);rows=group.source(members).messages[group.id];assert.equal(rows.length,5);assert.equal(rows[1].mentions[0].uid,'ai');});
+test('AI 小队子区归档后软删除保留记录并拒绝旧会话访问',()=>{
+ let saved;const storage={getItem:()=>saved,setItem:(_,v)=>{saved=v;}};
+ const group=window.EvaMyAITeamGroup.createStore({storage}),id=group.createThread({id:'audit',name:'留痕'});
+ group.source(members,id).onSend('原始记录',id);assert.throws(()=>group.updateThread(id,{deleted:true}),/归档/);assert.throws(()=>group.updateThread(id,{status:2,deleted:true}),/归档/);
+ group.updateThread(id,{status:2});assert.throws(()=>group.source(members,id).onSend('已归档',id),/归档/);group.updateThread(id,{deleted:true});
+ const row=JSON.parse(saved).groups[0].threads.find(t=>t.id===id);assert.equal(row.deleted,true);assert.ok(row.deletedAt);assert.equal(row.messages[0].text,'原始记录');assert.equal(group.forwardChannels()[0].threads.some(t=>t.id===id),false);assert.throws(()=>group.source(members,id));
+});
+
+test('AI 小队已归档子区必须先恢复才能修改',()=>{const group=window.EvaMyAITeamGroup.createStore({storage:null}),id=group.createThread({id:'readonly',name:'只读子区'});group.updateThread(id,{status:2});assert.equal(group.isThreadArchived(id),true);for(const patch of [{name:'改名'},{name:'改名',status:1},{joined:true}])assert.throws(()=>group.updateThread(id,patch),/归档/);group.updateThread(id,{status:1});assert.equal(group.isThreadArchived(id),false);group.updateThread(id,{name:'恢复后改名'});assert.equal(group.source(members,id).channels[0].threads.find(t=>t.id===id).name,'恢复后改名');});

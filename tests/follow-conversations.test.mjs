@@ -59,29 +59,31 @@ test('项目群关注等同置顶整个项目，取消关注即取消置顶', ()
   assert.equal(s.conversationFollowed('all:p', 'a'), false);
 });
 
-test('子区跟随父群关注，取关子区不影响父群，取消父群关注级联子区', () => {
+test('子区跟随父群关注，拒绝独立操作，取消父群关注同步派生', () => {
   const s = setup();
   s.createGroup('g', '非项目群', null, 'a', []);
   s.createThread('t', 'g', {name: '子区'}, 'a');
   assert.equal(s.conversationFollowed('g', 'a'), true);
   assert.equal(s.conversationFollowed('t', 'a'), true);
-  s.unfollowConversation('t', 'a');
-  assert.equal(s.conversationFollowed('t', 'a'), false);
+  assert.throws(()=>s.unfollowConversation('t', 'a'),/子区/);
+  assert.equal(s.conversationFollowed('t', 'a'), true);
   assert.equal(s.conversationFollowed('g', 'a'), true);
-  s.followConversation('t', 'a', 'scope:other');
+  assert.throws(()=>s.followConversation('t', 'a', 'scope:other'),/子区/);
   assert.equal(s.conversationFollowed('t', 'a'), true);
   s.unfollowConversation('g', 'a');
   assert.equal(s.conversationFollowed('g', 'a'), false);
   assert.equal(s.conversationFollowed('t', 'a'), false);
 });
 
-test('未关注子区时关注会把父群一并加入并归入所选分组', () => {
+test('子区不能代父群关注，父群关注后子区自动跟随', () => {
   const s = setup();
   s.createGroup('g', '非项目群', null, 'a', []);
   s.createThread('t', 'g', {name: '子区'}, 'a');
   s.unfollowConversation('g', 'a');
   const categoryId = s.saveConversationCategory('a', {name: '分组一', channelIds: [], availableChannels: [{id: 'g', category: 'scope:other'}]});
-  s.followConversation('t', 'a', categoryId);
+  assert.throws(()=>s.followConversation('t', 'a', categoryId),/子区/);
+  assert.equal(s.conversationFollowed('g', 'a'), false);
+  s.followConversation('g', 'a', categoryId);
   assert.equal(s.conversationFollowed('g', 'a'), true);
   assert.equal(s.conversationFollowed('t', 'a'), true);
   assert.equal(s.conversationCategory('a', {id: 'g'}), categoryId);

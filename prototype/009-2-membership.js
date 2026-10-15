@@ -18,6 +18,10 @@
   }
   function create(seed, persist, resolveProjectInfo, persistJSON){
     let state=JSON.parse(JSON.stringify({people:[],clones:[],projects:{},groups:{},threads:{},threadDetails:{},messages:{},chatSettings:{},chatPreferences:{},groupGovernance:{},cloneMentionFree:{},memberAdditions:[],sequence:0,...seed}));
+    const threadParent=id=>state.threads[id]||root.__EVA_IM_DEMO?.channels?.find(channel=>channel.threads?.some(thread=>thread.id===id))?.id;
+    // Retire personal topic visibility/follow state; lifecycle and parent access own visibility.
+    for(const preferences of Object.values(state.chatPreferences||{}))for(const [id,pref] of Object.entries(preferences||{})){delete pref.hidden;delete pref.restoreOnMention;if(threadParent(id))delete pref.recentHiddenCount;}
+    for(const followed of Object.values(state.followedConversations||{}))for(const id of Object.keys(followed||{}))if(threadParent(id))delete followed[id];
     // Consolidate legacy records by stable owner ID. Existing memberships and
     // messages follow the same owner's canonical identity, never another person.
     const cloneAliases={...(state.cloneAliases||{})},byOwner=new Map();
@@ -217,6 +221,7 @@
     };
     function deliverForwarded(targetId,uid,messages,mode,note){
         const direct=state.directConversations?.[targetId];
+        if(state.threadDetails[targetId]?.status===2)fail('子区已归档，请恢复后发送');
         if(direct?!direct.memberIds.includes(uid):!api.canReadForwardSource(targetId,uid))fail('无目标会话发送权限');
         if(direct&&!person(direct.memberIds.find(id=>id!==uid)))fail('对方账号不可用');
         if(!Array.isArray(messages)||!messages.length)fail('请选择要转发的消息');
@@ -360,7 +365,7 @@
         const categories=api.conversationCategories(uid);
         if(id&&!categories.some(c=>c.id===id))fail('分组不存在');
         if(categories.some(c=>c.id!==id&&c.name===name))fail('分组名称已存在');
-        const allowed=new Set(availableChannels.filter(c=>!c.category?.startsWith('space:')&&!state.groups[c.id]?.projectId&&!state.projects[c.id]&&!c.id.startsWith('all:')).map(c=>c.id));
+        const allowed=new Set(availableChannels.filter(c=>!c.category?.startsWith('space:')&&!state.groups[c.id]?.projectId&&!state.projects[c.id]&&!state.threads[c.id]&&!c.id.startsWith('all:')).map(c=>c.id));
         if(channelIds.some(cid=>!allowed.has(cid)))fail('只能整理非项目会话');
         id ||= 'scope:custom-'+(++state.sequence);
         state.conversationCategories||={};state.conversationCategories[uid]=categories.some(c=>c.id===id)?categories.map(c=>c.id===id?{id,name}:c):categories.concat({id,name});
@@ -410,11 +415,13 @@
       // 关注是显式状态：项目按整个项目置顶关注，非项目会话由本人加入关注。
       conversationFollowed(id,uid){
         if(!uid||!id)return false;
+        if(threadParent(id))return !state.threadDetails[id]?.deleted&&api.conversationFollowed(threadParent(id),uid);
         const context=api.conversationContext(id,uid);
         if(context)return api.pinnedProjects(uid).includes(context.projectId);
         return !!state.followedConversations?.[uid]?.[id];
       },
       followConversation(id,uid,categoryId){
+        if(threadParent(id))fail('子区跟随父群，不支持独立关注');
         requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
         const context=api.conversationContext(id,uid);
         if(context){
@@ -423,14 +430,12 @@
           return;
         }
         state.followedConversations||={};state.followedConversations[uid]||={};
-        const parent=state.threads[id];
-        if(parent)api.followConversation(parent,uid,categoryId);
         state.followedConversations[uid][id]=true;
-        if(!parent)(root.__EVA_IM_DEMO?.channels?.find(channel=>channel.id===id)?.threads||[]).forEach(thread=>state.followedConversations[uid][thread.id]=true);
-        if(categoryId&&!parent)api.moveConversationCategory(uid,{id},categoryId);
+        if(categoryId)api.moveConversationCategory(uid,{id},categoryId);
         notify();
       },
       unfollowConversation(id,uid){
+        if(threadParent(id))fail('子区跟随父群，不支持独立关注');
         requireHuman(uid);
         const context=api.conversationContext(id,uid);
         if(context){api.setPinnedProjects(uid,api.pinnedProjects(uid).filter(pid=>pid!==context.projectId));return;}
@@ -513,7 +518,9 @@
         if(!hash.startsWith('/collab?')||params.get('evaProject')!==projectId||params.get('evaTab')!=='tasks'||!params.get('evaTask'))fail('任务链接无效');
         return deliverForwarded(targetId,uid,[{kind:'text',text:url}],"individual",note);
       },
+      isThreadArchived(id){return state.threadDetails[id]?.status===2||!!root.EvaMyAITeamGroup?.isThreadArchived?.(id);},
       deleteSelectedMessages(sourceId,uid,messages){
+        if(api.isThreadArchived(sourceId))fail('子区已归档，请恢复后修改');
         requireHuman(uid);if(!api.canReadForwardSource(sourceId,uid))fail('无来源会话访问权限');
         if(!messages.length||messages.some(m=>m.evaConversationId!==sourceId||!m.evaSelectionKey))fail('请选择同一会话中的消息');
         state.deletedMessageKeys||={};state.deletedMessageKeys[uid]=[...new Set([...(state.deletedMessageKeys[uid]||[]),...messages.map(m=>m.evaSelectionKey)])];notify({keys:['deletedMessageKeys']});
@@ -574,7 +581,7 @@
       groupMd(id,uid){
         if(!api.canRead(id,uid))fail('无会话访问权限');
         const key=groupKey(id)||fail('群聊不存在'),thread=state.threads[id],details=state.threadDetails[id];
-        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!isProjectArchived(id)&&!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
+        return {version:Number((thread?details?.groupMdVersion:governanceRecord(key).groupMdVersion)||0),content:String((thread?details?.groupMd:governanceRecord(key).groupMd)||''),canEdit:!isProjectArchived(id)&&!api.isThreadArchived(id)&&!!person(uid)&&(manager(key,uid)||!!thread&&details?.creator_uid===uid)};
       },
       setGroupMd(id,uid,value){
         requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');
@@ -583,8 +590,8 @@
         record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});
       },
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
-      hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify({keys:['chatPreferences']});},
-      recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
+      hideRecentConversation(id,uid){if(threadParent(id))fail('子区不支持隐藏');requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify({keys:['chatPreferences']});},
+      recentConversationHidden(id,uid){if(threadParent(id))return false;const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
       conversationActivity(id,uid,seedAt=''){
         if(!api.canReadForwardSource(id,uid))return '';
         let latest=String(seedAt||'');
@@ -650,9 +657,10 @@
         notify({keys:patch.name?['chatSettings','groups']:['chatSettings']});
       },
       setChatPreferences(id,uid,patch){
+        if(api.isThreadArchived(id))fail('子区已归档，请恢复后修改');
         requireHuman(uid);if(!id)fail('会话不存在');
         if((state.groups[id]||state.threads[id]||id.startsWith('all:'))&&!api.canRead(id,uid))fail('请先加入群聊');
-        if(Object.keys(patch).some(k=>!['mute','top','hidden','restoreOnMention','clearedCount'].includes(k)))fail('未知个人设置');
+        if(Object.keys(patch).some(k=>!['mute','top','clearedCount'].includes(k)))fail('未知个人设置');
         state.chatPreferences[uid]||={};
         const previous=state.chatPreferences[uid][id]||{},next={...previous,...patch};
         if(patch.top===true&&!previous.top)next.pinOrder=Math.max(0,...Object.values(state.chatPreferences[uid]).map(pref=>Number(pref.pinOrder)||0))+1;
@@ -744,23 +752,9 @@
       threadNameConflict(gid,name,excludeId){const value=String(name||'').trim();const match=Object.entries(state.threads).filter(([id,parent])=>parent===gid&&id!==excludeId&&!state.threadDetails[id]?.deleted).map(([id])=>state.threadDetails[id]).find(t=>String(t?.name||'').trim()===value);return match?JSON.parse(JSON.stringify(match)):null;},
       validateThreadName(gid,name,excludeId){const value=String(name||'').trim();if(!value)fail('请输入子区名称');if(value.length>30)fail('子区名称不能超过 30 个字');if(value==='主聊天')fail('主聊天为保留名称，请换一个名称');if(api.threadNameConflict(gid,value,excludeId))fail('本群已有同名子区');return value;},
       canManageThread(id,uid){return api.canRead(id,uid)&&(state.threadDetails[id]?.creator_id===uid||manager(state.threads[id],uid));},
-      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid){requireHuman(uid);if(!api.canRead(gid,uid))fail('请先加入父群');}if(state.threads[id])fail('子区已存在');const name=details.name===undefined?undefined:api.validateThreadName(gid,details.name);state.threads[id]=gid;state.threadDetails[id]={...details,...(name===undefined?{}:{name}),id,...(uid?{creator_id:uid}:{})};if(uid&&name){state.messages[gid]||=[];state.messages[gid].push({id:'topic-created:'+id,kind:'threadcreated',createdAt:details.created_at||new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}),sender:{...person(uid),uid},text:person(uid).name+' 创建了子区「'+name+'」',thread:{id,name,replies:0,participants:[uid]}});}if(uid&&api.conversationFollowed(gid,uid)){state.followedConversations||={};state.followedConversations[uid]||={};state.followedConversations[uid][id]=true;}notify();},
-      updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');if(['name','status','deleted'].some(key=>Object.prototype.hasOwnProperty.call(patch,key))&&!api.canManageThread(id,uid))fail('仅创建者或群管理员可管理子区');const next={...patch};if(next.name!==undefined)next.name=api.validateThreadName(state.threads[id],next.name,id);delete next.creator_id;state.threadDetails[id]={...state.threadDetails[id],...next,id};notify();},
-      restoreHiddenOnMention(id,message){
-        if(message.forwarded)return false;
-        let changed=false;
-        for(const [uid,preferences] of Object.entries(state.chatPreferences)){
-          const prefs=preferences[id],human=person(uid);
-          if(!prefs?.hidden||!prefs.restoreOnMention||!human||message.sender?.uid===uid||message.sender?.uid==='self'||!api.canReadForwardSource(id,uid))continue;
-          const explicit=(message.mentions||[]).some(mention=>(mention.uid||mention.id)===uid);
-          const text=String(message.text||''),token='@'+human.name;
-          let cursor=text.indexOf(token),matched=false;
-          while(cursor>=0){const end=cursor+token.length;if(end===text.length||/[\s，。！？、,.:：；;…]/.test(text[end])){matched=true;break;}cursor=text.indexOf(token,end);}
-          if(explicit||(message.mentionsVersion!==1&&matched)){prefs.hidden=false;changed=true;}
-        }
-        if(changed)notify({keys:['chatPreferences']});return changed;
-      },
-      sendMessage(id,uid,text,reply,mentionEntities=[]){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');const mentions=normalizeMentions(text,mentionEntities,api.groupMembers(id));const replyTo=replySnapshot(id,reply);const firstNewMessage=(state.messages[id]||[]).length;const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,mentions,mentionsVersion:1,...(replyTo?{replyTo}:{}),notifiedHumanIds:mentions.some(m=>m.uid==='all'||m.uid==='channel')?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&mentions.some(m=>m.uid===agent.id);if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}for(const message of state.messages[id].slice(firstNewMessage))api.restoreHiddenOnMention(id,message);notify({keys:['messages','chatPreferences'],messageIds:[id]});},
+      createThread(id,gid,details={},uid){if(!state.groups[gid]&&!(gid.startsWith('all:')&&state.projects[gid.slice(4)]))fail('父群不存在');if(uid){requireHuman(uid);if(!api.canRead(gid,uid))fail('请先加入父群');}if(state.threads[id])fail('子区已存在');const name=details.name===undefined?undefined:api.validateThreadName(gid,details.name);state.threads[id]=gid;state.threadDetails[id]={...details,...(name===undefined?{}:{name}),id,...(uid?{creator_id:uid}:{})};if(uid&&name){state.messages[gid]||=[];state.messages[gid].push({id:'topic-created:'+id,kind:'threadcreated',createdAt:details.created_at||new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}),sender:{...person(uid),uid},text:person(uid).name+' 创建了子区「'+name+'」',thread:{id,name,replies:0,participants:[uid]}});}notify();},
+      updateThread(id,patch,uid){if(!api.canRead(id,uid))fail('请先加入父群');if(['name','status','deleted'].some(key=>Object.prototype.hasOwnProperty.call(patch,key))&&!api.canManageThread(id,uid))fail('仅创建者或群管理员可管理子区');if(api.isThreadArchived(id)&&Object.keys(patch).some(key=>!['status','deleted'].includes(key)))fail('子区已归档，请恢复后修改');const next={...patch};if(next.deleted!==undefined){if(next.deleted!==true)fail('已删除子区不可恢复');if(state.threadDetails[id]?.status!==2||next.status===1)fail('请先归档子区再删除');next.deletedAt=new Date().toISOString();next.deletedBy=uid;}if(next.status!==undefined&&![1,2].includes(next.status))fail('子区状态无效');if(next.name!==undefined)next.name=api.validateThreadName(state.threads[id],next.name,id);delete next.creator_id;state.threadDetails[id]={...state.threadDetails[id],...next,id};notify();},
+      sendMessage(id,uid,text,reply,mentionEntities=[]){requireHuman(uid);if(!api.canRead(id,uid))fail('请先加入群聊');if(state.threadDetails[id]?.status===2)fail('子区已归档，请恢复后发送');const mentions=normalizeMentions(text,mentionEntities,api.groupMembers(id));const replyTo=replySnapshot(id,reply);const p=person(uid);(state.messages[id]||(state.messages[id]=[])).push({kind:'text',sender:{...p,uid:p.id},createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text,mentions,mentionsVersion:1,...(replyTo?{replyTo}:{}),notifiedHumanIds:mentions.some(m=>m.uid==='all'||m.uid==='channel')?api.mentionCandidates(id).map(p=>p.id):[]});const agent=agentIn(id),project=agent&&projectInfo(agent.projectId),mentionsAgent=agent&&mentions.some(m=>m.uid===agent.id);if(mentionsAgent){const owner=person(state.projects[agent.projectId].ownerId);state.messages[id].push({kind:'text',sender:agentSender(agent.projectId),createdAt:new Date().toISOString(),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),text:'@'+p.name+' 本项目的共同目标是：'+(project.desc||'尚未填写，请在项目信息中补充')+'。\n负责人是'+owner.name+'。成员加入项目后会同步进入全员群，具体问题可在对应群聊讨论。我在云端提供项目协作支持，你可以继续 @我。'});}notify({keys:['messages'],messageIds:[id]});},
       messagesFor(id,uid){
         if(!api.canRead(id,uid))return [];
         return JSON.parse(JSON.stringify(state.messages[id]||[])).map(m=>{if(m.kind==='system'&&['project-archived','project-restored'].includes(m.eventType))m.text=m.text.split(' · ')[0];return api.decorateMentions(id,projectAgentMessage(id,m));});
@@ -1133,7 +1127,6 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
         saved.threads[thread.id]=threadStateDemo.groupId;saved.threadDetails[thread.id]=thread;
         const sender=saved.people.find(person=>person.id===senderId);
         saved.messages[thread.id]=[{kind:'text',text:thread.last_message_content,time:'10:00',fixtureId:'thread-state-v1:'+thread.id,sender:{...sender,uid:senderId}}];
-        if(hidden&&!saved.chatPreferences[threadStateDemo.actorId][thread.id])saved.chatPreferences[threadStateDemo.actorId][thread.id]={hidden:true};
       }
       saved.seededThreadStatesV1=true;
     }
@@ -1147,7 +1140,7 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
         if(!group||group.projectId!==spec.projectId)continue;
         const oldNames={'c-client-delivery':'客户联合交付群','c-client-issues':'问题响应','c-client-sync':'每日同步','drive-acceptance':'文件验收与反馈','official-community':'用户使用反馈与开发交流'};
         if(group.name===oldNames[spec.id])group.name=spec.name;
-        const existing=Object.entries(saved.threads).filter(([id,parent])=>parent===spec.id&&saved.threadDetails[id]?.status!==2&&!saved.chatPreferences?.[saved.actorId]?.[id]?.hidden);
+        const existing=Object.entries(saved.threads).filter(([id,parent])=>parent===spec.id&&saved.threadDetails[id]?.status!==2);
         for(let n=existing.length;n<3;n++){
           const id=spec.id+'-mock-topic-'+(n+1);if(saved.threads[id]||saved.threadDetails[id])continue;
           saved.threads[id]=spec.id;saved.threadDetails[id]={id,name:spec.topics[n],status:1,created_at:root.__EVA_DEMO_TIME?.T1};
@@ -1190,7 +1183,7 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       const storyMembers=create(saved,undefined,resolveProjectInfo);
       for(const spec of root.__EVA_MOCK_LAYOUT?.groups||[]){
         const group=saved.groups[spec.id];if(!group)continue;
-        const topics=Object.entries(saved.threads).filter(([id,parent])=>parent===group.id&&saved.threadDetails[id]?.status===1&&!saved.threadDetails[id]?.deleted&&!saved.chatPreferences?.[saved.actorId]?.[id]?.hidden).map(([id])=>saved.threadDetails[id]);
+        const topics=Object.entries(saved.threads).filter(([id,parent])=>parent===group.id&&saved.threadDetails[id]?.status===1&&!saved.threadDetails[id]?.deleted).map(([id])=>saved.threadDetails[id]);
         const ai=storyMembers.groupMembers(group.id).find(p=>p.kind==='project-agent');const story=stories.build(group,topics,saved.people,ai);if(!story)continue;
         const add=(id,rows)=>{const custom=(saved.messages[id]||[]).filter(m=>!String(m.fixtureId||'').startsWith('topic-story:'));saved.messages[id]=[...rows.map((m,index)=>({...m,fixtureId:'topic-story:'+id+':'+index})),...custom];};
         add(group.id,story.parent);for(const [id,rows] of Object.entries(story.children))add(id,rows);
@@ -1265,10 +1258,9 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       const add=id=>{if(id)followed[id]=true;};
       for(const group of Object.values(saved.groups||{}))if(!group.projectId){
         add(group.id);
-        for(const [threadId,parent] of Object.entries(saved.threads||{}))if(parent===group.id)add(threadId);
       }
       Object.keys(saved.directConversations||{}).forEach(add);
-      for(const channel of root.__EVA_IM_DEMO?.channels||[]){add(channel.id);(channel.threads||[]).forEach(thread=>add(thread.id));}
+      for(const channel of root.__EVA_IM_DEMO?.channels||[])add(channel.id);
       for(const id of root.__EVA_LEGACY_DM_IDS||[])add(id);
       for(const human of saved.people.filter(p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot))saved.followedConversations[human.id]={...followed};
       saved.seededFollowedConversationsV1=true;

@@ -640,7 +640,7 @@
       forwardChannels(){return state.groups.map(group=>({...publicGroup(group),threads:group.threads.filter(thread=>!thread.deleted).map(thread=>({id:thread.id,name:thread.name}))}));},
       receiveForwarded(channelId,messages){
         const group=state.groups.find(group=>group.id===channelId||group.threads.some(thread=>!thread.deleted&&thread.id===channelId));if(!group)return false;
-        const current=target(group.id,channelId);current.messages.push(...copy(messages).map(message=>({...message,sender:{...message.sender,uid:'self',name:'我',ai:false,avatar:window.__EVA_CURRENT_USER_PORTRAIT}})));current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;
+        const current=target(group.id,channelId);if(current.status===2)throw new Error('子区已归档，请恢复后发送');current.messages.push(...copy(messages).map(message=>({...message,sender:{...message.sender,uid:'self',name:'我',ai:false,avatar:window.__EVA_CURRENT_USER_PORTRAIT}})));current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;
       },
       get(groupId) { return publicGroup(groupById(groupId)); },
       createGroup(record) {
@@ -670,16 +670,21 @@
           channel_type:5, name, status:1, created_at:new Date().toISOString(), updated_at:new Date().toISOString(), messages:[], draft:'', readAiMessageCount:0});
         group.updatedAt=new Date().toISOString();publish(); return channelId;
       },
+      isThreadArchived(channelId) {return state.groups.some(group=>group.threads.some(thread=>thread.id===channelId&&!thread.deleted&&thread.status===2));},
       updateThread(groupOrChannelId, channelOrPatch, patchMaybe) {
         const groupId=patchMaybe===undefined?id:groupOrChannelId,channelId=patchMaybe===undefined?groupOrChannelId:channelOrPatch,patch=patchMaybe===undefined?channelOrPatch:patchMaybe;
         const group=groupById(groupId),thread=target(group.id,channelId);
         if (thread === group) throw new Error('请选择子区');
+        if(thread.status===2&&Object.keys(patch).some(key=>!['status','deleted'].includes(key)))throw new Error('子区已归档，请恢复后修改');
+        if(patch.deleted!==undefined){if(patch.deleted!==true)throw new Error('已删除子区不可恢复');if(thread.status!==2||patch.status===1)throw new Error('请先归档子区再删除');}
+        if(patch.status!==undefined&&![1,2].includes(patch.status))throw new Error('子区状态无效');
         if (patch.name !== undefined) {
           const name = String(patch.name).trim();
           if (!name || name.length > 100) throw new Error('请输入 1–100 个字符的子区名称');
           thread.name = name;
         }
         for (const field of ['status','deleted','joined','is_joined','member_count']) if (patch[field] !== undefined) thread[field] = patch[field];
+        if(patch.deleted){thread.deletedAt=new Date().toISOString();thread.deletedBy=window.EvaMembership?.store?.actorId()||'u-wangyilin';}
         thread.updated_at = new Date().toISOString();group.updatedAt=thread.updated_at;publish();
       },
       unreadCount(groupId, channelId) { return unreadCountOf(target(groupId,channelId)); },
@@ -739,7 +744,7 @@
           initialDraft:target(group.id,selectedThreadId).draft,
           getDraft:channelId=>target(group.id,channelId).draft,
           onDraftChange(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(current.draft!==text){current.draft=text;publish();}},
-          onSend(text,channelId,reply,mentionEntities=[]){const mentions=window.EvaMentions.normalize(text,mentionEntities,unique);const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
+          onSend(text,channelId,reply,mentionEntities=[]){const mentions=window.EvaMentions.normalize(text,mentionEntities,unique);const current=target(group.id,channelId||selectedThreadId);if(current.status===2)throw new Error('子区已归档，请恢复后发送');if(!text.trim())return false;
             const replyTo=replySnapshot(channelId||selectedThreadId||group.id,reply);
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
             current.messages.push({id:messageId,createdAt:new Date().toISOString(),kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,mentions,mentionsVersion:1,...(replyTo?{replyTo}:{})});

@@ -577,7 +577,8 @@ body [data-eva-unread].is-muted {
 
 /* Keep the two-space gap between a linked task ID and its title. */
 .eva-task-message-link { white-space:pre-wrap; }
-.eva-project-archive-notice {
+.eva-project-archive-notice,
+.eva-thread-archive-notice {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -588,8 +589,8 @@ body [data-eva-unread].is-muted {
   color: var(--semi-color-text-2);
   background: var(--semi-color-bg-1);
 }
-.eva-project-archive-notice > span { flex: 1; min-width: 0; }
-.eva-project-archive-notice > svg { flex-shrink: 0; }
+.eva-project-archive-notice > span, .eva-thread-archive-notice > span { flex: 1; min-width: 0; }
+.eva-project-archive-notice > svg, .eva-thread-archive-notice > svg { flex-shrink: 0; }
 
 /* Shared pending demo attachments: personal and team composers. */
 .eva-draft-attachments { display:flex; flex-wrap:wrap; gap:8px; padding:8px 12px 0; }

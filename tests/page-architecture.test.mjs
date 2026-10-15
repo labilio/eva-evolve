@@ -440,7 +440,7 @@ test('我的 AI 小队保留三条预览，AI 身份行控制全部会话的收�
   assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=useEvaRememberedState\('my-ai','identities',\{\}\)/);
   assert.match(imPatch, /if\(requestedSessionId\)setShowAllTeamThreads\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:true\}\)\)/);
   assert.match(imPatch, /else setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[requestedIdentity\.id\]:false\}\)\)/);
-  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2&&!threadPreferenceStore\.chatPreferences\(item\.id,threadPreferenceActor\)\.hidden\)\.sort/);
+  assert.match(imPatch, /orderedTeamThreads=items=>\[\.\.\.items\]\.filter\(item=>item\.status!==2\)\.sort/);
   assert.match(imPatch, /Number\(!!threadPreferenceStore\.chatPreferences\(b\.id,threadPreferenceActor\)\.top\)-Number\(!!threadPreferenceStore\.chatPreferences\(a\.id,threadPreferenceActor\)\.top\)\|\|teamThreadTime\(b\)\.localeCompare\(teamThreadTime\(a\)\)/);
   assert.match(imPatch, /visibleThreads=reminderFilter==='all'&&group\.system&&!showAll\?threads\.slice\(0,3\):threads,hasMore=group\.system&&threads\.length>3/);
   assert.match(imPatch, /className:'eva-ai-team__team-threads-more','aria-expanded':showAll/);

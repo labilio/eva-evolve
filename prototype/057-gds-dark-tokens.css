@@ -714,7 +714,8 @@ body[theme-mode="dark"] {
    --eva-action-primary + --eva-text-inverse 的暗色 EvaMate 配对，不受影响。
    ============================================================ */
 /* Project archive state uses the same semantic surface and interaction tokens in both themes. */
-:root[data-theme="dark"] .eva-project-archive-notice {
+:root[data-theme="dark"] .eva-project-archive-notice,
+:root[data-theme="dark"] .eva-thread-archive-notice {
   background: var(--semi-color-bg-1);
   border-color: var(--semi-color-border);
   color: var(--semi-color-text-2);
