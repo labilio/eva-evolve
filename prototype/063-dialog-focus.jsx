@@ -12,7 +12,8 @@ export function captureDialogEscape(event,panel,onCancel) {
  if(event.key!=='Escape'||native.isComposing||event.defaultPrevented)return false;
  const owner=event.target.closest('[role="dialog"]');
  if(owner&&owner!==panel)return true;
- const nested=!!first(panel,'[aria-expanded="true"],[role="listbox"],[role="menu"]');
+ // An inline search result list is dialog content, not a second dismissible layer.
+ const nested=!!first(panel,'[aria-expanded="true"],[role="listbox"]:not([data-eva-inline-list]),[role="menu"]');
  // Closed Select and Dropdown triggers swallow Escape before bubbling.
  if(!nested&&event.target.closest('.semi-select,[aria-expanded="false"][aria-controls],[aria-expanded="false"][aria-haspopup]')){
   event.preventDefault();event.stopPropagation();onCancel?.(event);

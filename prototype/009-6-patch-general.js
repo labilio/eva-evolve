@@ -682,15 +682,24 @@ function LabelEditor({issueId:issueId,labels:attachedLabels,onChanged,className}
   return React.createElement(Dropdown,{trigger:"click",position:"bottomRight",render:menu,onVisibleChange:open=>{if(open){setQuery("");refresh()}}},React.createElement("div",{className:"loop-label-editor"+(className?" "+className:"")},attached.length?React.createElement("button",{type:"button",className:"loop-label-chipbutton"},React.createElement(LabelChips,{labels:attached})):React.createElement("button",{type:"button",className:"loop-label-add"},React.createElement(Tag$2,{size:13}),"添加标签")))
 }`,'任务标签选择与直接新建');
 
-    // 关联父任务选择器（命令式弹窗 + Semi Select 下拉搜索）。候选 = 同项目、
+    // 关联父任务使用单层搜索选择器，点击立即保存。候选 = 同项目、
     // 非自身、非自身后代的任务；选定后交给详情的 Ta（其内部走 updateIssue 的
     // parent_issue_id 环路/跨项目校验并自带保存/失败 Toast）。
     source=root.__evaCut(source,'const EvaHierarchyIcon=createLucideIcon("Network",',
       String.raw`const EvaLinkIcon=createLucideIcon("link",[["path",{d:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",key:"a"}],["path",{d:"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",key:"b"}]]);
 const EvaExpandIcon=createLucideIcon("maximize-2",[["path",{d:"M15 3h6v6",key:"a"}],["path",{d:"M9 21H3v-6",key:"b"}],["path",{d:"M21 3l-7 7",key:"c"}],["path",{d:"M3 21l7-7",key:"d"}]]);
 const EvaCollapseIcon=createLucideIcon("minimize-2",[["path",{d:"M4 14h6v6",key:"a"}],["path",{d:"M20 10h-6V4",key:"b"}],["path",{d:"M14 10l7-7",key:"c"}],["path",{d:"M3 21l7-7",key:"d"}]]);
-function EvaIssueMoreMenu({issue,onSave,onDelete,children}){const descendants=evaIssueDescendantIds(issue.id),options=issuesOf().filter(item=>item.id!==issue.id&&!descendants.has(item.id)&&item.project_id===issue.project_id).sort((a,b)=>a.identifier.localeCompare(b.identifier)).map(item=>({value:item.id,label:item.identifier+" "+item.title}));return React.createElement(evaForms.ActionMenu,{items:[{label:"复制任务链接",icon:React.createElement(Copy$a,{size:13}),onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(issue.workspace_id||currentSpaceId(),issue.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}}},{label:"关联父任务",overlayStyle:{width:350},icon:React.createElement(EvaLinkIcon,{size:13}),renderContent:close=>React.createElement(evaForms.ParentTaskForm,{key:issue.id,issue,options,onSave,onClose:close})},{label:"删除任务",icon:React.createElement(Trash2,{size:13}),danger:true,onClick:onDelete}]},children)}
+function EvaIssueMoreMenu({issue,onSave,onDelete,children}){
+ const [openId,setOpenId]=React.useState(null),host=React.useRef(null),removing=React.useRef(false);
+ const descendants=evaIssueDescendantIds(issue.id),options=issuesOf().filter(item=>item.id!==issue.id&&!descendants.has(item.id)&&item.project_id===issue.project_id).sort((a,b)=>(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||a.identifier.localeCompare(b.identifier));
+ const removeParent=async()=>{if(removing.current)return;removing.current=true;try{await onSave({parent_issue_id:null})}finally{removing.current=false}};
+ const items=[{label:"复制任务链接",icon:React.createElement(Copy$a,{size:13}),onClick:async()=>{try{await navigator.clipboard.writeText(evaTaskLinkUrl(issue.workspace_id||currentSpaceId(),issue.id));Toast.success("任务链接已复制")}catch{Toast.error("复制失败，请稍后重试")}}},{label:"关联父任务",icon:React.createElement(EvaLinkIcon,{size:13}),onClick:()=>setOpenId(issue.id)},...(issue.parent_issue_id?[{label:"移除父任务",icon:React.createElement(evaForms.EvaLucideIcon,{name:"unlink",size:13}),onClick:removeParent}]:[]),{label:"删除任务",icon:React.createElement(Trash2,{size:13}),danger:true,onClick:onDelete}];
+ return React.createElement("span",{ref:host},React.createElement(evaForms.ActionMenu,{items},children),React.createElement(evaForms.ParentTaskPicker,{key:issue.id,visible:openId===issue.id,issue,options,onSave,onClose:()=>setOpenId(null),returnFocus:()=>host.current?.querySelector("button"),renderStatus:item=>React.createElement(EvaLoopStatusIcon,{status:item.status,size:14})}));
+}
 const EvaHierarchyIcon=createLucideIcon("Network",`,'注入关联父任务选择器');
+
+    source=root.__evaCut(source,'Toast.success(St("loop.toast.saved")),ct?.()}catch(Wi){Toast.error(Wi?.message??St("loop.toast.saveFailed"))}},Na=',
+      'Toast.success(St("loop.toast.saved")),ct?.();return true}catch(Wi){Toast.error(Wi?.message??St("loop.toast.saveFailed"));return false}},Na=','任务即时选择读取实际保存结果');
 
     // 抽屉顶栏动作区按已确认顺序恢复为 [订阅][更多][复制链接][全屏][关闭]。
     // 图标按钮复用全站 Semi Tooltip 桥；全屏状态由抽屉类名控制。

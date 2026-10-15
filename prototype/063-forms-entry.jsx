@@ -17,7 +17,8 @@ export {Popover} from './063-popover.jsx';
 
 export {ActionMenu} from './063-file-controls.jsx';
 export {FloatingForm} from './063-popover.jsx';
-export {ParentTaskForm} from './063-parent-task-form.jsx';
+export {ParentTaskPicker} from './063-parent-task-picker.jsx';
+export {default as Input} from '@douyinfe/semi-ui/lib/es/input';
 
 export {Card} from './063-card.jsx';
 

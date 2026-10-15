@@ -216,3 +216,16 @@ test('表格进度只计算直接子任务且不受视图筛选影响',()=>{
   vm.runInNewContext(source.slice(start,end)+';globalThis.result=progressOf("root");',ctx);
   assert.deepEqual(JSON.parse(JSON.stringify(ctx.result)),{done:0,total:2});
 });
+
+test('父任务默认候选按最近更新排序，仍排除自身和后代',()=>{
+ const {ctx,issues}=setup();
+ issues.push({id:'latest',identifier:'SC-199',title:'最近更新',updated_at:'2026-10-15T09:00:00Z'},
+  {id:'older',identifier:'SC-100',title:'较早更新',updated_at:'2026-10-14T09:00:00Z'},
+  {id:'same-time',identifier:'SC-150',title:'同时间按编号',updated_at:'2026-10-15T09:00:00Z'});
+ ctx.React={useState:()=>[null,()=>{}],useRef:()=>({current:null}),createElement:(type,props,...children)=>({type,props,children})};
+ ctx.evaForms={ActionMenu:'menu',ParentTaskPicker:'picker',EvaLucideIcon:'icon'};
+ ctx.Copy$a='copy';ctx.Trash2='trash';
+ const tree=ctx.EvaIssueMoreMenu({issue:issues[0]});
+ const options=tree.children.find(item=>item.type==='picker').props.options;
+ assert.deepEqual(Array.from(options,item=>item.id),['same-time','latest','older','peer']);
+});

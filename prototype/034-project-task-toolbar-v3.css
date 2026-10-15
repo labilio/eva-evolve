@@ -776,3 +776,14 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .eva-task-identity-option__visual { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; flex:0 0 20px; }
 .eva-task-identity-option__label { min-width:0; }
 .eva-task-unassigned-option .eva-task-identity-option__visual { color:var(--eva-text-secondary-accessible); }
+
+/* Parent-task search is one surface; native Semi owns input and button states. */
+.eva-parent-task-picker__results {max-height: min(320px, 40vh); overflow-y: auto; margin-top: var(--eva-space-2);}
+.eva-parent-task-picker__row.semi-button {display:flex; width:100%; height:auto; min-height:36px; justify-content:flex-start; gap:var(--eva-space-2); padding:var(--eva-space-2);}
+.eva-parent-task-picker__row[aria-selected="true"] {background:var(--semi-color-fill-0);}
+.eva-parent-task-picker__row > svg,.eva-parent-task-picker__identifier,.eva-parent-task-picker__current {flex-shrink:0;}
+.eva-parent-task-picker__identifier,.eva-parent-task-picker__current,.eva-parent-task-picker__empty {color:var(--semi-color-text-2);}
+.eva-parent-task-picker__title {min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left;}
+.eva-parent-task-picker__empty {padding:var(--eva-space-6) 0; text-align:center;}
+.eva-parent-task-picker__row > .semi-button-content {display:flex; align-items:center; gap:var(--eva-space-2); width:100%; min-width:0;}
+.eva-parent-task-picker__row .semi-button-content > svg {flex-shrink:0;}

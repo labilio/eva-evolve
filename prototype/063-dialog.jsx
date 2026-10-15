@@ -4,6 +4,7 @@ import Button from '@douyinfe/semi-ui/lib/es/button';
 import {dialogText} from './063-dialog-theme.js';
 import {DialogContent} from './063-dialog-focus.jsx';
 import {Typography} from './063-notification.jsx';
+import {availableFocusTarget} from './063-floating-focus.js';
 
 export const dialogWidths = Object.freeze({compact:420,standard:480,wide:680,fileDetail:720,compose:600,preview:760,editor:920});
 
@@ -16,7 +17,7 @@ function defaultContainer(zIndex = 1000) {
   return host;
 }
 
-export function Dialog({size, width, className='', okText='确定', cancelText='取消', cancelButtonProps, okButtonProps, getPopupContainer, zIndex=1000, accessibleName, initialFocus, selectInitialText=false, description=false, returnFocus, bodyStyle, ...props}) {
+export function Dialog({size, width, className='', okText='确定', cancelText='取消', cancelButtonProps, okButtonProps, getPopupContainer, zIndex=1000, accessibleName, initialFocus, selectInitialText=false, description=false, returnFocus, bodyStyle, afterClose, ...props}) {
   const dialogId=React.useId();
   const opener=React.useRef(null),wasVisible=React.useRef(false);
   if(props.visible&&!wasVisible.current)opener.current=document.activeElement;
@@ -26,7 +27,14 @@ export function Dialog({size, width, className='', okText='确定', cancelText='
   const container=React.useCallback(()=>defaultContainer(zIndex),[zIndex]);
   const variant=size || (width===420?'compact':width===680?'wide':width===600?'compose':width===760?'preview':width===920?'editor':'standard');
   if(!Object.hasOwn(dialogWidths,variant))throw new Error('Unknown Eva dialog size: '+variant);
-  return <Modal {...props} okText={okText} cancelText={cancelText} getPopupContainer={getPopupContainer||container} zIndex={zIndex} width={dialogWidths[variant]} centered maskClosable closeOnEsc={false} modalRender={renderContent} bodyStyle={{...dialogText.body,...bodyStyle}}
+  const restoreAfterClose=()=>{
+  // Native Modal may remember a transient menu item. A caller-specified stable
+  // destination wins at the native exit boundary, after the focus trap releases.
+  const target=returnFocus?.();
+  if(availableFocusTarget(target))target.focus({preventScroll:true});
+  afterClose?.();
+ };
+ return <Modal {...props} afterClose={restoreAfterClose} okText={okText} cancelText={cancelText} getPopupContainer={getPopupContainer||container} zIndex={zIndex} width={dialogWidths[variant]} centered maskClosable closeOnEsc={false} modalRender={renderContent} bodyStyle={{...dialogText.body,...bodyStyle}}
     className={'eva-dialog eva-dialog--'+variant+' '+className}
     cancelButtonProps={{'data-eva-dialog-cancel':true,style:dialogText.button,'aria-label':typeof cancelText==='string'?cancelText:undefined,...cancelButtonProps,type:'tertiary',theme:'light'}}
     okButtonProps={{style:dialogText.button,'aria-label':typeof okText==='string'?okText:undefined,...okButtonProps,theme:'solid'}}/>;
