@@ -38,6 +38,10 @@
       e.relatedTarget instanceof Element&&e.relatedTarget.closest('.semi-modal')||
       [...document.querySelectorAll('.semi-modal')].some(modal=>modal.getClientRects().length>0&&!modal.contains(target))
      ))return;
+     // The IM side panel restores focus to its header action when it closes.
+     // A pointer close must not turn that restored focus into a new hover tip;
+     // keyboard focus remains visible and keeps Semi's normal focus behavior.
+     if(key==='onFocus'&&target.matches('.ch-head .op')&&!target.matches(':focus-visible')&&!target.matches(':hover'))return;
      props[key](e);
     }]);
     for(const [event,handler] of bindings)target.addEventListener(event,handler);

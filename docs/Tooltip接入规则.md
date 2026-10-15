@@ -8,6 +8,8 @@ React 控件直接包裹 `EvaTooltipComponent`（对 Semi Tooltip 的无状态�
 
 模态弹窗关闭并将焦点归还给旧 DOM 触发按钮时，适配层不把这次焦点归还当成新的提示触发。用户之后重新悬停或用键盘聚焦按钮，仍由 Semi 正常显示提示。
 
+群聊标题栏通过旧运行时渲染的操作按钮仍由适配层连接 Semi Tooltip。鼠标关闭同级侧栏后，焦点返回标题栏按钮不应重新显示提示；键盘焦点可见时仍保留 Semi 的焦点提示。侧栏关闭后的焦点返回行为保持不变。
+
 旧 DOM 点击后会同步重建按钮的入口，页面点击委托应在冒泡阶段运行，让按钮自己的 Tooltip 点击处理先完成。重建前后表示同一业务按钮时，使用稳定的 `data-eva-tooltip-key` 保留这次点击的关闭状态；焦点因重建离开但指针仍悬停时不重置，实际离开后重新允许显示。个人 Eva 侧栏依此处理；React 入口继续直接使用 Semi 组件。
 
 已删除旧的 062-tooltip.js、062-tooltip.css、EvaTooltipBridge、EvaTooltipController、全局 pointer/focus 监听、悬停计时器与虚拟锚点。不得恢复这套逻辑。

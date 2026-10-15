@@ -93,6 +93,21 @@ test('个人 Eva 侧栏按钮点击重建后不重新点亮提示',async()=>{
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
 
+test('群聊标题栏用鼠标关闭侧栏后不因焦点返回重新显示提示',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{const page=await browser.newPage({viewport:{width:1200,height:800}});await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);await page.locator('.wk-conv-compact-item').filter({hasText:'采购与招投标'}).first().click();
+  for(const [label,panel] of [['子区','.eva-thread-list'],['查找聊天内容','#eva-conversation-search-panel']]){
+   const button=page.locator(`.ch-head .op[aria-label="${label}"]`),tip=page.getByRole('tooltip',{name:label,exact:true});
+   await button.hover();await tip.waitFor();await button.click();await page.locator(panel).waitFor();
+   await page.mouse.move(650,450);await page.locator('.ch-main__stream').click({position:{x:400,y:300}});await page.locator(panel).waitFor({state:'hidden'});await page.waitForTimeout(350);
+   assert.equal(await button.evaluate(node=>document.activeElement===node),true,'侧栏关闭后焦点仍回到标题栏入口');
+   assert.equal(await page.locator('.semi-tooltip-wrapper-show').filter({hasText:label}).count(),0,`${label}：鼠标离开后焦点返回不得重新显示提示`);
+  }
+  await page.keyboard.press('Tab');const keyboardButton=page.locator('.ch-head .op[aria-label="子区"]');await keyboardButton.focus();
+  await page.getByRole('tooltip',{name:'子区',exact:true}).waitFor();
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});
+
 test('文件卡仅截断名提示；文件库图标支持键盘且权限说明直接可见',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
  try{
