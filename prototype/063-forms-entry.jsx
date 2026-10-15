@@ -11,7 +11,7 @@ export {dialogText} from "./063-dialog-theme.js";
 
 export {FileDetail,FileConfirmation,FileToolbar,FileRowActions,FileButton,FilePath,FilePreviewActions} from './063-file-controls.jsx';
 
-export {typography,pickerIdentity,pickerNavigation} from './063-ui-theme.js';
+export {typography,pickerIdentity,pickerNavigation,documentEditor} from './063-ui-theme.js';
 export {Popconfirm} from './063-popconfirm.jsx';
 export {Popover} from './063-popover.jsx';
 
@@ -40,3 +40,6 @@ export {default as Breadcrumb} from "@douyinfe/semi-ui/lib/es/breadcrumb";
 export {UpdateNotificationHost,CheckUpdateButton} from './063-update-notification.jsx';
 
 export {captureDialogEscape} from './063-dialog-focus.jsx';
+
+// Document editors share the same Semi instance and theme.
+export {default as TextArea} from '@douyinfe/semi-ui/lib/es/input/textarea';

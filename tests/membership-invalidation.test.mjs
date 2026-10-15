@@ -33,7 +33,7 @@ test('同步持久化保留原格式，治理变更不再遍历历史，刷新�
 test('定向保存与权威状态一致，清空、免打扰、改名、私聊草稿和消息可恢复',()=>{
  const {s,serialized}=fixture();
  const check=()=>assert.equal(JSON.stringify(JSON.parse(serialized.at(-1))),JSON.stringify(s.snapshot()));
- const actions=[()=>s.setGroupManager('g','a','b',true),()=>s.setChatPreferences('t','a',{mute:true,top:true}),()=>s.setChatPreferences('t','a',{mute:null,top:false,clearedCount:1}),()=>s.setChatSettings('g','a',{name:'改名',notice:'公告'}),()=>s.setGroupMd('t','a','子区独立说明'),()=>s.deleteGroupMd('t','a'),()=>s.sendMessage('t','a','保留内容'),()=>s.clearConversationUnread('t','a'),()=>s.hideRecentConversation('g','a'),()=>s.setActor('b'),()=>s.setActor('a'),()=>s.openDirect('a','b')];
+ const actions=[()=>s.setGroupManager('g','a','b',true),()=>s.setChatPreferences('t','a',{mute:true,top:true}),()=>s.setChatPreferences('t','a',{mute:null,top:false,clearedCount:1}),()=>s.setChatSettings('g','a',{name:'改名',notice:'公告'}),()=>s.setGroupMd('t','a','子区独立说明'),()=>s.setGroupMd('t','a',''),()=>s.sendMessage('t','a','保留内容'),()=>s.clearConversationUnread('t','a'),()=>s.hideRecentConversation('g','a'),()=>s.setActor('b'),()=>s.setActor('a'),()=>s.openDirect('a','b')];
  for(const action of actions){action();check();}
  const id=s.directChannels('a')[0].id;s.setDirectDraft(id,'a','私聊草稿');check();s.sendDirect(id,'a','私聊内容');check();
  s.remove('g','a','b');check();assert.equal(s.canRead('t','b'),false);

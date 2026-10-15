@@ -46,16 +46,29 @@ root.EvaChatSettings={create(ui,store){
   const permissions=[{id:'group',title:'群信息',description:'修改群名称和群公告',icon:SettingsIcon},{id:'members',title:'成员管理',description:'移除普通成员（不能移除群主和群管理员）',icon:UserMinusIcon},{id:'instructions',title:'协作说明',description:'修改群聊及其子区的协作说明',icon:FileTextIcon}];
   return h(forms.ContentStack,null,h(forms.Card,{className:'eva-ai-admin-grant-identity',tone:'muted',bordered:false},memberIdentity(person)),h(forms.ContentStack.Section,{description:'授权后，该 AI 可在本群及其子区执行以下操作：'},h(forms.InfoList,{items:permissions})));
  }
- function GroupMdEditor({id,actor}){
-  useState();const doc=store.groupMd(id,actor),[draft,setDraft]=R.useState(doc.content),[mode,setMode]=R.useState(doc.canEdit?'edit':'preview'),[error,setError]=R.useState(''),[deleting,setDeleting]=R.useState(false);
+ function GroupMdEditor({id,actor,thread=false}){
+  useState();const doc=store.groupMd(id,actor);
+  const template='## 目标\n\n填写'+(thread?'本子区':'本群')+'的协作目标。\n\n## 协作规则\n\n说明成员分工、AI 协助方式和注意事项。\n\n## 重要资料\n\n补充相关背景、文档和常用链接。';
+  const [draft,setDraft]=R.useState(()=>doc.content||(doc.canEdit&&doc.version===0?template:'')),[error,setError]=R.useState('');
   const bytes=new TextEncoder().encode(draft).length,over=bytes>10240;
+  const count=Array.from(new Intl.Segmenter('zh-CN',{granularity:'grapheme'}).segment(draft)).filter(({segment})=>!/^\s+$/u.test(segment)).length;
+  const {TextArea:EditorInput,Button:EditorButton,Typography,typography,SubmissionError}=forms;
   const save=()=>{try{store.setGroupMd(id,actor,draft);setError('');Toast?.success('已保存');}catch(e){setError(e.message);}};
-  return h('div',{className:'eva-group-md-editor'},h('div',{className:'eva-group-md-count'},'记录本群或子区的用途、协作规则和常用链接（GROUP.md）'),doc.canEdit&&h(R.Fragment,null,h('div',{className:'eva-group-md-toolbar'},h('div',{className:'eva-group-md-tabs',role:'tablist','aria-label':'文档模式'},['edit','preview'].map(m=>h(Button,{key:m,role:'tab','aria-selected':mode===m,theme:mode===m?'light':'borderless',type:mode===m?'primary':'tertiary',size:'small',onClick:()=>setMode(m)},m==='edit'?'编辑':'预览'))),h('div',{className:'eva-group-md-actions'},doc.content&&h(Button,{type:'danger',theme:'borderless',size:'small',onClick:()=>setDeleting(true)},'删除'),h(Button,{theme:'solid',size:'small',disabled:draft===doc.content||over,onClick:save},'保存'))),h('div',{className:'eva-group-md-count'+(over?' is-over':'')},'已用 '+bytes+' 字节，最多 10 KB',doc.version>0&&h('span',null,'v'+doc.version))),mode==='edit'&&doc.canEdit?h(TextArea,{'aria-label':'协作说明内容',className:'eva-group-md-input',value:draft,onChange:setDraft,rows:15,placeholder:'# 群组说明\n\n## 简介\n描述本群或子区的用途和主题…\n\n## 规则\n1. 规则一\n2. 规则二\n\n## 常用链接\n- 链接一\n- 链接二'}):h('div',{className:'eva-group-md-preview'},draft?h(MarkdownView,{content:draft}):h('p',{className:'eva-group-md-empty'},'尚未填写协作说明')),over&&h('p',{role:'alert'},'内容超过 10 KB，请精简后保存'),error&&h('p',{role:'alert'},error),h(Modal,{className:'eva-members-modal',title:'删除协作说明',visible:deleting,onCancel:()=>setDeleting(false),okText:'删除',cancelText:'取消',okButtonProps:{type:'danger'},onOk:()=>{try{store.deleteGroupMd(id,actor);setDraft('');setError('');setDeleting(false);Toast?.success('已删除');}catch(e){setError(e.message);}}},'删除协作说明后不可恢复。'));
+  return h('div',{className:'eva-group-md-editor'},
+   h(Typography.Paragraph,{type:'secondary',className:'eva-group-md-description',style:typography.auxiliary},'供成员了解'+(thread?'本子区':'本群')+'的协作背景，也为 AI 提供上下文。'),
+   doc.canEdit?h(EditorInput,{'aria-label':'协作说明内容',className:'eva-group-md-input',value:draft,onChange:value=>{setDraft(value);setError('');},rows:12,resize:'none',style:forms.documentEditor.surface,validateStatus:over?'error':undefined,textareaStyle:{...typography.body,fontFamily:'var(--eva-font-sans)'},placeholder:'填写协作目标、规则和重要资料…'}):
+    h('div',{className:'eva-group-md-preview'},doc.content?h(MarkdownView,{content:doc.content}):h(Typography.Text,{type:'tertiary',className:'eva-group-md-empty',style:typography.body},'尚未填写协作说明')),
+   doc.canEdit&&h('div',{className:'eva-group-md-meta'},
+    h('span'),
+    h(Typography.Text,{type:over?'danger':'tertiary',style:typography.auxiliary},'已输入 '+count+' 字')),
+   h(SubmissionError,{error:over?'内容超过 10 KB，请精简后保存':error}),
+   doc.canEdit&&h('div',{className:'eva-group-md-footer'},
+    h(EditorButton,{className:'eva-group-md-save',theme:'solid',type:'primary',disabled:over||(draft===doc.content&&doc.version>0),onClick:save},'保存')));
  }
  function ThreadGroupMd({id,actor}){
   useState();const [open,setOpen]=R.useState(false),focus=usePanelPageFocus(open);
   if(!store.canRead(id,actor))return null;
-  return h(R.Fragment,null,h(Row,{buttonRef:focus.entry,title:'协作说明',value:store.groupMd(id,actor).content?'已填写':'未填写',onClick:()=>setOpen(true)}),open&&h('div',{className:'eva-chat-settings eva-thread-members-page',role:'dialog','aria-label':'子区协作说明',onKeyDown:e=>{if(e.key==='Escape'&&!e.nativeEvent.isComposing&&!e.defaultPrevented){e.preventDefault();e.stopPropagation();setOpen(false);}}},h('header',{className:'eva-chat-settings-head'},h('button',{ref:focus.back,type:'button','aria-label':'返回子区信息',onClick:()=>setOpen(false)},h(BackIcon,{size:20})),h('h3',null,'协作说明')),h('div',{className:'eva-chat-settings-body'},h(GroupMdEditor,{key:id+':'+actor,id,actor,thread:true}))));
+  return h(R.Fragment,null,h(Row,{buttonRef:focus.entry,title:'协作说明',value:store.groupMd(id,actor).content?'已填写':'未填写',onClick:()=>setOpen(true)}),open&&h('div',{className:'eva-chat-settings eva-thread-members-page',role:'dialog','aria-label':'子区协作说明',onKeyDown:e=>{if(e.key==='Escape'&&!e.nativeEvent.isComposing&&!e.defaultPrevented){e.preventDefault();e.stopPropagation();setOpen(false);}}},h('header',{className:'eva-chat-settings-head'},h('button',{ref:focus.back,type:'button','aria-label':'返回子区信息',onClick:()=>setOpen(false)},h(BackIcon,{size:20})),h('h3',null,'协作说明')),h('div',{className:'eva-chat-settings-body eva-group-md-body'},h(GroupMdEditor,{key:id+':'+actor,id,actor,thread:true}))));
  }
  function ChatSettings({channel,onClose,onManageProject,onClear,sessionInfoOnly=false,conversationActions,fixedGroupActions,projectScoped=false}){
   const s=useState(),actor=s.actorId,id=channel.id,all=id.startsWith('all:'),sid=all?id.slice(4):id,g=store.groupRecord(sid)||store.projectRecord(sid),fixed=Array.isArray(channel.fixedMembers),group=fixed||!sessionInfoOnly&&!!g&&!channel.chatType?.includes('direct')&&!id.startsWith('dm-'),allowed=group&&store.canRead(id,actor),archived=store.isProjectArchived(id),manage=allowed&&!archived&&store.manager(id,actor),owner=allowed&&!archived&&g.ownerId===actor;
@@ -86,7 +99,7 @@ root.EvaChatSettings={create(ui,store){
   const groupMdPage=page==='groupmd'&&h(GroupMdEditor,{key:id+':'+actor,id,actor});
   return h('aside',{className:'eva-chat-settings','aria-label':'聊天信息管理',onKeyDown:e=>{if(e.key==='Escape'&&!e.nativeEvent.isComposing&&!e.defaultPrevented&&!picker&&!confirm&&!profile){e.preventDefault();e.stopPropagation();page==='main'?onClose():setPage('main');}}},
    h('header',{className:'eva-chat-settings-head'},h('button',{ref:closeRef,type:'button','aria-label':page==='main'?'关闭聊天信息':'返回聊天信息',onClick:()=>page==='main'?onClose():setPage('main')},h(page==='main'?CloseIcon:BackIcon,{size:20})),h('h3',null,title)),
-   h('div',{className:'eva-chat-settings-body'},error&&h('p',{role:'alert',className:'eva-members-error'},error),
+   h('div',{className:'eva-chat-settings-body'+(page==='groupmd'?' eva-group-md-body':'')},error&&h('p',{role:'alert',className:'eva-members-error'},error),
     page==='main'&&h(R.Fragment,null,
      // 固定成员群（AI 小队父群）没有 store 里的群/项目记录，g 为空；ownerId 只在普通群里有意义。
      group?section(h('div',{className:'eva-chat-member-grid'},ordered.slice(0,19).map(p=>h(MemberTile,{key:p.id,p,onClick:event=>setProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:p,anchor:event.currentTarget})})),(allowed&&!archived&&!all||editableFixed)&&h('button',{type:'button',className:'eva-chat-member-add','aria-label':editableFixed?'添加 AI 小队成员':'添加群聊成员',onClick:editableFixed?()=>openFixedAction(fixedGroupActions.onEditMembers):()=>setPicker('add')},h(PlusIcon,{size:26}))),h(Row,{title:'查看全部 '+members.length+' 名成员',onClick:()=>{setMemberQuery('');setMemberTypeFilter(-1);setMemberOrderIds(fixed?ordered.map(p=>p.id):memberOrder(ordered,g?.ownerId,governance.managerIds,governance.botAdminIds));setPage('members');}})):

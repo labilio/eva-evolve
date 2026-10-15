@@ -134,3 +134,6 @@ export const updateNotificationActions=Object.freeze({
  contentGap:'var(--eva-space-4)',buttonGap:'var(--eva-space-2)',
  secondary:Object.freeze({border:'1px solid var(--eva-border-faint)'}),
 });
+
+// Native TextArea surface for document workspaces; interaction colors remain Semi-owned.
+export const documentEditor=Object.freeze({surface:Object.freeze({backgroundColor:'var(--eva-surface-primary)'})});

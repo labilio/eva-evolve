@@ -571,7 +571,6 @@
         const record=state.threads[id]?(state.threadDetails[id]||={id}):ensureGovernance(id);
         record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});
       },
-      deleteGroupMd(id,uid){requireHuman(uid);if(!api.groupMd(id,uid).canEdit)fail('你没有修改协作说明的权限');const record=state.threads[id]?state.threadDetails[id]:ensureGovernance(id);delete record.groupMd;delete record.groupMdVersion;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});},
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
       hideRecentConversation(id,uid){requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify({keys:['chatPreferences']});},
       recentConversationHidden(id,uid){const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
@@ -837,7 +836,7 @@
     const archiveWriteScopes={
       saveProjectRole:0,setMemberRoles:0,deleteProjectRole:0,addEmployee:0,removeEmployee:0,
       renameProject:0,setGroupManager:0,setGroupBotAdmin:0,setGroupAllowNoMention:0,
-      setCloneMentionFree:2,setGroupMd:0,deleteGroupMd:0,setChatSettings:0,
+      setCloneMentionFree:2,setGroupMd:0,setChatSettings:0,
       createGroup:2,createThread:1,updateThread:0,sendMessage:0,
       addGroupMembers:0,addMember:0,addClone:0,removeClone:0,transfer:0,setAdmin:0,leaveGroup:0,remove:0,dissolveGroup:0,
       forwardMessages:1,shareTaskLink:1,deleteSelectedMessages:0

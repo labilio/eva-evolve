@@ -80,7 +80,7 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-member-tile .eva-members-ai-identity { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 4px;align-items:center; }
 .eva-chat-member-tile .eva-members-ai-identity > .eva-ai-avatar { grid-column:1 / -1;justify-self:center; }
 /* Subzone details share the GDS group/direct settings shell and spacing. */
-.eva-thread-settings .eva-chat-settings-body { background:var(--eva-surface-subtle); }
+.eva-thread-settings .eva-chat-settings-body:not(.eva-group-md-body) { background:var(--eva-surface-subtle); }
 .eva-thread-setting-label i { display:block; margin-top:8px; color:var(--gds-color-text-secondary-accessible); font-size:12px; line-height:16px; font-style:normal; }
 
 /* Shared IM side-panel chrome: settings, tasks and thread lists. */
@@ -124,11 +124,11 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-thread-list button:focus-visible{outline:2px solid var(--eva-action-primary);outline-offset:2px}
 .eva-thread-list-pin{flex-shrink:0;font-size:12px;line-height:18px;font-weight:400;color:var(--semi-color-text-2)}
 .eva-thread-mention-option .eva-chat-setting-row{padding-left:32px;font-size:12px;color:var(--semi-color-text-2)}
-.eva-thread-settings .eva-chat-settings-body{padding-bottom:64px}
+.eva-thread-settings .eva-chat-settings-body:not(.eva-group-md-body){padding-bottom:64px}
 /* Thread full member list reuses the group member page shell, read-only. */
 .eva-thread-settings{position:relative}
 .eva-thread-members-page{position:absolute;inset:0;z-index:1}
-.eva-thread-settings .eva-thread-members-page .eva-chat-settings-body{background:var(--wk-bg-base,#fff);padding-bottom:16px}
+.eva-thread-settings .eva-thread-members-page .eva-chat-settings-body:not(.eva-group-md-body){background:var(--wk-bg-base,#fff);padding-bottom:16px}
 
 /* Compact sidebar variant of the market chips; wrap whole chips without horizontal scrolling. */
 .eva-chat-member-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
@@ -155,12 +155,15 @@ button.eva-chat-setting-row:hover,.eva-chat-settings-head button:hover { backgro
 .eva-chat-management-setting > .semi-switch { flex:none; margin-top:2px; }
 
 /* GROUP.md uses Eva controls; edit/preview behavior follows Octo. */
-.eva-group-md-editor{display:flex;flex-direction:column;gap:12px;min-width:0}
-.eva-group-md-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.eva-group-md-tabs,.eva-group-md-actions{display:flex;gap:4px;align-items:center}
-.eva-group-md-count{display:flex;gap:12px;font-size:12px;color:var(--semi-color-text-2)}
-.eva-group-md-count.is-over{color:var(--semi-color-danger)}
-.eva-group-md-input textarea{min-height:320px;font-family:monospace;line-height:1.6}
-.eva-group-md-preview{min-height:320px;padding:12px;background:var(--semi-color-bg-2);border-radius:var(--semi-border-radius-medium);overflow-wrap:anywhere}
+/* Shared group/subarea document workspace; controls keep native Semi behavior. */
+.eva-group-md-body{background:var(--eva-surface-primary);padding:var(--eva-space-5)}
+.eva-group-md-editor{display:flex;flex-direction:column;gap:var(--eva-space-3);min-width:0;min-height:100%}
+.eva-group-md-description.semi-typography{margin:0}
+.eva-group-md-input{flex:1;display:flex;min-height:260px}
+.eva-group-md-input textarea{flex:1;min-height:260px}
+.eva-group-md-preview{flex:1;min-height:260px;padding:var(--eva-space-3);background:var(--eva-surface-primary);color:var(--eva-text-primary);overflow-wrap:anywhere}
 .eva-group-md-preview img{max-width:100%}
-.eva-group-md-empty{text-align:center;color:var(--semi-color-text-2);padding:40px 0}
+.eva-group-md-empty{display:block;padding:var(--eva-space-5) 0}
+.eva-group-md-meta{display:flex;align-items:center;justify-content:space-between;gap:var(--eva-space-2);flex-wrap:wrap}
+.eva-group-md-footer{display:flex;align-items:center;gap:var(--eva-space-3);padding-top:var(--eva-space-4)}
+.eva-group-md-save{margin-left:auto}
