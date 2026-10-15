@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
-test('从供应链项目群添加项目外联系人和数字员工：分组、取消、计数、保存和重开',async()=>{
+test('项目群只添加项目内联系人并保留数字员工同步加入：分组、取消、计数、保存和重开',async()=>{
  const server=createServer(new URL('../../dist',import.meta.url).pathname);await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
  try{
@@ -14,21 +14,22 @@ test('从供应链项目群添加项目外联系人和数字员工：分组、�
  await page.locator('.op[aria-label="打开聊天信息"]').click();
  const open=()=>page.getByRole('button',{name:'添加群聊成员',exact:true}).click();await open();
  const d=page.getByRole('dialog',{name:'添加群聊成员',exact:true}),q=d.getByRole('textbox',{name:'搜索可选成员'});
- const data=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),p=s.projects.prod;return {person:s.people.find(p=>p.active!==false&&p.activated!==false&&p.internal!==false&&!p.ai&&!p.robot&&!s.projects.prod.humans.some(m=>m.id===p.id)),employee:window.EvaDigitalEmployeesStore.agents().find(a=>a.kind==='staff'&&a.active!==false&&a.ownership==='organization'&&!(p.employeeIds||[]).includes(a.id)),group:Object.values(s.groups).find(g=>g.projectId==='prod'&&g.name==='采购与招投标').id};});
+ const data=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),p=s.projects.prod;return {outsider:s.people.find(p=>p.active!==false&&p.activated!==false&&p.internal!==false&&!p.ai&&!p.robot&&!s.projects.prod.humans.some(m=>m.id===p.id)),person:s.people.find(p=>p.id!==s.actorId&&s.projects.prod.humans.some(m=>m.id===p.id)&&!Object.values(s.groups).find(g=>g.projectId==='prod'&&g.name==='采购与招投标').humans.some(m=>m.id===p.id)),employee:window.EvaDigitalEmployeesStore.agents().find(a=>a.kind==='staff'&&a.active!==false&&a.ownership==='organization'&&!(p.employeeIds||[]).includes(a.id)),group:Object.values(s.groups).find(g=>g.projectId==='prod'&&g.name==='采购与招投标').id};});
  assert.ok(data.person);assert.ok(data.employee);
  assert.equal(await q.getAttribute('placeholder'),'搜索 AI 分身、联系人、数字员工');
  await d.getByRole('button',{name:'清空',exact:true}).click();
- await d.getByRole('button',{name:/^联系人/}).click();
+ await d.getByRole('button',{name:/^项目内联系人/}).click();
  assert.equal(await d.locator('.eva-member-picker__candidate .eva-member-picker__project-tag').count(),0,'联系人不显示项目归属 Tag');
  assert.equal(await q.getAttribute('placeholder'),'搜索联系人');
- assert.equal(await q.inputValue(),'','不需要搜索即可选择项目外联系人');
+ assert.equal(await q.inputValue(),'','只展示项目内联系人');
+ await q.fill(data.outsider.name);assert.equal(await d.locator('.eva-member-picker__candidate').count(),0,'项目外联系人不可搜索加入');await q.fill('');
  const human=d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+data.person.name,exact:true})});
  assert.equal(await human.locator('.eva-member-picker__project-tag').count(),0,'候选不显示重复 Tag');await human.click();
  assert.equal(await d.locator('.eva-member-picker__selected-item .semi-tag').count(),0);
  const outsideGroup=d.getByRole('group',{name:'未加入项目',exact:true});
- assert.equal(await outsideGroup.locator('.eva-member-picker__selected-item').count(),1);
- assert.equal(await d.getByRole('group',{name:'已加入项目',exact:true}).count(),0,'空组不显示');
- await q.fill('');await d.getByRole('link',{name:'全部',exact:true}).click();await d.getByRole('button',{name:'联系人 已选 1',exact:true}).waitFor();await d.getByRole('button',{name:/^数字员工/}).click();assert.equal(await q.getAttribute('placeholder'),'搜索数字员工');
+ assert.equal(await outsideGroup.count(),0);
+ assert.equal(await d.getByRole('group',{name:'已加入项目',exact:true}).count(),1,'单一非空组保留标题');
+ await q.fill('');await d.getByRole('link',{name:'全部',exact:true}).click();await d.getByRole('button',{name:'项目内联系人 已选 1',exact:true}).waitFor();await d.getByRole('button',{name:/^数字员工/}).click();assert.equal(await q.getAttribute('placeholder'),'搜索数字员工');
  for(const word of ['王','数智化','照着组里的设计规范']){await q.fill(word);assert.equal(await d.locator('.eva-member-picker__candidate').filter({hasText:'交互稿审查专家'}).count(),0,'不匹配隐藏业务域、简介或描述：'+word);}
  await q.fill('交互稿审查');assert.equal(await d.locator('.eva-member-picker__candidate').filter({hasText:'交互稿审查专家'}).count(),1,'按名称仍能搜到');
  await q.fill('');await d.getByRole('link',{name:'全部',exact:true}).click();await q.fill('王');
@@ -37,12 +38,12 @@ test('从供应链项目群添加项目外联系人和数字员工：分组、�
  await q.fill('');await d.getByRole('button',{name:/^数字员工/}).click();await q.fill(data.employee.name);
  const employee=d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+data.employee.name,exact:true})});
  assert.equal(await employee.locator('.eva-member-picker__project-tag').count(),0);await employee.click();
- await d.getByText('其中 2 位成员将同时加入项目：供应链运营协同',{exact:true}).waitFor();
+ await d.getByText('其中 1 位成员将同时加入项目：供应链运营协同',{exact:true}).waitFor();
  assert.equal(await d.locator('.eva-member-picker__selected-name .ai-badge').count(),1);
- assert.equal(await outsideGroup.locator('.eva-member-picker__selected-item').count(),2);
+ assert.equal(await outsideGroup.locator('.eva-member-picker__selected-item').count(),1);
  await q.fill('');await d.getByRole('link',{name:'全部',exact:true}).click();await d.getByRole('button',{name:/^我的 AI 分身/}).click();assert.equal(await q.getAttribute('placeholder'),'搜索我的 AI 分身');await d.locator('.eva-member-picker__candidate:not([aria-disabled="true"])').first().click();
  const insideGroup=d.getByRole('group',{name:'已加入项目',exact:true});
- assert.equal(await insideGroup.locator('.eva-member-picker__selected-item').count(),1);
+ assert.equal(await insideGroup.locator('.eva-member-picker__selected-item').count(),2);
  assert.deepEqual(await d.locator('.eva-member-picker__selected-list .eva-member-picker__group-title').allTextContents(),['未加入项目','已加入项目']);
  const geometry=await d.evaluate(el=>{const panel=el.querySelector('.eva-member-picker__panel').getBoundingClientRect(),note=el.querySelector('.eva-member-picker__project-notice').getBoundingClientRect(),button=[...el.querySelectorAll('button')].find(b=>b.textContent.includes('加入项目并添加到群聊')).getBoundingClientRect();return {below:note.top>=panel.bottom,sameRow:Math.abs((note.top+note.bottom-button.top-button.bottom)/2)<2,apart:note.right<button.left,bottom:button.bottom};});
  assert.equal(geometry.below&&geometry.sameRow&&geometry.apart,true);assert.ok(geometry.bottom<800);
@@ -50,7 +51,7 @@ test('从供应链项目群添加项目外联系人和数字员工：分组、�
  await page.setViewportSize({width:900,height:650});await page.screenshot({path:'/tmp/eva-group-project-add-narrow.png'});
  assert.ok((await d.getByRole('button',{name:'加入项目并添加到群聊',exact:true}).boundingBox()).y<610);
  await page.setViewportSize({width:1200,height:800});
- await d.getByRole('button',{name:'移除 '+data.employee.name,exact:true}).focus();await page.keyboard.press('Enter');await d.getByText('其中 1 位成员将同时加入项目：供应链运营协同',{exact:true}).waitFor();await d.getByRole('button',{name:'清空',exact:true}).click();assert.equal(await d.locator('.eva-member-picker__project-notice').count(),0);assert.equal(await d.locator('.eva-member-picker__selected-list [role=group]').count(),0);await d.getByRole('button',{name:'确认添加',exact:true}).waitFor();await d.getByRole('button',{name:'取消',exact:true}).click();await open();
+ await d.getByRole('button',{name:'移除 '+data.employee.name,exact:true}).focus();await page.keyboard.press('Enter');assert.equal(await d.locator('.eva-member-picker__project-notice').count(),0);await d.getByRole('button',{name:'清空',exact:true}).click();assert.equal(await d.locator('.eva-member-picker__project-notice').count(),0);assert.equal(await d.locator('.eva-member-picker__selected-list [role=group]').count(),0);await d.getByRole('button',{name:'确认添加',exact:true}).waitFor();await d.getByRole('button',{name:'取消',exact:true}).click();await open();
  assert.equal(await d.locator('.eva-member-picker__project-notice').count(),0,'关闭重开不残留提示');
  await d.getByRole('button',{name:'清空',exact:true}).click();
  for(const name of [data.person.name,data.employee.name]){await q.fill(name);await d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+name,exact:true})}).click();}
@@ -62,18 +63,8 @@ test('从供应链项目群添加项目外联系人和数字员工：分组、�
  for(const name of [data.person.name,data.employee.name]){await q.fill(name);const row=d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+name,exact:true})});assert.equal(await row.getByRole('checkbox').isDisabled(),true);assert.equal(await row.locator('.eva-member-picker__project-tag').count(),0);}
  await d.getByRole('button',{name:'取消',exact:true}).click();
  await page.locator('.wk-conv-compact-item').filter({has:page.getByText('供应链运营协同',{exact:true})}).first().click();
- await page.locator('.op[aria-label="打开聊天信息"]').click();await open();
- assert.equal(await q.getAttribute('placeholder'),'搜索 AI 分身、联系人、数字员工');
- const extra=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1'));return s.people.find(p=>p.active!==false&&p.activated!==false&&p.internal!==false&&!p.ai&&!p.robot&&!s.projects.prod.humans.some(m=>m.id===p.id));});
- await d.getByRole('button',{name:/^联系人/}).click();
- await q.fill(extra.name);assert.equal(await q.getAttribute('placeholder'),'搜索联系人');
- await d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+extra.name,exact:true})}).click();
- await d.getByText('其中 1 位成员将同时加入项目：供应链运营协同',{exact:true}).waitFor();
- await page.screenshot({path:'/tmp/eva-all-group-add.png'});
- await d.getByRole('button',{name:'加入项目并添加到群聊',exact:true}).click();await d.waitFor({state:'hidden'});
- const allSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('eva:project-members:v1')));
- assert.ok(allSaved.projects.prod.humans.some(p=>p.id===extra.id));assert.ok(!allSaved.groups[data.group].humans.some(p=>p.id===extra.id));
- await open();await d.getByRole('button',{name:/^联系人/}).click();await q.fill(extra.name);assert.equal(await d.getByRole('checkbox',{name:'选择'+extra.name,exact:true}).isDisabled(),true);
+ await page.locator('.op[aria-label="打开聊天信息"]').click();
+ assert.equal(await page.getByRole('button',{name:'添加群聊成员',exact:true}).count(),0,'全员群不提供添加入口');
  assert.deepEqual(errors,[]);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });

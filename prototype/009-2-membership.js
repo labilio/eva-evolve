@@ -776,34 +776,26 @@
       },
       candidates(id,uid,includeJoined=false){const s=writable(id);if(!member(id,uid))fail('请先加入');return people().filter(p=>p.id!==uid&&(includeJoined||!member(id,p.id))&&(!s.projectId||member(s.projectId,p.id))).map(p=>includeJoined?{...p,joined:member(id,p.id),disabled:member(id,p.id)}:p);},
       groupAddCandidates(id,uid){
-        requireHuman(uid);const all=id.startsWith('all:'),sid=all?id.slice(4):id;
-        const g=(all?state.projects[sid]:state.groups[id])||fail('仅群聊可添加成员'),pid=all?sid:g.projectId;
+        requireHuman(uid);if(id.startsWith('all:'))fail('请在项目成员管理中操作');const sid=id;
+        const g=state.groups[id]||fail('仅群聊可添加成员'),pid=g.projectId;
         if(!member(sid,uid)||(pid&&!member(pid,uid)))fail('请先加入项目和群聊');
-        const humans=people().filter(p=>p.id!==uid).map(p=>({...p,kind:'human',joined:member(sid,p.id),disabled:member(sid,p.id),needsProjectMembership:!!pid&&!member(pid,p.id)}));
+        const humans=people().filter(p=>p.id!==uid&&(!pid||member(pid,p.id))).map(p=>({...p,kind:'human',joined:member(sid,p.id),disabled:member(sid,p.id),needsProjectMembership:false}));
         const employees=api.employeeCandidates(id,uid).map(p=>({...p,kind:'employee',disabled:p.joined,needsProjectMembership:!!pid&&!state.projects[pid].employeeIds?.includes(p.id)}));
         return [...humans,...employees];
       },
       addGroupMembers(id,uid,chosen){
-        requireHuman(uid);const all=id.startsWith('all:'),sid=all?id.slice(4):id;
-        const g=(all?state.projects[sid]:state.groups[id])||fail('仅群聊可添加成员'),pid=all?sid:g.projectId;
+        requireHuman(uid);if(id.startsWith('all:'))fail('请在项目成员管理中操作');const sid=id;
+        const g=state.groups[id]||fail('仅群聊可添加成员'),pid=g.projectId;
         if(!member(sid,uid)||(pid&&!member(pid,uid)))fail('请先加入项目和群聊');
         if(!Array.isArray(chosen)||!chosen.length)fail('请选择成员');
         api.transaction(staged=>{
           for(const item of chosen){
             if(!['human','employee','clone'].includes(item.kind))fail('成员类型无效');
-            if(all){
-              if(!staged.canRead(sid,item.id)&&!item.needsProjectMembership)fail('成员的项目归属已变化，请重新选择');
-              if(item.kind==='human')staged.addMember(sid,uid,item.id);
-              else if(item.kind==='employee')staged.addEmployee(sid,uid,item.id);
-              else staged.addClone(sid,uid,item.id);
-              continue;
-            }
-            // Project membership is an explicit consequence of this command only.
-            // Low-level adds and creation flows retain their existing contracts.
-            if(g.projectId&&item.kind!=='clone'&&!staged.canRead(g.projectId,item.id)){
+            // Contacts must join the project first; only employees retain simultaneous joining.
+            if(pid&&item.kind==='human'&&!staged.canRead(pid,item.id))fail('请先将联系人加入项目');
+            if(pid&&item.kind==='employee'&&!staged.canRead(pid,item.id)){
               if(!item.needsProjectMembership)fail('成员的项目归属已变化，请重新选择');
-              if(item.kind==='human')staged.addMember(g.projectId,uid,item.id);
-              else staged.addEmployee(g.projectId,uid,item.id);
+              staged.addEmployee(pid,uid,item.id);
             }
             if(item.kind==='human')staged.addMember(id,uid,item.id);
             else if(item.kind==='employee')staged.addEmployee(id,uid,item.id);

@@ -120,10 +120,10 @@
     }
     function GroupMemberPicker({scopeId,actor,visible,onCancel}){
       useState();
-      const all=scopeId.startsWith('all:'),sid=all?scopeId.slice(4):scopeId,group=all?store.projectRecord(sid):store.groupRecord(sid),pid=all?sid:group?.projectId,project=pid?store.projectRecord(pid):null;
+      const sid=scopeId,group=store.groupRecord(sid),pid=group?.projectId,project=pid?store.projectRecord(pid):null;
       const candidates=visible&&group?store.groupAddCandidates(scopeId,actor):[];
-      const items=[...humanItems(candidates.filter(item=>item.kind==='human'),pid),...cloneItems(actor,all?undefined:pid,sid).map(item=>({...item,needsProjectMembership:all&&!item.joined})),...candidates.filter(item=>item.kind==='employee').map(item=>({...item,appearance:item.identityAppearance}))];
-      return h(MemberPicker,{key:scopeId+actor,visible,title:'添加群聊成员',items,searchPlaceholder:'搜索 AI 分身、联系人、数字员工',categorySearchPlaceholders:{human:'搜索联系人',clone:'搜索我的 AI 分身',employee:'搜索数字员工'},projectJoinName:project?.name,emptyTitle:'暂无可选成员',onCancel,onSubmit:chosen=>{store.addGroupMembers(scopeId,actor,chosen);onCancel();}});
+      const items=[...humanItems(candidates.filter(item=>item.kind==='human'),pid),...cloneItems(actor,pid,sid),...candidates.filter(item=>item.kind==='employee').map(item=>({...item,appearance:item.identityAppearance}))];
+      return h(MemberPicker,{key:scopeId+actor,visible:visible&&!!group,title:'添加群聊成员',items,groups:[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:pid?'项目内联系人':'联系人'},{kind:'employee',label:'数字员工'}],searchPlaceholder:'搜索 AI 分身、联系人、数字员工',categorySearchPlaceholders:{human:'搜索联系人',clone:'搜索我的 AI 分身',employee:'搜索数字员工'},projectJoinName:project?.name,emptyTitle:'暂无可选成员',onCancel,onSubmit:chosen=>{store.addGroupMembers(scopeId,actor,chosen);onCancel();}});
     }
     function SinglePersonPicker({visible,title,items,onCancel,onSubmit,submit='确认'}){
       const [formApi,,values]=Form.useForm();
@@ -212,7 +212,7 @@
     // title / submitLabel / zIndex 只在「入口文案或层叠环境不同、创建链路相同」时覆盖，默认值保持群聊管理原有入口不变。
     function CreateGroup({projectId,visible,onClose,onCreated,title='新建群聊',submitLabel='创建群聊',zIndex}){
       const s=useState(),project=store.projectRecord(projectId),people=store.people().filter(p=>p.id!==s.actorId&&(!projectId||project?.humans.some(m=>m.id===p.id)));
-      return h(MemberPicker,{key:projectId+':'+s.actorId,title,visible,zIndex,withName:true,memberLabel:'群成员',submit:submitLabel,items:[...humanItems(people),...cloneItems(s.actorId,projectId),...employeeItems(s.actorId,undefined,projectId)],emptyTitle:projectId?'项目内暂无其他可选成员':'暂无可选成员',onCancel:onClose,onSubmit:(chosen,name)=>{const id='group-'+Date.now().toString(36);store.transaction(staged=>{staged.createGroup(id,name,projectId,s.actorId,chosen.filter(p=>p.kind==='clone').map(p=>p.id));chosen.filter(p=>p.kind==='human'||p.kind==='employee').forEach(p=>p.kind==='employee'?staged.addEmployee(id,s.actorId,p.id):staged.addMember(id,s.actorId,p.id));});onCreated(id);onClose();}});
+      return h(MemberPicker,{key:projectId+':'+s.actorId,title,visible,zIndex,withName:true,memberLabel:'群成员',submit:submitLabel,searchPlaceholder:'搜索 AI 分身、联系人、数字员工',groups:[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:projectId?'项目内联系人':'联系人'},{kind:'employee',label:'数字员工'}],items:[...humanItems(people),...cloneItems(s.actorId,projectId),...employeeItems(s.actorId,undefined,projectId)],emptyTitle:projectId?'项目内暂无其他可选成员':'暂无可选成员',onCancel:onClose,onSubmit:(chosen,name)=>{const id='group-'+Date.now().toString(36);store.transaction(staged=>{staged.createGroup(id,name,projectId,s.actorId,chosen.filter(p=>p.kind==='clone').map(p=>p.id));chosen.filter(p=>p.kind==='human'||p.kind==='employee').forEach(p=>p.kind==='employee'?staged.addEmployee(id,s.actorId,p.id):staged.addMember(id,s.actorId,p.id));});onCreated(id);onClose();}});
     }
     function FileLibrarySave({file,source,onClose,onSaved,allowedKinds}){
       const s=useState(),actor=s.actorId;
