@@ -40,7 +40,7 @@ test('Edge：任务筛选的几何、身份候选、多选与清空',async()=>{
   await assignee.click();
   const options=page.locator('.semi-select-option-list:visible [role="option"]');
   const expected=await page.evaluate(()=>{const s=window.__evaGetFileContext().store.snapshot();return s.projects.prod.humans.map(h=>s.people.find(p=>p.id===h.id).name)});
-  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),["无负责人",...expected].sort(),'负责人候选为无负责人及项目联系人');
+  assert.deepEqual((await options.allTextContents()).map(s=>s.trim()).sort(),["未指派",...expected].sort(),'负责人候选为未指派及项目联系人');
   assert.equal(await options.locator('img').count(),expected.length,'每个候选都有头像');
   const inset=await options.filter({has:page.locator("img")}).first().evaluate(el=>{
    const r=el.getBoundingClientRect(),a=el.querySelector('img').getBoundingClientRect();return (a.x-r.x)/(r.width/el.offsetWidth);

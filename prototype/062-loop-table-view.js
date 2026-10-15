@@ -213,7 +213,7 @@
         const map=new Map();
         for(const issue of visible){
           const key=(issue.assignee_type||'_')+'::'+(issue.assignee_id||'_');
-          if(!map.has(key))map.set(key,{key,label:issue.assignee_name||'未分配',assigneeId:issue.assignee_id||null,rows:[]});
+          if(!map.has(key))map.set(key,{key,label:issue.assignee_name||'未指派',assigneeId:issue.assignee_id||null,rows:[]});
           map.get(key).rows.push(issue);
         }
         const list=Array.from(map.values());

@@ -16,6 +16,8 @@ test('任务身份公共选择器面板支持搜索、分组上限与滚动', ()
   assert.match(picker, /eva-task-assignee-scroll/, '面板内容应限高滚动');
   assert.match(picker, /展开其余 "/, '每组默认 5 条，超出显示展开入口');
   assert.match(picker, /"联系人"/, '分组标题对齐统一提及候选规范');
+  assert.match(picker, /evaFlatPeople=evaKeys\.length<=1/, '三个身份字段共用按实际候选类型数量决定分组的规则');
+  assert.match(picker, /!evaFlatPeople&&React\.createElement\(Dropdown\.Title/, '单类候选不显示分组标题');
   assert.match(picker, /ArrowDown/, '支持 ↑↓/Enter 键盘选择');
   assert.match(picker, /isComposing\|\|229===evaEvent\.keyCode/, '输入法组词期间不过滤不重排');
   assert.match(picker, /candidates:evaTaskCandidateOverride/, '支持父容器传入候选覆盖');

@@ -101,7 +101,8 @@ test('表格视图搜索：任务页第四视图的新增入口沿用公共搜�
   await page.locator('.collab-frame').waitFor();
   await page.getByRole('tab', { name: /^任务/ }).click();
   await page.locator('.loop-board').waitFor();
-  await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   const field = page.locator('.eva-task-table__search');
   await field.waitFor({ state: 'visible' });
   const input = field.locator('input');
@@ -142,7 +143,8 @@ test('表格视图搜索：任务页第四视图的新增入口沿用公共搜�
 test('任务负责人搜索：首条匹配项默认高亮，单条结果没有空白行，回车可选择', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.getByRole('tab', { name: /^任务/ }).click();
-  await page.locator('.eva-task-view-switcher button', { hasText: '表格' }).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   await page.locator('.eva-task-table__row .loop-assignee-trigger').first().click();
   const menu = page.locator('.eva-task-assignee-menu');
   const input = menu.locator('.eva-task-assignee-search input');
@@ -165,7 +167,8 @@ test('任务负责人搜索：首条匹配项默认高亮，单条结果没有�
 test('任务负责人搜索：多条匹配时只有最匹配的首项有选中样式', async () => {
   await page.goto(`${origin}/#/collab?evaProject=prod`);
   await page.getByRole('tab', { name: /^任务/ }).click();
-  await page.getByRole('tab', { name: '表格', exact: true }).click();
+  await page.locator('.eva-task-view-menu').click();
+  await page.locator('.eva-task-enum-menu:visible').getByText('表格',{exact:true}).click();
   const trigger = page.locator('.eva-task-table__row .loop-assignee-trigger').first();
   await trigger.click();
   const menu = page.locator('.eva-task-assignee-menu:visible');
@@ -610,13 +613,8 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
     assert.equal(await input.inputValue(), '', '每次打开任务指派选择器应重置查询');
     assert.equal(await input.evaluate(el=>parseFloat(getComputedStyle(el).height)),32,'公共选人搜索框使用统一的 32px 控件高度');
     assert.equal(await input.evaluate(el=>getComputedStyle(el).borderRadius),'8px','选人搜索框使用王岩搜索控件的 8px 圆角');
-    const menuRhythm=await menu.evaluate(el=>{
-      const search=el.querySelector('.eva-task-assignee-search').getBoundingClientRect();
-      const clear=el.querySelector('.semi-dropdown-item').getBoundingClientRect();
-      const divider=el.querySelector('.eva-task-assignee-scroll .semi-dropdown-divider').getBoundingClientRect();
-      return {above:clear.top-search.bottom,below:divider.top-clear.bottom};
-    });
-    assert.ok(Math.abs(menuRhythm.above-menuRhythm.below)<=1,'未指派行上下留白应一致');
+    assert.equal(await menu.locator('.semi-dropdown-title,.semi-dropdown-divider').count(),0,'负责人菜单平铺，不显示分组标题和分隔线');
+    assert.equal(await menu.locator('.eva-task-assignee-search').evaluate(el=>getComputedStyle(el).borderBottomWidth),'0px','搜索框下不显示分隔线');
     const expand=menu.locator('.eva-task-assignee-expand').first();
     if(await expand.count()){
       const radius=await expand.evaluate(el=>getComputedStyle(el).borderRadius);
@@ -638,7 +636,7 @@ test('任务指派：表格、批量、详情与新建弹窗均可输入即筛�
       assert.equal(hovered,before,'已选中的负责人悬停时应保持同一活动行背景');
       await page.screenshot({path:'/tmp/eva-task-assignee-menu.png'});
     }
-    await menu.getByText('联系人', { exact: true }).waitFor();
+    assert.equal(await menu.getByText('联系人', { exact: true }).count(),0);
     // 弹层必须落在系统标题栏下方，且高度受上限约束（长列表在限高内滚动）。
     // Semi 首次定位前 boundingBox 仍为隐藏测量态，先轮询到可见坐标再断言。
     let menuBox = await menu.boundingBox();

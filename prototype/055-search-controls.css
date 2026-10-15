@@ -65,6 +65,7 @@
   margin-bottom: 4px;
   border-bottom: 1px solid var(--eva-border-faint);
 }
+.eva-task-assignee-menu--flat > .eva-task-picker-search { border-bottom: 0; }
 .eva-task-picker-search > input,
 .eva-task-picker-search > .semi-input-wrapper {
   box-sizing: border-box;
