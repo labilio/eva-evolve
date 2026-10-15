@@ -129,7 +129,7 @@ root.EvaChatSettings={create(ui,store){
      fixedGroupActions&&section(h(Row,{title:'解散 AI 小队',danger:true,onClick:()=>openFixedAction(fixedGroupActions.onDissolve)})),
      prefRows,
      !group&&section(h(Row,{title:'清空聊天记录',danger:true,onClick:()=>setConfirm('clear')})),
-     group&&!fixed&&!all&&!archived&&h('div',{className:'eva-chat-terminal-actions'},h(Button,{className:'eva-chat-exit-button',type:'danger',theme:'outline',onClick:()=>setConfirm(owner?'ownerLeave':'leave')},'退出群聊'),owner&&h(Button,{type:'danger',theme:'solid',onClick:()=>setConfirm('dissolve')},'解散群聊'))),
+     group&&!fixed&&!all&&!archived&&h('div',{className:'eva-chat-terminal-actions'},(!owner||ownerSuccessors.length>0)&&h(Button,{className:'eva-chat-exit-button',type:'danger',theme:'outline',onClick:()=>setConfirm(owner?'ownerLeave':'leave')},'退出群聊'),owner&&h(Button,{type:'danger',theme:'solid',onClick:()=>setConfirm('dissolve')},'解散群聊'))),
     page==='members'&&h(
      R.Fragment,
      null,

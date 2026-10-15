@@ -110,12 +110,14 @@ test('Edge：群主先转让再退出，两个入口复用选人，单人群退�
     await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
     assert.equal(await panel.getByRole('button',{name:'转让群主',exact:true}).count(),0,'无其他联系人时不显示转让群主死入口');
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
-    await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
-    modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});
-    await modal.getByText('退出后，本群及全部子区将被解散',{exact:false}).waitFor();
+    assert.equal(await panel.getByRole('button',{name:'退出群聊',exact:true}).count(),0,'仅剩本人时只保留解散群聊');
+    await page.screenshot({path:'/tmp/eva-solo-group-actions.png'});
+    await panel.getByRole('button',{name:'解散群聊',exact:true}).click();
+    modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'解散群聊',exact:true})});
+    await modal.getByText('解散后，本群及全部子区将不再可访问。',{exact:true}).waitFor();
     await page.waitForTimeout(350);
     await page.screenshot({path:'/tmp/eva-group-owner-leave-dissolve-confirm.png'});
-    await modal.getByRole('button',{name:'退出并解散群聊',exact:true}).click();
+    await modal.getByRole('button',{name:'解散群聊',exact:true}).click();
     await panel.waitFor({state:'detached'});
     await page.locator('.semi-toast').filter({hasText:'群聊已解散'}).first().waitFor({timeout:3000});
     const dissolved=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),actor=s.actorId;return {group:s.groups['e2e-solo-group'],thread:s.threads['e2e-solo-thread'],threadDetails:s.threadDetails['e2e-solo-thread'],messages:s.messages['e2e-solo-group'],threadMessages:s.messages['e2e-solo-thread'],chatSettings:s.chatSettings['e2e-solo-group'],prefs:s.chatPreferences[actor]?.['e2e-solo-group'],threadPrefs:s.chatPreferences[actor]?.['e2e-solo-thread'],follow:s.followedConversations[actor]?.['e2e-solo-group'],threadFollow:s.followedConversations[actor]?.['e2e-solo-thread']};});
