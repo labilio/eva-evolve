@@ -116,7 +116,7 @@ test('文件卡仅截断名提示；文件库图标支持键盘且权限说明�
   assert.equal(await card.getAttribute('title'),null);assert.equal(await card.getAttribute('data-eva-tooltip'),null);
   await card.locator('.wk-message-file-name').hover();const nameTip=page.getByRole('tooltip',{name:'A-2409排产影响测算.html',exact:true});await nameTip.waitFor();
   assert.equal(await page.getByRole('tooltip').count(),1,'不能同时出现卡片和文件名两层提示');
-  await page.getByText('文件库',{exact:true}).click();await page.getByRole('button',{name:'供应链运营协同',exact:true}).click();
+  await page.getByRole('region',{name:'团队',exact:true}).getByText('文件库',{exact:true}).click();await page.getByRole('button',{name:'供应链运营协同',exact:true}).click();
   assert.equal(await page.getByText('你无权访问来源消息',{exact:true}).isVisible(),true);
   const pin=page.getByRole('button',{name:'置顶：会议纪要',exact:true});await page.mouse.move(10,10);await pin.focus();const pinTip=page.getByRole('tooltip',{name:'置顶',exact:true});await pinTip.waitFor();await page.waitForTimeout(500);assert.equal(await pinTip.isVisible(),true);
   await page.keyboard.press('Escape');await pinTip.waitFor({state:'hidden'});assert.equal(await pin.evaluate(el=>document.activeElement===el),true);
