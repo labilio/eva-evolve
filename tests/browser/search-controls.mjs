@@ -441,7 +441,8 @@ test('中文输入法组合与提交保持同一搜索输入节点', async () =>
     await cdp.send('Input.insertText', { text: '王' });
     assert.equal(await input.inputValue(), '王');
     assert.equal(await node.evaluate(el => el.isConnected && el === document.activeElement), true);
-    assert.equal(await page.locator('.eva-contacts__person').count(), 1);
+    const names = await page.locator('.eva-contacts__person-name').allTextContents();
+    assert.ok(names.length > 0 && names.every(name => name.includes('王')), '组合输入提交后只保留姓名命中的联系人');
   } finally {
     await cdp.detach();
   }
