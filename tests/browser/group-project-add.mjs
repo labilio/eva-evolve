@@ -38,7 +38,7 @@ test('项目群只添加项目内联系人并保留数字员工同步加入：�
  await q.fill('');await d.getByRole('button',{name:/^数字员工/}).click();await q.fill(data.employee.name);
  const employee=d.locator('.eva-member-picker__candidate').filter({has:page.getByRole('checkbox',{name:'选择'+data.employee.name,exact:true})});
  assert.equal(await employee.locator('.eva-member-picker__project-tag').count(),0);await employee.click();
- await d.getByText('其中 1 位成员将同时加入项目：供应链运营协同',{exact:true}).waitFor();
+ await d.getByText('其中 1 个数字员工将同时加入项目：供应链运营协同',{exact:true}).waitFor();
  assert.equal(await d.locator('.eva-member-picker__selected-name .ai-badge').count(),1);
  assert.equal(await outsideGroup.locator('.eva-member-picker__selected-item').count(),1);
  await q.fill('');await d.getByRole('link',{name:'全部',exact:true}).click();await d.getByRole('button',{name:/^我的 AI 分身/}).click();assert.equal(await q.getAttribute('placeholder'),'搜索我的 AI 分身');await d.locator('.eva-member-picker__candidate:not([aria-disabled="true"])').first().click();
