@@ -149,6 +149,17 @@ window.__EVA_PEOPLE = [
   }
 })();
 
+// Reuse three volume-demo identities for the approved live task-card review.
+window.__EVA_TASK_NAME_DEMO = [
+  {id:'u-supply-volume-001',previousName:'赵明远',name:'Alexandra Montgomery'},
+  {id:'u-supply-volume-002',previousName:'钱明远',name:'Alexandra Catherine Montgomery'},
+  {id:'u-supply-volume-003',previousName:'孙明远',name:'Alexandra Catherine Montgomery-Wellington'}
+];
+window.__EVA_TASK_NAME_DEMO.forEach(sample=>{
+  const person=window.__EVA_PEOPLE.find(person=>person.id===sample.id);
+  if(person)person.name=sample.name;
+});
+
 // Isolated permission fixture: Zhou can share this task link in a non-project group;
 // Wang can read that group but is not a member of the task's project.
 window.__EVA_TASK_LINK_PERMISSION_DEMO = {
@@ -329,6 +340,8 @@ window.__EVA_ORG_UNITS = {
     {id: 'task-label-cost', project_id: 'p-supply', name: '成本', color: '#64748b'},
     {id: 'task-label-schedule', project_id: 'p-supply', name: '排产', color: '#64748b'},
     {id: 'task-label-delivery', project_id: 'p-supply', name: '交付', color: '#64748b'},
+    {id: 'task-label-delivery-review', project_id: 'p-supply', name: '关键供应商交付风险专项复核', color: '#64748b'},
+    {id: 'task-label-capacity-review', project_id: 'p-supply', name: '跨工厂产能与物料齐套联合评审', color: '#64748b'},
     {id: 'task-label-supply-risk', project_id: 'p-supply', name: '供应风险', color: '#64748b'}
   ];
 
@@ -908,9 +921,9 @@ window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_S
     'supply-1':['task-label-procurement','task-label-supplier'],
     'supply-2':['task-label-tender','task-label-compliance'],
     'supply-3':['task-label-quality','task-label-supplier'],
-    'supply-4':['task-label-cost','task-label-procurement'],
-    'supply-5':['task-label-schedule','task-label-delivery','task-label-supply-risk'],
-    'supply-6':['task-label-compliance','task-label-supplier'],
+    'supply-4':['task-label-cost','task-label-procurement','task-label-contract'],
+    'supply-5':['task-label-capacity-review','task-label-schedule','task-label-delivery','task-label-supply-risk'],
+    'supply-6':['task-label-delivery-review','task-label-capacity-review','task-label-compliance','task-label-supplier'],
     'supply-7':['task-label-contract','task-label-compliance'],
     'supply-8':['task-label-procurement'],
     'supply-9':['task-label-procurement'],
@@ -923,7 +936,7 @@ window.__EVA_SUPPLY_CHAIN_DEMO.projects.forEach(p=>{p.issue_count=window.__EVA_S
     'supply-16':['task-label-quality','task-label-supplier'],
     'supply-17':['task-label-contract','task-label-cost'],
     'supply-18':['task-label-supply-risk'],
-    'supply-19':['task-label-schedule','task-label-delivery'],
+    'supply-19':['task-label-capacity-review'],
     'supply-20':['task-label-compliance','task-label-supplier'],
     'supply-21':['task-label-procurement','task-label-tender'],
     'supply-22':['task-label-supply-risk','task-label-compliance'],
@@ -995,3 +1008,12 @@ window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
   // Keep the two existing file-project automations alongside the new scenarios.
   root.__EVA_DRIVE_DEMO.autopilots.push(...root.__EVA_PROJECT_AUTOMATIONS['drive-design']);
 })(window);
+
+// Visible in the actual supply board: long name, count-only, and whole-row truncation.
+(function attachTaskNameDemo(){
+  const taskIds=['supply-1','supply-2','supply-6'];
+  window.__EVA_TASK_NAME_DEMO.forEach((person,index)=>{
+    const task=window.__EVA_SUPPLY_CHAIN_DEMO.issues.find(task=>task.id===taskIds[index]);
+    Object.assign(task,{assignee_id:person.id,assignee_name:person.name,assignee_type:'member'});
+  });
+})();

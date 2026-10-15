@@ -41,7 +41,7 @@ test('Edge：任务详情添加、重开与移除标签均使用当前项目标�
     await labels.locator('button').first().click();
     let menu=page.locator('.semi-dropdown-menu:visible');
     await menu.getByText('采购',{exact:true}).waitFor();
-    assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['采购','招投标','质量','供应商','合规','合同','成本','排产','交付','供应风险']);
+    assert.deepEqual(await menu.locator('.loop-label-chip').allTextContents(),['采购','招投标','质量','供应商','合规','合同','成本','排产','交付','关键供应商交付风险专项复核','跨工厂产能与物料齐套联合评审','供应风险']);
     await menu.getByText('质量',{exact:true}).click();
     await labels.locator('.loop-label-chip').filter({hasText:'质量'}).waitFor();
     assert.equal(await menu.isVisible(),true,'多选标签后菜单保持打开');

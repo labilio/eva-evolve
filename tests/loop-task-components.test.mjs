@@ -96,3 +96,15 @@ test('看板分页和大列虚拟窗口保留总数与滚动高度',()=>{
   assert.ok(window.end<60);
   assert.equal(window.top+window.visibleHeight+window.bottom,7200);
 });
+
+test('标签按宽度保留有序前缀，并为实际剩余数量预留空间',()=>{
+  const {api}=setup();
+  assert.equal(typeof api.fitLabelCount,'function');
+  const more=n=>n>=10?32:24;
+  assert.equal(api.fitLabelCount([38,38,38],122,4,more),3);
+  assert.equal(api.fitLabelCount([38,38,38],108,4,more),2);
+  assert.equal(api.fitLabelCount([110,38,38],138,4,more),1);
+  assert.equal(api.fitLabelCount([110,38,38],90,4,more),0);
+  assert.equal(api.fitLabelCount(Array(12).fill(38),74,4,more),1);
+  assert.equal(api.fitLabelCount([],100,4,more),0);
+});

@@ -14,20 +14,20 @@ test('Edge：供应链边界任务在看板内截断，完整内容仍可打开'
     await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks');
     const board=page.locator('.loop-board');await board.waitFor();
     assert.equal(await page.getByRole('button',{name:/显示字段/}).count(),0,'看板没有不可用的字段入口');
-    for(const [id,overflow] of [['SC-135','+2'],['SC-136','+1'],['SC-137','+3']]){
+    for(const [id,total] of [['SC-135',4],['SC-136',3],['SC-137',5]]){
       const card=board.locator('.eva-board-row').filter({has:page.locator('.loop-card__id',{hasText:id})});
       assert.equal(await card.count(),1,id+' 在项目看板中存在');
       const layout=await card.evaluate(node=>{
         const shell=node.querySelector('.loop-card'),title=node.querySelector('.loop-card__title');
-        const style=getComputedStyle(title),labels=node.querySelector('.loop-label-chips');
-        return {fontSize:style.fontSize,titleHeight:title.clientHeight,lineHeight:parseFloat(style.lineHeight),clamp:style.webkitLineClamp,cardOverflow:shell.scrollWidth>shell.clientWidth,chipCount:labels.children.length,overflow:labels.lastElementChild.textContent,hasDate:!!node.querySelector('.loop-card__time,.loop-card__due')};
+        const style=getComputedStyle(title),labels=node.querySelector('.eva-task-label-fit'),chips=[...labels.children].filter(el=>el.classList.contains('eva-task-label-chip')),more=chips.find(el=>el.classList.contains('eva-task-label-chip--overflow'));
+        return {fontSize:style.fontSize,titleHeight:title.clientHeight,lineHeight:parseFloat(style.lineHeight),clamp:style.webkitLineClamp,cardOverflow:shell.scrollWidth>shell.clientWidth,shown:chips.length-(more?1:0),hidden:more?Number(more.textContent.slice(1)):0,labelsFit:chips.every(el=>el.getBoundingClientRect().right<=labels.getBoundingClientRect().right+1),hasDate:!!node.querySelector('.loop-card__time,.loop-card__due')};
       });
       assert.equal(layout.fontSize,'14px','保持标题字号');
       assert.equal(layout.clamp,'2','标题限制两行');
       assert.ok(layout.titleHeight<=layout.lineHeight*2+1,'标题没有撑开卡片');
       assert.equal(layout.cardOverflow,false,'卡片没有横向溢出');
-      assert.equal(layout.chipCount,3,'仅显示前两个标签和数量');
-      assert.equal(layout.overflow,overflow);
+      assert.equal(layout.shown+layout.hidden,total,'可见标签与隐藏数量完整对应任务标签');
+      assert.ok(layout.labelsFit,'按宽度展示的标签与数量提示均不被裁切');
       assert.equal(layout.hasDate,false,'看板不显示无语义的时间或脚注日期');
     }
     const longCard=board.locator('.eva-board-row').filter({has:page.locator('.loop-card__id',{hasText:'SC-135'})});
@@ -123,9 +123,12 @@ test('Edge：大列按需加载并只挂载可见卡片，列头仍显示总数'
     const cards=todo.locator('.loop-board__cards');
     await cards.evaluate(node=>{node.scrollTop=1000;node.dispatchEvent(new Event('scroll',{bubbles:true}));});
     const scrollBefore=await cards.evaluate(node=>node.scrollTop);
-    const switcher=page.locator('.eva-task-view-switcher');
-    await switcher.getByRole('tab',{name:'表格'}).click();
-    await switcher.getByRole('tab',{name:'看板'}).click();
+    await page.getByRole('button',{name:'任务视图：看板',exact:true}).click();
+    await page.getByRole('menuitem',{name:'表格',exact:true}).click();
+    await page.getByRole('menu').waitFor({state:'hidden'});
+    await page.locator('.eva-task-table').waitFor();
+    await page.getByRole('button',{name:'任务视图：表格',exact:true}).click();
+    await page.getByRole('menuitem',{name:'看板',exact:true}).click();
     await todo.waitFor();
     assert.ok(Math.abs((await cards.evaluate(node=>node.scrollTop))-scrollBefore)<200,'切回看板时恢复该列的滚动位置');
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

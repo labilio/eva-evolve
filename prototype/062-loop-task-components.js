@@ -65,6 +65,72 @@
       ...shown.map(label=>React.createElement(React.Fragment,{key:label.id},labelChip(React,label))),
       rest>0?React.createElement('span',{className:'loop-label-chip eva-task-label-chip eva-task-label-chip--overflow'},'+'+rest):null);
   }
+  // Width is presentation state owned by this mounted row, never task data.
+  function fitLabelCount(widths,available,gap,moreWidth){
+    let used=0,fit=0;
+    for(let i=0;i<widths.length;i++){
+      used+=widths[i]+(i?gap:0);
+      const rest=widths.length-i-1;
+      if(used+(rest?gap+moreWidth(rest):0)<=available)fit=i+1;
+    }
+    return fit;
+  }
+  const fittingLabelsCache=new WeakMap();
+  function fittingLabelChips(React,labels){
+    let Component=fittingLabelsCache.get(React);
+    if(!Component){
+      Component=function FittingTaskLabels({labels}){
+        const h=React.createElement,host=React.useRef(null),probe=React.useRef(null);
+        const [count,setCount]=React.useState(0),[clipped,setClipped]=React.useState([]),[showMore,setShowMore]=React.useState(false);
+        const signature=JSON.stringify(labels.map(label=>[label.id,label.name]));
+        React.useLayoutEffect(()=>{
+          const element=host.current,measurement=probe.current;
+          if(!element||!measurement)return;
+          let active=true;
+          const measure=()=>{
+            if(!active)return;
+            const nodes=Array.from(measurement.children),total=labels.length;
+            const widths=nodes.slice(0,total).map(node=>node.getBoundingClientRect().width);
+            const gap=parseFloat(getComputedStyle(element).columnGap)||0;
+            const moreWidth=n=>nodes[total+n-1].getBoundingClientRect().width;
+            element.parentElement.style.setProperty('--eva-label-reserved-width',(Math.ceil(moreWidth(total))+16)+'px');
+            const available=Math.max(0,element.clientWidth-16);
+            const fit=fitLabelCount(widths,available,gap,moreWidth);
+            // If the first label is longer than the row, keep it readable up to
+            // the remaining boundary; the count and assignee never shrink.
+            const firstSpace=Math.max(0,available-(total>1?gap+moreWidth(total-1):0));
+            const minimum=nodes[total*2].getBoundingClientRect().width;
+            const next=fit|| (firstSpace>=minimum?1:0);
+            setShowMore(next<total&&available>=moreWidth(total-next));
+            setCount(previous=>previous===next?previous:next);
+            const truncated=widths.map((width,i)=>i===0&&next===1&&width>firstSpace+1);
+            setClipped(previous=>JSON.stringify(previous)===JSON.stringify(truncated)?previous:truncated);
+          };
+          measure();
+          const observer=new ResizeObserver(measure);
+          observer.observe(element);observer.observe(measurement);
+          document.fonts?.ready.then(measure);
+          return()=>{active=false;observer.disconnect();element.parentElement?.style.removeProperty('--eva-label-reserved-width');};
+        },[signature]);
+        const shown=labels.slice(0,count),hidden=labels.slice(count);
+        const chipClass='loop-label-chip eva-task-label-chip';
+        return h('span',{className:'eva-task-label-fit',ref:host},
+          h('span',{className:'eva-task-label-fit__measure',ref:probe,'aria-hidden':true},
+            ...labels.map(label=>h('span',{key:label.id,className:chipClass},label.name)),
+            ...labels.map((_,i)=>h('span',{key:'more-'+i,className:chipClass+' eva-task-label-chip--overflow'},'+'+(i+1))),
+            h('span',{className:chipClass},(labels[0]?.name?.[0]||'')+'…')),
+          ...shown.map((label,i)=>clipped[i]
+            ?h(root.EvaTooltipComponent,{key:label.id,content:label.name},h('span',{className:chipClass,tabIndex:0},label.name))
+            :h('span',{key:label.id,className:chipClass},label.name)),
+          hidden.length&&showMore?h(root.EvaTooltipComponent,{content:hidden.map(label=>label.name).join('、')},
+            h('span',{className:chipClass+' eva-task-label-chip--overflow',tabIndex:0,
+              'aria-label':'另有 '+hidden.length+' 个标签：'+hidden.map(label=>label.name).join('、')},'+'+hidden.length)):null);
+
+      };
+      fittingLabelsCache.set(React,Component);
+    }
+    return labels?.length?React.createElement(Component,{labels}):null;
+  }
   function labelCreateOption(React,Plus,name){
     return React.createElement('span',{className:'eva-task-label-create-option'},
       React.createElement(Plus,{size:14,'aria-hidden':true}),
@@ -174,5 +240,5 @@
     return {StatusIcon,PriorityIcon,IdentityOption,UnassignedOption};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,labelCreateOption,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,fitLabelCount,fittingLabelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);

@@ -1274,6 +1274,24 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       saved.seededFollowedConversationsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
+    // Add the approved long-name reviewers once, preserving later profile edits/removals.
+    if(root.__EVA_TASK_NAME_DEMO&&!saved.seededTaskNameDemoV1){
+      for(const sample of root.__EVA_TASK_NAME_DEMO){
+        const person=saved.people.find(person=>person.id===sample.id);
+        if(!person)continue;
+        if(person.name===sample.previousName)person.name=sample.name;
+        const project=saved.projects.prod;
+        if(project&&!saved.deletedProjects?.prod&&!project.humans.some(member=>member.id===sample.id))project.humans.push({id:sample.id,role:'member'});
+      }
+      saved.seededTaskNameDemoV1=true;
+      try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
+    for(const task of root.__EVA_SUPPLY_CHAIN_DEMO?.issues||[]){
+      if(root.__EVA_TASK_NAME_DEMO?.some(sample=>sample.id===task.assignee_id)){
+        const person=saved.people.find(person=>person.id===task.assignee_id);
+        if(person)task.assignee_name=person.name;
+      }
+    }
     const store=create(saved,undefined,resolveProjectInfo,json=>{try{root.localStorage.setItem(key,json);}catch{}});
 
     root.EvaAvatar?.setPersonResolver?.(id=>store.personRecord(id));
