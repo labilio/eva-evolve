@@ -717,7 +717,7 @@
           Promise.resolve().then(publish);
         }
         // Convert text mentions to the shared IM identity contract, including saved demo history.
-        const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
+        const mentionCandidates=[{uid:'all',name:'@所有人'},{uid:'all',name:'@全体成员'},{uid:'ai',name:'@所有 AI 成员'},...unique.map(member=>({uid:member.id,name:'@'+member.name}))];
         const historicalNames=new Map();
         for(const message of [group,...group.threads].flatMap(item=>item.messages||[])){
           const sender=message.sender,current=sender&&all.find(m=>m.id===canonicalIdentity(sender.uid));
@@ -726,10 +726,10 @@
         const renderMessages=messages=>copy(messages).map(message=>{
           const sender=message.sender,current=sender&&all.find(m=>m.id===canonicalIdentity(sender.uid));
           if(current)message.sender={...sender,uid:current.id,name:current.name,identityAppearance:current.identityAppearance};
-          for(const [old,name] of historicalNames)if(message.text)message.text=message.text.split(old).join(name);
-          if(message.mentions)message.mentions=message.mentions.map(mention=>{const current=all.find(m=>m.id===canonicalIdentity(mention.uid));return current?{...mention,uid:current.id,name:'@'+current.name}:mention;});
+          for(const [old,name] of historicalNames)if(message.text&&message.mentionsVersion!==1)message.text=message.text.split(old).join(name);
+          if(message.mentions&&message.mentionsVersion!==1)message.mentions=message.mentions.map(mention=>{const current=all.find(m=>m.id===canonicalIdentity(mention.uid));return current?{...mention,uid:current.id,name:'@'+current.name}:mention;});
           return message;
-        }).map(message=>({...message,mentions:[...(message.mentions||[]),...mentionCandidates.filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
+        }).map(message=>({...message,mentions:[...(message.mentions||[]),...(message.mentionsVersion===1?[]:mentionCandidates).filter(candidate=>message.text?.includes(candidate.name)&&!message.mentions?.some(item=>item.uid===candidate.uid&&item.name===candidate.name))]}));
         const threads=group.threads.filter(item=>!item.deleted).map(item=>{const {messages,draft,readAiMessageCount,...thread}=item;return {...thread,created_at:thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,updated_at:thread.updated_at||thread.created_at||window.__EVA_DEMO_TIME.AI_REVIEW_START,member_count:unique.length,message_count:messages.length,last_message_content:messages.at(-1)?.text,last_message_sender_name:messages.at(-1)?.sender?.name,unread:unreadCountOf(item)};});
         const channel = {id:group.id, name:group.name, identityAvatarUrl:group.avatar||undefined, chatType:'group', channel_type:2,
           ownerId:'u-wangyilin', memberIds:unique.map(member=>member.id), members:unique.length, fixedMembers:unique,
@@ -739,11 +739,11 @@
           initialDraft:target(group.id,selectedThreadId).draft,
           getDraft:channelId=>target(group.id,channelId).draft,
           onDraftChange(text,channelId){const current=target(group.id,channelId||selectedThreadId);if(current.draft!==text){current.draft=text;publish();}},
-          onSend(text,channelId,reply){const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
+          onSend(text,channelId,reply,mentionEntities=[]){const mentions=window.EvaMentions.normalize(text,mentionEntities,unique);const current=target(group.id,channelId||selectedThreadId);if(!text.trim())return false;
             const replyTo=replySnapshot(channelId||selectedThreadId||group.id,reply);
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
-            current.messages.push({id:messageId,createdAt:new Date().toISOString(),kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,...(replyTo?{replyTo}:{})});
-            unique.filter(member=>member.kind!=='human'&&(text.includes('@'+member.name+' ')||text.endsWith('@'+member.name))).forEach(member=>current.messages.push({id:messageId+':'+member.id,createdAt:new Date().toISOString(),kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
+            current.messages.push({id:messageId,createdAt:new Date().toISOString(),kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,mentions,mentionsVersion:1,...(replyTo?{replyTo}:{})});
+            unique.filter(member=>member.kind!=='human'&&mentions.some(m=>m.uid===member.id||m.uid==='ai')).forEach(member=>current.messages.push({id:messageId+':'+member.id,createdAt:new Date().toISOString(),kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
             current.readAiMessageCount=incomingMessageCount(current);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }

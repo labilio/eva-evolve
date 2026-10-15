@@ -763,7 +763,7 @@ function evaComposerMentionRange(editor){
  const selection=window.getSelection();if(!selection?.isCollapsed)return null;
  const node=selection.anchorNode,offset=selection.anchorOffset;
  if(node?.nodeType!==3||!editor.contains(node)||node.parentElement.closest('.mention-entity'))return null;
- const match=node.textContent.slice(0,offset).match(/(?:^|[\s，。！？、])@([^@\s，。！？、]*)$/u);
+ const match=node.textContent.slice(0,offset).match(/(?:^|[\s，。！？、])@([^@\n\r\t，。！？、]*)$/u);
  if(!match)return null;
  const range=document.createRange();range.setStart(node,offset-match[1].length-1);range.setEnd(node,offset);return {range,query:match[1]};
 }
@@ -850,6 +850,32 @@ function evaComposerPlainText(element) {
     return result;
   };
   return read(element);
+}
+function evaComposerDocument(editor) {
+  let text='';const mentions=[];
+  const walk=node=>{
+    if(node.nodeType===3){text+=node.nodeValue||'';return;}
+    if(node.nodeName==='BR'){text+='\n';return;}
+    if(node.nodeType===1&&node.classList.contains('mention-entity')&&node.dataset.mentionUid){
+      const name=node.textContent;mentions.push({uid:node.dataset.mentionUid,name,start:text.length});text+=name;return;
+    }
+    Array.from(node.childNodes).forEach((child,index)=>{const block=child.nodeType===1&&/^(DIV|P)$/.test(child.nodeName);if(block&&index>0)text+='\n';if(!(block&&child.childNodes.length===1&&child.firstChild.nodeName==='BR'))walk(child);});
+  };
+  if(editor)walk(editor);return {text,mentions};
+}
+function evaRestoreMentionDraft(editor,text,saved) {
+  if(!editor)return;
+  editor.textContent='';let cursor=0;
+  const mentions=saved?.text===text?window.EvaMentions.normalize(text,saved.mentions):[];
+  for(const mention of mentions){editor.appendChild(document.createTextNode(text.slice(cursor,mention.start)));const node=document.createElement('span');node.className='mention-entity';node.contentEditable='false';node.dataset.mentionUid=mention.uid;node.textContent=mention.name;editor.appendChild(node);cursor=mention.start+mention.name.length;}
+  editor.appendChild(document.createTextNode(text.slice(cursor)));
+}
+function evaPrepareMentionRender(text,mentions) {
+  if(!mentions.some(m=>Number.isInteger(m.start)))return {text,mentions};
+  const valid=window.EvaMentions.normalize(text,mentions);let result='',cursor=0,prefix='@EVAMENTION';
+  while(text.includes(prefix))prefix+='X';
+  const mapped=valid.map((m,index)=>{const token=prefix+index+'END';result+=text.slice(cursor,m.start)+token;cursor=m.start+m.name.length;return {...m,name:token,displayName:m.name};});
+  return {text:result+text.slice(cursor),mentions:mapped};
 }
 function evaIdentityAppearance(identity) {
   const original = window.__EVA_MY_ASSISTANT_IDENTITY;
@@ -2188,7 +2214,10 @@ function EvaAITeamPage() {
     cut('function segmentText(rt,ct,ut){if(!ct.length&&!ut.length)',
       'function segmentText(rt,ct,ut){ct=Array.from(new Map((ct||[]).filter(m=>typeof m?.name==="string"&&m.name.replace(/^@+/,"").trim()).map(m=>{const name="@"+m.name.replace(/^@+/,"");return[name,{...m,name}]})).values());ut=(ut||[]).filter(e=>typeof e?.key==="string"&&e.key.length>0);if(!ct.length&&!ut.length)',
       '统一 IM 提及包含 @ 前缀并过滤空实体');
-    cut('function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-highlight",interactive:!1}', 'function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-entity",interactive:!1}', '所有人提及沿用成员提及样式');
+    // Broadcast and individual mentions share one presentation; only profile interaction differs.
+    cut('function getMentionRenderState(rt){return rt==="all"||rt==="channel"?{className:"mention-highlight",interactive:!1}:rt?{className:"mention-entity",interactive:!0}:{className:"mention-fallback",interactive:!1}}',
+      'function getMentionRenderState(rt){return{className:rt?"mention-entity":"mention-fallback",interactive:!!rt&&!["all","channel","ai"].includes(rt)}}',
+      '所有人与所有 AI 共用普通成员提及样式');
     // Restore the historical message search while retaining the shared member picker.
     cut('ii=ci=>{const Zi=SENDERS[ci];if(!Zi)return;Fa(""),ir("recent");const Fi=pt.find(ro=>ro.members===2&&ro.name===Zi.name);if(Fi){La(Fi.id);return}const Ki={id:`dm-${ci}`,name:Zi.name,color:Zi.color,unread:0,members:2,category:NO_CAT,lastAt:new Date().toISOString(),threads:[]};mt(ro=>[...ro,Ki]),La(Ki.id)}',
       'ii=ci=>{const id=evaMemberStore.openDirect(evaActorId,ci);Fa("");La(id)}', '搜索联系人沿用持久化私聊');
@@ -2237,7 +2266,7 @@ function EvaAITeamPage() {
   cut('onClick:Pt.interactive?()=>Ct.uid&&pt?.(Ct.uid):void 0', 'onClick:Pt.interactive?event=>Ct.uid&&pt?.(Ct.uid,event):void 0', '正文提及传递资料卡定位元素');
   cut('const Ht=reactExports.useCallback(rn=>{Vt.current?.(rn)},[])', 'const Ht=reactExports.useCallback((rn,event)=>{Vt.current?.(rn,event)},[])', '正文提及转发点击事件');
   cut('React.createElement(TextContent,{content:ci.text??"",mentions:ci.mentions??[]})',
-    'React.createElement(TextContent,{content:ci.text??"",mentions:ci.mentions??[],onMentionClick:(uid,event)=>{if(uid&&uid!=="all"&&uid!=="channel")setEvaIdentityProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:uid,anchor:event.currentTarget})}})', '消息正文提及复用统一身份资料卡');
+    'React.createElement(TextContent,{content:ci.text??"",mentions:ci.mentions??[],onMentionClick:(uid,event)=>{if(uid&&uid!=="all"&&uid!=="channel"&&uid!=="ai")setEvaIdentityProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:uid,anchor:event.currentTarget})}})', '消息正文提及复用统一身份资料卡');
   for(const continuation of ['!1','ro'])cut('...rowProps(ci,'+continuation+'),onContextMenu:', '...rowProps(ci,'+continuation+'),onAvatarClick:event=>setEvaIdentityProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:ci.sender,anchor:event.currentTarget}),onSenderNameClick:event=>setEvaIdentityProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:ci.sender,anchor:event.currentTarget}),onContextMenu:', '消息身份点击 '+continuation);
   cut('function Avatar$1({src:rt,size:ct=32,isOnline:ut,showOnlineDot:pt,alt:mt,onClick:gt,identityAppearance:evaAppearance})', 'function Avatar$1({src:rt,size:ct=32,isOnline:ut,showOnlineDot:pt,alt:mt,onClick:gt,onContextMenu:evaAvatarContextMenu,identityAppearance:evaAppearance})', '头像独立右键入口');
   cut('className:"wk-msg-avatar",style:{width:ct,height:ct,cursor:gt?"pointer":void 0},onClick:gt', 'className:"wk-msg-avatar",style:{width:ct,height:ct,cursor:gt?"pointer":void 0},onClick:gt,onContextMenu:evaAvatarContextMenu', '头像右键仅作用头像');
@@ -2653,6 +2682,37 @@ cut('React.createElement(EvaContextMenus,{ref:evaMenuRef,menus:evaMenuItems(evaM
     cut('wk-messageinput-actionitem"+(ut?" wk-messageinput-hasValue":"")', 'wk-messageinput-actionitem"+(ut||evaFiles.length?" wk-messageinput-hasValue":"")', '附件独立可发送');
     cut('React.createElement(EvaOverlayListScroll,{enabled:ut&&!ct?.conversationOnly,className:"ch-list__scroll"}', 'React.createElement(EvaOverlayListScroll,{memoryScope:evaMemoryScope+":"+Cn+":"+evaListReminderFilter,enabled:ut&&!ct?.conversationOnly,className:"ch-list__scroll"}', '会话列表滚动分视图保存');
 
-    return [EvaConversationSidePanel,useEvaRememberedState,useEvaRememberedScroll,EvaRememberedThreadStream,EvaDraftAttachments,EvaUnreadBadge,useEvaReminderReading,evaReminderRecords,evaReminderMark,evaReminderTabRecords,EvaReminderToolbar,evaReminderMatches,EvaReminderNavBadge].map(fn=>fn.toString()).join('\n')+'\n'+EvaAIThreadRenameForm.toString()+'\n'+EvaForwardThreadForm.toString()+'\n'+EvaTopicCreateDialog.toString()+'\n'+evaPinMenuItem.toString()+'\n'+evaMuteMenuItem.toString()+'\n'+evaTopicMenus.toString()+'\n'+EvaSharedContextMenus.toString()+'\n'+evaConversationRailMenus.toString()+'\n'+evaCategoryRailMenus.toString()+'\n'+evaRailIcon.toString()+'\n'+EvaOverlayListScroll.toString()+'\n'+evaRecentUnread.toString()+'\n'+EvaRecentTopicNavigation.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+evaEmojiRecentRead.toString()+'\n'+evaEmojiRecentWrite.toString()+'\n'+evaEmojiGroups.toString()+'\n'+evaEmojiAll.toString()+'\n'+evaEmojiRecordFromText.toString()+'\n'+evaInsertComposerEmoji.toString()+'\n'+EvaEmojiPicker.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardIcon.toString()+'\n'+evaConversationPreview.toString()+'\n'+evaRecentActivity.toString()+'\n'+evaForwardCatalog.toString()+'\n'+evaForwardFollowRank.toString()+'\n'+evaForwardNoopSubscribe.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaIMDateDividers.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaTaskForwardHost.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
+    // Explicit mention objects survive draft restoration and travel with the send transaction.
+    cut('if(mt.current)mt.current.textContent=ut},[evaProjectArchived]);',
+      'if(mt.current)evaRestoreMentionDraft(mt.current,ut,window.EvaWorkspaceMemory.read(evaArchiveStore.actorId(),"im:"+evaDraftId,"mentionDraft",null))},[evaProjectArchived]);','草稿只恢复明确选择的提及');
+    cut('const evaDraftScope="im:"+evaDraftId,[evaFiles,setEvaFiles]=',
+      'const evaSaveMentionDraft=()=>window.EvaWorkspaceMemory.write(evaArchiveStore.actorId(),"im:"+evaDraftId,"mentionDraft",evaComposerDocument(mt.current));const evaDraftScope="im:"+evaDraftId,[evaFiles,setEvaFiles]=','提及草稿唯一会话归属');
+    source=source.replaceAll('evaDraftChange?.(text);','evaDraftChange?.(text);evaSaveMentionDraft();').replaceAll('evaDraftChange?.(evaText)','evaDraftChange?.(evaText);evaSaveMentionDraft()');
+    cut('if(St&&ct(St)!==false){setEvaFiles([]);',
+      'const document=evaComposerDocument(mt.current),leading=document.text.length-document.text.trimStart().length,mentions=document.mentions.map(m=>({...m,start:m.start-leading}));if(St&&ct(St,mentions)!==false){window.EvaWorkspaceMemory.write(evaArchiveStore.actorId(),evaDraftScope,"mentionDraft",null);setEvaMentionOpen(false);setEvaMentionQuery("");evaMentionRange.current=null;setEvaFiles([]);','发送带位置的提及对象并清理草稿');
+    cut('onSend:text=>{const sent=di(text);','onSend:(text,mentions)=>{const sent=di(text,mentions);','主输入提及事务');
+    cut('di=ci=>{const Zi=(ci??la).trim();','di=(ci,mentions=[])=>{const Zi=(ci??la).trim();','主流接收提及对象');
+    cut('ct.onSend(Zi,va,evaReplies[va]?evaReplies[va]:undefined)','ct.onSend(Zi,va,evaReplies[va]?evaReplies[va]:undefined,mentions)','我的 AI 主流提及事务');
+    cut('else vi(va,Zi);aa("")','else vi(va,Zi,mentions);aa("")','团队主流提及事务');
+    cut('vi=(ci,Zi)=>{const reply=','vi=(ci,Zi,mentions=[])=>{const reply=','共享发送接收提及对象');
+    cut('ct.onSend(Zi,ci,reply)','ct.onSend(Zi,ci,reply,mentions)','我的 AI 子区提及事务');
+    cut('sendMessage(ci,evaActorId,Zi,reply)','sendMessage(ci,evaActorId,Zi,reply,mentions)','群发送结构化提及');
+    cut('sendDirect(id,evaActorId,Zi,reply)','sendDirect(id,evaActorId,Zi,reply,mentions)','私聊发送结构化提及');
+    cut('onSend:ci=>{const sent=vi(Es.id,ci);','onSend:(ci,mentions)=>{const sent=vi(Es.id,ci,mentions);','侧栏提及事务');
+    // Paste is deliberately plain text: copied names cannot create mention objects.
+    cut('"data-placeholder":rt,onCompositionEnd:',
+      '"data-placeholder":rt,onPaste:event=>{event.preventDefault();const text=event.clipboardData.getData("text/plain"),selection=window.getSelection();if(!selection?.rangeCount)return;const range=selection.getRangeAt(0);if(!mt.current.contains(range.commonAncestorContainer))return;range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);selection.removeAllRanges();selection.addRange(range);const value=evaComposerPlainText(mt.current);pt(value);evaDraftChange?.(value);evaSaveMentionDraft();setEvaMentionOpen(false);},onCompositionEnd:', '粘贴文字不制造提及身份');
+    cut('"data-placeholder":rt,onPaste:', '"data-placeholder":rt,onDrop:event=>{event.preventDefault();},onPaste:', '禁止拖入 HTML 伪造提及节点');
+    cut('onKeyDown:St=>{if(evaMentionOpen', 'onKeyDown:St=>{if(St.nativeEvent.isComposing||St.nativeEvent.keyCode===229)return;if(evaMentionOpen', '中文组字回车不得选择提及或发送');
+    cut('if(St.key==="Enter"){St.preventDefault();options[evaMentionIndex]?.click();return;}', 'if(St.key==="Enter"&&options.length){St.preventDefault();options[evaMentionIndex]?.click();return;}', '没有候选时允许发送普通文字');
+    // Markdown must distinguish selected and unselected occurrences of the same visible name.
+    cut('enableMarkdown:Ct=!0})=>{const xt=',
+      'enableMarkdown:Ct=!0})=>{const prepared=evaPrepareMentionRender(rt,pt);rt=prepared.text;pt=prepared.mentions;const xt=','正文按提及位置装配');
+    cut('kind:"mention",name:Pt.name,uid:Pt.uid','kind:"mention",name:Pt.name,uid:Pt.uid,displayName:Pt.displayName','分词保留展示名称');
+    cut('type:"mention",name:Nt.name,uid:Nt.uid','type:"mention",name:Nt.name,uid:Nt.uid,displayName:Nt.displayName','分词保留提及展示名称');
+    cut('return{...baseComponents,p:ln("p"),td:', 'return{...baseComponents,code:ln("code"),p:ln("p"),td:', '代码片段中的明确提及仍呈现原名称');
+    cut('},Ct.name)}return Ct.type===','},Ct.displayName||Ct.name)}return Ct.type===','统一提及显示原名称');
+
+    return [evaComposerDocument,evaRestoreMentionDraft,evaPrepareMentionRender,EvaConversationSidePanel,useEvaRememberedState,useEvaRememberedScroll,EvaRememberedThreadStream,EvaDraftAttachments,EvaUnreadBadge,useEvaReminderReading,evaReminderRecords,evaReminderMark,evaReminderTabRecords,EvaReminderToolbar,evaReminderMatches,EvaReminderNavBadge].map(fn=>fn.toString()).join('\n')+'\n'+EvaAIThreadRenameForm.toString()+'\n'+EvaForwardThreadForm.toString()+'\n'+EvaTopicCreateDialog.toString()+'\n'+evaPinMenuItem.toString()+'\n'+evaMuteMenuItem.toString()+'\n'+evaTopicMenus.toString()+'\n'+EvaSharedContextMenus.toString()+'\n'+evaConversationRailMenus.toString()+'\n'+evaCategoryRailMenus.toString()+'\n'+evaRailIcon.toString()+'\n'+EvaOverlayListScroll.toString()+'\n'+evaRecentUnread.toString()+'\n'+EvaRecentTopicNavigation.toString()+'\n'+EvaThreadList.toString()+'\n'+EvaDeleteMessagesDialog.toString()+'\n'+evaComposerMentionRange.toString()+'\n'+evaInsertComposerMention.toString()+'\n'+evaEmojiRecentRead.toString()+'\n'+evaEmojiRecentWrite.toString()+'\n'+evaEmojiGroups.toString()+'\n'+evaEmojiAll.toString()+'\n'+evaEmojiRecordFromText.toString()+'\n'+evaInsertComposerEmoji.toString()+'\n'+EvaEmojiPicker.toString()+'\n'+EvaMergedHistory.toString()+'\n'+EvaIMSelectionToolbar.toString()+'\n'+evaForwardIcon.toString()+'\n'+evaConversationPreview.toString()+'\n'+evaRecentActivity.toString()+'\n'+evaForwardCatalog.toString()+'\n'+evaForwardFollowRank.toString()+'\n'+evaForwardNoopSubscribe.toString()+'\n'+EvaForwardMessagesDialog.toString()+'\n'+EvaReplyBlock.toString()+'\n'+evaSelectionMessageKey.toString()+'\n'+evaComposerPlainText.toString()+'\n'+EvaConversationCategoryEditor.toString()+'\n'+EvaFollowGrip.toString()+'\n'+EvaFollowChannel.toString()+'\n'+EvaFollowCategory.toString()+'\n'+EvaFollowList.toString()+'\n'+evaIMPlaceholder.toString()+'\n'+evaIMDateDividers.toString()+'\n'+evaRenderableMessage.toString()+'\n'+evaTeamThreadSource.toString()+'\n'+evaConversationMessages.toString()+'\n'+evaRevealMessage.toString()+'\n'+evaConversationSearchTimestamp.toString()+'\n'+evaConversationSearchRecord.toString()+'\n'+evaConversationSearchFileSize.toString()+'\n'+evaConversationSearchFileDate.toString()+'\n'+evaSearchConversationMessages.toString()+'\n'+evaRevealConversationMessage.toString()+'\n'+EvaConversationSearch.toString()+'\n'+EvaAssistantSourceCards.toString()+'\n'+EvaTaskForwardHost.toString()+'\n'+EvaAssistantEditorHost.toString()+'\n'+EvaAssistantEditor.toString()+'\n'+evaIdentityAppearance.toString()+'\n'+EvaAIIdentityAvatar.toString()+'\n'+evaPreviewFixture.toString()+'\n'+EvaPresentationPreviewRenderer.toString()+'\n'+EvaArchivePreviewRenderer.toString()+'\n'+EvaWordPreviewRenderer.toString()+'\n'+EvaHtmlPreviewDocument.toString()+'\n'+EvaInlineProjectPanel.toString()+'\n'+EvaAITeamGroupEditor.toString()+'\n'+EvaAITeamPage.toString()+'\n'+source;
   });
 })(window);

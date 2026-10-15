@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-const window={};vm.runInNewContext(readFileSync('prototype/009-3-ai-team-store.js','utf8'),{window,setTimeout,clearTimeout});
+const window={};vm.runInNewContext(readFileSync('prototype/009-2-membership.js','utf8'),{window});vm.runInNewContext(readFileSync('prototype/009-3-ai-team-store.js','utf8'),{window,setTimeout,clearTimeout});
 const members=[{id:'u-wangyilin',name:'王宜林',kind:'human'},{id:'persona',name:'执剑人',kind:'ai-direct'},{id:'assistant',name:'通用助理',kind:'ai-direct'},{id:'employee',name:'数字员工',kind:'ai-direct'}];
 test('fixed group derives all member kinds without duplicates and isolates history',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage:null});
@@ -10,7 +10,7 @@ test('fixed group derives all member kinds without duplicates and isolates histo
  assert.equal(channel.name,'我的 AI 小队');assert.equal(channel.members,4);assert.equal(channel.channel_type,2);
  assert.equal(channel.replyPolicy,'mention-only');assert.equal(channel.memberIds.join(','),members.map(m=>m.id).join(','));
  source.onSend('普通群消息');assert.equal(group.source(members).messages[group.id].length,1);
- source.onSend('@通用助理 请整理');let history=group.source(members).messages[group.id];assert.equal(history.length,3);assert.equal(history[2].sender.uid,'assistant');
+ source.onSend('@通用助理 请整理',undefined,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);let history=group.source(members).messages[group.id];assert.equal(history.length,3);assert.equal(history[2].sender.uid,'assistant');
  const next=group.source([...members,{id:'new-assistant',name:'新助理',kind:'ai-direct'}]);assert.equal(next.channels[0].members,5);assert.equal(next.messages[group.id].length,3);
  const ai=window.EvaAITeam.getSnapshot();assert.ok(ai.sessions.every(s=>s.messages.every(m=>m.text!=='普通群消息')));
 });
@@ -34,7 +34,7 @@ test('group and subzones isolate messages and drafts across reloads',()=>{
  const group=window.EvaMyAITeamGroup.createStore({storage});
  group.source(members).onSend('父群内容');group.source(members).onDraftChange('父群草稿');
  const a=group.createThread({id:'topic-a',name:'采购讨论'}),b=group.createThread({id:'topic-b',name:'质量讨论'});
- const source=group.source(members,a);source.onSend('@通用助理 采购问题',a);source.onDraftChange('采购草稿',a);source.onSend('质量问题',b);source.onDraftChange('质量草稿',b);
+ const source=group.source(members,a);source.onSend('@通用助理 采购问题',a,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);source.onDraftChange('采购草稿',a);source.onSend('质量问题',b);source.onDraftChange('质量草稿',b);
  const restored=window.EvaMyAITeamGroup.createStore({storage}),view=restored.source(members,a);
  assert.equal(view.selectedThreadId,a);assert.equal(view.channels[0].threads[0].group_no,group.id);assert.equal(view.channels[0].threads[0].channel_type,5);
  assert.equal(view.messages[group.id].length,1);assert.equal(view.threadMessages[a].length,2);assert.equal(view.threadMessages[b].length,1);
@@ -52,7 +52,7 @@ test('custom AI teams keep a member snapshot and isolate group data',()=>{
  assert.equal(channel.memberIds.join(','),'u-wangyilin,assistant,employee');
  const withNewMember=group.source(customId,[...members,{id:'new-assistant',name:'新助理',kind:'ai-direct'}]);
  assert.equal(withNewMember.channels[0].memberIds.includes('new-assistant'),false);
- first.onSend('@通用助理 准备发布');first.onDraftChange('团队草稿');
+ first.onSend('@通用助理 准备发布',undefined,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);first.onDraftChange('团队草稿');
  assert.equal(group.source(members).messages[group.id].length,0);
  const restored=window.EvaMyAITeamGroup.createStore({storage});
  assert.equal(restored.source(customId,members).initialDraft,'团队草稿');
@@ -70,7 +70,7 @@ test('custom AI teams can be dissolved with all nested data while the default te
  const customId=group.createGroup({name:'临时协作组',memberIds:['assistant']});
  const threadId=group.createThread(customId,{id:'temporary',name:'临时子区'});
  group.source(customId,members,threadId).onDraftChange('待删除草稿',threadId);
- group.source(customId,members,threadId).onSend('@通用助理 临时消息',threadId);
+ group.source(customId,members,threadId).onSend('@通用助理 临时消息',threadId,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);
  group.removeGroup(customId);
  assert.throws(()=>group.get(customId),/AI 小队不存在/);
  assert.equal(group.groups().some(item=>item.id===customId),false);
@@ -99,7 +99,7 @@ test('team groups expose exact child unread counts and aggregate only unread pre
  assert.equal(restored.unreadCount(customId,threadId),1);assert.equal(restored.hasUnread(customId),true);assert.equal(restored.hasUnread(),true);
  assert.equal(restored.markRead(customId,customId),true);assert.equal(restored.hasUnread(customId),true);
  assert.equal(restored.markRead(customId,threadId),true);assert.equal(restored.markRead(customId,threadId),false);assert.equal(restored.hasUnread(customId),false);
- restored.source(customId,members,threadId).onSend('@通用助理 继续',threadId);
+ restored.source(customId,members,threadId).onSend('@通用助理 继续',threadId,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);
  assert.equal(restored.unreadCount(customId,threadId),0);
  const reloaded=window.EvaMyAITeamGroup.createStore({storage});assert.equal(reloaded.hasUnread(customId),false);
 });
@@ -111,3 +111,5 @@ test('forwarded AI content is authored by the current user and does not create t
  const message=group.source(members,threadId).threadMessages[threadId].at(-1);
  assert.equal(message.sender.uid,'self');assert.equal(message.sender.ai,false);
 });
+
+test('手打 AI 不触发，明确所有 AI 仅触发群内 AI',()=>{const group=window.EvaMyAITeamGroup.createStore({storage:null});group.source(members).onSend('@通用助理 @所有 AI 成员');let rows=group.source(members).messages[group.id];assert.equal(rows.length,1);assert.equal(rows[0].mentions.length,0);group.source(members).onSend('@所有 AI 成员',undefined,undefined,[{uid:'ai',name:'@所有 AI 成员',start:0}]);rows=group.source(members).messages[group.id];assert.equal(rows.length,5);assert.equal(rows[1].mentions[0].uid,'ai');});

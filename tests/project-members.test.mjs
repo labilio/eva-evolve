@@ -36,7 +36,7 @@ test('项目群列表派生唯一全员群，全员群默认名称为项目名�
 test('全员群名称跟随项目改名，且关注列表可把全员群拖到普通群之后',()=>{const s=setup();s.createProject('p','项目甲','a',[]);s.createGroup('g','工作群','p','a',[]);assert.equal(s.channels('p','a',[])[0].name,'项目甲');s.renameProject('p','a','项目乙');assert.equal(s.channels('p','a',[])[0].name,'项目乙');assert.equal(s.conversationContext('all:p','a').groupName,'项目乙');const all=s.channels('p','a',[]).map(c=>c.id),reordered=['g','all:p'];s.setFollowOrder('a','channels:space:p',reordered);assert.deepEqual(Array.from(s.followOrder('a','channels:space:p',s.channels('p','a',[])).map(c=>c.id)),reordered);assert.deepEqual(Array.from(all),[ 'all:p','g' ]);});
 test('移除项目成员须一次性指定其群主接任者；独自所在群自动解散',()=>{const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.addClone('p','b','bb');s.addMember('p','a','c');s.createGroup('g','工作群','p','b',[]);s.addMember('g','b','c');s.createGroup('solo','个人工作群','p','b',[]);assert.throws(()=>s.remove('p','a','b'));assert.equal(s.canRead('p','b'),true);s.remove('p','a','b',{g:'c'});assert.equal(s.snapshot().groups.g.ownerId,'c');assert.equal(s.snapshot().groups.solo,undefined);assert.equal(s.canRead('g','b'),false);});
 test('非项目群按本人加入范围显示，消息和子区历史在重新进入后保留',()=>{const s=setup();s.createGroup('g','非项目群',null,'a',[]);assert.equal(s.channels(null,'b').length,0);s.addMember('g','a','b');s.addClone('g','b','bb');s.createThread('t','g',{name:'子区',status:1},'a');s.sendMessage('t','b','已收到');assert.equal(s.messagesFor('t','a')[0].text,'已收到');s.remove('g','a','b');assert.equal(s.messagesFor('t','b').length,0);assert.equal(s.messagesFor('t','a').length,1);assert.equal(s.channels(null,'a')[0].threads[0].name,'子区');assert.deepEqual(Array.from(s.mentionCandidates('g').map(p=>p.id)),['a']);});
-test('@所有人只记录联系人通知目标；删除子区后不可再读取',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.createThread('t','all:p',{name:'子区'},'a');s.sendMessage('t','a','@所有人 请确认');assert.deepEqual(Array.from(s.messagesFor('t','a')[0].notifiedHumanIds),['a']);s.updateThread('t',{deleted:true},'a');assert.equal(s.canRead('t','a'),false);assert.equal(s.messagesFor('t','a').length,0);});
+test('@所有人只记录联系人通知目标；删除子区后不可再读取',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.createThread('t','all:p',{name:'子区'},'a');s.sendMessage('t','a','@所有人 请确认',undefined,[{uid:'all',name:'@所有人',start:0}]);assert.deepEqual(Array.from(s.messagesFor('t','a')[0].notifiedHumanIds),['a']);s.updateThread('t',{deleted:true},'a');assert.equal(s.canRead('t','a'),false);assert.equal(s.messagesFor('t','a').length,0);});
 
 test('分身空选不阻止创建项目、建群及直接添加',()=>{const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.createGroup('g','项目群','p','a',[]);s.addMember('g','a','b');s.createGroup('o','非项目群',null,'a',[]);s.addMember('o','a','b');for(const id of ['p','g','o']){assert.equal(s.canRead(id,'b'),true);assert.equal(s.members(id).filter(p=>p.kind==='clone').length,0);}assert.equal(s.groupMembers('all:p').length,3);});
 
@@ -130,7 +130,7 @@ test('项目专员自动覆盖本项目所有群和子区，首条欢迎包含�
  s.createProject('other','其他项目','a',[]);assert.equal(s.canRead('all:other',agent.id),false);assert.throws(()=>s.setActor(agent.id));assert.throws(()=>s.transfer('p','a',agent.id));
 });
 test('普通成员可提及项目专员，回复使用当前项目元信息',()=>{
- const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.sendMessage('all:p','b','@项目 · 项目管家 负责人是谁？');
+ const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.sendMessage('all:p','b','@项目 · 项目管家 负责人是谁？',undefined,[{uid:s.projectAgent('p').id,name:'@项目 · 项目管家',start:0}]);
  const messages=s.messagesFor('all:p','b');assert.equal(messages.at(-1).sender.kind,'project-agent');assert.ok(messages.at(-1).text.includes('@乙'));assert.ok(messages.at(-1).text.includes('负责人是甲'));assert.throws(()=>s.sendMessage('all:p','c','@Eva 项目管理专员'));
 });
 
@@ -141,7 +141,7 @@ test('添加专员欢迎时保留各用户已清空的历史边界',()=>{
 
 test('所有人和项目分身提及提供 Octo 原生 mentions 数据，AI 成员可以移除',()=>{
  const s=setup();s.createProject('p','项目','a',[]);const welcome=s.messagesFor('all:p','a')[0];assert.ok(welcome.mentions.some(m=>m.name==='@所有人'));
- s.sendMessage('all:p','a','@项目 · 项目管家 请介绍');assert.ok(s.messagesFor('all:p','a').at(-2).mentions.some(m=>m.uid===s.projectAgent('p').id));s.remove('p','a',s.projectAgent('p').id);assert.equal(s.canRead('all:p',s.projectAgent('p').id),false);
+ s.sendMessage('all:p','a','@项目 · 项目管家 请介绍',undefined,[{uid:s.projectAgent('p').id,name:'@项目 · 项目管家',start:0}]);assert.ok(s.messagesFor('all:p','a').at(-2).mentions.some(m=>m.uid===s.projectAgent('p').id));s.remove('p','a',s.projectAgent('p').id);assert.equal(s.canRead('all:p',s.projectAgent('p').id),false);
 });
 
 test('旧待处理记录按当前范围迁移，已拒绝与失效记录不授予访问权',()=>{
@@ -205,3 +205,8 @@ test('子区 GROUP.md 独立保存且权限按父群访问与子区创建者校�
 });
 
 test('协作说明字节上限、清空保存与权限',()=>{const s=setup();s.createProject('p','项目','a',[]);s.setGroupMd('all:p','a','汉');assert.equal(s.groupMd('all:p','a').version,1);assert.throws(()=>s.setGroupMd('all:p','a','汉'.repeat(3414)));assert.equal(s.groupMd('all:p','a').content,'汉');assert.throws(()=>s.setGroupMd('all:p','b',''));s.setGroupMd('all:p','a','');assert.equal(s.groupMd('all:p','a').content,'');assert.equal(s.groupMd('all:p','a').version,2);const restored=windowlessRestore(s.snapshot());assert.equal(restored.groupMd('all:p','a').content,'');assert.equal(restored.groupMd('all:p','a').version,2);});
+
+test('AI 广播与所有人均提供共享提及实体，保留普通成员身份',()=>{const s=setup();s.createProject('p','项目','a',['aa']);const m=s.decorateMentions('all:p',{text:'@所有人 @所有 AI 成员 @甲'});assert.deepEqual(Array.from(m.mentions.map(x=>[x.name,x.uid])),[['@所有 AI 成员','ai'],['@所有人','all'],['@甲','a']]);});
+
+test('手打同名与批量文字不产生提及、通知或 AI 回执',()=>{const s=setup();s.createProject('p','项目','a',['aa']);s.addMember('p','a','b');s.createThread('t','all:p',{name:'子区'},'a');s.sendMessage('t','b','@甲 @所有人 @所有 AI 成员 @项目 · 项目管家 请确认');const rows=s.messagesFor('t','a');assert.equal(rows.length,1);assert.equal(rows[0].mentions.length,0);assert.equal(rows[0].notifiedHumanIds.length,0);assert.equal(s.conversationMentioned('t','a'),false);});
+test('明确对象保留位置与重复同名区别，非法位置及群外对象被拒绝',()=>{const s=setup();s.createProject('p','项目','a',[]);s.addMember('p','a','b');s.sendMessage('all:p','b','@甲 @甲 @丙',undefined,[{uid:'a',name:'@甲',start:3},{uid:'c',name:'@丙',start:6},{uid:'a',name:'@甲',start:99}]);const m=s.messagesFor('all:p','a').at(-1);assert.deepEqual(Array.from(m.mentions,x=>[x.uid,x.start]),[['a',3]]);assert.equal(s.conversationMentioned('all:p','a'),true);});

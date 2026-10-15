@@ -14,7 +14,7 @@ test('sent-message mentions open the exact identity ID, excluding broadcast ment
   const ids = ['u-wangyilin', 'persona-linxiao', 'assistant-eva', 'employee-analyst', 'project-agent:prod'];
   const anchors=ids.map(id=>({id:'mention-'+id}));
   ids.forEach((id,index)=>onMentionClick(id,{currentTarget:anchors[index]}));
-  ['all', 'channel', '', null, undefined].forEach(id=>onMentionClick(id,{currentTarget:anchors[0]}));
+  ['all', 'channel', 'ai', '', null, undefined].forEach(id=>onMentionClick(id,{currentTarget:anchors[0]}));
   assert.deepEqual(opened.map(item=>item.identity),ids);
   assert.ok(opened.every((item,index)=>item.anchor===anchors[index]));
   onMentionClick(ids.at(-1),{currentTarget:anchors.at(-1)});

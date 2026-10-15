@@ -313,13 +313,15 @@
       const perGroupDefault=5;
       const groupRow=group=>h(R.Fragment,{key:group.kind||group.title},groups.length>1&&h('div',{className:'eva-im-mention-group'},group.title),(expanded[group.kind]?group.items:group.items.slice(0,perGroupDefault)).map(memberButton),group.items.length>perGroupDefault&&!expanded[group.kind]&&h('button',{type:'button','data-eva-mention-more':group.kind,className:'eva-im-mention-more',onMouseDown:e=>e.preventDefault(),onClick:()=>setExpanded(previous=>({...previous,[group.kind]:true}))},'展开其余 '+(group.items.length-perGroupDefault)+(group.kind==='human'?' 位':' 个')));
       const grouped=!searching;
-      const hasRows=grouped?groups.length>0:ranked.length>0;
-      const rowBody=grouped?groups.map(groupRow):ranked.map(memberButton);
+      const showAll=broadcast&&!effectiveKind&&humanCount>0&&match({name:'所有人'}),showAI=broadcast&&!effectiveKind&&aiCandidates.length>0&&match({name:'所有 AI 成员'});
+      const hasRows=showAll||showAI||(grouped?groups.length>0:ranked.length>0);
+      // Allocate candidate indices in visual order, after the leading broadcast rows.
+      const rowBody=()=>grouped?groups.map(groupRow):ranked.map(memberButton);
       return h('section',{ref:panel,className:'eva-im-mention-picker',role:'dialog','aria-label':'提及成员',onKeyDown:e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();onClose();}if(e.key==='ArrowDown'||e.key==='ArrowUp'){const items=Array.from(panel.current.querySelectorAll('input,button'));const index=items.indexOf(document.activeElement);e.preventDefault();items[(index+(e.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();}}},
         h('div',{className:'eva-im-mention-heading'},h('span',null,'提及成员')),
         chips,
-        h('div',{className:'eva-im-mention-options'},broadcast&&!needle&&!effectiveKind&&(humanCount>0||aiCandidates.length>0)&&h(R.Fragment,null,humanCount>0&&h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有人','all')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},'所有人',!isTeam&&h('small',null,'提及所有联系人'))),aiCandidates.length>0&&h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有 AI 成员','ai')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},'所有 AI 成员'),root.EvaAIIdentity.badge(h)),!isTeam&&h('small',null,aiSubtitle)))),
-          rowBody,
+        h('div',{className:'eva-im-mention-options'},(showAll||showAI)&&h(R.Fragment,null,showAll&&h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有人','all')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},'所有人',!isTeam&&h('small',null,'提及所有联系人'))),showAI&&h('button',{type:'button',...candidateProps(),onMouseDown:e=>e.preventDefault(),onClick:()=>choose('所有 AI 成员','ai')},h('span',{className:'eva-im-mention-all'},'@'),h('span',{className:'eva-im-mention-broadcast-copy'},h('span',{className:'eva-identity-name-row'},h('span',{className:'eva-identity-name-text'},'所有 AI 成员'),root.EvaAIIdentity.badge(h)),!isTeam&&h('small',null,aiSubtitle)))),
+          rowBody(),
           needle&&!hasRows&&h('p',{className:'eva-im-mention-empty'},'没有匹配的成员')));
     }
     const cards=root.EvaIdentityCard.create({React:R,ReactDOM,Popover:forms.Popover,Modal:LegacyModal,Button,Switch,BackIcon,ProjectIcon,CameraIcon,ChevronRight,useNavigate},store);

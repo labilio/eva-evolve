@@ -18,15 +18,15 @@ test('未读记录不受静音影响，主聊天已读不清除子区，刷新�
  assert.equal(fixture(s.snapshot()).conversationUnread('t','a'),1);
 });
 test('新提及按本人身份判断，已读清除提及，标未读不伪造提及',()=>{
- const s=fixture();s.sendMessage('t','b','@甲 请确认');
+ const s=fixture();s.sendMessage('t','b','@甲 请确认',undefined,[{uid:'a',name:'@甲',start:0}]);
  assert.equal(s.conversationMentioned('t','a'),true);
  s.clearConversationUnread('t','a');assert.equal(s.conversationMentioned('t','a'),false);
  s.markConversationUnread('t','a');assert.equal(s.conversationMentioned('t','a'),false);
  s.sendMessage('t','b','@甲的 AI 分身 请整理');assert.equal(s.conversationMentioned('t','a'),false);
- s.sendMessage('t','b','@甲 再次确认');assert.equal(s.conversationMentioned('t','a'),true);
+ s.sendMessage('t','b','@甲 再次确认',undefined,[{uid:'a',name:'@甲',start:0}]);assert.equal(s.conversationMentioned('t','a'),true);
 });
 test('无权会话不返回未读或提及，不能修改标记；已读重复调用不发布更新',()=>{
- const s=fixture();s.sendMessage('t','b','@甲 请确认');let updates=0;s.subscribe(()=>updates++);
+ const s=fixture();s.sendMessage('t','b','@甲 请确认',undefined,[{uid:'a',name:'@甲',start:0}]);let updates=0;s.subscribe(()=>updates++);
  s.clearConversationUnread('t','a');const once=updates;s.clearConversationUnread('t','a');assert.equal(updates,once);
  s.remove('g','a','b');assert.equal(s.conversationUnread('t','b',8),0);assert.equal(s.conversationMentioned('t','b',true),false);
  assert.throws(()=>s.markConversationUnread('t','b'));
@@ -35,7 +35,7 @@ test('无权会话不返回未读或提及，不能修改标记；已读重复�
 test('演示基线只初始化一次，旧历史不新增未读，基线后的新消息刷新保留',()=>{
  const s=fixture();s.sendMessage('t','b','旧历史');s.initializeUnreadBaseline();
  assert.equal(s.conversationUnread('t','a'),0);assert.equal(s.conversationUnread('t','a',3),3);
- s.sendMessage('t','b','@甲 新消息');s.initializeUnreadBaseline();
+ s.sendMessage('t','b','@甲 新消息',undefined,[{uid:'a',name:'@甲',start:0}]);s.initializeUnreadBaseline();
  assert.equal(s.conversationUnread('t','a',3),4);assert.equal(s.conversationMentioned('t','a'),true);
  const restored=fixture(s.snapshot());assert.equal(restored.conversationUnread('t','a',3),4);
  restored.clearConversationUnread('t','a');assert.equal(restored.conversationUnread('t','a',3),0);
@@ -49,7 +49,7 @@ test('项目汇总只计当前项目，排除私聊和无权限会话，静音�
  assert.deepEqual(Array.from(records,r=>r.id),['g','t']);
  assert.equal(records.find(r=>r.id==='t').count,1);assert.equal(records.find(r=>r.id==='t').muted,true);
  assert.equal(records.filter(r=>r.count>0&&(!r.muted||r.mentioned)).length,0);
- s.sendMessage('t','b','@甲 请确认');
+ s.sendMessage('t','b','@甲 请确认',undefined,[{uid:'a',name:'@甲',start:0}]);
  assert.equal(context.evaReminderRecords('all',[{id:'g',threads:[{id:'t'}]}],false).filter(r=>r.count>0&&(!r.muted||r.mentioned)).length,1);
 });
 

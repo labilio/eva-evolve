@@ -610,6 +610,35 @@ window.__EVA_SUPPLY_CHAT_CONTENT = [
   ]}
 ];
 
+
+// Persisted mention examples share the existing supply conversation fixture source.
+window.__EVA_SUPPLY_CHAT_CONTENT.find(block => block.scopeId === 'all:prod').messages.push(
+  {
+    fixtureId: 'supply-mentions-v1:plain',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:29',
+    text: '提及演示：手动输入 @林晓、@所有人、@所有 AI 成员，都只是普通文字，不会通知成员或触发 AI。',
+    mentionsVersion: 1, mentions: []
+  },
+  {
+    fixtureId: 'supply-mentions-v1:selected',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:30',
+    text: '@林晓 @所有人 @所有 AI 成员 请核对 A-2409 的复核进展。这三个对象均从提及面板选中，使用相同的提及样式。',
+    mentionsVersion: 1,
+    mentions: [
+      {uid: 'u-linxiao', name: '@林晓', start: 0},
+      {uid: 'all', name: '@所有人', start: 4},
+      {uid: 'ai', name: '@所有 AI 成员', start: 9}
+    ]
+  },
+  {
+    fixtureId: 'supply-mentions-v1:mixed',
+    kind: 'text', senderId: 'u-wangyilin', time: '11:31',
+    text: '@林晓 @林晓 @林晓：只有中间一个从面板选中；前后两个是手打或粘贴的普通文字。',
+    mentionsVersion: 1,
+    mentions: [{uid: 'u-linxiao', name: '@林晓', start: 4}]
+  }
+);
+
 // All-hands demo is maintained only in __EVA_SUPPLY_CHAT_CONTENT.
 window.__EVA_PROJECT_AGENT_DEMO = [];
 
