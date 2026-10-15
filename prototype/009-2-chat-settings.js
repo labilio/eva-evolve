@@ -91,6 +91,25 @@ root.EvaChatSettings={create(ui,store){
   const openFixedAction=action=>{onClose();requestAnimationFrame(action);};
   const ownerSuccessors=owner?humans.filter(p=>p.id!==actor):[];
   const leave=()=>{let outcome=null;if(!run(()=>{outcome=store.leaveGroup(id,actor);}))return;setConfirm(null);onClose();if(outcome?.type==='dissolved'&&Toast)Toast.success('群聊已解散');};
+  // The picker owns submission locking; the panel owns the business intent and recovery step.
+  const transfer=async(chosen,{isCurrent})=>{
+   const exiting=picker==='transferAndLeave';
+   await store.transfer(id,actor,chosen[0].id);
+   if(!exiting){if(isCurrent())setPicker(null);Toast?.success('群主已转让');return;}
+   try{await store.leaveGroup(id,actor);}
+   catch(reason){
+    if(isCurrent()){setPicker(null);setError('');setConfirm('retryLeave');}
+    else Toast?.error('群主已转让，你仍在群内。请重新打开聊天信息退出群聊');
+    return;
+   }
+   if(isCurrent()){setPicker(null);onClose();}
+   Toast?.success('已转让群主并退出群聊');
+  };
+  const retryLeave=forms.useSubmission({active:confirm==='retryLeave',resetKey:id+':'+actor,onSubmit:async(_, {isCurrent})=>{
+   await store.leaveGroup(id,actor);
+   if(isCurrent()){setConfirm(null);onClose();}
+   Toast?.success('已转让群主并退出群聊');
+  }});
   // 任免集中在全部成员列表行内（群成员列表与管理员交互规则）；群聊管理提供群级免 @ 许可与转让群主。
   const managementPage=page==='manage'&&manage&&h(R.Fragment,null,
    section(h('div',{className:'eva-chat-management-setting'},h('div',{className:'eva-chat-management-setting-copy'},h('span',null,'允许 AI 免 @ 回复'),h('small',null,'开启后，已由主人启用免 @ 回复的分身可直接回应本群及子区的真人消息。关闭后，所有 AI 均须被明确 @。')),h(Switch,{'aria-label':'允许 AI 免 @ 回复',checked:governance.allowAIWithoutMention===true,onChange:value=>run(()=>store.setGroupAllowNoMention(id,actor,value)),size:'small'}))),
@@ -127,10 +146,11 @@ root.EvaChatSettings={create(ui,store){
     groupMdPage,
    ),
    !all&&h(GroupMemberPicker,{scopeId:id,actor,visible:picker==='add',onCancel:()=>setPicker(null)}),
-   h(SinglePersonPicker,{visible:picker==='transfer',title:'转让群主',submit:'确认转让',items:humans.filter(p=>p.id!==actor),onCancel:()=>setPicker(null),onSubmit:chosen=>{store.transfer(id,actor,chosen[0].id);setPicker(null);}}),
+   h(SinglePersonPicker,{key:id+':'+actor,visible:picker==='transfer'||picker==='transferAndLeave',title:picker==='transferAndLeave'?'选择新群主':'转让群主',submit:picker==='transferAndLeave'?'转让并退出群聊':'确认转让',searchLabel:'搜索群成员',selectionMessage:'请选择一位新群主',description:picker==='transferAndLeave'?'确认后，所选成员将成为群主，你和你的 AI 分身将退出本群及全部子区。':undefined,danger:picker==='transferAndLeave',items:humans.filter(p=>p.id!==actor),onCancel:()=>setPicker(null),onSubmit:transfer}),
+   h(Modal,{className:'eva-members-modal',title:'退出未完成',visible:confirm==='retryLeave',onCancel:()=>setConfirm(null),footer:h(forms.Actions,{onCancel:()=>setConfirm(null),onSubmit:retryLeave.submit,busy:retryLeave.busy,submitLabel:'重试退出群聊',danger:true})},h(forms.Form,{...retryLeave.formProps},h(forms.Dialog.Fields,null,h(forms.Dialog.Text,null,'群主已转让，你仍在群内。请重试退出群聊。'),h(forms.SubmissionError,{submission:retryLeave})))),
    !fixedGroupActions&&h(Modal,{className:'eva-members-modal',title:'群头像',visible:picker==='avatar',footer:null,onCancel:()=>{setAvatarSource(null);setPicker(null);}},avatarSource?h(AvatarEditor,{bare:true,current:settings.avatar||root.EvaAvatar.groupUri(id,channel.color),initialImage:avatarSource,onCancel:()=>setAvatarSource(null),onSave:value=>{if(run(()=>updateAvatar(value))){setAvatarSource(null);setPicker(null);}}}):h(R.Fragment,null,h('input',{type:'file',accept:'image/png,image/jpeg,image/webp','aria-label':'上传群头像',onChange:e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;readAvatarFile(f,1024*1024).then(img=>{setError('');setAvatarSource(img);},err=>setError(err.message));}}),h(Button,{theme:'borderless',onClick:()=>{if(run(()=>updateAvatar('')))setPicker(null);}},'恢复默认头像'))),
    h(IdentityCard,{identity:profile?.identity,anchor:profile?.anchor,onClose:()=>setProfile(null)}),
-   h(Modal,{className:'eva-members-modal',width:confirm?.grantBot?480:undefined,title:confirm?.grantBot?'设为 AI 管理员':confirm==='clear'?'清空聊天记录':confirm==='leave'||confirm==='ownerLeave'?'退出群聊':confirm==='dissolve'?'解散群聊':'确认操作',visible:!!confirm,onCancel:()=>setConfirm(null),okText:confirm?.grantBot?'确认授权':confirm==='clear'?'清空':confirm==='leave'?'退出群聊':confirm==='dissolve'?'解散群聊':'确认',cancelText:'取消',okButtonProps:['clear','leave','dissolve'].includes(confirm)?{type:'danger'}:undefined,...(confirm==='ownerLeave'?{footer:ownerSuccessors.length?h('div',{className:'eva-group-owner-leave-footer'},h(Button,{type:'danger',theme:'light',onClick:()=>leave()},'退出群聊'),h('div',{className:'eva-group-owner-leave-footer-actions'},h(Button,{onClick:()=>setConfirm(null)},'取消'),h(Button,{theme:'solid',onClick:()=>{setConfirm(null);setPicker('transfer');}},'转让群主'))):h(R.Fragment,null,h(Button,{onClick:()=>setConfirm(null)},'取消'),h(Button,{type:'danger',theme:'solid',onClick:()=>leave()},'退出并解散'))}:{}),onOk:()=>{if(run(()=>{if(confirm?.grantBot)store.setGroupBotAdmin(id,actor,confirm.grantBot.id,true);else if(confirm==='clear')onClear();else if(confirm==='leave'){store.leaveGroup(id,actor);onClose();}else if(confirm==='dissolve'){store.dissolveGroup(id,actor);onClose();Toast&&Toast.success('群聊已解散');}}))setConfirm(null);}},!confirm?.grantBot&&h('p',null,confirm==='clear'?'清空你在此设备的当前聊天记录，其他成员的记录不受影响。':confirm==='leave'?'退出后，你及你的分身将离开本群，并失去全部子区访问权。历史内容不会被改写。':confirm==='ownerLeave'?(ownerSuccessors.length?'请在退出前将群主转让给其他群成员。否则，群主将自动转让给群内其他可接任成员。':'群聊没有其他可接任成员。退出群聊将解散本群及全部子区，你将无法继续查看相关聊天记录。'):confirm==='dissolve'?'解散后，本群及全部子区将不再可访问。':''),confirm?.grantBot&&h(AIAdminGrant,{person:confirm.grantBot}),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
+h(Modal,{className:'eva-members-modal',width:confirm?.grantBot?480:undefined,title:confirm?.grantBot?'设为 AI 管理员':confirm==='clear'?'清空聊天记录':confirm==='ownerLeave'&&ownerSuccessors.length?'退出群聊前转让群主':confirm==='leave'||confirm==='ownerLeave'?'退出群聊':confirm==='dissolve'?'解散群聊':'确认操作',visible:!!confirm&&confirm!=='retryLeave',onCancel:()=>setConfirm(null),okText:confirm?.grantBot?'确认授权':confirm==='clear'?'清空':confirm==='leave'?'退出群聊':confirm==='dissolve'?'解散群聊':'确认',cancelText:'取消',okButtonProps:['clear','leave','dissolve'].includes(confirm)?{type:'danger'}:undefined,...(confirm==='ownerLeave'?{footer:h(forms.Actions,{onCancel:()=>setConfirm(null),submitLabel:ownerSuccessors.length?'选择新群主':'退出并解散群聊',danger:!ownerSuccessors.length,onSubmit:()=>{if(ownerSuccessors.length){setConfirm(null);setPicker('transferAndLeave');}else leave();}})}:{}),onOk:()=>{if(run(()=>{if(confirm?.grantBot)store.setGroupBotAdmin(id,actor,confirm.grantBot.id,true);else if(confirm==='clear')onClear();else if(confirm==='leave'){store.leaveGroup(id,actor);onClose();Toast?.success('已退出群聊');}else if(confirm==='dissolve'){store.dissolveGroup(id,actor);onClose();Toast&&Toast.success('群聊已解散');}}))setConfirm(null);}},!confirm?.grantBot&&h(forms.Dialog.Text,null,confirm==='clear'?'清空你在此设备的当前聊天记录，其他成员的记录不受影响。':confirm==='leave'?'退出后，你和你的 AI 分身将退出本群及全部子区。已发送的消息会保留。':confirm==='ownerLeave'?(ownerSuccessors.length?'请选择一位群成员接任群主。':'群内没有其他成员可以成为群主。退出后，本群及全部子区将被解散，聊天记录将无法查看。'):confirm==='dissolve'?'解散后，本群及全部子区将不再可访问。':''),confirm?.grantBot&&h(AIAdminGrant,{person:confirm.grantBot}),error&&h('p',{role:'alert',className:'eva-members-error'},error)));
 
  }
  // Read-only member area for thread (子区) settings. Threads inherit the parent

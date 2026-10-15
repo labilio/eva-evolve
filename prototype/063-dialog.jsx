@@ -3,6 +3,7 @@ import Modal from '@douyinfe/semi-ui/lib/es/modal';
 import Button from '@douyinfe/semi-ui/lib/es/button';
 import {dialogText} from './063-dialog-theme.js';
 import {DialogContent} from './063-dialog-focus.jsx';
+import {Typography} from './063-notification.jsx';
 
 export const dialogWidths = Object.freeze({compact:420,standard:480,wide:680,fileDetail:720,compose:600,preview:760,editor:920});
 
@@ -38,3 +39,13 @@ export function Actions({onCancel,onSubmit,cancelLabel='取消',submitLabel='保
     {submitLabel&&<Button style={{...dialogText.button,margin:0}} htmlType={form?'submit':'button'} form={form} type={danger?'danger':'primary'} theme="solid" size={compact?'small':'default'} loading={busy} disabled={disabled} onClick={onSubmit}>{submitLabel}</Button>}
   </div>;
 }
+
+// The shell owns outer padding; this composition owns mixed text/field gaps.
+// It never resets nested Cards, selectors, editors, or their internal spacing.
+Dialog.Fields=function DialogFields({children}) {
+  return <div className="eva-dialog-fields">{children}</div>;
+};
+Dialog.Text=function DialogText({children,secondary=false,...props}) {
+  return <Typography.Paragraph {...props} type={secondary?'secondary':undefined}
+    style={{...(secondary?dialogText.auxiliary:dialogText.body),margin:0}}>{children}</Typography.Paragraph>;
+};

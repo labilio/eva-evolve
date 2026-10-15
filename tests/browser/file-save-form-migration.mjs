@@ -9,6 +9,7 @@ test('会话文件保存：选择目标项目、保存成功、打开位置与�
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);
+  await page.locator('.ch-list .wk-conv-compact-name').getByText('供应链运营协同',{exact:true}).click();
   // Forward an existing accessible supply attachment within this isolated local prototype.
   await page.locator('.wk-message-file-name').filter({hasText:'A-2409现场复核清单.md'}).click({button:'right'});
   await page.getByText('转发',{exact:true}).click();await page.locator('.eva-fp-modal').waitFor();
@@ -22,6 +23,11 @@ test('会话文件保存：选择目标项目、保存成功、打开位置与�
   await modal.getByLabel('目标文件库',{exact:true}).click();
   await page.getByRole('option').filter({hasText:/^供应链运营协同$/}).click();
   await modal.getByText('保存后，目标文件库成员可访问该文件',{exact:true}).waitFor();
+  const spacing=await modal.evaluate(el=>{
+   const fields=el.querySelectorAll('.eva-members-field');
+   return fields[1].getBoundingClientRect().top-fields[0].getBoundingClientRect().bottom;
+  });
+  assert.ok(spacing<=20,'相邻保存字段不能叠加上一项 margin-bottom 与下一项 margin-top');
   await modal.getByRole('button',{name:'确认保存',exact:true}).click();
   await modal.getByText('保存成功',{exact:true}).waitFor();
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('eva:file-store:v7')).records.filter(item=>item.spaceId==='prod'&&item.source?.type==='chat-copy'&&item.sourceFileName==='A-2409现场复核清单.md'));

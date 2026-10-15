@@ -21,6 +21,14 @@
 .eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:first-child { padding-top:0; }
 .eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > .semi-form > .semi-form-field:last-child { padding-bottom:0; }
 
+/* Plain confirmation text must not add browser paragraph margins to the shell.
+   Limit compatibility normalization to the content boundary, not rich text. */
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > p:first-child { margin-top:0; }
+.eva-dialog:not(.eva-dialog--compose):not(.eva-dialog--editor) .semi-modal-body > p:last-child { margin-bottom:0; }
+.eva-dialog-fields { display:flex;flex-direction:column;gap:var(--eva-space-4);min-width:0; }
+.eva-dialog-fields > .semi-form-field { padding-top:0;padding-bottom:0; }
+.eva-dialog-fields > p { margin:0; }
+
 /* Static explanation composition: Semi owns list anatomy; this owns inner spacing.
    No outer padding/margin: the host remains responsible for surrounding space. */
 .eva-info-list .semi-list-items{display:flex;flex-direction:column;gap:var(--eva-space-5)}

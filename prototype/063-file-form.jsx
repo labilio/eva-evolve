@@ -71,8 +71,10 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
   const select = (label,id,fieldName,options,onChange) => field(label,id,<EvaFormSelect field={fieldName} id={id} noLabel optionList={options} style={{width:'100%'}} onChange={onChange}/>);
   const noTarget = type==='create-shortcut'&&!spaces.length;
   const FormComponent=inline?FloatingForm:Form;
+  const Fields=inline?React.Fragment:Dialog.Fields;
   const body = (
         <FormComponent {...(inline?{onCancel:onClose,busy:submission.busy}:{})} {...submission.formProps} form={api} initValues={initial} className="eva-file-name-form eva-file-form">
+          <Fields>
           {(type==='new-folder'||type==='rename'||external)&&field(external?(folder?'文件夹名称':'文件名称'):type==='new-folder'?'文件夹名称':'新名称',nameId,
             <Form.Input field="name" id={nameId} noLabel autoFocus maxLength={external?100:undefined}
               placeholder={external?(folder?'例如：供应商交付资料':'例如：供应商协作飞书文档'):undefined}
@@ -83,21 +85,22 @@ export default function FileForm({type,files,actor,spaceId,parentId=0,resource,e
           {external&&confirmedURL===values.url&&<div className="eva-external-link-warning">{icon('external-link')}<span>链接域名发生变化。请确认新地址可信后再保存。</span></div>}
           {type==='move'&&<>
             {select('目标文件夹',prefix+'-parent','parentId',[{value:0,label:project?'项目根目录':'根目录'},...files.list(resource.spaceId,actor).filter(item=>item.type==='folder'&&item.id!==resource.id).map(item=>({value:item.id,label:item.name}))])}
-            <p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>{project?'仅允许在当前项目文件库内移动':'仅允许在当前文件库内移动。'}</p>
+            <Dialog.Text secondary>{project?'仅允许在当前项目文件库内移动':'仅允许在当前文件库内移动。'}</Dialog.Text>
           </>}
-          {type==='create-shortcut'&&(noTarget?<p>没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。</p>:<>
+          {type==='create-shortcut'&&(noTarget?<Dialog.Text>没有其他可写入的文件库，暂时无法创建跨文件库快捷方式。</Dialog.Text>:<>
             <div className="eva-shortcut-source"><span style={dialogText.auxiliary}>源文件</span><strong style={dialogText.section}>{resource.name}</strong><small style={dialogText.auxiliary}>{sourceLabel || '当前项目 · 团队文件'}</small></div>
             {select('目标文件库',prefix+'-shortcut-space','targetSpaceId',spaces.map(space=>({value:space.id,label:(space.kind==='personal'?'个人文件库':'项目文件库')+' · '+space.name})),()=>api.setValue('targetParentId',0))}
             {select('目标文件夹',prefix+'-shortcut-parent','targetParentId',[{value:0,label:'根目录'},...targetFolders.map(item=>({value:item.id,label:item.name}))])}
-            <p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>快捷方式不复制文件，也不会向目标文件库成员授予源文件权限{project?'':'。'}</p>
+            <Dialog.Text secondary>快捷方式不复制文件，也不会向目标文件库成员授予源文件权限{project?'':'。'}</Dialog.Text>
           </>)}
           {type==='tags'&&<>
             <Form.Input field="tagInput" type="hidden" noLabel noErrorMessage fieldStyle={{display:'none'}}/>
             <FileTags field="tags" noLabel extraText={inline?"从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。":undefined} api={api} draft={values.tagInput||''} availableTags={availableTags} error={formState.errors?.tagInput}
               rules={[{type:'array',max:8,message:'每个文件最多添加 8 个标签'}]}/>
-            {!inline&&<p className="eva-drive-dialog__hint" style={dialogText.auxiliary}>从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</p>}
+            {!inline&&<Dialog.Text secondary>从下拉框选择已有标签，或直接输入后按回车新建。最多 8 个标签。</Dialog.Text>}
           </>}
           <SubmissionError submission={submission}/>
+          </Fields>
         </FormComponent>);
   if(inline)return body;
   return <Dialog visible selectInitialText={type==='rename'} size="compact" title={title} className="eva-file-dialog" onCancel={onClose}

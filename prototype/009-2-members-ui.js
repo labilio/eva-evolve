@@ -125,17 +125,19 @@
       const items=[...humanItems(candidates.filter(item=>item.kind==='human'),pid),...cloneItems(actor,pid,sid),...candidates.filter(item=>item.kind==='employee').map(item=>({...item,appearance:item.identityAppearance}))];
       return h(MemberPicker,{key:scopeId+actor,visible:visible&&!!group,title:'添加群聊成员',items,groups:[{kind:'clone',label:'我的 AI 分身'},{kind:'human',label:pid?'项目内联系人':'联系人'},{kind:'employee',label:'数字员工'}],searchPlaceholder:'搜索 AI 分身、联系人、数字员工',categorySearchPlaceholders:{human:'搜索联系人',clone:'搜索我的 AI 分身',employee:'搜索数字员工'},projectJoinName:project?.name,emptyTitle:'暂无可选成员',onCancel,onSubmit:chosen=>{store.addGroupMembers(scopeId,actor,chosen);onCancel();}});
     }
-    function SinglePersonPicker({visible,title,items,onCancel,onSubmit,submit='确认'}){
+    function SinglePersonPicker({visible,title,items,onCancel,onSubmit,submit='确认',description,danger=false,searchLabel='搜索可选成员',selectionMessage='请选择 1 位接任者'}){
       const [formApi,,values]=Form.useForm();
       const ids=values.memberIds||[],chosen=items.filter(item=>ids.includes(item.id)&&!item.disabled);
-      const submission=useSubmission({active:visible,resetKey:title,onSubmit:()=>onSubmit(chosen)});
+      const submission=useSubmission({active:visible,resetKey:title,onSubmit:(_,context)=>onSubmit(chosen,context)});
       R.useEffect(()=>{if(visible)formApi.reset();},[visible,title]);
-      const footer=h(Actions,{onCancel,onSubmit:submission.submit,busy:submission.busy,submitLabel:submit});
+      const footer=h(Actions,{onCancel,onSubmit:submission.submit,busy:submission.busy,submitLabel:submit,danger});
       return h(Modal,{className:'eva-members-modal eva-members-modal--transfer',width:480,title,visible,onCancel,footer,maskClosable:true},
         h(Form,{...submission.formProps,form:formApi,initValues:{memberIds:[]}},
-          h(SelectionField,{field:'memberIds',noLabel:true,rules:[{validator:(_,value)=>items.filter(item=>(value||[]).includes(item.id)&&!item.disabled).length===1,message:'请选择 1 位接任者'}]},
-            h(SelectionBody,{items,selected:ids,onChange:next=>formApi.setValue('memberIds',next),single:true,renderIdentity:item=>identity(item),searchPlaceholder:'搜索可选成员',searchLabel:'搜索可选成员',searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'})),
-          h(SubmissionError,{submission})));
+          h(forms.Dialog.Fields,null,
+          h(SelectionField,{field:'memberIds',noLabel:true,rules:[{validator:(_,value)=>items.filter(item=>(value||[]).includes(item.id)&&!item.disabled).length===1,message:selectionMessage}]},
+            h(SelectionBody,{items,selected:ids,onChange:next=>formApi.setValue('memberIds',next),single:true,renderIdentity:item=>identity(item),searchPlaceholder:searchLabel,searchLabel,searchIcon:SearchIcon?h(SearchIcon,{size:16}):null,emptyTitle:'暂无可接任的成员',emptyDescription:'当前范围内没有其他联系人可以接任'})),
+          description&&h(forms.Dialog.Text,{secondary:true},description),
+          h(SubmissionError,{submission}))));
     }
     function useState(){R.useSyncExternalStore(store.subscribe,store.getSnapshot);return {actorId:store.actorId()};}
     function ActorPicker(){const s=useState();return h('div',{className:'eva-members-actor'},h('span',null,'演示身份'),h(Select,{value:s.actorId,optionList:store.people().map(p=>({value:p.id,label:h(HumanIdentity,{id:p.id,compact:true})})),onChange:id=>store.setActor(id)}));}
@@ -202,10 +204,10 @@
         isProject?h(MemberPicker,{key:sid+actor,visible:addOpen,title:'添加项目成员',items:joined&&!all?[...humanItems(store.candidates(sid,actor,true),sid),...cloneItems(actor,undefined,sid),...employeeItems(actor,sid)]:[],emptyTitle:'所有可添加成员均已加入项目',onCancel:()=>setAddOpen(false),onSubmit:chosen=>{store.transaction(staged=>{chosen.forEach(p=>p.kind==='clone'?staged.addClone(sid,actor,p.id):p.kind==='employee'?staged.addEmployee(sid,actor,p.id):staged.addMember(sid,actor,p.id));});setAddOpen(false);}}):h(GroupMemberPicker,{scopeId:sid,actor,visible:addOpen,onCancel:()=>setAddOpen(false)}),
         h(SinglePersonPicker,{key:'transfer'+sid+actor,visible:action?.type==='transfer',title:isProject?'转让项目负责人':'转让群主',submit:'确认转让',items:humanItems(humanRows.filter(p=>p.id!==actor),isProject?sid:undefined),onCancel:()=>setAction(null),onSubmit:chosen=>{store.transfer(sid,actor,chosen[0].id);setAction(null);}}),
         action?.type==='remove'&&h(Modal,{className:'eva-members-modal',title:'确认移除成员',visible:true,onCancel:()=>setAction(null),onOk:removal.submit,okButtonProps:{type:'danger'},confirmLoading:removal.busy,okText:'确认',cancelText:'取消'},
-          h(Form,{...removal.formProps,form:removalApi,initValues:{successors:{}},className:'eva-member-removal-form'},
-            h(HumanIdentity,{id:action.id}),h('p',null,`确认${action.id===actor?'退出':'移除 '+name(action.id)}？${isProject?(action.id===actor?'你和你的分身将退出项目和已加入的项目群聊及其子区。':'该成员和其分身将退出项目和已加入的项目群聊及其子区。'):'其分身也会退出本群聊及其子区。'}历史内容保留。负责人或群主须先转让。`),
-            isProject&&Object.values(store.groupRecords()).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',{id:'eva-member-successor-'+g.id+'-label'},g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群聊及其子区'):h(Form.Select,{field:'successors['+JSON.stringify(g.id)+']',id:'eva-member-successor-'+g.id,noLabel:true,className:'eva-members-select','aria-label':g.name+'的群主接任者',placeholder:'选择群主接任者',rules:[{required:true,message:'请选择群主接任者'}],optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),h(SubmissionError,{submission:removal}))),
-        h(Modal,{className:'eva-members-modal',title:'解散群聊',visible:action?.type==='dissolve',onCancel:()=>setAction(null),onOk:confirm,okButtonProps:{type:'danger'},okText:'确认',cancelText:'取消'},action?.type==='dissolve'&&h('p',null,'群聊及其子区将不再可访问。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)),
+          h(Form,{...removal.formProps,form:removalApi,initValues:{successors:{}},className:'eva-member-removal-form'},h(forms.Dialog.Fields,null,
+            h(HumanIdentity,{id:action.id}),h(forms.Dialog.Text,null,`确认${action.id===actor?'退出':'移除 '+name(action.id)}？${isProject?(action.id===actor?'你和你的分身将退出项目和已加入的项目群聊及其子区。':'该成员和其分身将退出项目和已加入的项目群聊及其子区。'):'其分身也会退出本群聊及其子区。'}历史内容保留。负责人或群主须先转让。`),
+            isProject&&Object.values(store.groupRecords()).filter(g=>g.projectId===sid&&g.ownerId===action.id).map(g=>h('div',{key:g.id,className:'eva-members-field'},h('label',{id:'eva-member-successor-'+g.id+'-label'},g.name),g.humans.length===1?h('p',{className:'eva-members-muted'},'该成员是唯一联系人，退出时自动解散此群聊及其子区'):h(Form.Select,{field:'successors['+JSON.stringify(g.id)+']',id:'eva-member-successor-'+g.id,noLabel:true,className:'eva-members-select','aria-label':g.name+'的群主接任者',placeholder:'选择群主接任者',rules:[{required:true,message:'请选择群主接任者'}],optionList:g.humans.filter(m=>m.id!==action.id).map(m=>({value:m.id,label:h(HumanIdentity,{id:m.id,compact:true})}))}))),h(SubmissionError,{submission:removal})))),
+        h(Modal,{className:'eva-members-modal',title:'解散群聊',visible:action?.type==='dissolve',onCancel:()=>setAction(null),onOk:confirm,okButtonProps:{type:'danger'},okText:'确认',cancelText:'取消'},action?.type==='dissolve'&&h(forms.Dialog.Text,null,'群聊及其子区将不再可访问。'),error&&h('p',{role:'alert',className:'eva-members-error'},error)),
         h(Modal,{className:'eva-members-modal',title:details?name(details)+'的分身':'分身',visible:!!details,onCancel:()=>setDetails(null),footer:null},details&&rowClones(details).map(c=>h('div',{className:'eva-members-clone-row',key:c.id},h(Button,{theme:'borderless',type:'tertiary',onClick:event=>setIdentityProfile(previous=>previous?.anchor===event.currentTarget?null:{identity:c.id,anchor:event.currentTarget})},h(CloneIdentity,{clone:c})),canEdit&&(actor===details||manage)&&h(forms.Popconfirm,{title:'移除 AI 分身？',content:h(RemovalContent,{member:c,effect:'移除后将无法访问'+(isProject?'本项目和已加入的项目群聊及其子区':'本群聊及其子区')+'，主人和其他成员不受影响'}),okText:'移除分身',okButtonProps:{type:'danger'},onConfirm:()=>{store.removeClone(sid,actor,c.id);Toast?.success('已移除 AI 分身');}},h('span',null,h(Button,{type:'danger',theme:'light'},'移除分身')))))));
 
     }
@@ -229,15 +231,15 @@
       const sourceLabel=source?.type==='ai-conversation'?'我的 Agent · '+(source.identityName||'AI'):source?.type==='chat'?'私聊 · '+(source.senderName||source.conversationTitle||'会话成员'):'群聊 · '+(source?.groupName||source?.conversationTitle||'来源群');
       function save(values){const id=files.saveConversationFile(actor,values.target,values.parentId??0,file,source);const record=files.snapshot(actor).find(item=>item.id===id);root.EvaFileMessage.markSaved(file,source,record);setSavedId(id);onSaved?.(record);}
       const open=()=>{if(savedId&&typeof root.__evaOpenDriveFile==='function')root.__evaOpenDriveFile(savedId);onClose();};
-      return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:h(Actions,{onCancel:onClose,cancelLabel:savedId?'关闭':'取消',form:savedId?undefined:submission.formProps.id,onSubmit:savedId?open:undefined,busy:submission.busy,submitLabel:savedId?'打开所在位置':'确认保存'}),width:520},file&&h(Form,{...submission.formProps,form:formApi,initValues:{target:defaultTarget,parentId:0},className:'eva-file-save-form'},
+      return h(Modal,{className:'eva-members-modal eva-file-save-modal',title:savedId?'已存到文件库':'存到文件库',visible:!!file,onCancel:onClose,footer:h(Actions,{onCancel:onClose,cancelLabel:savedId?'关闭':'取消',form:savedId?undefined:submission.formProps.id,onSubmit:savedId?open:undefined,busy:submission.busy,submitLabel:savedId?'打开所在位置':'确认保存'}),width:520},file&&h(Form,{...submission.formProps,form:formApi,initValues:{target:defaultTarget,parentId:0},className:'eva-file-save-form'},h(forms.Dialog.Fields,null,
         h('div',{className:'eva-file-save-modal__file'},h('strong',{'data-eva-tooltip':file.name,'data-eva-tooltip-clamp':''},file.name),h('span',null,sourceLabel)),
         !savedId&&h(R.Fragment,null,
           h('div',{className:'eva-members-field'},h('label',{id:'eva-file-save-target-label',htmlFor:'eva-file-save-target'},'目标文件库'),h(Form.Select,{field:'target',noLabel:true,id:'eva-file-save-target','aria-label':'目标文件库',className:'eva-members-select',onChange:()=>formApi.setValue('parentId',0),rules:[{required:true,message:'请选择目标文件库'}],optionList:targets.map(item=>({value:item.id,label:item.name}))})),
           h('div',{className:'eva-members-field'},h('label',{id:'eva-file-save-folder-label',htmlFor:'eva-file-save-folder'},'目标文件夹'),h(Form.Select,{field:'parentId',noLabel:true,id:'eva-file-save-folder','aria-label':'目标文件夹',className:'eva-members-select',optionList:folderOptions})),
           targetInfo&&targetInfo.kind!=='personal'&&h('div',{className:'eva-members-notice'},h('strong',null,'保存后，目标文件库成员可访问该文件'),h('p',null,'不会因此获得原会话、其他消息或其他附件的访问权限。')),
-          h('p',{className:'eva-members-muted'},'保存后会生成独立文件，并保留来源信息。')),
+          h(forms.Dialog.Text,{secondary:true},'保存后会生成独立文件，并保留来源信息。')),
         savedId&&h('div',{className:'eva-members-notice'},h('strong',null,'保存成功'),h('p',null,'已生成独立文件，并保留来源信息。')),
-        h(SubmissionError,{submission})));
+        h(SubmissionError,{submission}))));
     }
     function FileTransfer({file,source,onClose}){
       return h(FileLibrarySave,{file,source:{...source,type:'group',conversationId:source?.threadId||source?.groupId,messageId:source?.messageId||((source?.threadId||source?.groupId)+':'+(file?.id||file?.name)),projectId:source?.projectId},allowedKinds:['project'],onClose});

@@ -71,7 +71,7 @@ function FileTagsPopover({resource,files,actor}) {
 export function FileConfirmation({resource,type,onClose,onConfirm,error}) {
  const title=type==='trash'?'移至回收站':'永久删除';
  return <Dialog visible title={title} size="compact" initialFocus="cancel" onCancel={onClose} footer={<Actions onCancel={onClose} onSubmit={onConfirm} submitLabel={title} danger/>}>
-  <p>{type==='trash'?'将“':'永久删除“'}{resource.name}”{resource.type==='folder'?'及其中内容':''}{type==='trash'?'移至回收站？'+(resource.area==='personal'?'你可以从回收站恢复。':'项目负责人或管理员可从回收站恢复。'):'后不可恢复。'}</p>
+  <Dialog.Text>{type==='trash'?'将“':'永久删除“'}{resource.name}”{resource.type==='folder'?'及其中内容':''}{type==='trash'?'移至回收站？'+(resource.area==='personal'?'你可以从回收站恢复。':'项目负责人或管理员可从回收站恢复。'):'后不可恢复。'}</Dialog.Text>
   <SubmissionError error={error}/>
  </Dialog>;
 }

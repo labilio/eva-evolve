@@ -1407,7 +1407,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
 
 .eva-shortcut-source {
   min-width: 0;
-  margin-bottom: 16px;
   padding: 12px;
   border: 1px solid var(--gds-color-border-faint, #ebebeb);
   border-radius: var(--gds-radius-control, 8px);
@@ -1438,17 +1437,12 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   gap: 8px;
 }
 
-.eva-drive-dialog__field + .eva-drive-dialog__field {
-  margin-top: 24px;
-}
-
 .eva-drive-dialog__field > span {
   color: var(--gds-color-text-secondary, #4a4a4a);
   font-size: var(--gds-type-caption-font-size, 12px);
 }
 
 .eva-external-link-warning {
-  margin-top: 16px;
   padding: 10px 12px;
   border: 1px solid var(--semi-color-warning-light-active, #f0d79a);
   border-radius: var(--gds-radius-control, 8px);
@@ -1465,12 +1459,6 @@ body.eva-message-hierarchy-ready .eva-drive__table--pinned .eva-drive__row,
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
-}
-
-.eva-drive-dialog__hint {
-  margin-top: 10px !important;
-  color: var(--gds-color-text-secondary-accessible, #6b7280) !important;
-  font-size: var(--gds-type-caption-font-size, 12px) !important;
 }
 
 /* Project > Team Files uses the same file primitives without the global space tree. */

@@ -114,7 +114,7 @@
       store.setProjectArchived(projectId,store.actorId(),!archived);
       if(context.isCurrent()){Toast.success(archived?'项目已恢复':'项目已归档');onClose();}
     }});
-    return h(Dialog,{visible:true,title:label,width:420,zIndex:1100,returnFocus,onCancel:onClose,footer:h(Actions,{onCancel:onClose,submitLabel:label,form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h('p',null,archived?'恢复「'+project.name+'」后可继续协作；任务和自动化不会自动重启。':'归档「'+project.name+'」后，项目及所属群聊、任务和文件将只读，历史内容保留。'),h(Form.Input,{field:'confirmation',label:'输入“'+label+'”确认',validator:value=>value===label?'':'请输入“'+label+'”确认'}),h(SubmissionError,{submission})));
+    return h(Dialog,{visible:true,title:label,width:420,zIndex:1100,returnFocus,onCancel:onClose,footer:h(Actions,{onCancel:onClose,submitLabel:label,form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h(Dialog.Fields,null,h(Dialog.Text,null,archived?'恢复「'+project.name+'」后可继续协作；任务和自动化不会自动重启。':'归档「'+project.name+'」后，项目及所属群聊、任务和文件将只读，历史内容保留。'),h(Form.Input,{field:'confirmation',label:'输入“'+label+'”确认',validator:value=>value===label?'':'请输入“'+label+'”确认'}),h(SubmissionError,{submission}))));
   }
   function EvaProjectArchiveCard({projectId}) {
     const h=React.createElement,store=evaMembers().store;
@@ -146,7 +146,7 @@
       evaDeleteArchivedProject(projectId,values.confirmation);
       if(context.isCurrent()){Toast.success('项目已删除');onClose();}
     }});
-    return h(Dialog,{visible:true,title:'删除项目',size:'compact',zIndex:1100,onCancel:onClose,returnFocus,footer:h(Actions,{danger:true,onCancel:onClose,submitLabel:'删除项目',form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h('p',null,'将永久删除「'+(project?.name||'')+'」及其任务、文件、群聊、消息和历史记录。所有成员都将无法访问，删除后无法恢复。'),h(Form.Input,{field:'confirmation',label:'输入项目名称确认',validator:value=>value===project?.name?'':'请输入完整项目名称确认'}),h(SubmissionError,{submission})));
+    return h(Dialog,{visible:true,title:'删除项目',size:'compact',zIndex:1100,onCancel:onClose,returnFocus,footer:h(Actions,{danger:true,onCancel:onClose,submitLabel:'删除项目',form:submission.formProps.id,busy:submission.busy})},h(Form,{...submission.formProps,form:api},h(Dialog.Fields,null,h(Dialog.Text,null,'将永久删除「'+(project?.name||'')+'」及其任务、文件、群聊、消息和历史记录。所有成员都将无法访问，删除后无法恢复。'),h(Form.Input,{field:'confirmation',label:'输入项目名称确认',validator:value=>value===project?.name?'':'请输入完整项目名称确认'}),h(SubmissionError,{submission}))));
   }
   function EvaArchivedProjectsSettings({onClose,navigate}){
     const h=React.createElement,store=evaMembers().store,revision=reactExports.useSyncExternalStore(store.subscribe,store.getSnapshot),actor=store.actorId();

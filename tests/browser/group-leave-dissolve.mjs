@@ -4,7 +4,7 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
-test('Edge：群主可直接退出并由系统自动转让，单人群退出时解散全部子区',async()=>{
+test('Edge：群主先转让再退出，两个入口复用选人，单人群退出时解散全部子区',async()=>{
   const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin=`http://127.0.0.1:${server.address().port}`;
@@ -35,38 +35,36 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     assert.equal(await panel.getByRole('button',{name:'删除并退出',exact:true}).count(),0);
-
-    let modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});
-    await modal.getByText('群主将自动转让给群内其他可接任成员',{exact:false}).waitFor();
-    assert.equal(await modal.getByRole('button',{name:'退出群聊',exact:true}).count(),1);
-    assert.equal(await modal.getByRole('button',{name:'转让群主',exact:true}).count(),1);
+    let modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊前转让群主',exact:true})});
+    await modal.getByText('请选择一位群成员接任群主。',{exact:true}).waitFor();
+    assert.equal(await modal.getByRole('button',{name:'退出群聊',exact:true}).count(),0);
+    await modal.getByRole('button',{name:'选择新群主',exact:true}).waitFor({state:'visible'});
     await page.waitForTimeout(350);
-    const positions=await modal.evaluate(node=>{
-      const button=text=>Array.from(node.querySelectorAll('button')).find(item=>item.textContent.trim()===text).getBoundingClientRect();
-      const exit=button('退出群聊'),cancel=button('取消'),transfer=button('转让群主');
-      return {exit:{left:exit.left,right:exit.right},cancel:{left:cancel.left},transfer:{left:transfer.left}};
-    });
-    assert.ok(positions.exit.left<positions.cancel.left,'退出群聊应单独放在左侧');
-    assert.ok(positions.cancel.left-positions.exit.right>100,'退出按钮与右侧操作组之间应有明显空白');
-    assert.ok(positions.cancel.left<positions.transfer.left,'取消与转让群主保持右侧顺序');
     await page.screenshot({path:'/tmp/eva-group-owner-leave-confirm.png'});
-    await modal.getByRole('button',{name:'转让群主',exact:true}).click();
-    let transfer=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'转让群主',exact:true})});
-    await transfer.getByText('转让群主',{exact:true}).waitFor();
-    assert.equal(await transfer.locator('.eva-transfer-current').count(),0,'不重复展示当前群主');
-    assert.equal(await transfer.getByRole('textbox',{name:'搜索可选成员'}).count(),1,'保留原有候选搜索');
-    await transfer.screenshot({path:'/tmp/eva-transfer-group.png'});
-    assert.ok(await transfer.locator('.eva-picker-row').count()>0,'手动转让只提供可接任的联系人');
-    await transfer.getByRole('button',{name:'取消',exact:true}).click();
+    const before=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),g=Object.values(s.groups).find(item=>item.name==='采购与招投标');return {id:g.id,ownerId:g.ownerId};});
+    await modal.getByRole('button',{name:'选择新群主',exact:true}).click();
+    const exitPicker=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'选择新群主',exact:true})});
+    await exitPicker.getByRole('textbox',{name:'搜索群成员'}).waitFor();
+    await exitPicker.getByRole('button',{name:'取消',exact:true}).click();
+    const unchanged=await page.evaluate(()=>localStorage.getItem('eva:project-members:v1'));
+    assert.equal(JSON.parse(unchanged).groups[before.id].ownerId,before.ownerId,'取消选人不转让');
+    await panel.getByRole('button',{name:'群聊管理',exact:true}).click();
+    await panel.getByRole('button',{name:'转让群主',exact:true}).click();
+    const transfer=page.locator('.semi-modal:visible').filter({has:page.getByRole('heading',{name:'转让群主',exact:true})});
+    await transfer.getByRole('textbox',{name:'搜索群成员'}).waitFor();
+    await transfer.locator('.eva-picker-row').first().click();
+    await transfer.getByRole('button',{name:'确认转让',exact:true}).click();
+    await transfer.waitFor({state:'hidden'});
+    const transferred=await page.evaluate(id=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),g=s.groups[id];return {ownerId:g.ownerId,isMember:g.humans.some(item=>item.id===s.actorId)};},before.id);
+    assert.notEqual(transferred.ownerId,before.ownerId);
+    assert.equal(transferred.isMember,true,'转让后本人仍在群内');
+    await panel.getByRole('button',{name:'返回聊天信息',exact:true}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});
-    const before=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),g=Object.values(s.groups).find(item=>item.name==='采购与招投标');return {id:g.id,ownerId:g.ownerId};});
     await modal.getByRole('button',{name:'退出群聊',exact:true}).click();
     await panel.waitFor({state:'detached'});
-    const after=await page.evaluate(id=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),g=s.groups[id];return {actor:s.actorId,ownerId:g?.ownerId,isMember:g?.humans.some(item=>item.id===s.actorId)};},before.id);
-    assert.notEqual(after.ownerId,before.ownerId,'直接退出后群主自动转让');
-    assert.equal(after.isMember,false,'原群主退出父群');
-
+    const after=await page.evaluate(id=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1'));return s.groups[id].humans.some(item=>item.id===s.actorId);},before.id);
+    assert.equal(after,false,'明确退出后才离开群聊');
     await page.evaluate(()=>{
       const key='eva:project-members:v1',state=JSON.parse(localStorage.getItem(key)),actor=state.actorId;
       state.groups['e2e-solo-group']={id:'e2e-solo-group',name:'单人退出测试群',projectId:null,ownerId:actor,humans:[{id:actor,role:'member'}],cloneIds:[]};
@@ -114,10 +112,10 @@ test('Edge：群主可直接退出并由系统自动转让，单人群退出时�
     await panel.getByRole('button',{name:'返回聊天信息'}).click();
     await panel.getByRole('button',{name:'退出群聊',exact:true}).click();
     modal=page.locator('.semi-modal').filter({has:page.getByRole('heading',{name:'退出群聊',exact:true})});
-    await modal.getByText('退出群聊将解散本群及全部子区',{exact:false}).waitFor();
+    await modal.getByText('退出后，本群及全部子区将被解散',{exact:false}).waitFor();
     await page.waitForTimeout(350);
     await page.screenshot({path:'/tmp/eva-group-owner-leave-dissolve-confirm.png'});
-    await modal.getByRole('button',{name:'退出并解散',exact:true}).click();
+    await modal.getByRole('button',{name:'退出并解散群聊',exact:true}).click();
     await panel.waitFor({state:'detached'});
     await page.locator('.semi-toast').filter({hasText:'群聊已解散'}).first().waitFor({timeout:3000});
     const dissolved=await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('eva:project-members:v1')),actor=s.actorId;return {group:s.groups['e2e-solo-group'],thread:s.threads['e2e-solo-thread'],threadDetails:s.threadDetails['e2e-solo-thread'],messages:s.messages['e2e-solo-group'],threadMessages:s.messages['e2e-solo-thread'],chatSettings:s.chatSettings['e2e-solo-group'],prefs:s.chatPreferences[actor]?.['e2e-solo-group'],threadPrefs:s.chatPreferences[actor]?.['e2e-solo-thread'],follow:s.followedConversations[actor]?.['e2e-solo-group'],threadFollow:s.followedConversations[actor]?.['e2e-solo-thread']};});

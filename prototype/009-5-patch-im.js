@@ -1867,7 +1867,7 @@ function EvaAITeamPage() {
     h('div',{className:'eva-ai-team__modal-host',ref:host}),
     h(EvaAITeamGroupEditor,{visible:!!groupEditor,record:groupEditor?.record||null,membersOnly:groupEditor?.mode==='members',candidates:groupCandidates,onClose:closeGroupEditor,onSubmit:saveGroup,getContainer:()=>host.current}),
     h(Modal,{visible:!!groupToDissolve,title:'解散 AI 小队',className:'eva-ai-team__modal',getPopupContainer:()=>host.current,onCancel:()=>setGroupToDissolve(null),onOk:confirmDissolveGroup,okText:'解散群',cancelText:'取消',okButtonProps:{type:'danger'},width:420},
-      h('p',null,'确认解散“'+(groupToDissolve?.name||'')+'”？AI 小队消息、草稿和子区将被删除且无法恢复；AI 单聊不受影响。')),
+      h(evaForms.Dialog.Text,null,'确认解散“'+(groupToDissolve?.name||'')+'”？AI 小队消息、草稿和子区将被删除且无法恢复；AI 单聊不受影响。')),
     rename&&h(EvaAIThreadRenameForm,{key:rename.identityId+':'+rename.id,request:rename,onClose:()=>setRename(null),onSave:saveRename,getContainer:()=>host.current}));
 }
 
@@ -2070,7 +2070,7 @@ function EvaAITeamPage() {
       'ChannelsView=({onOpenTask:rt,source:ct,membershipProjectId:evaMembershipProjectId,onManageProject:evaManageProject,evaTeamGlobal:evaTeamGlobal=!1})=>{const evaMemberStore=evaMembers().store,evaMemberRevision=reactExports.useSyncExternalStore(evaMemberStore.subscribe,evaMemberStore.getSnapshot),evaActorId=evaMemberStore.actorId(),[evaGroupCreateOpen,setEvaGroupCreateOpen]=reactExports.useState(false);const ut=!!ct,[evaChannelDrafts,mt]=reactExports.useState(()=>evaMembershipProjectId?evaMemberStore.channels(evaMembershipProjectId,evaActorId,channelsOf()):ct?.channels??channelsOf()),pt=evaMembershipProjectId?evaMemberStore.channels(evaMembershipProjectId,evaActorId,evaChannelDrafts):evaChannelDrafts,',
       'IM 项目群成员数据源');
     source=root.__evaCut(source,'Sa=(ct?.conversationOnly?ct.channels[0]:pt.find(ci=>ci.id===Ct)??pt[0])??EMPTY_CHANNEL,',
-      'evaMemberReset=reactExports.useEffect(()=>{Nt(null);Dt("none");Qt(null);Ht(null);setEvaGroupCreateOpen(false);},[evaMembershipProjectId,evaActorId]),evaSelectedChannel=(ct?.conversationOnly?ct.channels[0]:pt.find(ci=>ci.id===Ct)??pt[0])??EMPTY_CHANNEL,Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},', 'IM 身份切换重置');
+      'evaMemberReset=reactExports.useEffect(()=>{Nt(null);Dt("none");Qt(null);Ht(null);setEvaGroupCreateOpen(false);},[evaMembershipProjectId,evaActorId]),evaSelectedChannel=(ct?.conversationOnly?ct.channels[0]:pt.find(ci=>ci.id===Ct)??pt[0])??EMPTY_CHANNEL,evaSelectedPanelReset=reactExports.useEffect(()=>{Dt("none");},[evaSelectedChannel.id]),Sa={...evaSelectedChannel,...evaMemberStore.chatSettings(evaSelectedChannel.id)},', 'IM 身份切换重置');
     source=root.__evaCut(source,'cn(!1),ut?(Ir(null),Qr(null),hr(!0)):pr("channel")',
       'cn(!1),evaMembershipProjectId?setEvaGroupCreateOpen(true):ut?(Ir(null),Qr(null),hr(!0)):pr("channel")','IM 创建项目群入口');
     // The panel is a sibling of the stable conversation. No scrim, key change, or IM remount.
