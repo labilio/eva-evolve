@@ -14,7 +14,7 @@ export function fileFormHarness(props) {
   Object.assign(FormComponent,{Input:'Input',Select:'Select',ErrorMessage:'ErrorMessage',useForm:()=>[api,formState,values]});
   const module={exports:{}};
   const compiled=transformSync(fs.readFileSync(new URL('../../prototype/063-file-form.jsx',import.meta.url),'utf8'),{loader:'jsx',format:'cjs'}).code;
-  vm.runInNewContext(compiled,{module,require:id=>id==='react'?React:id.endsWith('063-dialog-theme.js')?dialogTheme:id.includes('button')?{default:'Button',__esModule:true}:{Form:FormComponent,withField:fn=>fn,useSubmission:options=>(submission=options,{formProps:{id:'form'},busy:false}),SubmissionError:'SubmissionError'}});
+  vm.runInNewContext(compiled,{module,require:id=>id==='react'?React:id.endsWith('063-dialog-theme.js')?dialogTheme:id.endsWith('063-dialog.jsx')?{Dialog:Object.assign(()=>{},{Fields:'DialogFields',Text:'DialogText'}),Actions:'Actions'}:id.includes('button')?{default:'Button',__esModule:true}:{Form:FormComponent,withField:fn=>fn,useSubmission:options=>(submission=options,{formProps:{id:'form'},busy:false}),SubmissionError:'SubmissionError'}});
   const render=()=>{cursor=0;tree=module.exports.default(props);return tree;};
   const nodes=(node=tree)=>node&&typeof node==='object'?[node,...(node.children||[]).flatMap(nodes)]:[];
   render();Object.assign(values,nodes().find(n=>n.type===FormComponent).props.initValues);render();

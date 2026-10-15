@@ -20,7 +20,7 @@ requireText("sidebarVariant: 'ai-sessions'", 'My AI does not declare its identit
 requireText("conversationKind: 'ai-private-group'", 'My AI does not use a private parent group');
 requireText('channel_type: 5', 'AI conversations must use Octo topic channels');
 requireText("replyPolicy: 'direct-only'", 'AI private groups must respond directly without a mention setting');
-requireText('ct?.selectedThreadId??Pt', 'AI selection must use the shared topic message path');
+requireText('fa=(ct?.conversationOnly?ct.selectedThreadId:Pt)?Sa.threads.find(ci=>ci.id===(ct?.conversationOnly?ct.selectedThreadId:Pt))??null:null', 'AI selection must use its source topic within the shared conversation, while team IM uses its own selected topic');
 requireText('Sa.identityId?React.createElement("span",{className:"eva-identity-name-row"}', 'AI conversations must display the shared identity title');
 requireText('React.createElement(AiBadge,{size:"small"})', 'AI identity title must retain its shared badge');
 forbidText('className:"wk-chat-conversation-header-thread-name",title:Sa.sessionTitle', 'AI title must not expose the removed session breadcrumb');
