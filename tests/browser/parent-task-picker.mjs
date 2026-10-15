@@ -4,9 +4,10 @@ import {test} from 'node:test';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
 
 test('父任务：单层搜索、即时关联、移除、取消与项目隔离',async()=>{
- const server=createServer(new URL('../../dist',import.meta.url).pathname);
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const origin=`http://127.0.0.1:${server.address().port}`;
  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
@@ -15,7 +16,7 @@ test('父任务：单层搜索、即时关联、移除、取消与项目隔离',
  await page.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
  page.setDefaultTimeout(10000);
  const more=()=>page.getByRole('button',{name:'更多操作',exact:true});
- const open=async()=>{await more().click();await page.getByRole('menuitem',{name:'关联父任务',exact:true}).click();return page.getByRole('dialog',{name:'关联父任务',exact:true});};
+ const open=async()=>{await more().click();await settleMotion(page);await page.locator('.semi-dropdown-menu:visible').getByRole('menuitem',{name:'关联父任务',exact:true}).click();return page.getByRole('dialog',{name:'关联父任务',exact:true});};
  try{
   await page.goto(origin+'/#/collab?evaProject=prod&evaTab=tasks&evaTask=SC-103');
   let picker=await open();await picker.waitFor();
@@ -36,7 +37,7 @@ test('父任务：单层搜索、即时关联、移除、取消与项目隔离',
   await more().click();await page.getByRole('menuitem',{name:'移除父任务',exact:true}).waitFor();
   await page.getByRole('menuitem',{name:'移除父任务',exact:true}).click();
   await more().click();assert.equal(await page.getByRole('menuitem',{name:'移除父任务',exact:true}).count(),0);
-  await more().click();
+  await more().click();await settleMotion(page);
   picker=await open();input=picker.getByRole('textbox',{name:'搜索任务编号或标题'});
   await input.fill('SC-105');await input.press('Escape');await picker.waitFor({state:'hidden'});
   await page.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='更多操作');
