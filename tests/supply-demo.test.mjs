@@ -51,10 +51,14 @@ test('浏览器初次加载供应链项目时直接得到可测试的成员分�
  for(const file of ['009-0-demo-time.js','009-1-data-drive.js','009-2-data-supply.js','009-2-membership.js'])vm.runInNewContext(fs.readFileSync(new URL('../prototype/'+file,import.meta.url),'utf8'),{window});
  const channels={prod:[{id:'c-eva',name:'采购与招投标',threads:[]},{id:'c-review',name:'质量与排产',threads:[]},{id:'c-weekly',name:'合规与合同',threads:[]}]};
  const s=window.EvaMembership.bootstrap(window.__EVA_PEOPLE,[{id:'prod',name:'供应链运营协同',members:[]}],channels);
- const state=s.snapshot();assert.equal(state.projects.prod.humans.length,8);assert.equal(state.projects.prod.cloneIds.length,6);
- assert.equal(Object.keys(state.projects.prod.memberRoleIds||{}).length,6,'供应链项目的 8 位成员中应有 6 位配置项目角色');
+ const state=s.snapshot();assert.equal(state.projects.prod.humans.length,11);assert.equal(state.projects.prod.cloneIds.length,6);
+ assert.equal(Object.keys(state.projects.prod.memberRoleIds||{}).length,6,'保留原有 6 位成员的项目角色，长姓名演示成员不自动赋予角色');
  assert.equal(Array.from(state.projects.prod.memberRoleIds['u-suhang']).join(','),'supply-role-front');
  assert.equal(Array.from(state.projects.prod.memberRoleIds['u-tangwei']).join(','),'supply-role-product');
+ for(const sample of window.__EVA_TASK_NAME_DEMO){
+  assert.ok(state.projects.prod.humans.some(member=>member.id===sample.id));
+  assert.equal(s.person(sample.id).name,sample.name);
+ }
  assert.ok(s.candidates('c-eva','u-wangyilin').length>0);
  assert.equal(state.groups['c-eva'].cloneIds.includes('b-wangyilin'),false);
  assert.ok(state.projects.prod.cloneIds.includes('b-wangyilin'));

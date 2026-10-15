@@ -872,6 +872,15 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   demo.issues.find(function(item){return item.id==='supply-37';}).description+='\n\n[@王宜林的 AI 分身](mention://agent/b-wangyilin) 请核对齐套清单中的缺项。';
 })();
 // 供应链项目任务统一预置可追溯动态；在追加任务后生成，避免克隆时继承其他任务的记录。
+// Visible in the actual supply board: long name, count-only, and whole-row truncation.
+(function attachTaskNameDemo(){
+  const taskIds=['supply-1','supply-2','supply-6'];
+  window.__EVA_TASK_NAME_DEMO.forEach((person,index)=>{
+    const task=window.__EVA_SUPPLY_CHAIN_DEMO.issues.find(task=>task.id===taskIds[index]);
+    Object.assign(task,{assignee_id:person.id,assignee_name:person.name,assignee_type:'member'});
+  });
+})();
+
 (function seedSupplyTaskActivity(){
   var people=new Map(window.__EVA_PEOPLE.map(function(person){return [person.id,person.name];}));
   var progress={todo:[],in_progress:['in_progress'],in_review:['in_progress','in_review'],done:['in_progress','in_review','done'],blocked:['in_progress','blocked'],cancelled:['cancelled']};
@@ -1008,12 +1017,3 @@ window.__EVA_PROJECT_ROLE_DEMO={projectId:'prod',roles:[
   // Keep the two existing file-project automations alongside the new scenarios.
   root.__EVA_DRIVE_DEMO.autopilots.push(...root.__EVA_PROJECT_AUTOMATIONS['drive-design']);
 })(window);
-
-// Visible in the actual supply board: long name, count-only, and whole-row truncation.
-(function attachTaskNameDemo(){
-  const taskIds=['supply-1','supply-2','supply-6'];
-  window.__EVA_TASK_NAME_DEMO.forEach((person,index)=>{
-    const task=window.__EVA_SUPPLY_CHAIN_DEMO.issues.find(task=>task.id===taskIds[index]);
-    Object.assign(task,{assignee_id:person.id,assignee_name:person.name,assignee_type:'member'});
-  });
-})();
