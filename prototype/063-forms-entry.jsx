@@ -44,3 +44,5 @@ export {captureDialogEscape} from './063-dialog-focus.jsx';
 
 // Document editors share the same Semi instance and theme.
 export {default as TextArea} from '@douyinfe/semi-ui/lib/es/input/textarea';
+
+export {Progress} from './063-progress.jsx';

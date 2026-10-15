@@ -95,3 +95,13 @@ export function buildNotificationTheme() {
  css.append(postcss.rule({selector:'.eva-notification strong'}).append({prop:'font-weight',value:'var(--eva-fw-medium)'}));
  return css.toString();
 }
+
+// Include native indeterminate progress styles from the locked Semi version.
+export function buildProgressTheme(root=process.cwd()) {
+ const css=postcss.parse(fs.readFileSync(path.join(root,'node_modules/@douyinfe/semi-foundation/lib/es/progress/progress.css'),'utf8'));
+ css.walkRules(rule=>{
+  if(rule.parent.type==='atrule'&&/keyframes$/.test(rule.parent.name))return;
+  rule.selectors=rule.selectors.map(selector=>'.eva-progress '+selector);
+ });
+ return css.toString();
+}

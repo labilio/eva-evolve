@@ -4,7 +4,7 @@ import {typography,floatingSurface,infoListTheme,pickerIdentity} from '../protot
 import { build } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
-import {buildNotificationTheme,buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme,buildPopconfirmTheme,buildReadOnlyTagTheme} from './build-dialog-theme.mjs';
+import {buildProgressTheme,buildNotificationTheme,buildDialogTheme,buildFormLabelTheme,buildComponentTheme,buildFloatingFormTheme,buildCardTheme,buildPopconfirmTheme,buildReadOnlyTagTheme} from './build-dialog-theme.mjs';
 
 // Compile the official Semi Form; React/ReactDOM are supplied by Eva's existing
 // runtime. Never bundle a second renderer or run a compiler in the browser.
@@ -51,7 +51,7 @@ fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildReadOnlyT
 
 fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildComponentTheme('list',infoListTheme,'.eva-info-list'));
 
-fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildNotificationTheme());
+fs.appendFileSync(path.join(output,'../prototype/063-dialog.css'),buildNotificationTheme()+buildProgressTheme());
 
 // Both picker layouts consume the same identity geometry as their React renderers.
 fs.appendFileSync(path.join(output,"../prototype/063-dialog.css"),`\n.eva-member-picker__panel,.eva-picker-body{--picker-avatar-size:${pickerIdentity.avatarSize}px}\n`);

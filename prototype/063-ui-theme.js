@@ -129,9 +129,14 @@ export const pickerNavigation = Object.freeze({
  breadcrumb:Object.freeze({...typography.body,padding:0,flex:"1 1 0",minWidth:0,overflow:"hidden",flexWrap:"nowrap",whiteSpace:"nowrap"}),
 });
 
-// Update-ready actions preserve the reference product's primary/secondary hierarchy.
+// Update-flow actions preserve the reference product's primary/secondary hierarchy.
 export const updateNotificationActions=Object.freeze({
- contentGap:'var(--eva-space-4)',buttonGap:'var(--eva-space-2)',
+ settingsActions:{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:8},
+ surface:Object.freeze({width:386,maxWidth:'calc(100vw - 40px)',boxSizing:'border-box',overflowWrap:'anywhere'}),
+ progress:Object.freeze({display:'flex',flexDirection:'column',gap:'var(--eva-space-2)',marginTop:'var(--eva-space-3)'}),
+ progressText:Object.freeze({...typography.auxiliary,color:'var(--eva-text-secondary)',fontVariantNumeric:'tabular-nums'}),
+ downloadActions:Object.freeze({marginTop:'var(--eva-space-2)',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'var(--eva-space-2)'}),
+ actions:Object.freeze({marginTop:'var(--eva-space-4)',display:'flex',flexWrap:'wrap',gap:'var(--eva-space-2)'}),
  secondary:Object.freeze({border:'1px solid var(--eva-border-faint)'}),
 });
 
