@@ -44,6 +44,6 @@
 /* Only the profile card displays an explicit, navigable owner relationship. */
 .eva-identity-owner { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--semi-color-text-2); font-weight: 400; font-size: var(--gds-type-label-font-size); }
 .eva-identity-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
-.wk-msg-row-header > .wk-msg-row-sender { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wk-msg-row-header > .wk-msg-row-sender { min-width: 0; max-width: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wk-msg-row-header > .ai-badge,
 .wk-msg-row-header > .wk-msg-row-timestamp { flex-shrink: 0; }

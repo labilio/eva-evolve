@@ -139,6 +139,18 @@ window.__EVA_CONTACT_PERSONAS = [
 ];
 window.__EVA_CONTACT_IDENTITY_ALIASES = {'b-wangyilin':'persona-initial','clone-wangyilin-procurement':'persona-initial','contact-clone:lin:quality':'clone-linxiao','contact-clone:lin:report':'clone-linxiao'};
 
+// Same three reviewers as the task board; the longest name also has one clone.
+// Membership bootstrap attaches these fixtures once to the existing all-member chat.
+window.__EVA_LONG_NAME_CHAT_DEMO = {
+  projectId:'prod', ownerId:'u-supply-volume-003', cloneId:'clone-supply-volume-003',
+  messages:[
+    {senderId:'u-supply-volume-001',text:'本季度采购需求已按品类整理，待确认项已关联到任务看板。'},
+    {senderId:'u-supply-volume-002',text:'我会补齐供应商材料，并在评审前核对每项责任人。'},
+    {senderId:'u-supply-volume-003',text:'请我的 AI 分身整理这次供应链评审的核对顺序。',requestClone:true},
+    {senderId:'clone-supply-volume-003',text:'建议依次核对采购需求、供应商材料和责任人，再确认评审时间。以上是演示内容，最终安排请由项目成员确认。'}
+  ]
+};
+
 window.__EVA_IM_MARKDOWN_UPGRADES = {
   "已归为三项：成员权限、群文件共享、入口切换。每项都补了触发条件和预期结果。\n优先验证：未入群不能读历史；转存文件不授予来源群权限；切换会话不残留上一条草稿。": "### 评审意见 → 可验收清单\n\n| 范围 | 触发条件 | 预期结果 |\n| --- | --- | --- |\n| 成员权限 | 未加入整改群的成员打开会话 | 不可读取群历史 |\n| 文件共享 | 报告转存到项目团队文件 | 可读共享文件，不获得来源群权限 |\n| 入口切换 | 消息与我的 AI 往返 | 选中态正确，草稿不串会话 |\n\n**优先级**：先核对访问边界，再检查入口状态。以上是验收标准，不表示检查已通过。",
   "用林晓身份进入供应链项目 → 打开已加入的整改群 → 转存报告到项目团队文件 → 切换何静，只查看共享文件 → 确认她仍不能读取整改群历史。\n再往返消息与我的 AI，检查选中态、输入区和草稿。": "### 最小验收路径\n\n1. 以 **林晓** 身份进入供应链运营协同项目。\n2. 打开已加入的整改群，将报告转存到项目团队文件。\n3. 切换 **何静**，确认能查看共享报告。\n4. 尝试访问来源整改群，确认仍无法读取群历史。\n5. 往返“消息”和“我的 AI”，核对选中态、输入区和草稿。\n\n> 文件的共享范围与来源群的访问权限必须分开。\n\n- [ ] 文件内容与来源一致\n- [ ] 群历史没有额外开放\n- [ ] 草稿保留在原会话中",

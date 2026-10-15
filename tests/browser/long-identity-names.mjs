@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+import {test} from 'node:test';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+
+test('长姓名：列表必要时省略，资料卡完整换行且不横向溢出',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const origin=`http://127.0.0.1:${server.address().port}`;
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{
+  const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
+  await page.goto(origin+'/?updateDemo=idle#/contacts');
+  const name='Alexandra Catherine Montgomery-Wellington';
+  await page.getByRole('textbox',{name:'搜索通讯录'}).fill(name);
+  await page.getByRole('button',{name:`查看 ${name} 的资料`,exact:true}).click();
+  const title=page.locator('.eva-person-card__name-row h2');
+  await title.waitFor();
+  assert.equal(await title.textContent(),name);
+  const geometry=await title.evaluate(el=>({width:el.clientWidth,scroll:el.scrollWidth,height:el.clientHeight,line:parseFloat(getComputedStyle(el).lineHeight)}));
+  assert.ok(geometry.height>geometry.line,'完整姓名必须换行，不藏在省略号后');
+  assert.ok(geometry.scroll<=geometry.width+1,'连续名字不能横向溢出');
+  assert.equal(await title.getAttribute('data-eva-tooltip'),null,'完整详情不重复要求悬停');
+  await page.keyboard.press('Escape');
+  await page.locator('.eva-person-card').waitFor({state:'detached'});
+  await page.getByRole('button',{name:`查看 ${name}的 AI 分身 的资料`,exact:true}).click();
+  assert.equal(await title.textContent(),name+'的 AI 分身');
+  const owner=page.getByRole('button',{name:'所属人：'+name,exact:true});
+  assert.ok(await owner.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+  await mkdir('/tmp/eva-long-names',{recursive:true});
+  await page.screenshot({path:'/tmp/eva-long-names/profile.png'});
+  await owner.click();
+  assert.equal(await title.textContent(),name);
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({width:900,height:700});
+  await page.getByRole('button',{name:`查看 ${name}的 AI 分身 的资料`,exact:true}).click();
+  assert.ok(await title.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+  await page.keyboard.press('Escape');
+  await page.goto(origin+'/?updateDemo=idle#/messages');
+  await page.locator('.wk-conv-compact-item').filter({hasText:'供应链运营协同'}).first().click();
+  const sender=page.locator('.wk-msg-row-sender').filter({hasText:name+'的 AI 分身'}).last();
+  await sender.waitFor();
+  assert.equal(await sender.getAttribute('data-eva-tooltip'),name+'的 AI 分身');
+  assert.ok(await sender.evaluate(el=>el.getBoundingClientRect().right<=el.parentElement.getBoundingClientRect().right+1));
+  await page.getByRole('button',{name:'打开聊天信息',exact:true}).last().click();
+  await page.locator('.eva-chat-settings').getByRole('button',{name:/^查看全部/}).click();
+  const member=page.locator('.eva-chat-member-list-row').filter({hasText:name+'的 AI 分身'});
+  await member.waitFor();
+  assert.ok(await member.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

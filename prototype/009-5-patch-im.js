@@ -2370,6 +2370,7 @@ function EvaAITeamPage() {
       'className:"wk-message-file-action","data-eva-tooltip":"下载"', '文件下载按钮进入统一提示');
     cut('className:"wk-message-file-action eva-file-drive-action",title:gt.title,"aria-label":gt.title',
       'className:"wk-message-file-action eva-file-drive-action","data-eva-tooltip":gt.title,"aria-label":gt.title', '文件存入文件库操作使用 Semi Tooltip');
+    cut('className:"wk-msg-row-sender",style:', 'className:"wk-msg-row-sender","data-eva-tooltip":gt,"data-eva-tooltip-clamp":"",tabIndex:0,style:', '消息署名仅在实际截断时显示全文');
     cut('className:"wk-msg-row-sender-space",title:`@${Ft}`',
       'className:"wk-msg-row-sender-space","data-eva-tooltip":`@${Ft}`,"data-eva-tooltip-clamp":""', '发送者 @ 改为截断提示');
     const evaFileDriveIconStart=source.indexOf('FileDriveIcon=({action:rt})=>');

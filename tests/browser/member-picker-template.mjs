@@ -13,7 +13,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
     const page=await context.newPage(),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(origin+'/?picker-preview=create#/collab?evaProject=prod&evaTab=settings');
+    await page.goto(origin+'/?updateDemo=idle&picker-preview=create#/collab?evaProject=prod&evaTab=settings');
     const dialog=page.getByRole('dialog').filter({hasText:'新建群聊'});
     await dialog.waitFor();
     const picker=dialog.locator('.eva-member-picker');
@@ -52,7 +52,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await picker.locator('.eva-member-picker__selected-item').count(),0);
     await dialog.getByRole('button',{name:'取消',exact:true}).click();
 
-    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
+    await page.goto(origin+'/?updateDemo=idle#/collab?evaProject=prod&evaTab=settings');
     await page.getByRole('tab',{name:'成员管理',exact:true}).click();
     await page.getByRole('button',{name:'添加成员',exact:true}).click();
     const actual=page.getByRole('dialog').filter({hasText:'添加项目成员'});
@@ -69,7 +69,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.deepEqual(purePickerGeometry,{leftGap:0,widthGap:0},'纯拉人的左右选择面板占满内容宽度');
     await actual.getByRole('button',{name:'取消',exact:true}).click();
 
-    await page.goto(origin+'/#/messages');
+    await page.goto(origin+'/?updateDemo=idle#/messages');
     await page.locator('.wk-conv-compact-item').filter({hasText:'供应链运营协同'}).first().click();
     await page.locator('.op[aria-label="打开聊天信息"]').click();
     let chatSettings=page.getByRole('complementary',{name:'聊天信息管理'});
@@ -149,7 +149,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     // 恢复本场景前的数据，保持后续项目添加场景独立。
     await page.evaluate(value=>localStorage.setItem('eva:project-members:v1',value),beforeGroupAll);
     await page.reload();
-    await page.goto(origin+'/#/collab?evaProject=prod&evaTab=settings');
+    await page.goto(origin+'/?updateDemo=idle#/collab?evaProject=prod&evaTab=settings');
     await page.getByRole('tab',{name:'成员管理',exact:true}).click();
     await page.getByRole('button',{name:'添加成员',exact:true}).click();
     let projectAdd=page.getByRole('dialog').filter({hasText:'添加项目成员'});
@@ -166,7 +166,7 @@ test('拉人模板 A：项目建群入口使用可搜索的双栏候选与已选
     assert.equal(await projectAdd.getByText('00',{exact:true}).count(),0,'项目空候选也不能渲染数字');
     await projectAdd.getByRole('button',{name:'取消',exact:true}).click();
 
-    await page.goto(origin+'/#/messages');
+    await page.goto(origin+'/?updateDemo=idle#/messages');
     await page.locator('.eva-message-invite').click();
     await page.getByRole('menuitem',{name:'新建群聊',exact:true}).click();
     const createGroup=page.getByRole('dialog').filter({hasText:'新建群聊'});
@@ -268,7 +268,7 @@ test('拉人预选兼容全部本人分身：项目与群聊、清空搜索、�
     });
     const page=await context.newPage();
     for(const kind of ['project','group']){
-      await page.goto(origin+(kind==='project'?'/#/collab':'/#/messages'));
+      await page.goto(origin+(kind==='project'?'/?updateDemo=idle#/collab':'/?updateDemo=idle#/messages'));
       await page.evaluate(()=>{window.__noCloneCandidates=false;});
       const open=async()=>{
         if(kind==='project')await page.getByRole('button',{name:'新建项目',exact:true}).click();

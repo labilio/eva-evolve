@@ -1278,6 +1278,28 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       saved.seededTaskNameDemoV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
+    const longNameDemo=root.__EVA_LONG_NAME_CHAT_DEMO;
+    if(longNameDemo&&!saved.seededLongNameChatV1){
+      const project=saved.projects[longNameDemo.projectId],owner=saved.people.find(p=>p.id===longNameDemo.ownerId);
+      if(project&&owner&&!saved.deletedProjects?.[project.id]&&project.humans.some(p=>p.id===owner.id)){
+        let clone=saved.clones.find(c=>c.ownerId===owner.id);
+        const existingClone=!!clone;
+        if(!clone){clone={id:longNameDemo.cloneId,ownerId:owner.id,name:root.EvaAIIdentity.cloneName(owner),active:true};saved.clones.push(clone);}
+        if(clone.active!==false&&(!existingClone||project.cloneIds.includes(clone.id))){
+          if(!project.cloneIds.includes(clone.id))project.cloneIds.push(clone.id);
+          const channelId='all:'+project.id;
+          saved.messages||={};saved.messages[channelId]||=[];
+          longNameDemo.messages.forEach((sample,index)=>{
+            const sender=sample.senderId===longNameDemo.cloneId?{id:clone.id,uid:clone.id,name:root.EvaAIIdentity.cloneName(owner),ai:true,kind:'clone',ownerId:owner.id,identityAppearance:root.EvaAIIdentity.cloneAppearance(owner)}:saved.people.find(p=>p.id===sample.senderId);
+            if(!sender||!sender.ai&&!project.humans.some(p=>p.id===sender.id))return;
+            const mention='@'+root.EvaAIIdentity.cloneName(owner),text=(sample.requestClone?mention+' ':'')+sample.text;
+            saved.messages[channelId].push({kind:'text',fixtureId:'long-name-chat-v1:'+index,sender:{...sender,uid:sender.id},text,time:'11:'+String(20+index),createdAt:root.__EVA_DEMO_TIME?.T1,mentionsVersion:1,mentions:sample.requestClone?[{uid:clone.id,name:mention,start:0}]:[]});
+          });
+        }
+      }
+      saved.seededLongNameChatV1=true;
+      try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
+    }
     for(const task of root.__EVA_SUPPLY_CHAIN_DEMO?.issues||[]){
       if(root.__EVA_TASK_NAME_DEMO?.some(sample=>sample.id===task.assignee_id)){
         const person=saved.people.find(person=>person.id===task.assignee_id);

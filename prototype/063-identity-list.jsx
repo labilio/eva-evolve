@@ -7,5 +7,5 @@ import {typography} from './063-ui-theme.js';
 export function IdentityList({items=[]}) {
  return <List className="eva-identity-list" size="small" split={false} dataSource={items}
   renderItem={({id,avatar,name,badge})=><List.Item key={id} align="center"
-   header={avatar} main={<span className="eva-identity-list-name" style={typography.section}>{name}{badge}</span>}/>} />;
+   header={avatar} main={<span className="eva-identity-list-name" style={typography.section}><span className="eva-identity-list-name-text">{name}</span>{badge}</span>}/>} />;
 }

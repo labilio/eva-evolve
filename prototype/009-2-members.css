@@ -32,16 +32,16 @@
    project modal it must fill the modal's content instead. */
 .eva-project-file-preview>.wk-file-preview-panel{position:relative;inset:auto;width:100%;max-width:none;height:auto;flex:1;min-height:0;box-shadow:none;border:0}
 
-.eva-members-ai-identity{display:inline-flex;align-items:center;gap:8px;text-align:left}
+.eva-members-ai-identity{display:inline-flex;align-items:center;gap:8px;text-align:left;min-width:0;max-width:100%}
 
-.eva-members-human-identity{display:flex;align-items:center;gap:8px}
+.eva-members-human-identity{display:flex;align-items:center;gap:8px;min-width:0;max-width:100%}
 .eva-members-human-avatar{display:block;width:32px;height:32px;flex:none;border-radius:50%;object-fit:cover}
 
 .eva-members-human-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .eva-members-human-role{font-size:12px;line-height:18px;color:var(--semi-color-text-2);font-weight:400}
 
 .eva-members-human-identity.is-compact .eva-members-human-avatar{width:var(--eva-members-compact-avatar-size,24px);height:var(--eva-members-compact-avatar-size,24px)}
-.eva-members-human-name{font-size:14px;line-height:22px;font-weight:500}
+.eva-members-human-name{font-size:14px;line-height:22px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head{border-block:var(--gds-border-standard) solid var(--eva-contacts-header-border);background:var(--eva-contacts-header-background);font-size:var(--gds-type-caption-font-size);font-weight:400;color:var(--eva-contacts-header-text)}
 .eva-members-table .semi-table-thead>.semi-table-row>.semi-table-row-head:first-child{border-inline-start:var(--gds-border-standard) solid var(--eva-contacts-header-border);border-radius:var(--eva-radius-control) 0 0 var(--eva-radius-control)}
@@ -50,7 +50,8 @@
 .eva-members-table .eva-members-actions{justify-content:flex-end;gap:4px}
 
 .eva-members-ai-identity{font-size:14px;line-height:22px;font-weight:500;color:var(--semi-color-text-0)}
-.eva-members-table .eva-members-identity-button{height:auto;padding:0;background:transparent}
+.eva-members-table .eva-members-identity-button{height:auto;padding:0;background:transparent;max-width:100%;min-width:0}
+.eva-members-identity-button>.semi-button-content{min-width:0;max-width:100%}
 .eva-members-table .eva-members-clones{gap:12px}
 .eva-members-table .semi-button{font-size:12px;font-weight:400}
 .eva-members-table .eva-members-actions .semi-button{font-size:11px}
