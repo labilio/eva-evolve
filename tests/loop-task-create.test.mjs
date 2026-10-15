@@ -92,3 +92,15 @@ test('实际创建者即使选择了其他来源者和署名创建者也自动�
  const s=setup();const issue=await s.ctx.createIssue({title:'关注创建事件',source_id:'owner',creator_id:'owner'});
  assert.equal(s.ctx.evaTaskSubscriptions().has(issue),true);
 });
+
+test('创建排期复用共享日期校验，非法区间不消耗编号或写入任务',async()=>{
+ const s=setup(),before=JSON.stringify(s.lists);
+ for(const dates of [{start_date:'2026-10-03',due_date:'2026-10-01'},{start_date:'2026-02-30'},{due_date:'2026-10-01T00:00:00Z'}]){
+  await assert.rejects(s.ctx.createIssue({title:'非法排期',...dates}),/日期/);
+  assert.equal(JSON.stringify(s.lists),before);
+ }
+ const issue=await s.ctx.createIssue({title:'完整排期',start_date:'2026-10-01',due_date:'2026-10-02'});
+ assert.equal(issue.identifier,'SC-102');assert.equal(issue.start_date,'2026-10-01');assert.equal(issue.due_date,'2026-10-02');
+ const blank=await s.ctx.createIssue({title:'无排期',start_date:'',due_date:''});
+ assert.equal(blank.start_date,null);assert.equal(blank.due_date,null);
+});

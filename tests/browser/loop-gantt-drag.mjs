@@ -1,0 +1,57 @@
+import {settleMotion} from '../helpers/settle-motion.mjs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+
+test('Edge：甘特拖动、两端调整、取消与边缘滚动保持真实任务日期',async()=>{
+  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+  try{
+    const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=tasks`);
+    await page.locator('.eva-task-view-menu').click();
+    await page.locator('.eva-task-enum-menu:visible').getByText('甘特图',{exact:true}).click();
+    const view=page.locator('.eva-task-gantt'),scroll=view.locator('.eva-task-gantt__scroll');
+    await view.getByRole('button',{name:'定位 SC-101',exact:true}).click();
+    await view.getByRole('button',{name:'月',exact:true}).click();
+    await settleMotion(page);
+    const row=view.locator('[data-task-id="supply-1"]'),bar=row.locator('.eva-task-gantt__bar-title');
+    const dates=()=>bar.getAttribute('aria-label');
+    const original=await dates();
+    const start=async target=>{const b=await target.boundingBox();const point={x:b.x+b.width/2,y:b.y+b.height/2};await page.mouse.move(point.x,point.y);await page.mouse.down();return point;};
+    let point=await start(bar);
+    await page.mouse.move(point.x+40,point.y,{steps:4});
+    await page.waitForFunction(()=>document.querySelector('[data-task-id="supply-1"] .eva-task-gantt__bar-title')?.getAttribute('aria-label').endsWith('2026-09-09 至 2026-09-20'));
+    await page.keyboard.press('Escape');await page.mouse.up();
+    assert.equal(await dates(),original,'Escape撤销预览而不保存');
+    assert.equal(await page.locator('.eva-task-outlet [role="dialog"]').count(),0,'取消拖动不能误开详情');
+    point=await start(bar);await page.mouse.move(point.x+20,point.y,{steps:4});await page.mouse.up();
+    await page.waitForFunction(()=>document.querySelector('[data-task-id="supply-1"] .eva-task-gantt__bar-title')?.getAttribute('aria-label').endsWith('2026-09-08 至 2026-09-19'));
+    assert.equal(await row.locator('.eva-task-gantt__duration').innerText(),'12 天','整体移动保留工期');
+    point=await start(row.locator('.is-right'));await page.mouse.move(point.x+40,point.y,{steps:4});await page.mouse.up();
+    await page.waitForFunction(()=>document.querySelector('[data-task-id="supply-1"] .eva-task-gantt__bar-title')?.getAttribute('aria-label').endsWith('2026-09-08 至 2026-09-21'));
+    point=await start(row.locator('.is-left'));await page.mouse.move(point.x+20,point.y,{steps:4});await page.mouse.up();
+    await page.waitForFunction(()=>document.querySelector('[data-task-id="supply-1"] .eva-task-gantt__bar-title')?.getAttribute('aria-label').endsWith('2026-09-09 至 2026-09-21'));
+    const beforeCancel=await dates();
+    point=await start(bar);await page.mouse.move(point.x+20,point.y,{steps:4});
+    await bar.dispatchEvent('pointercancel',{pointerId:1});await page.mouse.up();
+    assert.equal(await dates(),beforeCancel,'指针取消同样不写入排期');
+    const saved=await dates(),frame=await scroll.boundingBox(),before=await scroll.evaluate(node=>node.scrollLeft);
+    point=await start(bar);await page.mouse.move(frame.x+frame.width-8,point.y,{steps:4});
+    await page.waitForFunction(left=>document.querySelector('.eva-task-gantt__scroll').scrollLeft>left+30,before);
+    await page.mouse.move(frame.x+frame.width/2+180,frame.y+frame.height-8,{steps:4});
+    await page.waitForFunction(()=>document.querySelector('.eva-task-gantt__scroll').scrollTop>700);
+    assert.equal(await row.count(),1,'自动纵向滚动不卸载捕获指针的任务行');
+    assert.equal(await bar.evaluate(node=>document.activeElement===node),true,'虚拟滚动保留拖动任务焦点');
+    await page.keyboard.press('Escape');await page.mouse.up();
+    assert.equal(await dates(),saved,'边缘自动滚动后取消仍保留原日期');
+    const stopped=await scroll.evaluate(node=>({left:node.scrollLeft,top:node.scrollTop}));
+    await settleMotion(page);
+    assert.deepEqual(await scroll.evaluate(node=>({left:node.scrollLeft,top:node.scrollTop})),stopped,'取消后停止自动滚动');
+    assert.deepEqual(errors,[]);
+  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

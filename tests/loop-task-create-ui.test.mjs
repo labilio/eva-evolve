@@ -54,7 +54,7 @@ function harness(overrides={}){
   const forms={...module.exports,Actions,useSubmission:options=>(submission=module.exports.useSubmission(options))};
   const state={actorId:'u1',people:[{id:'u1',name:'甲'},{id:'u2',name:'乙'}],clones:[{id:'c1',name:'甲分身',ownerId:'u1'}],projects:{prod:{humans:[{id:'u1'}],cloneIds:['c1'],employeeIds:[]},other:{humans:[{id:'u2'}],cloneIds:[],employeeIds:[]}}};
   const calls=[],deps={React:R,forms,Modal:'Modal',Button:'Button',LoopButton:'Button',Input:'Input',AutoGrowTextarea:'TextArea',LoopPropertyPill:'LoopPropertyPill',Select:'Select',AssigneePicker:'AssigneePicker',DatePicker:function TestDatePicker(){},Popover:'Popover',icons:{Paperclip:'Paperclip',Trash2:'Trash2',X:'X',Check:'Check',ChevronRight:'ChevronRight',ChevronDown:'ChevronDown',CalendarClock:'CalendarClock'},members:{actorId:()=>state.actorId,projectRecord:id=>state.projects[id],personRecord:id=>state.people.find(p=>p.id===id),memberRoles:()=>[],subscribe:()=>()=>{},getSnapshot:()=>0,snapshot:()=>state,canRead:()=>true,employee:()=>null,projectAgent:()=>null},project:{id:'p-supply',name:'供应链'},getPrefix:()=> 'SC',listLabels:async()=>[{id:'l1',name:'标签'}],createLabel:async name=>({id:'new-'+name,name}),uploadAttachment:async()=>({id:'att-1'}),attachLabel:async()=>{},createIssue:async payload=>{calls.push(payload);return{id:'SC101'};},...overrides};
-  const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(sharedCode,{window:root});vm.runInNewContext(code,{window:root});
+  const root={EvaAIIdentity:{avatar:()=> 'ai-avatar',badge:()=> 'ai-badge'},EvaAvatar:{personUri:id=>'avatar:'+id}};vm.runInNewContext(fs.readFileSync(new URL("../prototype/063-task-time.js",import.meta.url),"utf8"),{window:root});vm.runInNewContext(sharedCode,{window:root});vm.runInNewContext(code,{window:root});
   const props={visible:true,onClose:()=>calls.push('closed'),onCreated:()=>calls.push('created')};
   const render=()=>{cursor=0;const el=root.EvaLoopTaskCreateUI.render(props,deps);tree=el.type(el.props);while(effects.length)effects.shift()();return tree;};
   const all=(node=tree)=>node&&typeof node==='object'?[node,...node.children.filter(x=>x!==undefined).flatMap(x=>all(x)),...(node.props.footer?all(node.props.footer):[]),...(node.props.content?all(node.props.content):[])]:[];
@@ -91,6 +91,19 @@ test('创建任务可设置和清空截止日期，并提交同一 due_date 字�
 });
 test('double submit is locked until creation finishes',async()=>{
   let resolve,count=0;const h=harness({createIssue:()=>{count++;return new Promise(r=>resolve=r);}});h.fill();const submit=h.submit;const first=submit();await tick();await submit();assert.equal(count,1);resolve({id:'SC101'});await first;
+});
+test('甘特新建默认起止日期可清除，重开恢复默认，其他入口不继承',async()=>{
+  const h=harness();h.props.defaultSchedule=true;h.render();h.render();
+  const start=h.find('开始日期').props.value,due=h.find('截止日期').props.value;
+  assert.match(start,/^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(Date.parse(due)-Date.parse(start),86400000);
+  h.find('开始日期').props.onChange(null,'');h.render();
+  assert.equal(h.find('开始日期').props.value,undefined);
+  h.props.visible=false;h.render();h.props.visible=true;h.render();h.render();
+  assert.equal(h.find('开始日期').props.value,start);
+  h.props.defaultSchedule=false;h.render();h.render();
+  assert.equal(h.find('开始日期').props.value,undefined);
+  assert.equal(h.find('截止日期').props.value,undefined);
 });
 test('project transition ignores stale creation result and resets fields',async()=>{
   let resolve;const h=harness({createIssue:()=>new Promise(r=>resolve=r)});h.fill();const pending=h.submit();await tick();h.deps.project={id:'other'};h.render();h.render();resolve({id:'SC101'});await pending;assert.equal(h.find('任务标题').props.value,'');assert.equal(h.calls.length,0);
@@ -175,20 +188,22 @@ test('切换操作账号时清空旧任务草稿与下达角色',()=>{
  const h=harness();h.fill();h.state.actorId='u2';h.render();h.render();assert.equal(h.find('任务标题').props.value,'');
 });
 
-// 选项区（父容器）契约：顺序固定、单一容器收口、四类胶囊同形。
+// 选项区（父容器）契约：顺序固定、单一容器收口、五类胶囊同形。
 // 这些断言把 docs/会话内项目任务规范.md 的约定变成机器检查，回退即失败。
-test('创建弹窗选项区是单一父容器，四类胶囊顺序固定且各自闭合',()=>{
+test('创建弹窗选项区是单一父容器，五类胶囊顺序固定且各自闭合',()=>{
   const h=harness();
   const toolbar=h.all().find(n=>n.props&&n.props.className==='loop-ci__toolbar');
   assert.ok(toolbar,'选项区父容器必须存在');
   const children=toolbar.children.filter(Boolean);
-  assert.equal(children.length,4,'选项区父容器必须恰好包含四个胶囊，且没有节点漏到容器外（禁止把收尾括号挂在末位子节点上）');
+  assert.equal(children.length,5,'选项区父容器必须恰好包含五个胶囊，且没有节点漏到容器外（禁止把收尾括号挂在末位子节点上）');
   assert.equal(children[0].props.ariaLabel,'状态');
   assert.equal(children[1].props.ariaLabel,'优先级');
   assert.equal(children[2].props.className,'eva-loop-task-create__assignee');
   assert.ok(children[2].children.find(n=>n&&n.type==='AssigneePicker'),'负责人胶囊必须由 AssigneePicker 承载');
   assert.equal(children[3].type,'DatePicker');
-  assert.equal(children[3].props['aria-label'],'截止日期');
+  assert.equal(children[3].props['aria-label'],'开始日期');
+  assert.equal(children[4].type,'DatePicker');
+  assert.equal(children[4].props['aria-label'],'截止日期');
 });
 
 test('截止日期胶囊与同区胶囊同形：前置日历图标 + 文案 + 尾部下拉箭头',()=>{

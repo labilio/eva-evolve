@@ -251,7 +251,7 @@ function evaRailIcon(name){
 }
 function EvaSharedContextMenus({menus=[],onHide},forwardedRef){
  const h=React.createElement,[position,setPosition]=reactExports.useState(null),[submenu,setSubmenu]=reactExports.useState(null),ref=reactExports.useRef(null),opener=reactExports.useRef(null);
- const hide=()=>{setPosition(null);setSubmenu(null);onHide?.();if(opener.current?.isConnected)opener.current.focus({preventScroll:true});};
+ const hide=()=>{setPosition(null);setSubmenu(null);onHide?.();if(opener.current?.isConnected)window.EvaTooltipAdapter.restoreFocus(opener.current);};
  reactExports.useImperativeHandle(forwardedRef,()=>({show:(event,anchor=event.currentTarget)=>{event.preventDefault();event.stopPropagation();opener.current=anchor;const rect=anchor.getBoundingClientRect();setSubmenu(null);setPosition({x:event.type==='click'?rect.right:event.clientX||rect.left,y:event.type==='click'?rect.bottom:event.clientY||rect.bottom,minY:document.querySelector('.topbar')?.getBoundingClientRect().bottom||0});},hide,isShow:()=>!!position}));
  reactExports.useLayoutEffect(()=>{if(!position||!ref.current)return;const n=ref.current,r=n.getBoundingClientRect();n.style.left=Math.max(8,Math.min(position.x+5,innerWidth-r.width-8))+'px';n.style.top=Math.max(position.minY+8,Math.min(position.y,innerHeight-r.height-8))+'px';n.focus({preventScroll:true});},[position]);
  reactExports.useEffect(()=>{if(!position)return;const close=event=>{if(!ref.current?.contains(event.target))hide();};const key=event=>{if(event.key==='Escape'){event.preventDefault();hide();}};document.addEventListener('pointerdown',close);document.addEventListener('keydown',key);window.addEventListener('resize',hide);return()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',key);window.removeEventListener('resize',hide);};},[position]);
@@ -1022,7 +1022,7 @@ function EvaAssistantEditorHost({children}) {
   const [request,setRequest]=reactExports.useState(null), host=reactExports.useRef(null);
   reactExports.useEffect(()=>{const open=options=>setRequest(options?{...options,key:Date.now()}:null);window.__evaOpenAssistantEditor=open;return()=>{if(window.__evaOpenAssistantEditor===open)delete window.__evaOpenAssistantEditor;};},[]);
   reactExports.useEffect(()=>{const close=()=>setRequest(null);window.addEventListener('hashchange',close);return()=>window.removeEventListener('hashchange',close);},[]);
-  const close=()=>{const target=request?.returnFocus;setRequest(null);if(target?.focus)requestAnimationFrame(()=>target.isConnected&&target.focus());};
+  const close=()=>{const target=request?.returnFocus;setRequest(null);if(target?.focus)requestAnimationFrame(()=>target.isConnected&&window.EvaTooltipAdapter.restoreFocus(target));};
   return React.createElement(React.Fragment,null,children,React.createElement('div',{className:'eva-editor-host',ref:host}),request&&React.createElement(EvaAssistantEditor,{key:request.key,request,host,onClose:close}));
 }
 function EvaAssistantEditor({request,host,onClose}) {
@@ -1318,7 +1318,7 @@ function EvaConversationSidePanel({node,onClose}) {
  reactExports.useLayoutEffect(()=>{
   const root=panel.current;
   if(root&&!root.contains(document.activeElement))Array.from(root.querySelectorAll('button:not([disabled]),input:not([disabled]),[tabindex="0"]')).find(el=>el.getClientRects().length)?.focus({preventScroll:true});
-  return()=>{const entry=opener.current;if(entry?.isConnected&&entry.getClientRects().length)entry.focus({preventScroll:true});};
+  return()=>{const entry=opener.current;if(entry?.isConnected&&entry.getClientRects().length)window.EvaTooltipAdapter.restoreFocus(entry);};
  },[]);
  const props={ref:panel,onKeyDownCapture:event=>{
   if(!panel.current?.contains(event.target))return;

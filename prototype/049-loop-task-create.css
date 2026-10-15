@@ -31,7 +31,7 @@
   background: transparent;
 }
 .eva-loop-task-create .eva-loop-task-create__due.semi-datepicker { width: auto; min-width: 0; }
-/* 截止日期胶囊与同区其他胶囊同形：前置日历图标 + 文案 + 尾部箭头；有值时附快捷清除。 */
+/* 开始与截止日期胶囊与同区其他胶囊同形：前置日历图标 + 文案 + 尾部箭头；有值时附快捷清除。 */
 .eva-loop-task-create .eva-loop-task-create__due-pill { box-sizing: border-box; height: 32px; padding: 0 10px; gap: 6px; }
 .eva-loop-task-create .eva-loop-task-create__due-pill button { min-height: 0; height: 100%; }
 .eva-loop-task-create__pill-icon { color: var(--semi-color-text-2); }
@@ -63,7 +63,7 @@
 .eva-loop-task-create-portal .semi-portal { pointer-events: auto; }
 body .semi-popover-wrapper:has(.eva-loop-task-create__tag-menu) { background: transparent; border-radius: 0; box-shadow: none; backdrop-filter: none; }
 
-/* 创建弹窗选项区（父容器）统一四类胶囊：同一高度/圆角/边框/底色/内距/间距/字号/文字色/悬停；
+/* 创建弹窗选项区（父容器）统一属性胶囊：同一高度/圆角/边框/底色/内距/间距/字号/文字色/悬停；
    每个胶囊 = 前置图标 + 文案 + 尾部下拉箭头，子组件只提供图标与文案，外观由本区统一。 */
 .eva-loop-task-create .loop-ci__toolbar .loop-pill,
 .eva-loop-task-create .loop-ci__toolbar .loop-assignee-trigger,

@@ -425,7 +425,7 @@ body .eva-task-date-field .semi-datepicker-input:hover,body .eva-task-date-field
 .eva-task-date-trigger__text.is-empty { color:var(--eva-text-secondary-accessible); }
 .eva-task-date-clear { display:block; width:100%; padding:8px 12px; border:0; border-bottom:1px solid var(--eva-border-faint); background:transparent; color:var(--eva-text-secondary-accessible); font:400 13px/20px var(--eva-font-sans); text-align:left; cursor:pointer; }
 .eva-task-date-clear:hover { background:var(--eva-overlay-hover); }
-.loop-idp .loop-idp__due-picker { flex:none; }
+.loop-idp :is(.loop-idp__start-picker,.loop-idp__due-picker) { flex:none; }
 .loop-idp .loop-idp__due-value {
   display: inline-flex;
   align-items: center;
@@ -787,3 +787,13 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .eva-parent-task-picker__empty {padding:var(--eva-space-6) 0; text-align:center;}
 .eva-parent-task-picker__row > .semi-button-content {display:flex; align-items:center; gap:var(--eva-space-2); width:100%; min-width:0;}
 .eva-parent-task-picker__row .semi-button-content > svg {flex-shrink:0;}
+
+/* Shared read-only task preview, fed by the same task record as every view. */
+.eva-task-preview{display:flex;flex-direction:column;gap:8px;max-width:300px}
+.eva-task-preview__identifier{color:var(--semi-color-text-2)}
+.eva-task-preview__title{font-weight:500;overflow-wrap:anywhere;white-space:normal}
+.eva-task-preview__properties{display:flex;flex-wrap:wrap;gap:12px}
+.eva-task-preview__properties>span{display:inline-flex;align-items:center;gap:6px}
+.eva-task-preview__dates{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
+.eva-task-preview__dates dt{color:var(--semi-color-text-2)}
+.eva-task-preview__dates dd{margin:0;text-align:right}

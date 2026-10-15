@@ -99,3 +99,20 @@ test('实际改派建立关注，取消后再改派不恢复关注',async()=>{
  await ctx.updateIssue(issue.id,{assignee_id:'u-zhouyuan'});assert.equal(store.has(issue),true);
  store.set(issue,false);await ctx.updateIssue(issue.id,{assignee_id:'u-wangyilin'});assert.equal(store.has(issue),false);
 });
+
+test('task date updates validate the merged range before any mutation or activity', async()=>{
+  const {ctx,issue}=setup();
+  await ctx.updateIssue(issue.id,{start_date:'2026-10-01',due_date:'2026-10-05'});
+  const before=JSON.stringify(issue);
+  for(const patch of [{start_date:'2026-10-06'},{due_date:'2026-09-30'},{start_date:'2026-02-30'},{due_date:'2026-10-02T00:00:00Z'}]){
+    await assert.rejects(ctx.updateIssue(issue.id,{title:'不应写入',...patch}),/日期/);
+    assert.equal(JSON.stringify(issue),before,'拒绝日期时标题、动态和更新时间也保持原值');
+  }
+  await ctx.updateIssue(issue.id,{start_date:'2026-11-01',due_date:'2026-11-01'});
+  assert.equal(issue.start_date,issue.due_date,'同一天是有效排期');
+  await ctx.updateIssue(issue.id,{due_date:null});
+  await ctx.updateIssue(issue.id,{start_date:'2026-12-01'});
+  assert.equal(issue.due_date,null,'单日期可编辑');
+  await ctx.updateIssue(issue.id,{start_date:''});
+  assert.equal(issue.start_date,null,'清空统一为null');
+});

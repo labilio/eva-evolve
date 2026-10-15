@@ -13,7 +13,8 @@ export function captureDialogEscape(event,panel,onCancel) {
  const owner=event.target.closest('[role="dialog"]');
  if(owner&&owner!==panel)return true;
  // An inline search result list is dialog content, not a second dismissible layer.
- const nested=!!first(panel,'[aria-expanded="true"],[role="listbox"]:not([data-eva-inline-list]),[role="menu"]');
+ // Expanded disclosures (e.g. a task's child list) are content, not popups.
+ const nested=!!first(panel,'[aria-expanded="true"][aria-haspopup],[role="combobox"][aria-expanded="true"],[role="listbox"]:not([data-eva-inline-list]),[role="menu"]');
  // Closed Select and Dropdown triggers swallow Escape before bubbling.
  if(!nested&&event.target.closest('.semi-select,[aria-expanded="false"][aria-controls],[aria-expanded="false"][aria-haspopup]')){
   event.preventDefault();event.stopPropagation();onCancel?.(event);
@@ -50,7 +51,7 @@ export function DialogContent({node,initialFocus='field',selectInitialText=false
  React.useLayoutEffect(()=>()=>{
   const saved=restore.current;if(saved.opener?.isConnected&&available(saved.opener))return;
   const fallback=saved.returnFocus?.()||first(document.querySelector('main,[role="main"],.loop-page'),candidateSelector);
-  fallback?.focus({preventScroll:true});
+  window.EvaTooltipAdapter.restoreFocus(fallback);
  },[]);
  const children=React.Children.map(node.props.children,child=>{
   if(!React.isValidElement(child))return child;

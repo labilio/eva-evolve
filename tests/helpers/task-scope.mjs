@@ -1,6 +1,9 @@
 import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
 // Load the production task lookup boundary into the existing focused API fixtures.
 export function attachTaskScope(ctx, source) {
+ ctx.window ||= {};
+ vm.runInNewContext(readFileSync(new URL('../../prototype/063-task-time.js',import.meta.url),'utf8'),ctx);
  ctx.currentSpaceId ||= ()=> 'prod';
  ctx.loadSpaces ||= ()=>[{id:ctx.currentSpaceId()}];
  ctx.ISSUES_BY_SPACE ||= new Proxy({}, {get:(_,id)=>ctx.issuesOf(id)});

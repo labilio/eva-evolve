@@ -33,10 +33,13 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.equal(await kanbanFoot.locator('.eva-issue-source,.loop-card__project,.loop-abadge').count(),0,'项目内看板不重复显示项目名或来源者');
     assert.equal(await kanbanCard.locator('.loop-card__due,.loop-card__time').count(),0,'看板卡片不重复显示日期');
 
-    // 三视图切换器，从左到右：看板、表格、层级
-    const switcher=page.locator('.eva-task-view-switcher');
-    assert.deepEqual(await switcher.getByRole('tab').allTextContents(),['看板','表格','层级']);
-    await switcher.locator('button',{hasText:'表格'}).click();
+    // 四视图共享菜单：看板、表格、层级、甘特图
+    const switcher=page.locator('.eva-task-view-menu');
+    await switcher.click();
+    const viewMenu=page.locator('.eva-task-enum-menu:visible');
+    await viewMenu.waitFor();
+    assert.deepEqual(await viewMenu.getByRole('menuitem').allTextContents(),['看板','表格','层级','甘特图']);
+    await viewMenu.getByText('表格',{exact:true}).click();
     const table=page.locator('.eva-task-table');
     await table.locator('.eva-task-table__grid').waitFor();
 
@@ -217,6 +220,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const statusLabel=statusTrigger.locator('.eva-task-table__status-label');
     const beforeText=((await statusLabel.textContent())||'').trim();
     assert.ok(beforeText,'状态单元格应有文案');
+    await settleMotion(page);
     await statusTrigger.click();
     const statusMenu=page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)');
     await statusMenu.getByRole('menuitem').first().waitFor();
@@ -233,7 +237,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     assert.deepEqual(assigneeSkin,menuSkin,'负责人菜单应沿用王岩的统一浮层背景、圆角和投影');
     await page.keyboard.press('Escape');await settleMotion(page);
 
-    // 截止日期内联编辑：共用 Semi 紧凑面板，翻上月选 1 日必逾期标红，再用「无截止日期」行清空
+    // 截止日期内联编辑：拒绝早于开始日的日期，合法逾期日期标红，再用「无截止日期」行清空
     const dateCell=table.locator('.eva-task-table__row').first().locator('.eva-task-table__cell-trigger[aria-label="截止日期"]');
     await dateCell.click();
     const dateMenu=page.locator('.eva-loop-task-date-panel:visible');
@@ -244,19 +248,32 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     const clearRow=dateMenu.locator('.eva-task-date-clear');
     await clearRow.waitFor();
     assert.match((await clearRow.textContent())||'',/无截止日期/,'面板首行应为「无截止日期」空值行');
+    const originalDue=await dateCell.getAttribute('data-eva-tooltip');
     await dateMenu.getByRole('button',{name:'Previous month'}).click();
     await dateMenu.locator('.semi-datepicker-day[aria-label$="-01"]').first().click();
     await page.waitForTimeout(150);
     await dateMenu.waitFor({state:'detached'}).catch(()=>{});
     assert.equal(await page.locator('.eva-loop-task-date-panel:visible').count(),0,'选日后面板应关闭');
+    await page.getByText('开始日期不能晚于截止日期',{exact:true}).waitFor();
+    assert.equal(await dateCell.getAttribute('data-eva-tooltip'),originalDue,'无效截止日期不写入任务');
+    await settleMotion(page);
+    await dateCell.click();
+    const validDateMenu=page.locator('.eva-loop-task-date-panel:visible');
+    await validDateMenu.getByRole('button',{name:'Previous month'}).click();
+    await validDateMenu.locator('.semi-datepicker-day[aria-label="2026-09-25"]').click();
+    await validDateMenu.waitFor({state:'hidden'});
+    await page.waitForFunction(()=>document.querySelector('.eva-task-table__row .eva-task-table__cell-trigger[aria-label="截止日期"]')?.getAttribute('data-eva-tooltip')==='截止日期 2026-09-25');
     const overdueColor=await dateCell.locator('.eva-task-table__cell-label').evaluate(el=>getComputedStyle(el).color);
     assert.match(overdueColor,/249, 57, 32|245, 34, 45/,'逾期日期应标红: '+overdueColor);
+    await settleMotion(page);
     await statusTrigger.click();
     await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:'已完成'}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已完成任务的历史截止日期不应标红');
+    await settleMotion(page);
     await statusTrigger.click();
     await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:'已取消'}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),false,'已取消任务的历史截止日期不应标红');
+    await settleMotion(page);
     await statusTrigger.click();
     await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:target,exact:true}).click();
     assert.equal(await dateCell.evaluate(el=>el.classList.contains('is-overdue')),true,'未完成任务的逾期提示应恢复');
@@ -384,7 +401,7 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
       await menu.locator('.semi-dropdown-item-active').click();
       await menu.waitFor({state:'hidden'});
     }
-    const createDate=page.locator('.eva-loop-task-create__due');
+    const createDate=page.locator('.eva-loop-task-create__due').filter({has:page.getByRole('button',{name:'截止日期',exact:true})});
     await createDate.locator('.eva-loop-task-create__due-trigger').click();
     assert.ok(await page.locator('.eva-loop-task-date-panel:visible').evaluate(el=>el.classList.contains('semi-datepicker-compact')),'创建胶囊应使用同一紧凑日期面板');
     await page.keyboard.press('Escape');await settleMotion(page);
@@ -413,9 +430,9 @@ test('Edge：项目任务表格视图渲染与核心交互',async()=>{
     await page.locator('.eva-loop-task-create .loop-ci__close').click();
 
     // 视图往返：回到看板再回表格，状态保留
-    await switcher.locator('button',{hasText:'看板'}).click();
+    await settleMotion(page);await switcher.click();await viewMenu.getByText('看板',{exact:true}).click();
     await page.locator('.loop-board').waitFor();
-    await switcher.locator('button',{hasText:'表格'}).click();
+    await settleMotion(page);await switcher.click();await viewMenu.getByText('表格',{exact:true}).click();
     await table.locator('.eva-task-table__grid').waitFor();
 
     await page.evaluate(()=>window.EvaTheme.apply('dark'));

@@ -123,3 +123,26 @@ test('文件卡仅截断名提示；文件库图标支持键盘且权限说明�
   await page.getByRole('button',{name:'上传本地文件',exact:true}).hover();await page.waitForTimeout(200);assert.equal(await page.getByRole('tooltip').count(),0,'有完整文字的上传按钮不重复提示');
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
+
+
+test('公共恢复边界仅抑制恢复事件，主动 Tab 与普通聚焦仍能打开提示',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{
+  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/#/messages`);
+  await page.evaluate(()=>{
+   const host=document.createElement('div');host.id='restore-fixture';host.style='position:fixed;left:450px;top:100px;z-index:10000';
+   host.innerHTML='<button id="restore-before">前一项</button><button id="restore-tip" data-eva-tooltip="恢复边界提示">提示入口</button><button id="restore-after">后一项</button>';document.body.append(host);
+  });
+  const button=page.locator('#restore-tip'),tip=page.getByRole('tooltip',{name:'恢复边界提示',exact:true});
+  await button.hover();await tip.waitFor();await page.mouse.move(5,5);await tip.waitFor({state:'hidden'});
+  await page.locator('#restore-after').focus();await button.evaluate(node=>window.EvaTooltipAdapter.restoreFocus(node));
+  await page.waitForTimeout(500);assert.equal(await tip.isVisible(),false,'公共恢复不展示提示');
+  assert.equal(await button.evaluate(node=>node===document.activeElement),true,'恢复仍真正聚焦原控件');
+  await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');await tip.waitFor();
+  await page.keyboard.press('Escape');await tip.waitFor({state:'hidden'});
+  await page.locator('#restore-before').focus();await button.focus();await tip.waitFor();
+  await page.keyboard.press('Escape');await tip.waitFor({state:'hidden'});
+  await button.hover();await tip.waitFor();
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

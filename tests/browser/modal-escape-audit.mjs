@@ -74,7 +74,10 @@ test('跨入口 Escape：个人分组、项目成员/转让/归档/技能、文�
   const d=p.getByRole('dialog',{name:'移动到',exact:true});await d.getByRole('combobox').click();await p.getByRole('option').first().waitFor();await p.keyboard.press('Escape');assert.equal(await d.isVisible(),true);await p.keyboard.press('Escape');await d.waitFor({state:'hidden'});
  }
  await p.goto(url+'/#/messages?evaIM=my-ai');await p.locator('.eva-ai-team__sidebar-header').getByRole('button',{name:'新建',exact:true}).click();await p.getByText('新建个人助理',{exact:true}).click();await close('.eva-editor-dialog .semi-modal-content');
- await p.goto(url+'/#/collab?evaProject=prod&evaTab=settings');await p.getByRole('button',{name:'归档项目',exact:true}).click();await close('.eva-dialog .semi-modal-content');
+ await p.goto(url+'/#/collab?evaProject=prod&evaTab=settings');await p.getByRole('button',{name:'归档项目',exact:true}).waitFor();
+ // Close the persistent demo update notice before testing the covered archive action.
+ const notice=p.locator('.eva-update-notification');if(await notice.isVisible())await notice.getByRole('button',{name:'close',exact:true}).click();
+ await p.getByRole('button',{name:'归档项目',exact:true}).click();await close('.eva-dialog .semi-modal-content');
  assert.equal(await p.locator('.app-titlebar').count(),1);
 }));
 

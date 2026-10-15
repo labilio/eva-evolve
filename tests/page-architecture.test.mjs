@@ -83,7 +83,7 @@ test('个人 Eva 助理与对话只渲染在路由页中间栏', () => {
   assert.doesNotMatch(imPatch, /eva-ai-team__assistant-avatar|has-config-avatar/);
   assert.match(imPatch, /h\(IdentityContextMenus,\{ref:identityMenuRef,menus:identityMenus\}\)/);
   assert.doesNotMatch(imPatch, /eva-ai-team__edit-config/);
-  assert.match(imPatch, /target\.isConnected&&target\.focus\(\)/);
+  assert.match(imPatch, /target\.isConnected&&window\.EvaTooltipAdapter\.restoreFocus\(target\)/);
   assert.match(imPatch, /window\.__evaOpenAssistantEditor\?\.\(null\)/);
   assert.match(imPatch, /const \[collapsedIdentitySessions,setCollapsedIdentitySessions\]=useEvaRememberedState\('my-ai','identities',\{\}\)/);
   assert.match(imPatch, /const newConversation = id => \{setCollapsedIdentitySessions\(value=>\(\{\.\.\.value,\[id\]:false\}\)\);choose\(id,digitalEmployees\.some/);

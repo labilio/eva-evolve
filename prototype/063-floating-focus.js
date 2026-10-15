@@ -26,7 +26,7 @@ export function useFloatingFocus({interactive=true,visible,returnFocus}) {
   if(active!==document.body && active?.isConnected && !s.panel?.contains(active))return;
   const requested=latest.current.returnFocus;
   const target=(typeof requested==='function'?requested():requested)||s.opener;
-  if(availableFocusTarget(target))target.focus({preventScroll:true});
+  if(availableFocusTarget(target))window.EvaTooltipAdapter.restoreFocus(target);
  },[]);
  const close=React.useCallback(()=>{restore();state.current.open=false;},[restore]);
  const bind=React.useCallback(node=>{

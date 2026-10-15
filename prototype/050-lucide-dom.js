@@ -23,6 +23,8 @@
      ============================================================ */
 
   var NODES = {
+    // lucide-icons/lucide icons/chart-gantt.svg (ISC).
+    'chart-gantt': [["path",{d:"M10 6h8"}],["path",{d:"M12 16h6"}],["path",{d:"M3 3v16a2 2 0 0 0 2 2h16"}],["path",{d:"M8 11h7"}]],
     // lucide-icons/lucide icons/refresh-cw.svg (ISC); updater ready indicator.
     'refresh-cw': [["path",{d:"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}],["path",{d:"M21 3v5h-5"}],["path",{d:"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}],["path",{d:"M8 16H3v5"}]],
     // lucide-react 0.577.0, icons/circle-question-mark.js (ISC).

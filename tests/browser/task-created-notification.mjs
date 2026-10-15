@@ -8,7 +8,7 @@ test('真实任务创建：唯一通知、查看详情、转发及取消',async(
  const server=createServer(path.resolve('dist'));await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),page=await browser.newPage({viewport:{width:1440,height:900}});
  page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
- const base=`http://127.0.0.1:${server.address().port}`,project=base+'/#/collab?evaProject=prod&evaTab=tasks',notice=page.locator('.eva-notification');
+ const base=`http://127.0.0.1:${server.address().port}`,project=base+'/#/collab?evaProject=prod&evaTab=tasks',notice=page.getByRole('alert',{name:'已创建任务',exact:true});
  const create=async title=>{
   await page.getByRole('button',{name:'新建任务',exact:true}).click();
   const modal=page.locator('.eva-loop-task-create .semi-modal-content');await modal.waitFor();
@@ -59,7 +59,7 @@ test('看板列、子任务、聊天创建均使用同一通知；空提交和�
  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{}),page=await browser.newPage({viewport:{width:1440,height:900}});
  page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base=`http://127.0.0.1:${server.address().port}`,project=base+'/#/collab?evaProject=prod&evaTab=tasks';
- const notice=page.locator('.eva-notification'),modal=page.locator('.eva-loop-task-create .semi-modal-content');
+ const notice=page.getByRole('alert',{name:'已创建任务',exact:true}),modal=page.locator('.eva-loop-task-create .semi-modal-content');
  const save=async title=>{await modal.waitFor();await modal.getByRole('textbox',{name:'任务标题',exact:true}).fill(title);await modal.getByRole('button',{name:'创建',exact:true}).click();await modal.waitFor({state:'hidden'});await notice.waitFor();await notice.hover();assert.equal(await notice.count(),1);assert.match(await notice.innerText(),new RegExp('SC-\\d+ '+title));assert.equal(await page.locator('.semi-toast').count(),0);};
  try{
  await page.goto(project);await page.getByRole('button',{name:'新建任务',exact:true}).click();await modal.waitFor();

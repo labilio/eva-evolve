@@ -33,6 +33,7 @@
     "test:select": "node --test tests/browser/select-controls.mjs",
     "test:im-performance": "node --test tests/browser/im-switch-performance.mjs tests/browser/group-member-actions.mjs",
     "test:task-navigation": "node --test --test-concurrency=1 tests/browser/task-drawer-size.mjs tests/browser/personal-task-links.mjs tests/browser/message-task-peek.mjs tests/browser/task-link-im.mjs tests/browser/task-link-detail.mjs tests/browser/task-created-notification.mjs tests/browser/task-attachment-actions.mjs",
+    "test:tooltip": "node --test --test-concurrency=1 tests/browser/tooltip-lifecycle.mjs tests/browser/loop-gantt-focus.mjs tests/browser/loop-gantt-viewport.mjs",
     "test:escape": "node --test --test-concurrency=1 tests/browser/modal-escape-audit.mjs tests/browser/side-panel-escape.mjs"
   },
   "devDependencies": {

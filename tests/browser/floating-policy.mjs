@@ -11,7 +11,7 @@ before(async()=>{
  tmp=fs.mkdtempSync(path.join(os.tmpdir(),'eva-floating-policy-'));
  for(const name of ['prototype','vendor'])fs.symlinkSync(path.resolve('dist',name),path.join(tmp,name),'dir');
  const css=fs.readFileSync('dist/index.html','utf8').match(/<link[^>]+stylesheet[^>]*>/g).join('\n');
- const code=`import React from 'react';import{createRoot}from'react-dom/client';import{Popover,FloatingForm}from'./prototype/063-popover.jsx';import{Popconfirm}from'./prototype/063-popconfirm.jsx';import{Form}from'./prototype/063-forms.jsx';
+ const code=`import './prototype/062-tooltip-adapter.js';import React from 'react';import{createRoot}from'react-dom/client';import{Popover,FloatingForm}from'./prototype/063-popover.jsx';import{Popconfirm}from'./prototype/063-popconfirm.jsx';import{Form}from'./prototype/063-forms.jsx';
  class Boundary extends React.Component{constructor(p){super(p);this.state={error:null};}static getDerivedStateFromError(error){return {error};}render(){return this.state.error?<p role="alert">{this.state.error.message}</p>:this.props.children;}}
  function App(){const[bad,setBad]=React.useState(false);const[custom,setCustom]=React.useState(false),[show,setShow]=React.useState(true),[calls,setCalls]=React.useState(0),[done,setDone]=React.useState(false);const next=React.useRef(),finish=React.useRef();return <>
  <button ref={next}>后续入口</button><button onClick={()=>setBad(true)}>错误组合</button>{bad&&<Boundary><FloatingForm.Fields><Form.Input field="illegal"/></FloatingForm.Fields></Boundary>}

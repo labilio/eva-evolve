@@ -21,6 +21,18 @@
       ? { year, month, day } : null;
   };
   const dateOnlyText = (parts, withYear) => (withYear ? `${parts.year}-` : '') + `${pad(parts.month)}-${pad(parts.day)}`;
+  // Integer calendar days keep task scheduling independent of local DST changes.
+  const calendarDay = value => {
+    const parts = parseDateOnly(value);
+    return parts ? Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000 : null;
+  };
+  const addCalendarDays = (value, offset) => {
+    const day = calendarDay(value);
+    if (day === null || !Number.isSafeInteger(offset)) return null;
+    const date = new Date((day + offset) * 86400000);
+    if (!Number.isFinite(date.getTime()) || date.getUTCFullYear() < 100 || date.getUTCFullYear() > 9999) return null;
+    return `${String(date.getUTCFullYear()).padStart(4, '0')}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+  };
   const localDay = date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const todayOrYesterday = (date, now) => {
     const today = localDay(now);
@@ -30,6 +42,31 @@
     return target.getTime() === today.getTime() ? 'yesterday' : '';
   };
   root.EvaTaskTime = Object.freeze({
+    calendarDay,
+    addCalendarDays,
+    todayDate() { return dateText(referenceNow()); },
+    scheduleError(issue, patch) {
+      const fields = ['start_date', 'due_date'];
+      if (!fields.some(field => Object.prototype.hasOwnProperty.call(patch, field))) return '';
+      const next = {...issue, ...patch};
+      for (const field of fields) {
+        const value = next[field];
+        if (value !== null && value !== undefined && value !== '' && calendarDay(value) === null)
+          return (field === 'start_date' ? '开始日期' : '截止日期') + '无效，请选择有效日期';
+      }
+      const start = calendarDay(next.start_date), due = calendarDay(next.due_date);
+      return start !== null && due !== null && start > due ? '开始日期不能晚于截止日期' : '';
+    },
+    weekStart(value) {
+      const day = calendarDay(value);
+      if (day === null) return null;
+      const weekday = new Date(day * 86400000).getUTCDay();
+      return addCalendarDays(value, -((weekday + 6) % 7));
+    },
+    calendarDuration(start, due) {
+      const first = calendarDay(start), last = calendarDay(due);
+      return first === null || last === null || last < first ? null : last - first + 1;
+    },
     fullTimestamp(value) {
       const date = parseInstant(value);
       return date ? `${dateText(date)} ${clock(date)}` : '';

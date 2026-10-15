@@ -31,7 +31,7 @@ export function Dialog({size, width, className='', okText='确定', cancelText='
   // Native Modal may remember a transient menu item. A caller-specified stable
   // destination wins at the native exit boundary, after the focus trap releases.
   const target=returnFocus?.();
-  if(availableFocusTarget(target))target.focus({preventScroll:true});
+  if(availableFocusTarget(target))window.EvaTooltipAdapter.restoreFocus(target);
   afterClose?.();
  };
  return <Modal {...props} afterClose={restoreAfterClose} okText={okText} cancelText={cancelText} getPopupContainer={getPopupContainer||container} zIndex={zIndex} width={dialogWidths[variant]} centered maskClosable closeOnEsc={false} modalRender={renderContent} bodyStyle={{...dialogText.body,...bodyStyle}}

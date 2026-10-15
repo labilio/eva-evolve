@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import fs from 'node:fs';
 import {createPatchedRuntime} from '../tools/build-runtime.mjs';
 const source=createPatchedRuntime().source;
 function setup(){
@@ -9,6 +10,7 @@ function setup(){
  const node={clientWidth:1200,getClientRects:()=>[{}]},trigger={isConnected:true,focus:()=>focusCount++};
  const location={hash:'#/messages',pathname:'/'};
  const ctx={URLSearchParams,window:{location,history:{replaceState:(_,__,url)=>{location.hash=url.slice(url.indexOf('#'));}}},document:{querySelector:selector=>{assert.equal(selector,'.eva-task-outlet');return node;},activeElement:trigger},React:{cloneElement:(el,props)=>({...el,props:{...el.props,...props}})},Toast:{error:message=>messages.push(message)},loadSpaces:()=>projects,ISSUES_BY_SPACE:issues,currentSpaceId:()=>current,evaTaskProjectId:p=>p.id,issuesOf:pid=>issues[pid],evaMembers:()=>({store:{actorId:()=> 'actor',canRead:id=>id!=='private'}})};
+ vm.runInNewContext(fs.readFileSync(new URL('../prototype/062-tooltip-adapter.js',import.meta.url),'utf8'),ctx);
  for(const [start,end] of [['function evaTaskRecord(','function evaTaskDetailContext('],['function evaTaskNavigation(','function EvaTaskDetailHost(']]){
   const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);vm.runInNewContext(source.slice(a,b),ctx);
  }

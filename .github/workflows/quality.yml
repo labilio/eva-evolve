@@ -49,6 +49,9 @@ jobs:
       - name: Verify search controls in browser
         run: npm run test:search
 
+      - name: Verify Tooltip lifecycle and focus return
+        run: npm run test:tooltip
+
       - name: Verify button states in browser
         run: npm run test:buttons
 

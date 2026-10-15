@@ -10,6 +10,69 @@
   });
   const priorityDisplayOrder=Object.freeze(['none','urgent','high','medium','low']);
 
+  // Plane v1.4.2 scheduling semantics: inclusive end day, 60px half blocks,
+  // and completing a half block only when its missing edge is resized.
+  // Derived geometry only: task records and writes remain owned by Loop.
+  function scheduleAt(origin,pixels,dayWidth,scale){
+    if(!Number.isFinite(pixels)||!Number.isFinite(dayWidth)||dayWidth<=0||!['week','month','quarter'].includes(scale))return null;
+    const start=root.EvaTaskTime.addCalendarDays(origin,Math.floor(pixels/dayWidth));
+    const due=root.EvaTaskTime.addCalendarDays(start,scale==='quarter'?7:1);
+    return start&&due?{start_date:start,due_date:due}:null;
+  }
+  function schedulePosition(issue,origin,dayWidth){
+    const time=root.EvaTaskTime;
+    const first=time.calendarDay(issue.start_date),last=time.calendarDay(issue.due_date),base=time.calendarDay(origin);
+    if(base===null||!Number.isFinite(dayWidth)||dayWidth<=0||(first===null&&last===null))return null;
+    if(first!==null&&last!==null&&last<first)return null;
+    const duration=time.calendarDuration(issue.start_date,issue.due_date);
+    return {
+      left:first!==null?(first-base)*dayWidth:(last-base+1)*dayWidth-60,
+      width:duration===null?60:duration*dayWidth,
+      duration
+    };
+  }
+  function scheduleChange(issue,edge,days,dayWidth){
+    const time=root.EvaTaskTime;
+    if(!['left','right','move'].includes(edge)||!Number.isSafeInteger(days)||!Number.isFinite(dayWidth)||dayWidth<=0)return null;
+    const first=time.calendarDay(issue.start_date),last=time.calendarDay(issue.due_date);
+    if((first===null&&last===null)||(first!==null&&last!==null&&last<first))return null;
+    const result={};
+    if(edge==='move'){
+      if(first!==null)result.start_date=time.addCalendarDays(issue.start_date,days);
+      if(last!==null)result.due_date=time.addCalendarDays(issue.due_date,days);
+    }else if(edge==='left'){
+      if(last===null)result.start_date=time.addCalendarDays(issue.start_date,days);
+      else{
+        const offset=first===null?Math.round(1-60/dayWidth):first-last;
+        result.start_date=time.addCalendarDays(issue.due_date,Math.min(0,offset+days));
+        result.due_date=issue.due_date;
+      }
+    }else{
+      if(first===null)result.due_date=time.addCalendarDays(issue.due_date,days);
+      else{
+        const offset=last===null?Math.round(60/dayWidth)-1:last-first;
+        result.start_date=issue.start_date;
+        result.due_date=time.addCalendarDays(issue.start_date,Math.max(0,offset+days));
+      }
+    }
+    return Object.values(result).some(value=>value===null)?null:result;
+  }
+
+  // Timeline order is independent of status-column position. Legacy tasks use
+  // their stable source order until the first reorder writes explicit ranks.
+  function timelineOrdered(issues){
+    return issues.map((issue,index)=>({issue,index,rank:Number.isFinite(issue.sort_order)?issue.sort_order:index*1000}))
+      .sort((a,b)=>a.rank-b.rank||a.index-b.index).map(row=>row.issue);
+  }
+  function timelineMovePlan(issues,issueId,targetId,after=false){
+    const ordered=timelineOrdered(issues),moving=ordered.find(issue=>issue.id===issueId);
+    if(!moving||issueId===targetId)return null;
+    const next=ordered.filter(issue=>issue.id!==issueId),index=next.findIndex(issue=>issue.id===targetId);
+    if(index<0)return null;
+    next.splice(index+(after?1:0),0,moving);
+    return next.every((issue,i)=>issue.id===ordered[i].id)?null:next;
+  }
+
   function boardOrdered(issues,status){
     return issues.map((issue,index)=>({issue,index})).filter(row=>row.issue.status===status)
       .sort((a,b)=>{
@@ -48,7 +111,7 @@
   function datePicker(React,DatePicker,props){
     const {dropdownClassName='',...rest}=props;
     return React.createElement(DatePicker,{
-      type:'date',format:'yyyy-MM-dd',density:'compact',autoSwitchDate:false,...rest,
+      type:'date',format:'yyyy-MM-dd',density:'compact',autoSwitchDate:false,...rest,weekStartsOn:1,
       dropdownClassName:['eva-loop-task-date-panel',dropdownClassName].filter(Boolean).join(' ')
     });
   }
@@ -237,8 +300,19 @@
     function UnassignedOption({label}){
       return h(IdentityOption,{unassigned:true,icon:h(CircleSlash,{size:20,'aria-hidden':true}),label});
     }
-    return {StatusIcon,PriorityIcon,IdentityOption,UnassignedOption};
+    function TaskPreview({issue,t}){
+      return h('div',{className:'eva-task-preview'},
+        h('div',{className:'eva-task-preview__identifier'},issue.identifier),
+        h('strong',{className:'eva-task-preview__title'},issue.title),
+        h('div',{className:'eva-task-preview__properties'},
+          h('span',null,h(StatusIcon,{status:issue.status}),t('loop.status.'+issue.status)),
+          h('span',null,h(PriorityIcon,{priority:issue.priority||'none'}),t('loop.priority.'+(issue.priority||'none')))),
+        h('dl',{className:'eva-task-preview__dates'},
+          h('dt',null,'开始日期'),h('dd',null,issue.start_date||'未设置'),
+          h('dt',null,'截止日期'),h('dd',null,issue.due_date||'未设置')));
+    }
+    return {StatusIcon,PriorityIcon,IdentityOption,UnassignedOption,TaskPreview};
   }
 
-  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,fitLabelCount,fittingLabelChips,labelCreateOption,formatDate,dateTrigger,create});
+  root.EvaLoopTaskComponents=Object.freeze({statusColors,priorityColors,priorityDisplayOrder,scheduleAt,schedulePosition,scheduleChange,timelineOrdered,timelineMovePlan,boardOrdered,boardMovePlan,boardPageCount,boardWindow,datePicker,dateField,enumMenu,enumDropdown,labelChip,labelChips,fitLabelCount,fittingLabelChips,labelCreateOption,formatDate,dateTrigger,create});
 })(window);

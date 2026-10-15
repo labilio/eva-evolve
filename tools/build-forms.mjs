@@ -17,7 +17,29 @@ const result = await build({
   define: { 'process.env.NODE_ENV': '"production"' },
   // eva-legacy.css already supplies Semi Form/Input styles; do not load a second theme.
   loader: { '.css': 'empty' },
-  plugins: [{name:'eva-existing-react',setup(builder){
+  plugins: [{name:'eva-semi-keyboard-hover',setup(builder){
+    // Same locked-Semi insertion fix as the legacy runtime: keyboard focus is a
+    // valid hover-preview trigger. Fail loudly when upstream source changes.
+    builder.onLoad({filter:/semi-ui\/lib\/es\/modal\/ModalContent\.js$/},args=>{
+      const source=fs.readFileSync(args.path,'utf8');
+      const anchor='prevFocusElement.focus({\n          preventScroll\n        })';
+      if(source.split(anchor).length!==2)throw new Error('Semi modal return focus anchor changed');
+      return {contents:source.replace(anchor,'window.EvaTooltipAdapter.restoreFocus(prevFocusElement, {preventScroll})'),loader:'js'};
+    });
+    builder.onLoad({filter:/semi-foundation\/lib\/es\/tooltip\/foundation\.js$/},args=>{
+      const source=fs.readFileSync(args.path,'utf8');
+      const anchor='_a.call(triggerDOM, ":hover")';
+      if(source.split(anchor).length!==2)throw new Error('Semi keyboard hover insertion anchor changed');
+      const escapeAnchor='_handleTriggerKeydown(event) {';
+      if(source.split(escapeAnchor).length!==2)throw new Error('Semi closed popover Escape anchor changed');
+      const portalEscape='closeOnEsc && this._handleEscKeyDown(event);';
+      if(source.split(portalEscape).length!==3)throw new Error('Semi portal Escape anchor changed');
+      const focusAnchor='triggerEventSet[eventNames.focus] = () => {';
+      if(source.split(focusAnchor).length!==3)throw new Error('Semi focus trigger anchor changed');
+      const focusSource=source.replaceAll(focusAnchor,'triggerEventSet[eventNames.focus] = event => { if(window.EvaTooltipAdapter.isRestoringFocus(event?.target)) return;');
+      return {contents:focusSource.replace(portalEscape,'closeOnEsc && (event.preventDefault(), this._handleEscKeyDown(event));').replace(anchor,'_a.call(triggerDOM, ":hover, :focus-within")').replace(escapeAnchor,escapeAnchor+'\n    if (event?.key === "Escape" && this.getProp("trigger") === "custom" && !this.getState("visible")) return;'),loader:'js'};
+    });
+  }},{name:'eva-existing-react',setup(builder){
     builder.onResolve({filter:/^react(-dom)?$/},args=>({path:args.path,namespace:'eva-react'}));
     builder.onLoad({filter:/.*/,namespace:'eva-react'},args=>({contents:`module.exports = ${args.path==='react'?'React':'ReactDOM'};`,loader:'js'}));
   }}],

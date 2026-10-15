@@ -12,10 +12,22 @@ import {floatingSurface,floatingLayout,typography,popoverLayout,composition} fro
 export const Popover = React.forwardRef(function Popover({style,children,title,content,className='',trigger='hover',initialFocus='field',returnFocus,description=false,bare=false,...props},ref) {
  const {titleId,descriptionId,labelRef}=useFloatingLabel(title != null,props['aria-label'] || (typeof content === 'string' ? content : undefined),description);
  const focus=useFloatingFocus({interactive:trigger!=='hover'&&trigger!=='focus',visible:props.visible,returnFocus});
+ const instance=React.useRef(null),[shown,setShown]=React.useState(false);
+ React.useImperativeHandle(ref,()=>instance.current);
+ React.useEffect(()=>{
+  if(!(props.visible ?? shown)||trigger!=='hover')return;
+  const escape=event=>{
+   if(event.key!=='Escape'||event.isComposing||event.defaultPrevented)return;
+   event.preventDefault();event.stopPropagation();
+   instance.current?.tooltipRef.current?.handlePortalInnerKeyDown(event);
+  };
+  document.addEventListener('keydown',escape,true);
+  return()=>document.removeEventListener('keydown',escape,true);
+ },[props.visible,shown,trigger]);
  return <SemiPopover disableFocusListener={false} {...props} trigger={trigger} returnFocusOnClose={false}
-  onVisibleChange={value=>{if(!value)focus.close();props.onVisibleChange?.(value);}}
+  onVisibleChange={value=>{setShown(value);if(!value)focus.close();props.onVisibleChange?.(value);}}
   onClickOutSide={event=>{focus.outside();props.onClickOutSide?.(event);}}
-  onEscKeyDown={event=>{focus.restore();props.onEscKeyDown?.(event);}} className={`eva-popover ${className}`} ref={ref} style={{...floatingLayout,...style,...floatingSurface}}
+  onEscKeyDown={event=>{focus.restore();props.onEscKeyDown?.(event);}} className={`eva-popover ${className}`} ref={instance} style={{...floatingLayout,...style,...floatingSurface}}
   content={context => <div tabIndex={-1} ref={node=>{
    labelRef(node);focus.bind(node);
    if (trigger !== 'hover' && trigger !== 'focus' && node && !context.initialFocusRef.current?.isConnected) context.initialFocusRef.current=initialFloatingFocus(node,initialFocus);

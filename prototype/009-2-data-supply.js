@@ -861,6 +861,18 @@ window.__EVA_SUPPLY_CHAIN_DEMO.issues.push(
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-36',number:36,identifier:'SC-136',position:36,title:'核查供应商物料编码SUPPLIER-PART-2026-Q4-ULTRA-LONG-ALPHANUMERIC-REFERENCE-0000987654321对应的替代料认证和交付批次',status:'in_progress',priority:'medium',due_date:null,assignee_type:'member',assignee_id:'u-wangyilin',assignee_name:'王宜林',description:'连续长编码看板换行验收样本。'},
   {...window.__EVA_SUPPLY_CHAIN_DEMO.issues[0],id:'supply-37',number:37,identifier:'SC-137',position:37,title:'确认试生产物料齐套情况',status:'in_review',priority:'low',due_date:null,assignee_type:'member',assignee_id:'u-linxiao',assignee_name:'林晓',description:'多标签空间不足时显示前两项及剩余数量的验收样本。'}
 );
+// 甘特图排期演示：复用现有任务，兼顾历史、当前、未来与未排期示例。
+// 当前排期围绕统一演示今天 2026-09-28，保留状态和其他视图的排序。
+// 在所有克隆完成后补齐，避免无日期示例继承供复制的首项开始日期。
+(function seedSupplySchedules(){
+  const starts={1:'2026-09-07',2:'2026-09-10',3:'2026-09-08',4:'2026-09-14',5:'2026-09-09',6:'2026-09-14',7:'2026-09-03',8:'2026-09-18',9:'2026-09-07',10:'2026-09-09',11:'2026-09-14',12:'2026-09-14',13:'2026-09-16',14:'2026-09-18',15:'2026-09-14',16:'2026-09-17',17:'2026-09-18',18:'2026-09-21',19:'2026-09-21',20:'2026-09-14',21:'2026-09-11',22:'2026-09-16',23:'2026-09-23',24:'2026-09-21',25:'2026-09-24',26:'2026-09-25',27:'2026-09-21',28:'2026-10-19',30:'2026-09-24',31:'2026-09-22',34:'2026-09-21'};
+  const currentSchedules={2:['2026-09-24','2026-09-30'],4:['2026-09-25','2026-10-02'],5:['2026-09-28','2026-10-05']};
+  for(const task of window.__EVA_SUPPLY_CHAIN_DEMO.issues){
+    if(starts[task.number])task.start_date=starts[task.number];
+    const schedule=currentSchedules[task.number];
+    if(schedule)[task.start_date,task.due_date]=schedule;
+  }
+})();
 // 任务范围演示：复用已有任务和身份，覆盖无关、评论参与及分身提及。
 (function seedTaskSubscriptionExamples(){
   var demo=window.__EVA_SUPPLY_CHAIN_DEMO;

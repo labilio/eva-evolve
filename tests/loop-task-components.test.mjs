@@ -46,6 +46,7 @@ test('项目任务日期选择器统一使用 Semi 紧凑日期面板和日期�
   assert.equal(picker.props.format,'yyyy-MM-dd');
   assert.equal(picker.props.density,'compact');
   assert.equal(picker.props.autoSwitchDate,false,'翻月不能直接改写任务日期');
+  assert.equal(picker.props.weekStartsOn,1,'任务日期面板从周一开始');
   assert.match(picker.props.dropdownClassName,/eva-loop-task-date-panel/);
   assert.match(picker.props.dropdownClassName,/extra-panel/);
   assert.equal(picker.props.className,'task-date');

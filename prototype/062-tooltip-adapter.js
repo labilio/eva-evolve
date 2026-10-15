@@ -5,7 +5,17 @@
  */
 (function(root){
  'use strict';
- root.EvaTooltipAdapter={createTooltip({React:R,Tooltip}){
+ // A synchronous restoration boundary, not persisted UI state. Native focus
+ // events run during focus(); only that event must not reopen passive content.
+ const restoring=new WeakSet();
+ root.EvaTooltipAdapter={
+  restoreFocus(target,options={preventScroll:true}){
+   if(!target?.isConnected||typeof target.focus!=='function')return;
+   const nested=restoring.has(target);restoring.add(target);
+   try{target.focus(options);}finally{if(!nested)restoring.delete(target);}
+  },
+  isRestoringFocus:target=>!!target&&restoring.has(target),
+  createTooltip({React:R,Tooltip}){
   // Semi 2.103 binds Escape on the trigger/portal only. Forward the key while
   // this instance is visible, so a mouse-opened tip can also be dismissed.
   // Semi still owns visibility, delays, hover persistence and positioning.
@@ -32,16 +42,6 @@
     // after the portal's synthetic enter and would re-arm Semi's close timer.
     const bindings=Object.entries(events).filter(([key])=>typeof props[key]==='function').map(([key,event])=>[event,e=>{
      if((key==='onMouseEnter'||key==='onMouseLeave')&&e.relatedTarget instanceof Node&&target.contains(e.relatedTarget))return;
-     // A closed Semi modal restores focus to its opener. This is focus
-     // restoration, not a new request to show the opener's hover tooltip.
-     if(key==='onFocus'&&(
-      e.relatedTarget instanceof Element&&e.relatedTarget.closest('.semi-modal')||
-      [...document.querySelectorAll('.semi-modal')].some(modal=>modal.getClientRects().length>0&&!modal.contains(target))
-     ))return;
-     // The IM side panel restores focus to its header action when it closes.
-     // A pointer close must not turn that restored focus into a new hover tip;
-     // keyboard focus remains visible and keeps Semi's normal focus behavior.
-     if(key==='onFocus'&&target.matches('.ch-head .op')&&!target.matches(':focus-visible')&&!target.matches(':hover'))return;
      props[key](e);
     }]);
     for(const [event,handler] of bindings)target.addEventListener(event,handler);
