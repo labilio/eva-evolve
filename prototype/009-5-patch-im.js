@@ -2690,8 +2690,8 @@ cut('React.createElement(EvaContextMenus,{ref:evaMenuRef,menus:evaMenuItems(evaM
     cut('React.createElement(EvaOverlayListScroll,{enabled:ut&&!ct?.conversationOnly,className:"ch-list__scroll"}', 'React.createElement(EvaOverlayListScroll,{memoryScope:evaMemoryScope+":"+Cn+":"+evaListReminderFilter,enabled:ut&&!ct?.conversationOnly,className:"ch-list__scroll"}', '会话列表滚动分视图保存');
 
     // Explicit mention objects survive draft restoration and travel with the send transaction.
-    cut('if(mt.current)mt.current.textContent=ut},[evaProjectArchived]);',
-      'if(mt.current)evaRestoreMentionDraft(mt.current,ut,window.EvaWorkspaceMemory.read(evaArchiveStore.actorId(),"im:"+evaDraftId,"mentionDraft",null))},[evaProjectArchived]);','草稿只恢复明确选择的提及');
+    cut('if(mt.current)mt.current.textContent=ut},[evaProjectArchived,evaThreadArchived]);',
+      'if(mt.current)evaRestoreMentionDraft(mt.current,ut,window.EvaWorkspaceMemory.read(evaArchiveStore.actorId(),"im:"+evaDraftId,"mentionDraft",null))},[evaProjectArchived,evaThreadArchived]);','草稿只恢复明确选择的提及');
     cut('const evaDraftScope="im:"+evaDraftId,[evaFiles,setEvaFiles]=',
       'const evaSaveMentionDraft=()=>window.EvaWorkspaceMemory.write(evaArchiveStore.actorId(),"im:"+evaDraftId,"mentionDraft",evaComposerDocument(mt.current));const evaDraftScope="im:"+evaDraftId,[evaFiles,setEvaFiles]=','提及草稿唯一会话归属');
     source=source.replaceAll('evaDraftChange?.(text);','evaDraftChange?.(text);evaSaveMentionDraft();').replaceAll('evaDraftChange?.(evaText)','evaDraftChange?.(evaText);evaSaveMentionDraft()');
