@@ -10,7 +10,7 @@ function fixture(initial=update('idle'),operations={}){
  return {get view(){return view;},calls,dispose,emit:v=>{snapshot=v;listener?.(v);}};
 }
 test('单卡呈现下载、准备、就绪；关闭后不因进度重新出现，检查可重新打开',()=>{
- const f=fixture(update('available'));f.emit(update('downloading',{percent:30}));assert.equal(f.view.percent,30);f.view.dismiss();f.emit(update('ready'));assert.equal(f.view,null);
+ const f=fixture(update('available'));f.emit(update('downloading',{percent:30}));assert.equal(f.view.percent,30);f.view.dismiss();f.emit(update('preparing'));assert.equal(f.view,null);f.emit(update('ready'));assert.equal(f.view.status,'ready');f.view.dismiss();
  f.dispose.reveal();assert.equal(f.view.status,'ready');f.view.dismiss();f.emit(update('available',{version:'3.0.0'}));assert.equal(f.view.version,'3.0.0');f.dispose();
 });
 test('防重复下载；无取消操作；准备完成前不能重启',async()=>{
@@ -54,4 +54,32 @@ test('具体故障在对应阶段发生，重试清除故障且不会绕过校�
   }
   source.dispose();
  }
+});
+
+
+test('关闭下载提示不取消任务，进度不重开，完成后再提醒，主动查看恢复当前进度',()=>{
+ const f=fixture({status:'downloading',version:'1.2.0',percent:10});
+ assert.equal(f.view.percent,10);
+ f.view.dismiss();
+ f.emit({status:'downloading',version:'1.2.0',percent:40});assert.equal(f.view,null);
+ f.dispose.reveal();assert.equal(f.view.percent,40);
+ f.emit({status:'downloading',version:'1.2.0',percent:60});assert.equal(f.view.percent,60);
+ f.view.dismiss();
+ f.emit({status:'ready',version:'1.2.0'});assert.equal(f.view.status,'ready');
+ f.view.dismiss();
+ f.emit({status:'ready',version:'1.2.0'});assert.equal(f.view,null);
+ f.dispose.reveal();assert.equal(f.view.status,'ready');assert.deepEqual(f.calls,[]);f.dispose();
+});
+
+test('关闭发现版本不下载，显式下载防重复，失败允许重试，旧回调不作用于下一阶段',async()=>{
+ let snapshot={status:'available',version:'1.2.0'},listener,view,calls=0,reject;
+ const source={getSnapshot:()=>snapshot,subscribe:fn=>{listener=fn;return()=>{};},download:()=>{calls++;return new Promise((_,r)=>{reject=r;});}};
+ const dispose=connectUpdateNotification({source,present:v=>{view=v;},close:()=>{view=null;}});
+ view.dismiss();assert.equal(calls,0);dispose.reveal();
+ const old=view;const pending=view.download();void view.download();assert.equal(calls,1);
+ reject(new Error('offline'));await pending;assert.equal(view.errorKind,'download');
+ const retry=view.download();assert.equal(calls,2);
+ snapshot={status:'ready',version:'1.2.0'};listener(snapshot);
+ old.dismiss();assert.equal(view.status,'ready');
+ reject(new Error('late'));await retry;assert.equal(view.error,'');dispose();
 });

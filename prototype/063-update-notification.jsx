@@ -29,7 +29,7 @@ export function CheckUpdateButton(){
   try{await check();}catch{if(active.current)Notification.error({icon:<UpdateIcon failed/>,id:'eva-update-check-error',title:'检查更新失败。',position:'bottomRight'});}
   finally{pending.current=false;if(active.current)setBusy(false);}
  };
- return <div style={layout.settingsActions}><Button size="small" loading={busy} disabled={busy||!check} onClick={handleCheck}>{busy?'正在检查更新…':'检查更新'}</Button>{context?.previewFailure&&<Button size="small" disabled={busy||context.demoBusy} aria-expanded={examplesOpen} onClick={()=>setExamplesOpen(value=>!value)}>演示更新失败</Button>}<div hidden={!examplesOpen}><div style={layout.settingsActions}><Typography.Text type="tertiary">以下均为模拟故障，不会断开真实网络或修改系统权限。下载类场景会先显示进度，重试模拟问题已解决。</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/zh_CN.lproj/Sparkle.strings',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：中文文案（GitHub）</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/SUErrors.h',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：错误分类（GitHub）</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/SPUDownloadDriver.m',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：下载错误处理（GitHub）</Typography.Text>{Object.entries(failureExamples).map(([kind,example])=><Button key={kind} disabled={context?.demoBusy} onClick={()=>{context.previewFailure(kind);setExamplesOpen(false);}}>{example.label}</Button>)}</div></div></div>;
+ return <div style={layout.settingsActions}><Button size="small" loading={busy} disabled={busy||!check} onClick={handleCheck}>{busy?'正在检查更新…':({available:'查看可用更新',downloading:'查看下载进度',preparing:'查看更新进度',ready:'待重启',error:'查看更新失败'})[context?.status]||'检查更新'}</Button>{context?.previewFailure&&<Button size="small" disabled={busy||context.demoBusy} aria-expanded={examplesOpen} onClick={()=>setExamplesOpen(value=>!value)}>演示更新失败</Button>}<div hidden={!examplesOpen}><div style={layout.settingsActions}><Typography.Text type="tertiary">以下均为模拟故障，不会断开真实网络或修改系统权限。下载类场景会先显示进度，重试模拟问题已解决。</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/zh_CN.lproj/Sparkle.strings',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：中文文案（GitHub）</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/SUErrors.h',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：错误分类（GitHub）</Typography.Text><Typography.Text link={{href:'https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/SPUDownloadDriver.m',target:'_blank',rel:'noopener noreferrer'}}>Sparkle：下载错误处理（GitHub）</Typography.Text>{Object.entries(failureExamples).map(([kind,example])=><Button key={kind} disabled={context?.demoBusy} onClick={()=>{context.previewFailure(kind);setExamplesOpen(false);}}>{example.label}</Button>)}</div></div></div>;
 }
 function presentation(view){
  if(view.busy==='install')return {title:'正在重启 Eva 智能办公系统…'};
@@ -60,13 +60,13 @@ function UpdateContent({view,onChangelog}){
  const actions=downloadable||['ready','demo-complete'].includes(view.status);
  return <div data-update-state={installing?'installing':view.status}>
   {display.body&&<div>{display.body}</div>}
-  {view.status==='downloading'&&<DownloadProgress view={view}/>}
+  {view.status==='downloading'&&<><DownloadProgress view={view}/><Typography.Text type="secondary">关闭后仍会在后台下载，完成后会再次提醒。</Typography.Text></>}
   {view.status==='preparing'&&<div style={layout.progress}><Progress stroke="var(--semi-color-primary)" indeterminate showInfo={false} aria-label="正在应用更新…"/></div>}
   {view.error&&view.errorKind!=='download'&&<div role="alert"><Typography.Text type="danger">{view.error}</Typography.Text></div>}
   {actions&&<div style={layout.actions} data-update-actions>
    {downloadable&&!display.error&&<><Button type="tertiary" theme="light" style={layout.secondary} onClick={onChangelog}>新版变化</Button><Button type="primary" theme="solid" disabled={!!view.busy} loading={view.busy==='download'} onClick={view.download}>下载</Button></>}
    {downloadable&&display.error&&<><Button type="tertiary" theme="light" style={layout.secondary} onClick={view.dismiss}>稍后再试</Button><Button type="primary" theme="solid" disabled={!!view.busy} loading={view.busy==='download'} onClick={view.download}>重新下载</Button></>}
-   {view.status==='ready'&&<><Button type="tertiary" theme="light" style={layout.secondary} onClick={view.dismiss}>{view.failure?'稍后再试':'忽略'}</Button><Button type="primary" theme="solid" loading={installing} disabled={!!view.busy} onClick={view.restart}>{view.failure?'重试安装':'更新并重启'}</Button></>}
+   {view.status==='ready'&&<><Button type="tertiary" theme="light" style={layout.secondary} onClick={view.failure?view.dismiss:onChangelog}>{view.failure?'稍后再试':'查看更新日志'}</Button><Button type="primary" theme="solid" loading={installing} disabled={!!view.busy} onClick={view.restart}>{view.failure?'重试安装':'立即重启'}</Button></>}
    {view.status==='demo-complete'&&<Button type="tertiary" theme="light" style={layout.secondary} onClick={view.dismiss}>完成</Button>}
   </div>}
  </div>;
@@ -76,10 +76,10 @@ export function UpdateNotificationHost({source,children}){
  const [updater]=React.useState(()=>source||window.EvaDesktopUpdates||createUpdateDemoSource(window.location.search,{onChangelog:setChangelog}));
  const ownsDemo=!source&&!window.EvaDesktopUpdates;
  const [demoBusy,setDemoBusy]=React.useState(false);
+ const [snapshot,setSnapshot]=React.useState(()=>updater.getSnapshot());
  React.useEffect(()=>{
   let active=true;
-  const unsubscribeDemo=ownsDemo?updater.subscribe(snapshot=>setDemoBusy(['downloading','preparing'].includes(snapshot.status))):()=>{};
-  const disconnect=connectUpdateNotification({source:updater,close:()=>Notification.close(noticeId),present:view=>{
+  const disconnect=connectUpdateNotification({source:updater,onSnapshot:value=>{setSnapshot(value);if(ownsDemo)setDemoBusy(['downloading','preparing'].includes(value?.status));},close:()=>Notification.close(noticeId),present:view=>{
    const display=presentation(view);
    if(ownsDemo)setDemoBusy(['downloading','preparing'].includes(view.status)||view.busy==='install');
    const onChangelog=()=>Promise.resolve().then(()=>active&&updater.openChangelog(view.version)).catch(()=>{if(active)Notification.error({icon:<UpdateIcon failed/>,id:'eva-update-changelog-error',title:'无法打开新版变化',content:'请稍后重试',position:'bottomRight'});});
@@ -89,9 +89,12 @@ export function UpdateNotificationHost({source,children}){
    });
   }});
   connection.current=disconnect;
-  return()=>{active=false;connection.current=null;unsubscribeDemo();disconnect();if(ownsDemo)updater.dispose();};
+  return()=>{active=false;connection.current=null;disconnect();if(ownsDemo)updater.dispose();};
  },[updater,ownsDemo]);
- const check=React.useCallback(async()=>{await updater.check();connection.current?.reveal();},[updater]);
+ const check=React.useCallback(async()=>{
+  if(!['available','downloading','preparing','ready','error'].includes(updater.getSnapshot()?.status))await updater.check();
+  connection.current?.reveal();
+ },[updater]);
  const previewFailure=ownsDemo?kind=>{if(updater.previewFailure(kind))connection.current?.reveal();}:null;
- return <UpdateContext.Provider value={{check,previewFailure,demoBusy}}>{children}<Dialog title="新版变化" visible={!!changelog} footer={null} initialFocus="title" onCancel={()=>setChangelog(null)}><Dialog.Fields><Dialog.Text strong>Eva 智能办公系统 {changelog}</Dialog.Text><Dialog.Text secondary>此版本仅用于原型演示。</Dialog.Text></Dialog.Fields></Dialog></UpdateContext.Provider>;
+ return <UpdateContext.Provider value={{check,previewFailure,demoBusy,status:snapshot?.status}}>{children}<Dialog title="新版变化" visible={!!changelog} footer={null} initialFocus="title" onCancel={()=>setChangelog(null)}><Dialog.Fields><Dialog.Text strong>Eva 智能办公系统 {changelog}</Dialog.Text><Dialog.Text secondary>此版本仅用于原型演示。</Dialog.Text></Dialog.Fields></Dialog></UpdateContext.Provider>;
 }
