@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync('prototype/009-5-patch-im.js','utf8');
-const start=source.indexOf('function evaTopicMenus('),end=source.indexOf('\nfunction evaRecentUnread',start);
+const start=source.indexOf('function evaTopicMenus('),end=source.indexOf('\nfunction EvaThreadList',start);
 let copied='';const browser={URL,location:{href:'http://127.0.0.1:4580/'},navigator:{clipboard:{writeText:async text=>{copied=text;}}},EvaMyAITeamGroup:{groups:()=>[{id:'my-ai-team:a'}]}};
 const menu=vm.runInNewContext('('+source.slice(start,end).trim()+')',{window:browser,Toast:{success:()=>{},error:()=>{}},React:{createElement:()=>null},Link2:{},Archive:{},ArchiveRestore:{},evaRailIcon:()=>null,evaPinMenuItem:()=>({title:'置顶会话'}),evaMuteMenuItem:()=>({title:'设为免打扰'})});
 const options={store:{canManageThread:()=>true},actorId:'a',group:{id:'g'},thread:{id:'t',status:2},onRename:()=>{throw new Error('不应重命名');}};

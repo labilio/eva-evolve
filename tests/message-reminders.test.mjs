@@ -63,8 +63,8 @@ test('公共未读组件统一隐藏零值、99+截断和完整无障碍数量�
  assert.equal(Badge({count:99}).children,99);
  const nav=Badge({count:120,unit:'个会话未读','data-eva-nav-unread':true,role:'status'});
  assert.equal(nav.children,'99+');assert.equal(nav.props['aria-label'],'120 个会话未读');assert.equal(nav.props['data-eva-nav-unread'],true);
- const muted=Badge({count:2,className:'eva-recent-topic-tabs__unread is-muted'});
- assert.equal(muted.props.className,'eva-recent-topic-tabs__unread is-muted');assert.equal(muted.props['aria-label'],'2 条未读消息');
+ const muted=Badge({count:2,className:'wk-conv-unread-num is-muted'});
+ assert.equal(muted.props.className,'wk-conv-unread-num is-muted');assert.equal(muted.props['aria-label'],'2 条未读消息');
  const task=Badge({count:7,label:'未读任务',unit:'个未读任务（演示）'});
  assert.equal(task.children,'未读任务 7');assert.equal(task.props['data-eva-unread-label'],'未读任务');
  assert.equal(task.props['aria-label'],'7 个未读任务（演示）');

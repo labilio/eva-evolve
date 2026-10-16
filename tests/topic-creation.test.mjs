@@ -51,33 +51,45 @@ test('旧式子区也有完整创建记录和独立材料，AI 回应必须承�
  const second=demo(first.saved()).store;assert.equal(second.messagesFor('c-weekly','u-wangyilin').filter(m=>m.kind==='threadcreated').length,3);assert.ok(second.messagesFor('c-weekly','u-wangyilin').some(m=>m.text==='用户自建记录'));assert.equal(second.snapshot().threadDetails['th-vendor-onboarding'].name,'用户修改名称');
 });
 
-test('所有群的存量子区都有唯一创建记录，覆盖多子区、非项目群及隐藏归档，刷新不重复',()=>{
+test('所有群的存量子区都有唯一创建记录，覆盖项目群、非项目群及隐藏归档，刷新不重复',()=>{
  const first=demo(),state=first.store.snapshot();let count=0;
  for(const [id,gid] of Object.entries(state.threads)){
   const topic=state.threadDetails[id];if(!topic?.name||topic.deleted)continue;
   assert.equal((state.messages[gid]||[]).filter(m=>m.kind==='threadcreated'&&m.thread?.id===id).length,1,gid+'/'+id);count++;
  }
- assert.equal(Object.values(state.threads).filter(gid=>gid==='supply-many-topics-demo').length,12,'用户确认保留十二个演示子区');
- assert.ok(count>=12,'包括多子区演示');
+ assert.equal(state.groups['supply-many-topics-demo'],undefined,'已下线的横向导航演示群不再预置');
+ assert.ok(count>=3,'现有项目群和非项目群子区均被覆盖');
  const second=demo(first.saved()).store.snapshot();
  for(const [gid,messages] of Object.entries(state.messages))assert.equal((second.messages[gid]||[]).filter(m=>m.kind==='threadcreated').length,messages.filter(m=>m.kind==='threadcreated').length,gid);
 });
 
-test('子区排序与免打扰：新消息前移、已读不变、继承覆盖、置顶顺序独立',()=>{
+test('下线横向导航演示只清理原样夹具，用户消息使整群保留',()=>{
+ const makeSaved=custom=>{const state=demo().store.snapshot(),groupId='supply-many-topics-demo';
+  const names=['采购需求归集','供应商询价比价','招投标文件评审','合同条款确认','供应商准入复核','关键件交期跟踪','来料异常复核','供应商整改跟踪','排产齐套确认','运输窗口协调','紧急保供协调','下季度核心供应商产能保障与跨区域交付计划联合评审及风险确认'];
+  state.groups[groupId]={id:groupId,name:'供应链专题协同（多子区演示）',projectId:'prod',ownerId:'u-wangyilin',humans:[{id:'u-wangyilin',role:'member'}],cloneIds:[]};
+  state.messages[groupId]=[{fixtureId:'many-topics-v1:'+groupId,kind:'text',text:'演示'}];
+  names.forEach((name,index)=>{const number=index<10?index+1:index===10?18:24,id='supply-many-topic-'+String(number).padStart(2,'0');state.threads[id]=groupId;state.threadDetails[id]={id,name,status:1};state.messages[id]=[{fixtureId:'many-topics-v1:'+id,kind:'text',text:'演示'}];});
+  if(custom)state.messages['supply-many-topic-01'].push({kind:'text',text:'用户补充'});
+  return JSON.stringify(state);
+ };
+ assert.equal(demo(makeSaved(false)).store.snapshot().groups['supply-many-topics-demo'],undefined,'原样夹具被清理');
+ const preserved=demo(makeSaved(true)).store.snapshot();assert.ok(preserved.groups['supply-many-topics-demo']);assert.ok(preserved.messages['supply-many-topic-01'].some(message=>message.text==='用户补充'));
+});
+
+test('子区免打扰保留父群继承与单项覆盖',()=>{
  const store=setup();
- for(const id of ['a','b','c'])store.createThread(id,'g',{name:id,status:1},'owner');
- const items=['a','b','c'].map((id,i)=>({id,updated_at:`2020-01-0${i+1}T00:00:00.000Z`}));
- const order=()=>store.topicNavigation('g','owner',items).map(t=>t.id);
- assert.deepEqual(order(),['c','b','a']);
+ for(const id of ['a','b'])store.createThread(id,'g',{name:id,status:1},'owner');
  store.setChatPreferences('g','owner',{mute:true});assert.equal(store.conversationMuted('a','owner'),true);
  store.setChatPreferences('a','owner',{mute:false});assert.equal(store.conversationMuted('a','owner'),false);assert.equal(store.conversationMuted('b','owner'),true);
  store.setChatPreferences('g','owner',{mute:false});store.setChatPreferences('a','owner',{mute:true});assert.equal(store.conversationMuted('a','owner'),true);
- assert.deepEqual(order(),['c','b','a'],'静音不改变排序');
- store.sendMessage('a','member','新消息');assert.deepEqual(order(),['a','c','b']);
- store.clearConversationUnread('a','owner');assert.deepEqual(order(),['a','c','b'],'已读不改变排序');
- store.setChatPreferences('b','owner',{top:true});store.setChatPreferences('c','owner',{top:true});assert.deepEqual(order(),['c','b','a']);
- store.sendMessage('b','member','置顶项的新消息');assert.deepEqual(order(),['c','b','a'],'置顶顺序不被消息打乱');
- store.setChatPreferences('c','owner',{top:false});assert.equal(order()[0],'b');
  store.setChatPreferences('a','owner',{mute:null});assert.equal(store.conversationMuted('a','owner'),false,'可恢复继承');
- assert.equal(store.topicNavigation('g','outsider',items).length,0);
+});
+
+test('最近隐藏按父群和子区各自消息计数，互不唤回',()=>{
+ const store=setup();store.createThread('t','g',{name:'讨论',status:1},'owner');
+ store.hideRecentConversation('g','owner');assert.throws(()=>store.hideRecentConversation('t','owner'),/子区/);
+ assert.equal(store.recentConversationHidden('g','owner'),true);assert.equal(store.recentConversationHidden('t','owner'),false);
+ store.sendMessage('t','member','子区新消息');
+ assert.equal(store.recentConversationHidden('g','owner'),true,'子区消息不能唤回父群会话行');
+ assert.equal(store.recentConversationHidden('t','owner'),false,'子区始终不走最近隐藏旁路');
 });

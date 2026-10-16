@@ -534,32 +534,6 @@ window.__EVA_RECENT_PIN_DEMO = {
   conversationIds:['c-eva','th-msg-architecture','community-feedback-roundup']
 };
 
-// Explicit many-topic exception: exercise Semi tab overflow in the existing supply project.
-window.__EVA_MANY_TOPICS_DEMO = {
-  id:'supply-many-topics-demo',name:'供应链专题协同（多子区演示）',projectId:'prod',
-  threads:[
-    '采购需求归集','供应商询价比价','招投标文件评审','合同条款确认','供应商准入复核',
-    '关键件交期跟踪','来料异常复核','供应商整改跟踪','排产齐套确认','运输窗口协调',
-    '库存风险排查','替代物料验证','成本变化分析','付款资料核对','月度交付复盘',
-    '质量证据归档','现场问题排查','紧急保供协调','新品试制准备','包装方案确认',
-    '检验标准对齐','采购预算复核','跨团队依赖协调','下季度核心供应商产能保障与跨区域交付计划联合评审及风险确认'
-  ].map((name,index)=>({id:'supply-many-topic-'+String(index+1).padStart(2,'0'),name})).filter((topic,index)=>index<10||index===17||index===23),
-  messageText:name=>`这里单独讨论「${name}」。请在本子区补充相关材料和待确认事项，避免混入其他专题。`
-};
-
-// Persistent presentation fixtures for Recent only: opening a topic does not consume them.
-// Counts reuse existing conversation content and never change membership or notification preferences.
-window.__EVA_RECENT_UNREAD_DEMO = Object.freeze({
-  'th-msg-architecture': 3,
-  'th-mode-switch': 1,
-  'th-contract-renewal': 3,
-  'supply-many-topic-03': 2,
-  'supply-many-topic-18': 3,
-  'supply-many-topic-06': 5,
-  'supply-many-topic-04': 1,
-  'supply-many-topic-24': 1
-});
-
 // Complete topic stories: coordination in the parent, decisions/materials in each topic.
 window.__EVA_TOPIC_STORY_DEMO = {
   version:2,
@@ -613,19 +587,6 @@ window.__EVA_MUTED_TOPIC_DEMO = {
   {senderId:'u-hejing',time:'14:10',text:'合同 B 的供应商补充了提价说明：原料成本上涨 3%，本轮报价有效期到周五。我已把依据放进续签清单，等采购核对。'},
   {senderId:'u-linxiao',time:'14:12',text:'合同 C 的交期仍是 21 天，比原合同多 7 天。仓库确认现有库存只能覆盖 18 天，需要再确认分批交付方案。'},
   {senderId:'u-hejing',time:'14:15',text:'我会继续在这里补充报价和交期材料。两项都确认后，再回主聊天同步最终续签建议，目前先不对外承诺。'}
- ]
-};
-
-// A single scenario makes topic sorting and notification states visible together.
-window.__EVA_TOPIC_ORDER_DEMO = {
- version:1,groupId:'supply-many-topics-demo',actorId:'u-wangyilin',
- topics:[
-  {id:'supply-many-topic-01',top:true,pinOrder:2,minute:0,messages:['本周采购需求已收齐，数量和到货日期以这里确认的版本为准。常用清单留在这个子区，后续增补继续在这里登记。']},
-  {id:'supply-many-topic-03',top:true,pinOrder:1,minute:5,messages:['技术评分表已经补齐，交付能力的权重调整为 30%。请在这个子区复核评分依据。','商务条款中新增了延期赔付上限，等法务确认后一起并入招标文件。']},
-  {id:'supply-many-topic-18',minute:50,messages:['A 线关键件库存只能支持到明天下午，需要今天确认补货方案。','供应商可以先发 200 件，但需要我们在 17 点前确认加急运输费用。','我已协调好卸货窗口。请采购在这里确认发货时间，确认后我再同步产线。']},
-  {id:'supply-many-topic-06',mute:true,minute:40,messages:['供应商已回传本周关键件生产排程，我会在这里持续更新交期。','第一批 300 件完成检验，预计今天出库。','第二批还缺一份材质证明，供应商承诺下午补齐。','承运商已确认车辆，提货时间调整为 16:30。','第一批运单已生成，预计明天 10 点到厂。后续物流节点继续在本子区更新。']},
-  {id:'supply-many-topic-08',minute:30,messages:['异常批次的纠正措施已复核通过，补充照片和检验记录已归档。本轮整改关闭，后续抽检结果仍在这里留存。']},
-  {id:'supply-many-topic-04',minute:20,messages:['合同付款节点已改为验收后 30 天，请确认附件中的验收标准与最终报价一致。']}
  ]
 };
 

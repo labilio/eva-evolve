@@ -199,10 +199,7 @@
       const p=projectInfo(pid),owner=person(state.projects[pid].ownerId);
       list.unshift({fixtureId,kind:'text',sender:agentSender(pid),time:'09:00',text:'@所有人 大家好，我是 '+agentFor(pid).name+'。\n项目：'+p.name+'\n共同目标：'+(goal||p.desc||'尚未填写，可在项目信息中补充')+'\n负责人：'+(owner?.name||'未指定')+'\n我是本项目的云端 AI，了解项目目标、成员、各群进展及共享资料，电脑关闭后也可继续服务。每位项目成员都可以 @我 提问，我会结合整个项目的信息回答。',notifiedHumanIds:state.projects[pid].humans.map(m=>m.id)});
     };
-    const recentFamilyMessageCount=id=>{
-      const ids=[id,...Object.keys(state.threads||{}).filter(threadId=>state.threads[threadId]===id&&!state.threadDetails[threadId]?.deleted)];
-      return ids.reduce((total,key)=>total+(state.messages[key]||[]).length+(state.directConversations?.[key]?.messages||[]).length,0);
-    };
+    const recentMessageCount=id=>(state.messages[id]||[]).length+(state.directConversations?.[id]?.messages||[]).length;
     const archiveMessageScopes=id=>{
       const groups=['all:'+id,...Object.values(state.groups).filter(group=>group.projectId===id).map(group=>group.id)];
       return [...groups,...Object.keys(state.threads).filter(thread=>groups.includes(state.threads[thread])&&!state.threadDetails[thread]?.deleted)];
@@ -590,18 +587,8 @@
         record.groupMd=value;record.groupMdVersion=(record.groupMdVersion||0)+1;notify({keys:[state.threads[id]?'threadDetails':'groupGovernance']});
       },
       chatSettings(id){return JSON.parse(JSON.stringify(state.chatSettings[id]||{}));},
-      hideRecentConversation(id,uid){if(threadParent(id))fail('子区不支持隐藏');requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentFamilyMessageCount(id);notify({keys:['chatPreferences']});},
-      recentConversationHidden(id,uid){if(threadParent(id))return false;const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentFamilyMessageCount(id)<=count;},
-      conversationActivity(id,uid,seedAt=''){
-        if(!api.canReadForwardSource(id,uid))return '';
-        let latest=String(seedAt||'');
-        for(const message of state.messages[id]||[]){if(message.createdAt&&String(message.createdAt)>latest)latest=String(message.createdAt);}
-        return latest;
-      },
-      topicNavigation(id,uid,items){
-        if(!api.canRead(id,uid))return [];
-        return items.filter(t=>state.threads[t.id]===id&&api.canRead(t.id,uid)).map(t=>({id:t.id,pinned:!!state.chatPreferences[uid]?.[t.id]?.top,pinOrder:Number(state.chatPreferences[uid]?.[t.id]?.pinOrder)||0,at:api.conversationActivity(t.id,uid,t.updated_at||t.created_at)})).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||(a.pinned?b.pinOrder-a.pinOrder:b.at.localeCompare(a.at)));
-      },
+      hideRecentConversation(id,uid){if(threadParent(id))fail('子区不支持隐藏');requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');api.clearConversationUnread(id,uid);state.chatPreferences[uid][id].recentHiddenCount=recentMessageCount(id);notify({keys:['chatPreferences']});},
+      recentConversationHidden(id,uid){if(threadParent(id))return false;const count=state.chatPreferences[uid]?.[id]?.recentHiddenCount;return count!==undefined&&recentMessageCount(id)<=count;},
       conversationMuted(id,uid){const pref=state.chatPreferences[uid]?.[id];return pref?.mute??(state.threads[id]?!!state.chatPreferences[uid]?.[state.threads[id]]?.mute:false);},
       initializeUnreadBaseline(){
         if(state.unreadBaselineV1)return;
@@ -1036,21 +1023,23 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       }
       saved.seededIMShowcaseV2=true;
     }
-    // Add once, including messages; later user edits/deletions remain authoritative.
-    const manyTopics=root.__EVA_MANY_TOPICS_DEMO;
-    if(manyTopics&&bubbleProject&&!saved.seededManyTopicsDemoV1){
-      if(!saved.groups[manyTopics.id]){
-        saved.groups[manyTopics.id]={id:manyTopics.id,name:manyTopics.name,projectId:'prod',ownerId:bubbleProject.ownerId,humans:bubbleProject.humans.map(p=>({id:p.id,role:'member'})),cloneIds:[],employeeIds:[]};
-        saved.messages||={};saved.threadDetails||={};
-        const demoMessage=(text,id)=>({kind:'text',text,time:'16:00',fixtureId:'many-topics-v1:'+id,sender:{...saved.people.find(p=>p.id==='u-wangyilin'),uid:'u-wangyilin'}});
-        saved.messages[manyTopics.id]=[demoMessage('本群有 12 个专题子区。顶部可横向滚动，点击标签切换独立聊天；群成员保持一致。',manyTopics.id)];
-        for(const topic of manyTopics.threads){
-          saved.threads[topic.id]=manyTopics.id;
-          saved.threadDetails[topic.id]={status:1,...topic,created_at:root.__EVA_DEMO_TIME?.T1};
-          saved.messages[topic.id]=[demoMessage(manyTopics.messageText(topic.name),topic.id)];
-        }
+    // Retire the discontinued horizontal-topic showcase only when it still consists
+    // entirely of packaged fixture data. Any user-created topic or message keeps it.
+    if(saved.groups['supply-many-topics-demo']&&!saved.retiredManyTopicsDemoV1){
+      const groupId='supply-many-topics-demo';
+      const topicIds=Object.entries(saved.threads||{}).filter(([,parent])=>parent===groupId).map(([id])=>id);
+      const knownTopicNames=new Set(['采购需求归集','供应商询价比价','招投标文件评审','合同条款确认','供应商准入复核','关键件交期跟踪','来料异常复核','供应商整改跟踪','排产齐套确认','运输窗口协调','紧急保供协调','下季度核心供应商产能保障与跨区域交付计划联合评审及风险确认']);
+      const knownTopic=saved.groups[groupId].name==='供应链专题协同（多子区演示）'&&topicIds.length===12&&topicIds.every(id=>/^supply-many-topic-(0[1-9]|1[0-9]|2[0-4])$/.test(id)&&knownTopicNames.has(saved.threadDetails?.[id]?.name));
+      const fixtureOnly=[groupId,...topicIds].every(id=>(saved.messages?.[id]||[]).every(message=>/^(many-topics-v1:|topic-order-v1:|topic-created-backfill:)/.test(message.fixtureId||'')));
+      if(knownTopic&&fixtureOnly){
+        delete saved.groups[groupId];delete saved.messages?.[groupId];delete saved.groupGovernance?.[groupId];
+        for(const id of topicIds){delete saved.threads[id];delete saved.threadDetails?.[id];delete saved.messages?.[id];}
+        for(const preferences of Object.values(saved.chatPreferences||{})){delete preferences[groupId];for(const id of topicIds)delete preferences[id];}
+        for(const followed of Object.values(saved.followedConversations||{}))delete followed[groupId];
+        for(const assignments of Object.values(saved.conversationCategoryAssignments||{}))delete assignments[groupId];
+        for(const orders of Object.values(saved.followOrders||{}))for(const bucket of Object.keys(orders||{}))if(Array.isArray(orders[bucket]))orders[bucket]=orders[bucket].filter(id=>id!==groupId&&!topicIds.includes(id));
       }
-      saved.seededManyTopicsDemoV1=true;
+      saved.retiredManyTopicsDemoV1=true;
     }
     const supplyMemberDemo=root.__EVA_SUPPLY_MEMBER_DEMO,supplyProject=saved.projects[supplyMemberDemo?.projectId];
     if(supplyMemberDemo&&supplyProject&&(saved.supplyMemberPresetVersion||0)<supplyMemberDemo.version){
@@ -1175,8 +1164,6 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
       saved.seededRecentPinsV1=true;
       try{root.localStorage.setItem(key,JSON.stringify(saved));}catch{}
     }
-    const longTopic=saved.threadDetails?.['supply-many-topic-24'];
-    if(longTopic?.name==='下季度供应商产能与交付计划确认')longTopic.name=manyTopics?.threads.find(t=>t.id===longTopic.id)?.name||longTopic.name;
     const stories=root.__EVA_TOPIC_STORY_DEMO;
     if(stories&&saved.topicStoryVersion!==stories.version){
       saved.topicStoryGroups||=[];
@@ -1203,36 +1190,6 @@ leaveGroup(id,uid){requireHuman(uid);const g=state.groups[id]||fail('仅普通�
         saved.messages[mutedTopicDemo.threadId].push({kind:'text',fixtureId:'muted-topic-unread:'+index,sender:{...sender,uid:sender.id},time:entry.time,text:entry.text});
       }
       saved.seededMutedTopicUnreadV1=true;
-    }
-    const topicOrderDemo=root.__EVA_TOPIC_ORDER_DEMO;
-    if(topicOrderDemo&&saved.groups[topicOrderDemo.groupId]&&saved.topicOrderDemoVersion!==topicOrderDemo.version){
-      const actor=topicOrderDemo.actorId,base=Date.parse(root.__EVA_DEMO_TIME.TASK_YESTERDAY);
-      saved.chatPreferences||={};saved.chatPreferences[actor]||={};
-      for(const topic of topicOrderDemo.topics){
-        if(saved.threads[topic.id]!==topicOrderDemo.groupId)continue;
-        const prefs=saved.chatPreferences[actor][topic.id]||{};
-        saved.chatPreferences[actor][topic.id]={top:!!topic.top,...(topic.top?{pinOrder:topic.pinOrder}:{}),mute:!!topic.mute,...prefs};
-        const messages=saved.messages[topic.id]||=[];
-        for(const [index,text] of topic.messages.entries()){
-          const sender=saved.people.find(p=>p.id===(index%2?'u-linxiao':'u-hejing'));if(!sender)continue;
-          const date=new Date(base+(topic.minute+index)*60000);
-          messages.push({kind:'text',fixtureId:'topic-order-v1:'+topic.id+':'+index,text,createdAt:date.toISOString(),time:date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Shanghai'}),sender:{...sender,uid:sender.id}});
-        }
-      }
-      const intro=(saved.messages[topicOrderDemo.groupId]||[]).find(m=>m.fixtureId==='many-topics-v1:'+topicOrderDemo.groupId);
-      if(intro)intro.text='本群按专题分别讨论。采购需求与招标评审是常用入口；紧急保供和交期跟踪正在持续更新。请在对应子区补充材料，影响整体交付的结论再回主聊天同步。';
-      saved.topicOrderDemoVersion=topicOrderDemo.version;
-    }
-    // Retire only the removed built-in examples; keep user-created topics intact.
-    if(manyTopics&&saved.groups[manyTopics.id]&&!saved.seededManyTopicsTwelveV1){
-      const keep=new Set(manyTopics.threads.map(t=>t.id)),removed=new Set();
-      for(const [id,parent] of Object.entries(saved.threads)){
-        if(parent!==manyTopics.id||!/^supply-many-topic-(0[1-9]|1[0-9]|2[0-4])$/.test(id)||keep.has(id))continue;
-        removed.add(id);delete saved.threads[id];delete saved.threadDetails[id];delete saved.messages[id];
-        for(const prefs of Object.values(saved.chatPreferences||{}))delete prefs[id];
-      }
-      saved.messages[manyTopics.id]=(saved.messages[manyTopics.id]||[]).filter(m=>!removed.has(m.thread?.id));
-      saved.seededManyTopicsTwelveV1=true;
     }
     // Backfill every existing topic once, including hidden/archived topics and
     // groups outside the story fixtures. Creation history is not a personal preference.

@@ -34,19 +34,19 @@ try {
  await measure(page.getByRole('heading',{name:'采购与招投标',exact:true}),['all:prod','c-eva']);
  await measure(page.getByRole('heading',{name:'质量与排产',exact:true}),['c-eva','c-review']);
  await measure(page.getByRole('heading',{name:'采购与招投标',exact:true}),['c-review','c-eva']);
- const topic=page.getByRole('navigation',{name:'群聊子区'}).getByRole('tab').nth(1);
- const topicName=await topic.innerText();
- // Select the topic once to discover its existing business ID from the actual read.
+ const topic=page.getByRole('heading',{name:'本季度间接采购需求',exact:true});
+ // Select the independent recent row once to discover its existing business ID from the actual read.
  await settle();await page.evaluate(()=>window.__evaMessageReads=[]);await topic.click();await settle();
  const topicIds=await page.evaluate(()=>[...new Set(window.__evaMessageReads)]);
  assert.ok(topicIds.length<=2,'子区切换只读取当前/目标会话');
- await measure(page.getByRole('tab',{name:/^主聊天/}),['c-eva',...topicIds]);
+ await measure(page.getByRole('heading',{name:'采购与招投标',exact:true}),['c-eva',...topicIds]);
  await measure(topic,['c-eva',...topicIds]);
  await page.getByRole('button',{name:'打开子区信息',exact:true}).last().click();
  await page.getByText('查看全部', {exact:false}).filter({hasNot:page.locator('svg')}).first().waitFor();
  assert.deepEqual(errors,[],'子区信息不得产生运行时错误');
  await page.getByRole('button',{name:'关注',exact:true}).click();await settle();
- await measure(page.getByRole('button',{name:'拖动排序：质量与排产 质量与排产 99+ 收起子区',exact:true}),['all:prod','c-review']);
+ const followQuality=page.locator('.eva-follow-channel').filter({hasText:'质量与排产'}).locator('.wk-conv-compact-item').first();
+ await measure(followQuality,['all:prod','c-review']);
  await page.getByRole('button',{name:'最近',exact:true}).click();
  await page.getByRole('heading',{name:'采购与招投标',exact:true}).click();
  await page.getByRole('textbox',{name:'群聊中可 @ AI 与它对话',exact:true}).fill('性能回归：发送后摘要必须更新');
