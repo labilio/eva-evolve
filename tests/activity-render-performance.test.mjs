@@ -33,11 +33,13 @@ test('selection and keyboard focus do not reread sources or reparse unrelated pr
  let rows=['a','b','c'].map(key=>({key,id:key,type:'task',title:key,events:[],preview:[{id:key,text:key}],unreadCount:0}));
  const listeners=new Set();
  const store={subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);},getSnapshot:()=>revision,items:()=>{reads++;return rows;},context:()=>null};
- const props={renderObjectIcon:()=>{rowRenders++;return null;},store,storage:{getItem:()=>null},previewText:text=>{parses++;return text;},renderDetail:()=>null,onSelect:key=>{selectedKey=key;render();}};
+ const props={renderObjectIcon:()=>{rowRenders++;return null;},store,storage:{getItem:()=> 'unread'},previewText:text=>{parses++;return text;},renderDetail:()=>null,onSelect:key=>{selectedKey=key;render();}};
  const root=createRoot(document.getElementById('app'));
  const render=()=>flushSync(()=>root.render(React.createElement(ActivityPage,{...props,selectedKey})));
  try {
   render();assert.equal(reads,1);assert.equal(parses,3);
+  assert.equal(document.querySelector('header').querySelectorAll('button').length,0,'标题栏只留标题，不放设置或批量操作入口');
+  assert.equal(document.querySelectorAll('[aria-label="提醒操作"]').length,3,'任务行操作保留');
   document.querySelector('[data-activity-open="a"]').click();
   document.querySelector('[data-activity-open="b"]').click();
   assert.equal(reads,1);assert.equal(parses,3);

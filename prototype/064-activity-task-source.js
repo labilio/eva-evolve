@@ -1,17 +1,10 @@
 /* Read-through adapter: task logs and comments remain in the Loop data source. */
 (function(root) {
   'use strict';
-  const actionText = {
-    created: '创建了任务', title_changed: '修改了任务标题', description_updated: '更新了任务描述',
-    status_changed: '修改了任务状态', priority_changed: '修改了任务优先级',
-    assignee_changed: '更换了执行负责人', source_changed: '更换了来源者', creator_changed: '更换了创建者',
-    start_date_changed: '修改了开始日期', due_date_changed: '修改了截止日期',
-    parent_changed: '修改了父任务', stage_changed: '修改了任务阶段'
-  };
   function mentions(text, actor) {
     return [...String(text || '').matchAll(/\[[^\]\n]*\]\(mention:\/\/(?:member|agent)\/([^\s)]+)\)/g)].some(match => match[1] === actor);
   }
-  function createSource({storage, reminders, membership, projects, tasks, comments, activity = task => task.activity_log || [], subscriptions, subscribeChanges}) {
+  function createSource({storage, reminders, membership, projects, tasks, comments, formatActivity, activity = task => task.activity_log || [], subscriptions, subscribeChanges}) {
     const deliveryKey = 'eva:task-notification-delivery:v1';
     let deliveries = new Map(), deliveryError = null, dirty = false, reconciling = false;
     try {
@@ -38,12 +31,9 @@
           if (!entry.id) continue;
           const assigned = entry.action === 'assignee_changed' && entry.details?.to === actor;
           if (!delivered(actor, project, task.id, entry.id, entry.actor_id !== actor && (followed || assigned))) continue;
-          const details = entry.details || {};
-          const from = details.from_name, to = details.to_name;
-          const change = from || to ? '：' + (from || '未指派') + ' → ' + (to || '未指派') : '';
           result.push({id: entry.id, taskId: task.id, kind: 'activity', recipientId: actor,
             actorId: entry.actor_id, timestamp: Date.parse(entry.created_at) || 0,
-            text: (actionText[entry.action] || '更新了任务') + change, activityId: entry.id});
+            text: formatActivity(entry), activityId: entry.id});
         }
         for (const comment of comments(task)) {
           if (!comment.id || comment.deleted || comment.deleted_at) continue;

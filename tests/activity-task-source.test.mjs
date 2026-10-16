@@ -7,11 +7,14 @@ function setup(options = {}) {
   vm.runInNewContext(fs.readFileSync('prototype/009-2-data-supply.js', 'utf8').split('// Canonical human account fixtures.')[0], {window, localStorage: {getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value)}});
   if (fs.existsSync('prototype/064-activity-task-source.js')) vm.runInNewContext(fs.readFileSync('prototype/064-activity-task-source.js', 'utf8'), {window});
   assert.equal(typeof window.EvaActivityTasks?.createSource, 'function');
+  const formatterContext = {};
+  const patch = fs.readFileSync('prototype/009-6-patch-general.js', 'utf8');
+  vm.runInNewContext(patch.slice(patch.indexOf('function evaTaskActivityText('), patch.indexOf('function evaTaskActivityRecords(')), formatterContext);
   const task = {id: 'live', workspace_id: 'prod', title: '原任务', identifier: 'SC-999', activity_log: [{id: 'change', actor_id: 'other', action: 'assignee_changed', details: {from_name: '甲', to_name: '乙'}, created_at: '2026-10-16T09:00:00Z'}]};
   const comments = [{id: 'comment', author_id: 'other', content: '请确认', created_at: '2026-10-16T09:10:00Z'}];
   let allowed = true, followed = options.followed ?? true;
   const membership = {actorId: () => 'me', canRead: () => allowed, subscribe: () => () => {}};
-  const source = window.EvaActivityTasks.createSource({storage: {getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value)}, reminders: window.EvaProjectReminderDemo, membership, projects: () => [{id: 'prod', name: '供应链'}], tasks: () => [task], comments: () => comments, subscriptions: {has: () => followed, subscribe: () => () => {}}, subscribeChanges: () => () => {}});
+  const source = window.EvaActivityTasks.createSource({storage: {getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value)}, reminders: window.EvaProjectReminderDemo, membership, projects: () => [{id: 'prod', name: '供应链'}], tasks: () => [task], formatActivity: formatterContext.evaTaskActivityText, comments: () => comments, subscriptions: {has: () => followed, subscribe: () => () => {}}, subscribeChanges: () => () => {}});
   return {source, task, comments, reminders: window.EvaProjectReminderDemo, setAllowed: value => {allowed = value;}, setFollowed: value => {followed = value;}};
 }
 test('真实任务日志和评论进入同一任务，不复制任务数据；源修改即时反映', () => {
@@ -70,4 +73,18 @@ test('没有任务日志或评论的任务，不产生独立演示提醒', () =>
   s.task.assignee_id = 'me';
   s.task.id = 'supply-15';
   assert.equal(s.source.list('me').length, 0);
+});
+
+test('列表保留详情的完整前后值，不另写简化动作文案', () => {
+  const s = setup();
+  s.task.activity_log = [
+    {id:'status',actor_id:'other',action:'status_changed',details:{from:'in_review',to:'done'}},
+    {id:'date',actor_id:'other',action:'due_date_changed',details:{from:'2026-09-15',to:'2026-09-20'}},
+    {id:'owner',actor_id:'other',action:'assignee_changed',details:{from_name:'Alexandra Catherine Montgomery',to_name:'王宜林'}},
+  ];
+  assert.deepEqual(Array.from(s.source.list('me')[0].events.filter(e=>e.activityId),e=>e.text), [
+    '状态从 审核中 改为 已完成',
+    '截止日期从 2026-09-15 改为 2026-09-20',
+    '执行负责人从 Alexandra Catherine Montgomery 改为 王宜林',
+  ]);
 });

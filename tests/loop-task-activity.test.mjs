@@ -10,8 +10,8 @@ const updateStart = source.indexOf('evaTaskActivityActor=()=>');
 const updateEnd = source.indexOf(',previewIssueTrigger=', updateStart);
 const timelineStart = source.indexOf('listTimeline=rt=>');
 const timelineEnd = source.indexOf(',resolveComment=', timelineStart);
-const activityTextStart = source.indexOf('evaTaskActivityText=entry=>');
-const activityTextEnd = source.indexOf(',Ei=ki=>', activityTextStart);
+const activityTextStart = source.indexOf('function evaTaskActivityText(');
+const activityTextEnd = source.indexOf('function evaTaskActivityRecords(', activityTextStart);
 assert.ok(updateStart >= 0 && updateEnd > updateStart);
 assert.ok(timelineStart >= 0 && timelineEnd > timelineStart);
 assert.ok(activityTextStart >= 0 && activityTextEnd > activityTextStart);
@@ -80,7 +80,7 @@ test('timeline reads only the current project task and new tasks start empty', a
 
 test('field-change activity uses spaces around old and new values', () => {
   const ctx = {};
-  vm.runInNewContext('var ' + source.slice(activityTextStart, activityTextEnd), ctx);
+  vm.runInNewContext(source.slice(activityTextStart, activityTextEnd), ctx);
   const cases = [
     [{action: 'status_changed', details: {from: 'todo', to: 'in_progress'}}, '状态从 待办 改为 进行中'],
     [{action: 'priority_changed', details: {from: 'medium', to: 'high'}}, '优先级从 中 改为 高'],
