@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 import {createServer} from '../../tools/serve.mjs';
 import {fileURLToPath} from 'node:url';
 
-test('Edge：详情只显示直接子任务，进度、编辑、逐级导航及空状态一致',async()=>{
+test('Edge：详情只显示直接子任务，任务树进度、编辑、逐级导航及空状态一致',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
@@ -18,19 +18,19 @@ test('Edge：详情只显示直接子任务，进度、编辑、逐级导航及�
   await rows.first().waitFor();
   assert.equal(await rows.count(),3);
   assert.doesNotMatch(await section.innerText(),/SC-112|SC-113|SC-114|开始分解/);
-  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'1/3');
+  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'1/7');
   assert.equal(await section.getByRole('button',{name:'添加子任务',exact:true}).count(),1);
   await section.getByRole('button',{name:'子任务',exact:true}).press('Enter');
   assert.equal(await rows.count(),0);
-  assert.equal(await section.locator('.eva-loop-subtasks__count').innerText(),'1/3');
+  assert.equal(await section.locator('.eva-loop-subtasks__count').innerText(),'1/7');
   await section.getByRole('button',{name:'子任务',exact:true}).click();
   await page.getByRole('button',{name:'SC-110 状态',exact:true}).click();
   await page.locator('.eva-task-enum-menu:visible').getByText('已完成',{exact:true}).click();
-  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='2/3');
+  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='2/7');
   await page.locator('.eva-task-enum-menu:visible').waitFor({state:'hidden'});
   await page.getByRole('button',{name:'SC-110 状态',exact:true}).click();
   await page.locator('.eva-task-enum-menu:visible').getByText('已取消',{exact:true}).click();
-  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='1/3');
+  await page.waitForFunction(()=>document.querySelector('.eva-loop-subtasks__head .eva-loop-subtasks__count')?.textContent==='1/6');
   await page.locator('.eva-task-enum-menu:visible').waitFor({state:'hidden'});
   assert.equal(await section.getByRole('button',{name:/优先级/}).count(),0);
   const assignee=rows.filter({hasText:'SC-110'}).locator('.loop-assignee-trigger');
@@ -60,7 +60,7 @@ test('Edge：详情只显示直接子任务，进度、编辑、逐级导航及�
   await modal.getByRole('button',{name:'创建',exact:true}).click();
   await section.getByRole('button',{name:/打开任务 .*验证直接子任务归属/}).waitFor();
   assert.equal(await rows.count(),1);
-  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'0/1');
+  assert.equal(await section.locator('.eva-loop-subtasks__head .eva-loop-subtasks__count').innerText(),'0/2');
   await page.setViewportSize({width:1000,height:800});
   assert.ok(await section.evaluate(e=>e.scrollWidth<=e.clientWidth+1),'窄窗口列表不横向溢出');
   await page.getByRole('button',{name:'关闭任务详情'}).click();
@@ -92,7 +92,7 @@ test('Edge：详情只显示直接子任务，进度、编辑、逐级导航及�
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
 
-test('Edge：表格直接子任务进度与详情一致，搜索不改变分母，明暗态可读',async()=>{
+test('Edge：表格任务树进度与详情一致，搜索不改变分母，明暗态可读',async()=>{
  const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
@@ -103,12 +103,18 @@ test('Edge：表格直接子任务进度与详情一致，搜索不改变分母�
   await page.getByRole('button',{name:'任务视图：看板'}).click();
   await page.getByRole('menuitem',{name:'表格',exact:true}).click();
   await page.getByRole('button',{name:'配置列',exact:true}).click();
-  await page.getByRole('option',{name:'子任务进度',exact:true}).click();
+  await page.getByRole('option',{name:'任务树进度',exact:true}).click();
   await page.getByRole('textbox',{name:'搜索列',exact:true}).press('Escape');
   const root=page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:/^SC-101$/})});
-  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/3');
+  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/7');
+  const rootStatus=root.locator('.eva-task-table__cell-trigger[aria-label="状态"]');
+  await rootStatus.click();
+  await page.locator('.semi-dropdown-menu:visible:has(.eva-task-enum-option)').getByRole('menuitem',{name:'已完成'}).click();
+  await page.locator('.semi-toast',{hasText:'还有 5 项子任务未完成'}).waitFor();
+  assert.match(await rootStatus.innerText(),/进行中/,'后代未全部结束时父任务不能完成');
+  assert.equal(await page.locator('.semi-modal',{hasText:'仍然完成'}).count(),0,'不提供强制完成确认');
   await page.getByRole('textbox',{name:'搜索任务',exact:true}).fill('SC-101');
-  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/3');
+  assert.equal(await root.locator('.eva-task-table__progress').innerText(),'1/7');
   await root.locator('.eva-task-table__title-btn').click();
   const section=page.locator('.eva-loop-subtasks');
   await section.waitFor();
@@ -120,5 +126,23 @@ test('Edge：表格直接子任务进度与详情一致，搜索不改变分母�
    await settleMotion(page);
    await page.screenshot({path:`/tmp/eva-direct-${theme}.png`});
   }
+  await page.getByRole('button',{name:'关闭任务详情'}).click();
+  await page.getByRole('textbox',{name:'搜索任务',exact:true}).fill('');
+  const rootRow=page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:/^SC-101$/})});
+  await rootRow.locator('.eva-task-table__check .semi-checkbox').click();
+  const batchBar=page.locator('.eva-task-table__toolbar--batch');
+  await batchBar.getByText('已选择 1 个').waitFor();
+  await batchBar.locator('.eva-task-table__toolbtn--danger').click();
+  await page.locator('.semi-modal').getByText('删除 1 个任务？').waitFor();
+  await page.locator('.semi-modal').locator('button[aria-label="confirm"]').click();
+  const deleteToast=page.locator('.semi-toast',{hasText:'已删除 1 个任务'});
+  await deleteToast.waitFor();
+  assert.equal(await page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:/^SC-101$/})}).count(),0);
+  for(const identifier of ['SC-109','SC-110','SC-111']){
+   assert.ok(await page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:new RegExp('^'+identifier+'$')})}).count()>0,identifier+' 应保留');
+  }
+  await deleteToast.locator('.eva-task-table__toast-undo').click();
+  await page.locator('.semi-toast',{hasText:'已撤回'}).waitFor();
+  await page.locator('.eva-task-table__row').filter({has:page.locator('.eva-task-table__title-id').filter({hasText:/^SC-101$/})}).waitFor();
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 });
