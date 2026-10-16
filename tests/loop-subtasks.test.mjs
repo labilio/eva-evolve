@@ -118,16 +118,17 @@ test('供应链演示数据提供超过默认展示深度的四级子任务链�
   for(const issue of issues)assert.ok(issue.due_date===null||/^2026-\d{2}-\d{2}$/.test(issue.due_date),issue.identifier+': 截止日期格式');
 });
 
-test('任务树进度包含当前任务和全部后代，取消不计入分子与分母',()=>{
+test('子任务进度只统计直接子任务，取消不计入分子与分母',()=>{
   const {ctx,issues}=setup();
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueTreeProgress('root',issues))),{done:1,total:3});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:0,total:1});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('child',issues))),{done:1,total:1});
   issues.push({id:'cancelled',parent_issue_id:'root',status:'cancelled'});
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueTreeProgress('root',issues))),{done:1,total:3});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:0,total:1});
   issues.find(i=>i.id==='child').status='done';
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueTreeProgress('root',issues))),{done:2,total:3});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:1,total:1});
   issues.find(i=>i.id==='root').status='done';
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueTreeProgress('root',issues))),{done:3,total:3});
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueTreeProgress('grandchild',issues))),{done:1,total:1});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('root',issues))),{done:1,total:1},'当前任务自身状态不计入自己的子任务进度');
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.evaIssueChildProgress('grandchild',issues))),{done:0,total:0});
 });
 
 test('任务祖先链按根任务到直接父任务排序，并在异常循环关系下安全终止',()=>{
@@ -156,7 +157,8 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.equal(runtime.includes('仍然完成父任务'),false);
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rt})'));
   assert.ok(runtime.includes('React.createElement(EvaIssueRelationMeta,{issue:rn,variant:"list"})'));
-  assert.ok(runtime.includes('"任务树"'));
+  assert.ok(runtime.includes('"子任务进度"'));
+  assert.equal(runtime.includes('"任务树"'),false);
   assert.ok(runtime.includes('mt.total," 项任务"'));
   assert.ok(runtime.includes('className:"eva-loop-list__task"'));
   assert.ok(runtime.includes('className:"loop-list__check",onClick:cn=>cn.stopPropagation()},React.createElement(Checkbox,{"aria-label":"选择任务 "+rn.identifier'));
@@ -191,7 +193,7 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
 
 test('任务详情只呈现直接子任务列表，移除递归树与重复空状态入口',()=>{
   assert.ok(runtime.includes('function EvaIssueDetailSubtasks('));
-  assert.ok(runtime.includes('evaIssueTreeProgress(rootIssue.id,allIssues)'));
+  assert.ok(runtime.includes('evaIssueChildProgress(rootIssue.id,allIssues)'));
   assert.ok(runtime.includes('evaIssueChildrenOf(rootIssue.id,allIssues)'));
   assert.ok(runtime.includes('添加子任务'));
   assert.ok(runtime.includes('aria-expanded'));
@@ -230,15 +232,17 @@ test('任务详情通过完整 Semi 面包屑原位切换详情',()=>{
   assert.doesNotMatch(taskStyles,/\.loop-idp__boardbtn\.is-contextual/);
 });
 
-test('表格进度复用完整任务树口径且不受视图筛选影响',()=>{
+test('表格可选子任务进度列只统计直接子任务且不受视图筛选影响',()=>{
   const source=fs.readFileSync('prototype/062-loop-table-view.js','utf8');
   const start=source.indexOf('      const descendantIds=')>=0?source.indexOf('      const descendantIds='):source.indexOf('      const progressOf=');
   const end=source.indexOf('      const hideIds=',start);
   const allIssues=[{id:'root',parent_issue_id:null,status:'in_progress'},{id:'child',parent_issue_id:'root',status:'todo'},{id:'grand',parent_issue_id:'child',status:'done'},{id:'cancel',parent_issue_id:'root',status:'cancelled'}];
   const childMap=new Map([['root',[allIssues[1],allIssues[3]]],['child',[allIssues[2]]]]);
-  const {ctx:taskCtx}=setup(),ctx={allIssues,childMap,evaIssueTreeProgress:taskCtx.evaIssueTreeProgress};
+  const {ctx:taskCtx}=setup(),ctx={allIssues,childMap,evaIssueChildProgress:taskCtx.evaIssueChildProgress};
   vm.runInNewContext(source.slice(start,end)+';globalThis.result=progressOf("root");',ctx);
-  assert.deepEqual(JSON.parse(JSON.stringify(ctx.result)),{done:1,total:3});
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.result)),{done:0,total:1});
+  assert.match(source,/child_progress:'子任务进度'/);
+  assert.doesNotMatch(source,/DEFAULT_COLUMNS=\[[^\]]*child_progress/);
 });
 
 test('父任务默认候选按最近更新排序，仍排除自身和后代',()=>{

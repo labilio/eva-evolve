@@ -12,7 +12,7 @@
       React,useI18n,Popover,Dropdown,Checkbox,Switch,Toast,DatePicker,Input,
       AssigneePicker,RunningChip,useRunConfirm,
       EvaLoopIdentityAvatar,EvaLoopIdentityName,
-      updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,evaIssueTreeProgress,
+      updateIssue,batchUpdateIssues,restoreIssues,batchDeleteIssues,confirmDelete,evaIssueChildrenOf,evaIssueDescendantIds,evaIssueChildProgress,
       evaCurrentTaskProject,evaTaskProjectId,evaTaskProjectIdentities,evaTaskLabels,evaAttachTaskLabel,evaDetachTaskLabel,evaCreateTaskLabel,
       ISSUE_STATUS_ORDER,ISSUE_STATUS_ICON,ISSUE_STATUS_HEX,
       PRIORITY_ORDER,PRIORITY_ICON,
@@ -68,7 +68,7 @@
     const COLUMN_LABELS={
       title:'任务',identifier:'编号',status:'状态',priority:'优先级',assignee:'负责人',
       labels:'标签',start_date:'开始日期',due_date:'截止日期',
-      created_at:'创建时间',updated_at:'更新时间',child_progress:'任务树进度',creator:'创建者'
+      created_at:'创建时间',updated_at:'更新时间',child_progress:'子任务进度',creator:'创建者'
     };
     const SYSTEM_COLUMNS=Object.keys(COLUMN_LABELS);
     const DEFAULT_COLUMNS=[
@@ -189,7 +189,7 @@
       const progressOf=issueId=>{
         const children=childMap.get(issueId)||[];
         if(!children.length)return null;
-        const progress=evaIssueTreeProgress(issueId,allIssues||[]);
+        const progress=evaIssueChildProgress(issueId,allIssues||[]);
         return progress.total?progress:null;
       };
       const hideIds=new Set();
