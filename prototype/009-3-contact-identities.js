@@ -5,6 +5,14 @@ const nameCollator=new Intl.Collator('zh-Hans-CN',{collation:'pinyin'});
 root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDigitalEmployeesStore,ownerId='u-wangyilin'}={}){
  const portrait=id=>root.EvaAvatar.personUri(id);
  const link=(label,url)=>({label,url});
+ const pathParts=value=>String(value||'').split('/').map(part=>part.trim()).filter(Boolean);
+ const departmentId=path=>'department:'+path.map(encodeURIComponent).join('/');
+ const personDepartments=human=>{
+  const fallback=root.__EVA_ORG_UNITS?.[human.dept]||human.dept||'';
+  const parts=pathParts(human.deptFull||fallback),title=String(human.title||'').trim();
+  if(title&&parts.at(-1)===title)parts.pop();
+  return parts;
+ };
  function resolve(ref){
   const id=typeof ref==='string'?ref:ref?.id||ref?.uid;if(!id)return null;
   const actor=store.actorId();
@@ -51,6 +59,22 @@ root.EvaContactIdentities={create(store,{team=root.EvaAITeam,digital=root.EvaDig
    return nameCollator.compare(a.person.name,b.person.name);
   });
  }
- return {resolve,directory,portrait};
+ function organization(){
+  const rows=directory(),humans=new Map(store.people().map(person=>[person.id,person])),nodes=new Map(),unassignedRows=[];
+  for(const row of rows){
+   const parts=personDepartments(humans.get(row.person.id)||{});
+   if(!parts.length){unassignedRows.push(row);continue;}
+   for(let index=0;index<parts.length;index++){
+    const path=parts.slice(0,index+1),id=departmentId(path),parentPath=path.slice(0,-1);
+    if(!nodes.has(id))nodes.set(id,{id,name:path.at(-1),parentId:parentPath.length?departmentId(parentPath):null,path,pathText:path.join('/'),level:index+1,directRows:[],rows:[],children:[]});
+    const node=nodes.get(id);node.rows.push(row);if(index===parts.length-1)node.directRows.push(row);
+   }
+  }
+  for(const node of nodes.values())if(node.parentId&&nodes.has(node.parentId))nodes.get(node.parentId).children.push(node);
+  const sortNodes=list=>list.sort((a,b)=>nameCollator.compare(a.name,b.name)).map(node=>{sortNodes(node.children);return node;});
+  const roots=sortNodes([...nodes.values()].filter(node=>!node.parentId));
+  return {roots,nodes:[...nodes.values()],byId:Object.fromEntries(nodes),unassignedRows,totalCount:rows.length};
+ }
+ return {resolve,directory,organization,portrait};
 }};
 })(window);

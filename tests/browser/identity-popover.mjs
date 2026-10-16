@@ -22,7 +22,8 @@ test('身份资料贴近触发入口，无遮罩，外部点击和 Escape 关闭
   const geometry=await Promise.all([trigger.boundingBox(),card.boundingBox()]);
   assert.equal(geometry[1].width,360,'桌面资料卡使用紧凑宽度');
   assert.ok(geometry[1].x>=0&&geometry[1].x+geometry[1].width<=1200);
-  assert.ok(Math.abs(geometry[1].x-(geometry[0].x+geometry[0].width))<30,'空间足够时资料卡应优先在身份入口右侧展开');
+  const horizontalGap=Math.min(Math.abs(geometry[1].x-(geometry[0].x+geometry[0].width)),Math.abs(geometry[0].x-(geometry[1].x+geometry[1].width)));
+  assert.ok(horizontalGap<30,'资料卡应贴近身份入口，并按组织栏占用后的可用空间自动选择左右方向');
   assert.ok(Math.abs(geometry[1].y-geometry[0].y)<30,'资料卡顶部应贴近身份入口');
   await card.getByText('王宜林',{exact:true}).last().click();
   assert.equal(await card.getByRole('button',{name:'返回'}).count(),1,'所属人留在同一卡内');

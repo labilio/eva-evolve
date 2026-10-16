@@ -51,10 +51,11 @@ test('项目、通讯录与员工市场：实际列表布局、筛选及窄窗�
   await page.goto(origin+'/#/contacts');
   await page.locator('.eva-contacts__columns').waitFor();
   const headerSpacing=await page.locator('.eva-contacts').evaluate(e=>{
-   const title=e.querySelector('.eva-contacts__main-head').getBoundingClientRect(),header=e.querySelector('.eva-contacts__columns').getBoundingClientRect(),row=e.querySelector('.eva-contacts__person').getBoundingClientRect();
-   return {above:header.top-title.bottom,below:row.top-header.bottom};
+   const title=e.querySelector('.eva-contacts__main-head').getBoundingClientRect(),body=e.querySelector('.eva-contacts__body').getBoundingClientRect(),directoryHead=e.querySelector('.eva-contacts__directory-head').getBoundingClientRect(),header=e.querySelector('.eva-contacts__columns').getBoundingClientRect(),row=e.querySelector('.eva-contacts__person').getBoundingClientRect();
+   return {bodyTop:body.top-title.bottom,above:header.top-directoryHead.bottom,below:row.top-header.bottom};
   });
-  assert.ok(Math.abs(headerSpacing.above-16)<=1,'独立表头与页面标题之间保留16px留白');
+  assert.ok(Math.abs(headerSpacing.bodyTop)<=1,'组织架构与联系人目录紧接页面标题区');
+  assert.ok(Math.abs(headerSpacing.above)<=1,'独立表头紧接当前部门路径，不重复增加空白层级');
   assert.ok(Math.abs(headerSpacing.below-8)<=1,'独立表头与连续列表之间保留8px留白');
   for(const width of [1200,900]){
    await page.setViewportSize({width,height:800});
