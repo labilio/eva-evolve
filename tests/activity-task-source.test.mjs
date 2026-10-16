@@ -59,3 +59,15 @@ test('无权限对象不读评论，来源读写都复核权限及当前账号',
   assert.equal(s.source.list('someone-else').length, 0);
   assert.throws(() => s.source.markRead(row, ['change'], true, 'someone-else'), /账号/);
 });
+
+test('没有任务日志或评论的任务，不产生独立演示提醒', () => {
+  const s = setup();
+  s.task.id = 'supply-20';
+  s.task.activity_log = [];
+  s.comments.length = 0;
+  // This historical fixture task used to receive a fabricated mention.
+  assert.equal(s.reminders.allItems('prod', 'u-wangyilin').length, 0);
+  s.task.assignee_id = 'me';
+  s.task.id = 'supply-15';
+  assert.equal(s.source.list('me').length, 0);
+});

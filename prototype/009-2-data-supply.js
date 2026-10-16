@@ -1,43 +1,3 @@
-// Task-event mock: every reminder resolves to an existing task. The current
-// demo account is Wang Yilin; an event is relevant through assignment,
-// explicit mention, review request, or a change to a task the account created.
-// Repeated events on one task still occupy one unread task.
-window.__EVA_TASK_REMINDER_EVENTS = {
-  official: [
-    {taskId:'official-102',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了你负责的任务'},
-    {taskId:'official-103',kind:'mentioned',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静在任务中提及了你'},
-    {taskId:'official-104',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了反馈模板'},
-    {taskId:'official-105',kind:'assigned',actorId:'u-hejing',text:'何静补充了高频问题清单'}
-  ],
-  prod: [
-    {taskId:'supply-15',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了需求变更范围'},
-    {taskId:'supply-15',kind:'mentioned',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静在任务中提及了你'},
-    {taskId:'supply-16',kind:'review',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静请你复核验证数据'},
-    {taskId:'supply-17',kind:'assigned',actorId:'u-zhouyuan',text:'周远更新了合同条款'},
-    {taskId:'supply-18',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了风险简报'},
-    {taskId:'supply-19',kind:'assigned',actorId:'u-hejing',text:'何静更新了排产方案'},
-    {taskId:'supply-20',kind:'mentioned',actorId:'u-linxiao',recipientId:'u-wangyilin',text:'林晓在任务中提及了你'},
-    {taskId:'supply-28',kind:'assigned',actorId:'u-zhouyuan',text:'周远更新了价格台账'},
-    {taskId:'supply-21',kind:'assigned',actorId:'u-linxiao',text:'林晓补充了询价策略的待决条件'},
-    {taskId:'supply-22',kind:'assigned',actorId:'u-hejing',text:'何静更新了跨部门待决事项'}
-  ],
-  lab: [
-    {taskId:'client-101',kind:'created',actorId:'u-hejing',text:'何静完成了你创建的任务'},
-    {taskId:'client-102',kind:'created',actorId:'u-hejing',text:'何静将你创建的任务提交复核'},
-    {taskId:'client-103',kind:'mentioned',actorId:'u-suhang',recipientId:'u-wangyilin',text:'苏航在任务中提及了你'},
-    {taskId:'client-104',kind:'assigned',actorId:'u-linxiao',text:'林晓更新了你负责的任务'}
-  ],
-  'drive-design': [
-    {taskId:'drive-1',kind:'created',actorId:'u-hejing',text:'何静更新了你创建的任务'},
-    {taskId:'drive-2',kind:'created',actorId:'u-zhouyuan',text:'周远将你创建的任务提交复核'},
-    {taskId:'drive-3',kind:'mentioned',actorId:'u-suhang',recipientId:'u-wangyilin',text:'苏航在任务中提及了你'},
-    {taskId:'drive-4',kind:'review',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静请你复核权限检查'}
-  ]
-};
-// Stable IDs belong to the fixture event, not its current position in a filtered list.
-for (const [projectId, events] of Object.entries(window.__EVA_TASK_REMINDER_EVENTS)) {
-  events.forEach((event, index) => { event.id ||= 'task-reminder:' + projectId + ':' + index; });
-}
 const evaTaskReminderReadKey = 'eva:task-reminder-read:v2';
 const evaTaskReminderEventKey = (actor, project, id) => JSON.stringify([actor, project, id]);
 let evaTaskReminderRead = new Set();
@@ -46,14 +6,6 @@ try {
   if (saved !== null) {
     const values = JSON.parse(saved);
     if (Array.isArray(values)) evaTaskReminderRead = new Set(values.filter(value => typeof value === 'string'));
-  } else {
-    // v1 belonged to the original demo account. Only its existing seed events migrate.
-    const old = new Set(JSON.parse(localStorage.getItem('eva:task-reminder-read:v1') || '[]'));
-    for (const [project, events] of Object.entries(window.__EVA_TASK_REMINDER_EVENTS)) {
-      for (const event of events) if (old.has(project + ':' + event.taskId)) {
-        evaTaskReminderRead.add(evaTaskReminderEventKey('u-wangyilin', project, event.id));
-      }
-    }
   }
 } catch (_) {}
 const evaTaskReminderListeners = new Set();
@@ -91,7 +43,6 @@ window.EvaProjectReminderDemo = {
     if (changed) evaTaskReminderCommit(next);
   },
   removeProject(projectId) {
-    delete window.__EVA_TASK_REMINDER_EVENTS[projectId];
     const next = new Set([...evaTaskReminderRead].filter(key => { try { return JSON.parse(key)[1] !== projectId; } catch (_) { return false; } }));
     // Project deletion already owns its transaction; stale read metadata grants no access.
     try { localStorage.setItem(evaTaskReminderReadKey, JSON.stringify([...next])); } catch (_) {}
@@ -103,21 +54,14 @@ window.EvaProjectReminderDemo = {
   allItems(projectId, actorId) {
     const store = evaTaskReminderStore(), currentActor = evaTaskReminderActor(actorId);
     if (store?.isProjectDeleted?.(projectId) || (store?.canRead && !store.canRead(projectId, currentActor)) || (evaTaskReminderSource && !evaTaskReminderSource.canRead(projectId, currentActor))) return [];
-    const tasks = evaTaskReminderSource ? evaTaskReminderSource.tasks(projectId) : projectId === 'official' ? window.__EVA_OFFICIAL_TASKS
-      : projectId === 'lab' ? window.__EVA_CLIENT_TASKS
-      : projectId === 'drive-design' ? window.__EVA_DRIVE_DEMO?.issues
-      : projectId === 'prod' ? window.__EVA_SUPPLY_CHAIN_DEMO?.issues : [];
+    const tasks = evaTaskReminderSource?.tasks(projectId) || [];
     const byId = new Map((tasks || []).map(task => [task.id, task]));
     const grouped = new Map();
-    const events = [...(window.__EVA_TASK_REMINDER_EVENTS[projectId] || []), ...(evaTaskReminderSource?.events(projectId, currentActor) || [])];
+    const events = evaTaskReminderSource?.events(projectId, currentActor) || [];
     for (const event of events) {
       const task = byId.get(event.taskId);
       if (!task || event.actorId === currentActor) continue;
-      const related = event.recipientId === currentActor && event.kind === 'activity'
-        || event.kind === 'assigned' && task.assignee_id === currentActor
-        || event.kind === 'created' && task.creator_id === currentActor
-        || (event.kind === 'mentioned' || event.kind === 'review') && event.recipientId === currentActor;
-      if (!related) continue;
+      if (event.recipientId !== currentActor || event.kind !== 'activity') continue;
       const unread = !evaTaskReminderRead.has(evaTaskReminderEventKey(currentActor, projectId, event.id));
       const entry = {...event, unread};
       const record = grouped.get(task.id);

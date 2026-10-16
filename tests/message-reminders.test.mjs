@@ -100,6 +100,19 @@ test('关注与最近右键批量已读只包含各自可见的未读会话',()=
  assert.deepEqual(Array.from(select('recent',records,store,'actor',[]),r=>r.id),['t','outside','unpinned']);
 });
 
+
+function connectTaskEvents(window) {
+ const tasks=window.__EVA_SUPPLY_CHAIN_DEMO.issues;
+ const events=[
+  {id:'one',taskId:'supply-15',kind:'activity',actorId:'u-hejing',recipientId:'u-wangyilin',text:'更新'},
+  {id:'two',taskId:'supply-15',kind:'activity',actorId:'u-hejing',recipientId:'u-wangyilin',text:'评论'},
+  {id:'three',taskId:'supply-16',kind:'activity',actorId:'u-hejing',recipientId:'u-wangyilin',text:'更新'},
+  {id:'self',taskId:'supply-15',kind:'activity',actorId:'u-wangyilin',recipientId:'u-wangyilin',text:'自己'},
+  {id:'missing',taskId:'missing',kind:'activity',actorId:'u-hejing',recipientId:'u-wangyilin',text:'无任务'}
+ ];
+ window.EvaProjectReminderDemo.connectSource({tasks:()=>tasks,events:()=>events,canRead:()=>true});
+}
+
 test('项目任务提醒引用真实任务，按任务去重，排除本人操作与无关任务',()=>{
  const source=fs.readFileSync('prototype/009-2-data-supply.js','utf8');
  const code=source.slice(0,source.indexOf('// Canonical human account fixtures.'));
@@ -107,7 +120,7 @@ test('项目任务提醒引用真实任务，按任务去重，排除本人操�
   {id:'supply-15',identifier:'SC-115',title:'确认变更',assignee_id:'u-wangyilin'},
   {id:'supply-16',identifier:'SC-116',title:'复核数据',assignee_id:'u-wangyilin'}
  ]},__EVA_OFFICIAL_TASKS:[],__EVA_CLIENT_TASKS:[],__EVA_DRIVE_DEMO:{issues:[]}};
- vm.runInNewContext(code,{window});
+ vm.runInNewContext(code,{window});connectTaskEvents(window);
  const reminders=window.EvaProjectReminderDemo.items('prod');
  assert.equal(reminders.length,2);
  assert.equal(reminders[0].id,'supply-15');
@@ -126,7 +139,7 @@ test('进入项目不清未读，只在打开具体任务后减少一个并持�
   {id:'supply-15',identifier:'SC-115',title:'确认变更',assignee_id:'u-wangyilin'},
   {id:'supply-16',identifier:'SC-116',title:'复核数据',assignee_id:'u-wangyilin'}
  ]},__EVA_OFFICIAL_TASKS:[],__EVA_CLIENT_TASKS:[],__EVA_DRIVE_DEMO:{issues:[]}});
- const window=makeWindow();vm.runInNewContext(code,{window,localStorage});
+ const window=makeWindow();vm.runInNewContext(code,{window,localStorage});connectTaskEvents(window);
  const reminders=window.EvaProjectReminderDemo;
  assert.equal(reminders.count('prod'),2);
  assert.equal(reminders.count('prod'),2); // 仅查看项目不改变未读
@@ -136,7 +149,7 @@ test('进入项目不清未读，只在打开具体任务后减少一个并持�
  assert.equal(reminders.record('prod','supply-15').unread,false);
  assert.equal(reminders.record('prod','supply-15').reasons.length,2);
  reminders.markRead('prod','supply-15');assert.equal(updates,1);
- const refreshed=makeWindow();vm.runInNewContext(code,{window:refreshed,localStorage});
+ const refreshed=makeWindow();vm.runInNewContext(code,{window:refreshed,localStorage});connectTaskEvents(refreshed);
  assert.equal(refreshed.EvaProjectReminderDemo.count('prod'),1);
 });
 
@@ -144,10 +157,10 @@ test('删除项目不再产生任务提醒，刷新后的预置事件不能复�
  const source=fs.readFileSync('prototype/009-2-data-supply.js','utf8'),code=source.slice(0,source.indexOf('// Canonical human account fixtures.'));
  const window={__EVA_SUPPLY_CHAIN_DEMO:{issues:[{id:'supply-15',identifier:'SC-115',title:'变更',assignee_id:'u-wangyilin'}]}};
  let deleted=false;window.__evaGetFileContext=()=>({store:{isProjectDeleted:()=>deleted}});
- vm.runInNewContext(code,{window});const reminders=window.EvaProjectReminderDemo;
+ vm.runInNewContext(code,{window});connectTaskEvents(window);const reminders=window.EvaProjectReminderDemo;
  assert.equal(reminders.count('prod'),1);deleted=true;assert.equal(reminders.count('prod'),0);
  let changes=0;reminders.subscribe(()=>changes++);reminders.removeProject('prod');assert.equal(changes,1);
- assert.equal(window.__EVA_TASK_REMINDER_EVENTS.prod,undefined);
+ assert.equal(reminders.count('prod'),0);
 });
 
 test('跨入口按原消息事件读写，批量操作的旧快照不吞新到消息', () => {

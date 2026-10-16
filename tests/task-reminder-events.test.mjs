@@ -7,12 +7,14 @@ function setup(values = new Map()) {
   const window = {__EVA_SUPPLY_CHAIN_DEMO: {issues: [{id: 'supply-15', assignee_id: 'u-wangyilin'}]}};
   const localStorage = {getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value)};
   vm.runInNewContext(source, {window, localStorage});
-  return {window, store: window.EvaProjectReminderDemo, values, localStorage};
+  const events = [{id:'initial',taskId:'supply-15',kind:'activity',actorId:'u-hejing',recipientId:'u-wangyilin',text:'更新'}];
+  window.EvaProjectReminderDemo.connectSource({tasks:()=>window.__EVA_SUPPLY_CHAIN_DEMO.issues,events:()=>events,canRead:()=>true});
+  return {events,window, store: window.EvaProjectReminderDemo, values, localStorage};
 }
 test('读过任务后新增事件重新未读，按事件标已读不吞新事件', () => {
   const s = setup();
   s.store.markRead('prod', 'supply-15');
-  s.window.__EVA_TASK_REMINDER_EVENTS.prod.push({id: 'fresh', taskId: 'supply-15', kind: 'mentioned', actorId: 'u-hejing', recipientId: 'u-wangyilin', text: '请再次确认'});
+  s.events.push({id: 'fresh', taskId: 'supply-15', kind: 'activity', actorId: 'u-hejing', recipientId: 'u-wangyilin', text: '请再次确认'});
   assert.equal(s.store.count('prod'), 1);
   const row = s.store.record('prod', 'supply-15');
   assert.equal(row.events.filter(e => e.unread).length, 1);
@@ -21,7 +23,7 @@ test('读过任务后新增事件重新未读，按事件标已读不吞新事�
 });
 test('任务已读按账号隔离并支持标未读，持久化后保持', () => {
   const s = setup();
-  s.window.__EVA_TASK_REMINDER_EVENTS.prod.push({id: 'other', taskId: 'supply-15', kind: 'mentioned', actorId: 'u-hejing', recipientId: 'u-zhouyuan', text: '请确认'});
+  s.events.push({id: 'other', taskId: 'supply-15', kind: 'activity', actorId: 'u-hejing', recipientId: 'u-zhouyuan', text: '请确认'});
   s.store.markRead('prod', 'supply-15');
   assert.equal(s.store.count('prod', 'u-zhouyuan'), 1);
   s.store.markUnread('prod', 'supply-15');
@@ -37,9 +39,11 @@ test('任务读状态保存失败保持未读，权限撤销后不能读取或�
   assert.equal(s.store.count('prod'), 0);
   assert.throws(() => s.store.markRead('prod', 'supply-15'), /访问/);
 });
-test('旧任务级已读只迁移预置事件，后续新增不会永久已读', () => {
+test('旧演示提醒已读不污染真实事件，事件级已读继续持久化', () => {
   const s = setup(new Map([['eva:task-reminder-read:v1', '["prod:supply-15"]']]));
-  assert.equal(s.store.count('prod'), 0);
-  s.window.__EVA_TASK_REMINDER_EVENTS.prod.push({id: 'later', taskId: 'supply-15', kind: 'assigned', actorId: 'u-hejing', text: '更新'});
+  assert.equal(s.store.count('prod'), 1);
+  s.store.markRead('prod','supply-15');
+  assert.equal(setup(s.values).store.count('prod'), 0);
+  s.events.push({id: 'later', taskId: 'supply-15', kind: 'activity', actorId: 'u-hejing', recipientId:'u-wangyilin', text: '更新'});
   assert.equal(s.store.count('prod'), 1);
 });

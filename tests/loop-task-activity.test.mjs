@@ -43,6 +43,7 @@ function setup() {
   };
  attachTaskSubscriptions(ctx);
   attachTaskScope(ctx,source);
+  vm.runInNewContext(source.slice(source.indexOf('function evaTaskActivityRecords('), source.indexOf('function evaTaskCommentRecords(')), ctx);
   vm.runInNewContext('var ' + source.slice(updateStart, updateEnd), ctx);
   vm.runInNewContext('var ' + source.slice(timelineStart, timelineEnd), ctx);
   return {ctx, issue, issues};

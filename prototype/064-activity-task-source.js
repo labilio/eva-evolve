@@ -11,7 +11,7 @@
   function mentions(text, actor) {
     return [...String(text || '').matchAll(/\[[^\]\n]*\]\(mention:\/\/(?:member|agent)\/([^\s)]+)\)/g)].some(match => match[1] === actor);
   }
-  function createSource({storage, reminders, membership, projects, tasks, comments, subscriptions, subscribeChanges}) {
+  function createSource({storage, reminders, membership, projects, tasks, comments, activity = task => task.activity_log || [], subscriptions, subscribeChanges}) {
     const deliveryKey = 'eva:task-notification-delivery:v1';
     let deliveries = new Map(), deliveryError = null, dirty = false, reconciling = false;
     try {
@@ -34,7 +34,7 @@
       const result = [];
       for (const task of tasks(project)) {
         const followed = subscriptions.has(task);
-        for (const entry of task.activity_log || []) {
+        for (const entry of activity(task)) {
           if (!entry.id) continue;
           const assigned = entry.action === 'assignee_changed' && entry.details?.to === actor;
           if (!delivered(actor, project, task.id, entry.id, entry.actor_id !== actor && (followed || assigned))) continue;

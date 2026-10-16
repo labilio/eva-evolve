@@ -1,7 +1,6 @@
 .eva-activity { display:flex; width:100%; height:100%; min-height:0; overflow:hidden; color:var(--eva-text-primary); }
 .eva-activity__rail { display:flex; flex-direction:column; min-height:0; flex-shrink:0; }
 .eva-activity__actions { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.eva-activity__types { display:flex; padding:8px 16px; gap:4px; overflow-x:auto; border-bottom:1px solid var(--eva-border-subtle); flex-shrink:0; }
 .eva-activity__list { flex:1; min-height:0; overflow:auto; }
 .eva-activity__row.semi-list-item { display:block; padding:12px 16px; content-visibility:auto; contain-intrinsic-size:auto 150px; }
 .eva-activity__row:hover { background:var(--semi-color-fill-0); }
@@ -36,32 +35,3 @@
   outline:none;
   box-shadow:none;
 }
-
-/* Message objects share a heading; sessions remain independent interactive rows. */
-.eva-activity__group.semi-list-item { display:block; padding:0; }
-.eva-activity__group-heading { display:flex; align-items:center; gap:6px; padding:12px 16px 4px; color:var(--eva-text-primary); font-size:14px; line-height:22px; font-weight:var(--eva-fw-medium); }
-.eva-activity__group-heading > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.eva-activity__group-heading > svg { flex-shrink:0; }
-.eva-activity__row.is-grouped.semi-list-item { position:relative; padding:6px 16px 10px 36px; border-bottom:0; contain-intrinsic-size:auto 76px; }
-.eva-activity__row.is-grouped .eva-activity__preview { margin-top:2px; padding-left:0; border-left:0; }
-.eva-activity__row.is-grouped .eva-activity__event.semi-button { padding-left:0; padding-right:0; }
-
-/* Inset separators follow the session text and content edge, not the full row. */
-.eva-activity__row.is-grouped + .eva-activity__row.is-grouped::before {
-  content:"";
-  position:absolute;
-  top:0;
-  left:36px;
-  right:16px;
-  border-top:1px solid var(--eva-border-subtle);
-  opacity:.6;
-  pointer-events:none;
-}
-
-/* Team conversations are compact title/preview pairs, not event timelines. */
-.eva-activity__row.is-conversation.semi-list-item { padding:10px 16px; contain-intrinsic-size:auto 76px; }
-.eva-activity__row.is-conversation .eva-activity__title-line > svg { width:16px; height:16px; flex-shrink:0; color:var(--eva-text-secondary); }
-.eva-activity__row.is-conversation .eva-activity__preview { margin-top:0; padding-left:22px; border-left:0; }
-.eva-activity__row.is-conversation .eva-activity__event.semi-button { padding:0; min-height:24px; font-size:12px; line-height:20px; }
-.eva-activity__row.is-conversation .eva-activity__actor { font-size:12px; color:var(--eva-text-secondary); }
-.eva-activity__row.is-conversation .eva-activity__event-text { color:var(--eva-text-secondary); }

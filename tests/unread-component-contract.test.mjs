@@ -44,7 +44,7 @@ test('动态蓝点仅表达未读存在，默认数字与零值行为不变',()=
  for(const count of [0,-1,NaN])assert.equal(render({count,presentation:'activity-dot'}),null);
  const dot=render({count:101,presentation:'activity-dot'});
  assert.equal(dot.props['data-eva-unread-indicator'],'activity');
- assert.equal(dot.props['aria-label'],'有未读动态');
+ assert.equal(dot.props['aria-label'],'有未读任务动态');
  assert.equal(dot.children.length,0);
  const badge=render({count:101});
  assert.equal(badge.props['data-eva-unread'],true);

@@ -496,7 +496,7 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   const creator = read('prototype/047-digital-employees.js');
   const runtime = createPatchedRuntime().source;
 
-  assert.match(sider, /EVA_PERSONAL_NAV=Object\.freeze\(\["workboard","new-chat","my-ai","automation","connection-center"\]\)/);
+  assert.match(sider, /EVA_PERSONAL_NAV=Object\.freeze\(\["new-chat","my-ai","workboard","automation","connection-center"\]\)/);
   assert.match(sider, /EVA_TEAM_NAV=Object\.freeze\(\["messages","projects","contacts","drive","sites"\]\)/);
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
