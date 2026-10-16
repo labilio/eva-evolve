@@ -1,4 +1,5 @@
-import React, {useState,useRef} from 'react';
+import React, {useState,useRef,useLayoutEffect} from 'react';
+import {availableFocusTarget} from './063-floating-focus.js';
 import {Popover} from './063-popover.jsx';
 import {Popconfirm} from './063-popconfirm.jsx';
 import FileForm from './063-file-form.jsx';
@@ -34,9 +35,16 @@ export function FileToolbar({onAction}) {
 }
 // Menus and their follow-up overlays share the persistent trigger. The menu
 // closes before the form/confirmation opens; no anchor on an unmounted item.
-export function ActionMenu({items,children,position='bottomRight'}) {
+export function ActionMenu({items,children,position='bottomRight',native=false}) {
  const [menu,setMenu]=useState(false),[active,setActive]=useState(null),[open,setOpen]=useState(false);
  const host=useRef(null);
+ const tabExit=useRef(false);
+ const [actionFinished,setActionFinished]=useState(0);
+ useLayoutEffect(()=>{
+  if(!native||!actionFinished)return;
+  const target=host.current?.querySelector('button');
+  if(document.activeElement===document.body&&availableFocusTarget(target))target.focus();
+ },[native,actionFinished]);
  const returnFocus=()=>host.current?.querySelector('button');
  // Retain content until Semi finishes its native exit; no custom timer or duration.
  const close=()=>setOpen(false);
@@ -50,6 +58,20 @@ export function ActionMenu({items,children,position='bottomRight'}) {
    onClick={event=>{event.stopPropagation();setMenu(false);if(item.renderContent||item.confirmation){setActive(item);setOpen(true);}else item.onClick();}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
   {trigger}
  </Dropdown>;
+ function nativeMenuKeydown(event) {
+  if(event.key!=='Tab')return;
+  event.preventDefault();event.stopPropagation();
+  const trigger=returnFocus();
+  const candidates=[...document.querySelectorAll('button,a[href],input,select,textarea,[tabindex]')].filter(node=>node.tabIndex>=0&&availableFocusTarget(node)&&!node.closest('[role="menu"]'));
+  const index=candidates.indexOf(trigger);
+  const next=candidates[index+(event.shiftKey?-1:1)];
+  tabExit.current=true;setMenu(false);
+  (next||trigger)?.focus();
+ }
+ if(native) return <span ref={host}><Dropdown trigger="click" visible={menu} position={position} returnFocusOnClose={!tabExit.current} onVisibleChange={visible=>{if(visible)tabExit.current=false;setMenu(visible);}}
+  render={<Dropdown.Menu aria-label={children.props['aria-label'] || '操作'} onKeyDownCapture={nativeMenuKeydown}>{items.map(item=><Dropdown.Item key={item.label} icon={item.icon} onClick={async event=>{event.stopPropagation();setMenu(false);try{await item.onClick();}finally{setActionFinished(value=>value+1);}}}>{item.label}</Dropdown.Item>)}</Dropdown.Menu>}>
+  {children}
+ </Dropdown></span>;
  return <span ref={host}>{overlay}</span>;
 }
 const deletionProps=resource=>({title:'永久删除“'+resource.name+'”？',content:'删除后不可恢复',okText:'永久删除',okButtonProps:{type:'danger'}});

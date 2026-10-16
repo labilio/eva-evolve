@@ -33,3 +33,21 @@ test('公共 CSS 拥有数字外观，业务 CSS 只负责布局和状态',()=>{
  assert.doesNotMatch(nav,/\.eva-nav-icon__unread/);
  assert.match(read('prototype/009-6-patch-general.js'),/React\.createElement\(EvaUnreadBadge,\{count:reminders\.count\(projectId\),label/);
 });
+
+test('动态蓝点仅表达未读存在，默认数字与零值行为不变',()=>{
+ const window={};vm.runInNewContext(read('prototype/009-3-unread-ui.js'),{window});
+ const source=read('prototype/009-5-patch-im.js');
+ const start=source.indexOf('function EvaUnreadBadge('),end=source.indexOf('function EvaReminderNavBadge(',start);
+ const context={window,React:{createElement:(tag,props,...children)=>({tag,props,children})}};
+ vm.runInNewContext(source.slice(start,end),context);
+ const render=context.EvaUnreadBadge;
+ for(const count of [0,-1,NaN])assert.equal(render({count,presentation:'activity-dot'}),null);
+ const dot=render({count:101,presentation:'activity-dot'});
+ assert.equal(dot.props['data-eva-unread-indicator'],'activity');
+ assert.equal(dot.props['aria-label'],'有未读动态');
+ assert.equal(dot.children.length,0);
+ const badge=render({count:101});
+ assert.equal(badge.props['data-eva-unread'],true);
+ assert.equal(badge.props['data-eva-unread-indicator'],undefined);
+ assert.equal(badge.children[0],'99+');
+});

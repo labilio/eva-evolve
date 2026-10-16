@@ -104,7 +104,8 @@ test('全局侧栏保留既定入口语义并统一使用 Lucide 功能图标', 
   const end = source.indexOf(',Sider=(', start);
   const sidebar = source.slice(start, end);
 
-  assert.match(sidebar, /EvaWorkbenchIcon/);
+  assert.match(sidebar, /React\.createElement\(Inbox,/);
+  assert.match(sidebar, /动态/);
   assert.match(sidebar, /EvaAutomationIcon/);
   assert.match(sidebar, /React\.createElement\(MessageSquare,/);
   assert.match(sidebar, /React\.createElement\(LayoutGrid,/);

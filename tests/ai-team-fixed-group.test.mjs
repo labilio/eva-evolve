@@ -122,3 +122,21 @@ test('AI 小队子区归档后软删除保留记录并拒绝旧会话访问',()=
 });
 
 test('AI 小队已归档子区必须先恢复才能修改',()=>{const group=window.EvaMyAITeamGroup.createStore({storage:null}),id=group.createThread({id:'readonly',name:'只读子区'});group.updateThread(id,{status:2});assert.equal(group.isThreadArchived(id),true);for(const patch of [{name:'改名'},{name:'改名',status:1},{joined:true}])assert.throws(()=>group.updateThread(id,patch),/归档/);group.updateThread(id,{status:1});assert.equal(group.isThreadArchived(id),false);group.updateThread(id,{name:'恢复后改名'});assert.equal(group.source(members,id).channels[0].threads.find(t=>t.id===id).name,'恢复后改名');});
+
+test('小队父群与子区逐事件已读独立，恢复持久化后仍由原群管理',()=>{
+ let saved;const storage={getItem:()=>saved,setItem:(_,value)=>{saved=value;}};
+ const store=window.EvaMyAITeamGroup.createStore({storage});
+ const id=store.id,thread=store.createThread({name:'供应商整改'});
+ const source=store.source(members,thread);
+ source.onSend('@通用助理 父群请求',id,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);
+ source.onSend('@通用助理 子区请求',thread,undefined,[{uid:'assistant',name:'@通用助理',start:0}]);
+ const parentIds=store.notifications(id,id).map(event=>event.id),childIds=store.notifications(id,thread).map(event=>event.id);
+ assert.equal(parentIds.length,1);assert.equal(childIds.length,1);
+ store.markNotifications(id,id,parentIds,false);store.markNotifications(id,thread,childIds,false);
+ store.markRead(id,id);assert.equal(store.unreadCount(id,id),0);assert.equal(store.unreadCount(id,thread),1);
+ const restored=window.EvaMyAITeamGroup.createStore({storage});
+ assert.equal(restored.unreadCount(id,id),0);assert.equal(restored.unreadCount(id,thread),1);
+ restored.markRead(id,thread);assert.equal(restored.unreadCount(id,thread),0);
+ restored.updateThread(thread,{status:2});restored.updateThread(thread,{deleted:true});
+ assert.throws(()=>restored.markNotifications(id,thread,childIds,false),/不存在/);
+});

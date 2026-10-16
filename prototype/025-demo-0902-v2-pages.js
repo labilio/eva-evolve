@@ -2,7 +2,6 @@
 (function () {
   'use strict';
 
-  var activeFeature = null;
   var pageTuneQueued = false;
 
   function icon(name) {
@@ -12,24 +11,6 @@
 
   function isTeamMode() {
     return /^#\/(collab|messages)(?:[/?]|$)/.test(String(location.hash || ''));
-  }
-
-  function buildWorkboard() {
-    var stats = [
-      ['grid', '总数', '0'], ['check', '活跃', '0'], ['play', '运行中', '0'], ['shield', '诊断', '0'], ['clock', '最早就绪', '-']
-    ];
-    var columns = [
-      ['', '收件箱'], ['', '积压'], ['eva-board-column--todo', '待办'], ['eva-board-column--planned', '已计划'], ['eva-board-column--ready', '就绪']
-    ];
-    return [
-      '<section class="eva-personal-feature-page eva-feature-page" data-eva-page="workboard" hidden>',
-      '<header class="eva-feature-head"><h1>任务看板</h1></header>',
-      '<div class="eva-feature-body"><div class="eva-board-topline"><p class="eva-feature-intro">管理任务卡片、依赖、调度、运行和诊断</p>',
-      '<div class="eva-feature-actions"><button class="eva-ui-btn" type="button">' + icon('refresh') + '刷新</button><button class="eva-ui-btn" type="button">' + icon('bolt') + '提醒调度器</button><button class="eva-ui-btn eva-ui-btn--primary" type="button">' + icon('plus') + '新建卡片</button></div></div>',
-      '<div class="eva-board-stats">' + stats.map(function (item) { return '<div class="eva-board-stat"><span>' + icon(item[0]) + item[1] + '</span><strong>' + item[2] + '</strong></div>'; }).join('') + '</div>',
-      '<section class="eva-board-filter"><div class="eva-board-filter__row"><div class="eva-faux-field eva-faux-field--muted">' + icon('search') + '<span class="eva-faux-field__text">搜索卡片、标签、助理或运行信息…</span></div><div class="eva-faux-field">全部优先级</div><div class="eva-faux-field">全部助理</div><div class="eva-faux-field">default</div></div><div class="eva-board-check" data-board-archive-checkbox></div></section>',
-      '<div class="eva-board-scroll" tabindex="0" role="region" aria-label="任务流程看板，可左右滚动"><div class="eva-board-columns">' + columns.map(function (item) { return '<section class="eva-board-column ' + item[0] + '"><div class="eva-board-column__head"><span class="eva-board-column__dot"></span><span>' + item[1] + '</span><span class="eva-board-column__count">0</span></div><div class="eva-board-column__empty">暂无卡片</div></section>'; }).join('') + '</div></div></div></section>'
-    ].join('');
   }
 
   function taskCard(title, desc, time) {
@@ -59,25 +40,6 @@
       '</div></div><div class="eva-auto-history" data-eva-auto-panel="history" hidden>暂无运行历史</div></div></section>'
     ].join('');
   }
-
-  function ensureFeaturePages(host) {
-    var page = document.querySelector('[data-eva-page="workboard"]');
-    if (!page) {
-      var template = document.createElement('template');
-      template.innerHTML = buildWorkboard();
-      page = template.content.firstElementChild;
-    }
-    if (host && page.parentElement !== host) host.appendChild(page);
-    return page;
-  }
-
-  function setFeaturePage(name) {
-    activeFeature = name;
-    var page = document.querySelector('[data-eva-page="workboard"]');
-    if (page) page.hidden = name !== 'workboard';
-  }
-
-  function clearFeaturePage() { setFeaturePage(null); }
 
   function renameExact(root, from, to) {
     if (!root) return;
@@ -177,7 +139,6 @@
   }
 
   function openProjectDetail(card) {
-    clearFeaturePage();
     var page = ensureProjectDetail();
     var title = card.querySelector('.name > span').textContent.trim();
     page.querySelector('h1').textContent = title;
@@ -231,19 +192,6 @@
       if (organization) { event.preventDefault(); event.stopPropagation(); openProjectDetail(organization); return; }
 
   }, true);
-
-  window.__evaNativePages.register('workboard', function (host, services) {
-    var page = ensureFeaturePages(host);
-    var unmountCheckbox = services.mountCheckbox(page.querySelector('[data-board-archive-checkbox]'), {children: '显示已归档'});
-    activeFeature = 'workboard';
-    page.hidden = false;
-    bindStaticInteractions();
-    return function () {
-      unmountCheckbox();
-      activeFeature = null;
-      if (page.parentElement === host) page.remove();
-    };
-  });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', queueTunePages, { once: true });
   else queueTunePages();

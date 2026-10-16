@@ -53,6 +53,8 @@
       return text;
     };
     let revision=0;const listeners=new Set();
+    let notificationSource=null;
+    const hasNotificationSource=(id,uid)=>!!notificationSource&&(!notificationSource.supports||notificationSource.supports(id,uid));
     const fail=message=>{throw new Error(message);};
     const eligible=p=>p.active!==false&&p.internal!==false&&p.activated!==false&&!p.ai&&!p.robot;
     const person=id=>state.people.find(p=>p.id===id&&eligible(p));
@@ -245,6 +247,12 @@
         if(message)deliver([{id:'forward-note:'+uid+':'+(++state.sequence),kind:'text',sender:{...person(uid),uid},time,text:message,mentions:[],mentionsVersion:1}]);
         notify();return copies.map(message=>message.id);
     }
+    function legacyConversationUnread(id,uid,seed=0){
+        if(!api.canReadForwardSource(id,uid))return 0;
+        const pref=state.chatPreferences[uid]?.[id],count=pref?.readMessageCount;
+        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
+        return Math.max(pref?.markedUnread?1:0,count===undefined?(state.unreadBaselineV1?(Number(seed)||0)+Math.max(0,total-(state.unreadBaselineV1[uid]?.[id]||0)):Math.max(Number(seed)||0,total)):total-count,0);
+          }
     const api={
       owningProject,isProjectArchived,assertProjectWritable,
       isProjectDeleted:id=>!!state.deletedProjects?.[id],
@@ -599,13 +607,41 @@
         }
         notify();
       },
+      connectNotificationSource(provider){notificationSource=provider;},
+      conversationNotifications(id,uid){
+        if(!hasNotificationSource(id,uid)||!api.canReadForwardSource(id,uid))return [];
+        const events=notificationSource.events(id,uid),pref=state.chatPreferences[uid]?.[id];
+        const knownRead=pref?.notificationReadIds;
+        const legacy=legacyConversationUnread(id,uid,notificationSource.seed(id,uid));
+        const readIds=knownRead?new Set(knownRead):null;
+        const result=events.map((event,index)=>({...event,unread:readIds?!readIds.has(event.id):index>=events.length-legacy}));
+        if(pref?.markedUnread&&result.length&&!result.some(event=>event.unread)){const last=result.at(-1);last.unread=true;last.mentioned=false;}
+        return result;
+      },
+      markConversationNotifications(id,uid,eventIds,read){
+        requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
+        if(!hasNotificationSource(id,uid))fail('此会话未接入逐事件通知');
+        const events=api.conversationNotifications(id,uid),chosen=new Set(eventIds);
+        const readIds=new Set(events.filter(event=>!event.unread).map(event=>event.id));
+        let changed=false;
+        for(const event of events)if(chosen.has(event.id)){
+          if(readIds.has(event.id)!==read)changed=true;
+          read?readIds.add(event.id):readIds.delete(event.id);
+        }
+        state.chatPreferences[uid]||={};const pref=state.chatPreferences[uid][id]||={};
+        if(!changed&&pref.notificationReadIds&&!pref.markedUnread)return false;
+        pref.notificationReadIds=[...readIds];delete pref.markedUnread;
+        notify({keys:['chatPreferences']});return true;
+      },
       conversationUnread(id,uid,seed=0){
-        if(!api.canReadForwardSource(id,uid))return 0;
-        const pref=state.chatPreferences[uid]?.[id],count=pref?.readMessageCount;
-        const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
-        return Math.max(pref?.markedUnread?1:0,count===undefined?(state.unreadBaselineV1?(Number(seed)||0)+Math.max(0,total-(state.unreadBaselineV1[uid]?.[id]||0)):Math.max(Number(seed)||0,total)):total-count,0);
+        if(hasNotificationSource(id,uid)){
+          if(!api.canReadForwardSource(id,uid))return 0;
+          return Math.max(state.chatPreferences[uid]?.[id]?.markedUnread?1:0,api.conversationNotifications(id,uid).filter(event=>event.unread).length);
+        }
+        return legacyConversationUnread(id,uid,seed);
       },
       conversationMentioned(id,uid,seed=false){
+        if(hasNotificationSource(id,uid))return api.conversationNotifications(id,uid).some(event=>event.unread&&event.mentioned);
         if(!api.canReadForwardSource(id,uid))return false;
         const count=state.chatPreferences[uid]?.[id]?.readMessageCount;
         if(count===undefined&&seed)return true;
@@ -625,6 +661,7 @@
         if(pref.markedUnread)return false;pref.markedUnread=true;notify({keys:['chatPreferences']});return true;
       },
       clearConversationUnread(id,uid){
+        if(hasNotificationSource(id,uid))return api.markConversationNotifications(id,uid,api.conversationNotifications(id,uid).map(event=>event.id),true);
         requireHuman(uid);if(!api.canReadForwardSource(id,uid))fail('无会话访问权限');
         const total=[...(state.messages[id]||[]),...(state.directConversations?.[id]?.messages||[])].filter(m=>!(m.kind==='system'&&m.silent)&&(m.sender?.uid||m.sender?.id)!==uid&&m.sender?.uid!=='self').length;
         state.chatPreferences[uid]||={};const pref=state.chatPreferences[uid][id]||={};

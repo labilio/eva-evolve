@@ -107,6 +107,11 @@ body [data-eva-unread] {
   justify-content: center;
   flex-shrink: 0;
 }
+/* Activity rows signal unread presence; all other entrances retain counts. */
+body [data-eva-unread-indicator="activity"] {
+  display:inline-block; width:6px; height:6px; flex-shrink:0;
+  border-radius:var(--eva-radius-full, 999px); background:var(--eva-action-primary);
+}
 [data-eva-unread-label] {
   width: auto;
   height: 20px;

@@ -34,48 +34,95 @@ window.__EVA_TASK_REMINDER_EVENTS = {
     {taskId:'drive-4',kind:'review',actorId:'u-hejing',recipientId:'u-wangyilin',text:'何静请你复核权限检查'}
   ]
 };
-const evaTaskReminderReadKey = 'eva:task-reminder-read:v1';
-const evaTaskReminderRead = new Set((() => { try { return JSON.parse(localStorage.getItem(evaTaskReminderReadKey) || '[]'); } catch (_) { return []; } })());
+// Stable IDs belong to the fixture event, not its current position in a filtered list.
+for (const [projectId, events] of Object.entries(window.__EVA_TASK_REMINDER_EVENTS)) {
+  events.forEach((event, index) => { event.id ||= 'task-reminder:' + projectId + ':' + index; });
+}
+const evaTaskReminderReadKey = 'eva:task-reminder-read:v2';
+const evaTaskReminderEventKey = (actor, project, id) => JSON.stringify([actor, project, id]);
+let evaTaskReminderRead = new Set();
+try {
+  const saved = localStorage.getItem(evaTaskReminderReadKey);
+  if (saved !== null) {
+    const values = JSON.parse(saved);
+    if (Array.isArray(values)) evaTaskReminderRead = new Set(values.filter(value => typeof value === 'string'));
+  } else {
+    // v1 belonged to the original demo account. Only its existing seed events migrate.
+    const old = new Set(JSON.parse(localStorage.getItem('eva:task-reminder-read:v1') || '[]'));
+    for (const [project, events] of Object.entries(window.__EVA_TASK_REMINDER_EVENTS)) {
+      for (const event of events) if (old.has(project + ':' + event.taskId)) {
+        evaTaskReminderRead.add(evaTaskReminderEventKey('u-wangyilin', project, event.id));
+      }
+    }
+  }
+} catch (_) {}
 const evaTaskReminderListeners = new Set();
 let evaTaskReminderRevision = 0;
+let evaTaskReminderSource = null;
+const evaTaskReminderStore = () => window.__evaGetFileContext?.().store;
+const evaTaskReminderActor = actor => actor || evaTaskReminderStore()?.actorId?.() || 'u-wangyilin';
+function evaTaskReminderCommit(next) {
+  try { localStorage.setItem(evaTaskReminderReadKey, JSON.stringify([...next])); }
+  catch (_) { throw new Error('任务已读状态未能保存，请重试'); }
+  evaTaskReminderRead = next;
+  evaTaskReminderRevision++;
+  evaTaskReminderListeners.forEach(fn => fn());
+}
 window.EvaProjectReminderDemo = {
+  connectSource(source) { evaTaskReminderSource = source; },
   subscribe(fn) { evaTaskReminderListeners.add(fn); return () => evaTaskReminderListeners.delete(fn); },
   getRevision() { return evaTaskReminderRevision; },
-  markRead(projectId, taskId) {
-    const key = projectId + ':' + taskId;
-    if (evaTaskReminderRead.has(key) || !this.record(projectId, taskId)) return;
-    evaTaskReminderRead.add(key);
-    try { localStorage.setItem(evaTaskReminderReadKey, JSON.stringify([...evaTaskReminderRead])); } catch (_) {}
-    evaTaskReminderRevision++;
-    evaTaskReminderListeners.forEach(fn => fn());
+  markRead(projectId, taskId, actorId, eventIds) { this.setRead(projectId, taskId, true, actorId, eventIds); },
+  markUnread(projectId, taskId, actorId, eventIds) { this.setRead(projectId, taskId, false, actorId, eventIds); },
+  setRead(projectId, taskId, read, actorId, eventIds) {
+    const actor = evaTaskReminderActor(actorId), store = evaTaskReminderStore();
+    if ((store?.canRead && !store.canRead(projectId, actor)) || (evaTaskReminderSource && !evaTaskReminderSource.canRead(projectId, actor))) throw new Error('你已无法访问此项目');
+    const record = this.record(projectId, taskId, actor);
+    if (!record) return;
+    const selected = eventIds ? new Set(eventIds) : null, next = new Set(evaTaskReminderRead);
+    let changed = false;
+    for (const event of record.events) {
+      if (selected && !selected.has(event.id)) continue;
+      const key = evaTaskReminderEventKey(actor, projectId, event.id);
+      if (next.has(key) === read) continue;
+      if (read) next.add(key); else next.delete(key);
+      changed = true;
+    }
+    if (changed) evaTaskReminderCommit(next);
   },
   removeProject(projectId) {
     delete window.__EVA_TASK_REMINDER_EVENTS[projectId];
-    for(const key of evaTaskReminderRead)if(key.startsWith(projectId+':'))evaTaskReminderRead.delete(key);
-    try { localStorage.setItem(evaTaskReminderReadKey,JSON.stringify([...evaTaskReminderRead])); } catch (_) {}
-    evaTaskReminderRevision++;evaTaskReminderListeners.forEach(fn=>fn());
+    const next = new Set([...evaTaskReminderRead].filter(key => { try { return JSON.parse(key)[1] !== projectId; } catch (_) { return false; } }));
+    // Project deletion already owns its transaction; stale read metadata grants no access.
+    try { localStorage.setItem(evaTaskReminderReadKey, JSON.stringify([...next])); } catch (_) {}
+    evaTaskReminderRead = next;
+    evaTaskReminderRevision++; evaTaskReminderListeners.forEach(fn => fn());
   },
   record(projectId, taskId, actorId) { return this.allItems(projectId, actorId).find(item => item.id === taskId); },
   items(projectId, actorId) { return this.allItems(projectId, actorId).filter(item => item.unread); },
   allItems(projectId, actorId) {
-    if(window.__evaGetFileContext?.().store.isProjectDeleted?.(projectId))return [];
-    const currentActor = actorId || 'u-wangyilin';
-    const tasks = projectId === 'official' ? window.__EVA_OFFICIAL_TASKS
+    const store = evaTaskReminderStore(), currentActor = evaTaskReminderActor(actorId);
+    if (store?.isProjectDeleted?.(projectId) || (store?.canRead && !store.canRead(projectId, currentActor)) || (evaTaskReminderSource && !evaTaskReminderSource.canRead(projectId, currentActor))) return [];
+    const tasks = evaTaskReminderSource ? evaTaskReminderSource.tasks(projectId) : projectId === 'official' ? window.__EVA_OFFICIAL_TASKS
       : projectId === 'lab' ? window.__EVA_CLIENT_TASKS
       : projectId === 'drive-design' ? window.__EVA_DRIVE_DEMO?.issues
       : projectId === 'prod' ? window.__EVA_SUPPLY_CHAIN_DEMO?.issues : [];
     const byId = new Map((tasks || []).map(task => [task.id, task]));
     const grouped = new Map();
-    for (const event of window.__EVA_TASK_REMINDER_EVENTS[projectId] || []) {
+    const events = [...(window.__EVA_TASK_REMINDER_EVENTS[projectId] || []), ...(evaTaskReminderSource?.events(projectId, currentActor) || [])];
+    for (const event of events) {
       const task = byId.get(event.taskId);
       if (!task || event.actorId === currentActor) continue;
-      const related = event.kind === 'assigned' && task.assignee_id === currentActor
+      const related = event.recipientId === currentActor && event.kind === 'activity'
+        || event.kind === 'assigned' && task.assignee_id === currentActor
         || event.kind === 'created' && task.creator_id === currentActor
         || (event.kind === 'mentioned' || event.kind === 'review') && event.recipientId === currentActor;
       if (!related) continue;
+      const unread = !evaTaskReminderRead.has(evaTaskReminderEventKey(currentActor, projectId, event.id));
+      const entry = {...event, unread};
       const record = grouped.get(task.id);
-      if (record) record.reasons.push(event.text);
-      else grouped.set(task.id, {id:task.id,projectId,identifier:task.identifier,title:task.title,reasons:[event.text],unread:!evaTaskReminderRead.has(projectId + ":" + task.id)});
+      if (record) { record.reasons.push(event.text); record.events.push(entry); record.unread ||= unread; }
+      else grouped.set(task.id, {id: task.id, projectId, identifier: task.identifier, title: task.title, reasons: [event.text], events: [entry], unread});
     }
     return Array.from(grouped.values());
   },

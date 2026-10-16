@@ -135,3 +135,15 @@ test('文案迁移更新旧演示说明并保留用户修改',()=>{
   legacy.agents[0].desc='用户自定义职责';
   assert.equal(load(legacy,seed).saved().agents[0].desc,'用户自定义职责');
 });
+
+test('数字员工逐消息已读保留新到回复，原聊天入口与刷新共用状态',()=>{
+ const {store,saved}=load();store.addToTeam('staff-1');
+ const id=store.createSession('staff-1');store.send('staff-1','第一条');
+ const first=store.notifications('staff-1',id).map(e=>e.id);assert.equal(first.length,1);assert.ok(first[0]);
+ store.send('staff-1','第二条');store.markNotifications('staff-1',id,first,true);
+ assert.equal(store.unreadCount('staff-1',id),1);
+ const restored=load(saved()).store;assert.equal(restored.unreadCount('staff-1',id),1);
+ restored.markRead('staff-1',id);assert.equal(restored.unreadCount('staff-1',id),0);
+ restored.markNotifications('staff-1',id,first,false);assert.equal(restored.unreadCount('staff-1',id),1);
+ restored.conversationSource('staff-1',id).onSend('原聊天入口发送');assert.equal(restored.unreadCount('staff-1',id),0);
+});

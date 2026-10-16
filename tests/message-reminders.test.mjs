@@ -149,3 +149,47 @@ test('删除项目不再产生任务提醒，刷新后的预置事件不能复�
  let changes=0;reminders.subscribe(()=>changes++);reminders.removeProject('prod');assert.equal(changes,1);
  assert.equal(window.__EVA_TASK_REMINDER_EVENTS.prod,undefined);
 });
+
+test('跨入口按原消息事件读写，批量操作的旧快照不吞新到消息', () => {
+ const s=fixture();const messages=[{id:'old',actorId:'b'},{id:'first',actorId:'b'}];
+ s.connectNotificationSource({events:()=>messages,seed:()=>1});
+ assert.deepEqual(Array.from(s.conversationNotifications('g','a'),e=>e.unread),[false,true]);
+ s.markConversationNotifications('g','a',['first'],true);
+ assert.equal(s.conversationUnread('g','a'),0);
+ messages.push({id:'second',actorId:'b'},{id:'third',actorId:'b',mentioned:true});
+ s.markConversationNotifications('g','a',['second'],true);
+ assert.equal(s.conversationUnread('g','a'),1);
+ assert.deepEqual(Array.from(s.conversationNotifications('g','a').filter(e=>e.unread),e=>e.id),['third']);
+ s.markConversationNotifications('g','a',['first','second'],false);
+ assert.equal(s.conversationUnread('g','a'),3);
+ s.clearConversationUnread('g','a');assert.equal(s.conversationUnread('g','a'),0);
+ s.markConversationUnread('g','a');assert.equal(s.conversationUnread('g','a'),1);
+ assert.equal(s.conversationMentioned('g','a'),false,'手动未读不制造新的提及');
+ const restored=fixture(s.snapshot());restored.connectNotificationSource({events:()=>messages,seed:()=>1});
+ assert.equal(restored.conversationUnread('g','a'),1);
+ s.remove('g','a','b');assert.deepEqual(Array.from(s.conversationNotifications('g','b')),[]);
+ assert.throws(()=>s.markConversationNotifications('g','b',['first'],true),/权限/);
+});
+
+test('局部通知适配不能清空未接入会话的原未读与提及',()=>{
+ const s=fixture();
+ s.connectNotificationSource({supports:id=>id==='g',events:()=>[],seed:()=>0});
+ s.sendMessage('t','b','@甲 请确认',undefined,[{uid:'a',name:'@甲',start:0}]);
+ assert.equal(s.conversationUnread('t','a'),1);
+ assert.equal(s.conversationMentioned('t','a'),true);
+ assert.throws(()=>s.markConversationNotifications('t','a',[],true),/未接入/);
+ s.clearConversationUnread('t','a');
+ assert.equal(s.conversationUnread('t','a'),0);
+ s.markConversationUnread('t','a');
+ assert.equal(s.conversationUnread('t','a'),1);
+ assert.equal(s.conversationMentioned('t','a'),false);
+});
+
+test('已接入的空会话仍保留原手动未读，打开后正常清除',()=>{
+ const s=fixture();s.connectNotificationSource({events:()=>[],seed:()=>0});
+ s.markConversationUnread('g','a');assert.equal(s.conversationUnread('g','a'),1);
+ assert.equal(s.conversationNotifications('g','a').length,0,'不补造消息事件');
+ s.clearConversationUnread('g','a');assert.equal(s.conversationUnread('g','a'),0);
+ s.markConversationUnread('g','a');s.clearConversationUnread('g','a');
+ assert.equal(s.conversationUnread('g','a'),0,'已存空快照后也能清除手动标记');
+});

@@ -306,3 +306,18 @@ test('review picker assistants persist once and preserve edits',()=>{
  assert.equal(restored.localAssistants.find(a=>a.id==='assistant-demo-writing').name,'我的写作助理');
  assert.equal(restored.identities.filter(i=>i.role==='assistant').length,8);
 });
+
+test('AI 原会话按消息 ID 读写，旧快照不吞新回复且刷新保持',()=>{
+ const storage=memory(),s=make({storage});
+ const id=s.createThread('ai-general');s.sendMessage('ai-general',id,'第一条');
+ const first=s.notifications(id).filter(e=>e.unread).map(e=>e.id);assert.equal(first.length,1);
+ s.sendMessage('ai-general',id,'第二条');s.markNotifications(id,first,true);
+ assert.equal(s.unreadCount(id),1);
+ const second=s.notifications(id).find(e=>e.unread).id;assert.ok(!first.includes(second));
+ s.markNotifications(id,first,false);assert.equal(s.unreadCount(id),2);
+ const restored=make({storage});assert.equal(restored.unreadCount(id),2);
+ restored.markRead(id);assert.equal(restored.unreadCount(id),0);
+ restored.markUnread(id);assert.equal(restored.unreadCount(id),1);
+ restored.markRead(id);assert.equal(restored.unreadCount(id),0);
+ assert.throws(()=>restored.markNotifications('missing',first,true),/会话/);
+});

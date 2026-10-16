@@ -20,12 +20,13 @@
   let state={agents:seed.agents, drafts:{}, personaRequests:[], chats:{}, teamIds:[],...saved};
   const incomingMessageCount=session=>Array.isArray(session?.messages)?session.messages.filter(message=>message?.sender?.ai===true&&!['self','u-wangyilin'].includes(message.sender.uid)).length:0;
   const normalizeReadState=(session,markExistingRead=false)=>{
+    root.EvaAIPrivateConversations.normalizeMessageIds(session);
     const total=incomingMessageCount(session);
     if(!Number.isInteger(session.readAiMessageCount)||session.readAiMessageCount<0)session.readAiMessageCount=markExistingRead?total:0;
     session.readAiMessageCount=Math.min(session.readAiMessageCount,total);
     return session;
   };
-  const unreadCountOf=session=>Math.max(session?.markedUnread?1:0,incomingMessageCount(session)-(Number.isInteger(session?.readAiMessageCount)?session.readAiMessageCount:0));
+  const unreadCountOf=session=>Math.max(session?.markedUnread?1:0,root.EvaAIPrivateConversations.notifications(session).filter(event=>event.unread).length);
   // Add newly shipped organization employees without replacing local creations or edits.
   const hrOnboardingSeed=seed.agents.find(a=>a.id==='a_hr_onboarding');
   if(hrOnboardingSeed&&!state.agents.some(a=>a.id===hrOnboardingSeed.id))state.agents=[...state.agents,{...hrOnboardingSeed}];
@@ -69,9 +70,11 @@
     const replyTo=privateConversations.replySnapshot(session.channel_id,reply);
     if(session.autoTitle){session.title=Array.from(text.trim()).slice(0,20).join('');session.autoTitle=false;}
     session.messages.push({kind:'text',sender:{uid:'u-wangyilin',name:'王宜林'},time,text,...(replyTo?{replyTo}:{})},{kind:'text',sender:{uid:id,name:a.name,ai:true,identityAppearance:appearance(a)},time,text:a.presence==='offline'?'【原型】已排队，待数字员工上线后处理。':'【原型】已收到请求，后续由 '+a.name+' 的服务处理。当前未调用真实服务。'});
-    session.draft='';session.updatedAt=now();publish();return true;
+    privateConversations.normalizeMessageIds(session);session.draft='';session.updatedAt=now();publish();return true;
   };
-  const markSessionRead=(id,sessionId)=>{const session=readSession(id,sessionId);if(!session)return false;const total=incomingMessageCount(session);if(session.readAiMessageCount===total&&!session.markedUnread)return false;delete session.markedUnread;session.readAiMessageCount=total;publish();return true;};
+  const notifications=(id,sessionId)=>structuredClone(privateConversations.notifications(readSession(id,sessionId)));
+  const markNotifications=(id,sessionId,ids,read=true)=>{const changed=privateConversations.markNotifications(readSession(id,sessionId),ids,read);if(changed)publish();return changed;};
+  const markSessionRead=(id,sessionId)=>{if(!readSession(id,sessionId))return false;return markNotifications(id,sessionId,notifications(id,sessionId).map(event=>event.id),true);};
   const appearance=a=>({name:a.name,sourceName:'Eva',avatar:a.avatar||'prototype/assets/project-agent-bot.svg',logo:'prototype/assets/project-agent-bot.svg'});
   const demoSession=(id,a,story,index)=>{
     const title=Array.isArray(story)?story[0]:story.title;
@@ -157,7 +160,7 @@
     receiveForwarded(channelId,messages){
       for(const id of state.teamIds){const session=list(id).find(item=>item.channel_id===channelId);if(!session)continue;session.messages.push(...JSON.parse(JSON.stringify(messages)).map(message=>({...message,sender:{...message.sender,uid:'u-wangyilin',name:'王宜林',ai:false}})));session.updatedAt=now();publish();return true;}return false;
     },
-    markRead:markSessionRead,
+    notifications,markNotifications,markRead:markSessionRead,
     markUnread(id,sessionId){const session=readSession(id,sessionId);if(!session||session.markedUnread)return false;session.markedUnread=true;publish();return true;},
     unreadCount(id,sessionId){return unreadCountOf(readSession(id,sessionId));},
     hasUnread(id){return (id?list(id):state.teamIds.flatMap(teamId=>list(teamId))).some(session=>unreadCountOf(session)>0);},

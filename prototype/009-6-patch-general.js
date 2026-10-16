@@ -1,5 +1,175 @@
 (function (root) {
   'use strict';
+  function evaActivityTaskSource() {
+    if (evaActivityTaskSource.value) return evaActivityTaskSource.value;
+    const members = evaMembers().store;
+    const tasks = projectId => {
+      if (!members.canRead(projectId, members.actorId())) return [];
+      return issuesOf(projectId);
+    };
+    const comments = task => evaLoopCommentsByTask.get(task.id)
+      || (task.workspace_id === 'prod' ? window.__EVA_SUPPLY_CHAIN_DEMO?.comments?.[task.id] : null) || [];
+    return evaActivityTaskSource.value = window.EvaActivityTasks.createSource({
+      storage: window.localStorage,
+      reminders: window.EvaProjectReminderDemo, membership: members,
+      projects: () => loadSpaces().map(project => ({...project, id: evaTaskProjectId(project)})),
+      tasks, comments, subscriptions: evaTaskSubscriptions(),
+      subscribeChanges: listener => {
+        WKApp$1.mittBus.on('wk:loop-issues-refresh', listener);
+        return () => WKApp$1.mittBus.off('wk:loop-issues-refresh', listener);
+      }
+    });
+  }
+  function evaActivityTeamCatalog() {
+    const members=evaMembers().store, actor=members.actorId(), source=messageSource('all');
+    const rows=[];
+    for(const group of source.channels){
+      if(!members.canReadForwardSource(group.id,actor))continue;
+      const projectId=members.owningProject(group.id)||'';
+      rows.push({id:group.id,title:group.name,projectId,seed:group.unread||0,direct:group.chatType==='direct',channel:group});
+      for(const thread of group.threads||[])if(!thread.deleted&&members.canReadForwardSource(thread.id,actor))
+        rows.push({id:thread.id,title:thread.name,parentId:group.id,projectId,seed:thread.unread||0,channel:group});
+    }
+    return {source,rows};
+  }
+  function evaActivityChatSource() {
+    if(evaActivityChatSource.value)return evaActivityChatSource.value;
+    const members=evaMembers().store;
+    let catalog;
+    return evaActivityChatSource.value=window.EvaActivityChats.createSource({storage:window.localStorage,membership:members,
+      conversations:()=>{catalog=evaActivityTeamCatalog();return catalog.rows;},
+      events:(id,actor)=>{
+        const {source,rows}=catalog,record=rows.find(row=>row.id===id);
+        if(!record)return [];
+        const base=(record.parentId?source.threadMessages:source.messages)[id]||[];
+        const messages=members.visibleMessages(id,actor,[...base,...members.messagesFor(id,actor)]);
+        const now=Date.parse(window.__EVA_DEMO_TIME?.T1)||0;
+        return messages.flatMap((message,index)=>{
+          const sender=message.sender?.uid||message.sender?.id;
+          if(!sender||sender===actor||sender==='self'||message.kind==='divider'||message.kind==='system')return [];
+          const key=message.id||message.fixtureId||evaSelectionMessageKey(id,message,index,messages);
+          const found=evaConversationSearchRecord(message,index,now);
+          return [{id:key,messageId:key,actorId:sender,groupable:true,text:found?.displayText||'消息',
+            timestamp:Number.isFinite(found?.timestamp)?found.timestamp:now,
+            mentioned:!message.forwarded&&((message.mentions||[]).some(item=>(item.uid||item.id)===actor||['all','channel'].includes(item.uid))||(message.notifiedHumanIds||[]).includes(actor)),message}];
+        });
+      }
+    });
+  }
+  function EvaActivityChatDetail({row,event,onSelect}) {
+    const members=evaMembers().store;
+    reactExports.useSyncExternalStore(members.subscribe,members.getSnapshot);
+    const h=React.createElement,{source,rows}=evaActivityTeamCatalog(),record=rows.find(item=>item.id===row.id);
+    if(!record)return null;
+    const detailSource={...source,channels:[record.channel],hideNavigation:true,openChannelId:record.channel.id,openThreadId:record.parentId?record.id:null,openRequestKey:record.id,
+      openMessageId:event?.messageId,reminderRecord:evaReminderRecords('all',[record.channel],false).find(item=>item.id===record.id)
+    };
+    return h('div',{className:'eva-msg eva-channel-surface','data-eva-channel-surface':'global'},h(ChannelsView,{key:record.id,source:detailSource,evaTeamGlobal:true,onOpenTask:()=>{}}));
+  }
+  function evaActivityAICatalog(actor) {
+    // These local stores belong to the existing demo account. A membership
+    // account switch never grants access to another person's private AI data.
+    if(actor!=='u-wangyilin')return [];
+    const team=window.EvaAITeam,digital=window.EvaDigitalEmployeesStore,groups=window.EvaMyAITeamGroup;
+    const snapshot=team.getSnapshot(),rows=[];
+    const add=(kind,identityId,sessionId,title,identifier,time,notifications,markNotifications)=>{
+      rows.push({id:JSON.stringify([kind,identityId,sessionId]),identityId,sessionId,title,identifier,identityKind:kind,
+        type:kind==='squad'&&identityId===sessionId?'chat':'message',projectId:'',
+        notifications:()=>notifications().map((event,index)=>{
+          const message=event.message,found=evaConversationSearchRecord(message,index,Date.parse(time)||Date.parse(window.__EVA_DEMO_TIME.AI_REVIEW_START));
+          return {...event,messageId:event.id,actorId:message.sender?.uid||message.sender?.id,groupable:true,
+            text:found?.displayText||'消息',timestamp:Number.isFinite(found?.timestamp)?found.timestamp:Date.parse(time)||0};
+        }),markNotifications});
+    };
+    for(const session of snapshot.sessions){
+      const identity=snapshot.identities.find(item=>item.id===session.identityId);
+      if(!identity||!['persona','assistant','employee'].includes(identity.role))continue;
+      add('assistant',identity.id,session.id,session.title,identity.name,session.updatedAt,()=>team.notifications(session.id),(ids,read)=>team.markNotifications(session.id,ids,read));
+    }
+    for(const identityId of digital.teamIds())for(const session of digital.sessions(identityId))
+      add('employee',identityId,session.id,session.title,digital.get(identityId).name,session.updatedAt,()=>digital.notifications(identityId,session.id),(ids,read)=>digital.markNotifications(identityId,session.id,ids,read));
+    for(const group of groups.forwardChannels()){
+      add('squad',group.id,group.id,group.name,'AI 小队',window.__EVA_DEMO_TIME.AI_REVIEW_START,()=>groups.notifications(group.id,group.id),(ids,read)=>groups.markNotifications(group.id,group.id,ids,read));
+      for(const thread of group.threads)add('squad',group.id,thread.id,thread.name,group.name,window.__EVA_DEMO_TIME.AI_REVIEW_START,()=>groups.notifications(group.id,thread.id),(ids,read)=>groups.markNotifications(group.id,thread.id,ids,read));
+    }
+    return rows;
+  }
+  function evaActivityAISource() {
+    if(evaActivityAISource.value)return evaActivityAISource.value;
+    const members=evaMembers().store;
+    return evaActivityAISource.value=window.EvaActivityAI.createSource({storage:window.localStorage,actorId:()=>members.actorId(),records:evaActivityAICatalog,
+      subscribeChanges:listener=>{
+        const off=[members,window.EvaAITeam,window.EvaMyAITeamGroup,window.EvaDigitalEmployeesStore].map(store=>store.subscribe(listener));
+        return ()=>off.forEach(fn=>fn());
+      }
+    });
+  }
+  function evaActivityPreviewText(value) {
+    const walk=node=>{
+      if(node.type==='image')return node.alt||'';
+      if(node.type==='html')return '';
+      if(typeof node.value==='string')return node.value;
+      return (node.children||[]).map(walk).join(['root','list','listItem','blockquote','table','tableRow'].includes(node.type)?' ':'');
+    };
+    return walk(fromMarkdown(String(value||''),{extensions:[gfm()],mdastExtensions:[gfmFromMarkdown()]})).replace(/\s+/g,' ').trim();
+  }
+  function evaActivityStore() {
+    return evaActivityStore.value || (evaActivityStore.value = window.EvaActivity.createStore({
+      storage: window.localStorage, actorId: () => evaMembers().store.actorId(),
+      sources: [evaActivityTaskSource(), evaActivityChatSource(), evaActivityAISource()]
+    }));
+  }
+  function EvaActivityPage() {
+    const h = React.createElement, location = useLocation(), navigate = useNavigate();
+    const members = evaMembers().store;
+    reactExports.useSyncExternalStore(members.subscribe, members.getSnapshot);
+    const actor = members.actorId(), store = evaActivityStore();
+    const params = new URLSearchParams(location.search);
+    const select = (key, event) => {
+      const next = new URLSearchParams(location.search);
+      if (key) next.set('context', key); else next.delete('context');
+      if (event) next.set('event', event); else next.delete('event');
+      navigate({pathname: location.pathname, search: next.toString()});
+    };
+    const rowRenderers = reactExports.useMemo(() => ({
+      renderUnread: count => h(EvaUnreadBadge, {count, presentation:'activity-dot'}),
+      renderArchiveIcon:archived=>h(archived?ArchiveRestore:Archive,{size:16,strokeWidth:1.8}),
+      previewText:evaActivityPreviewText,
+      renderObjectIcon:row=>row.type==='task'?h(EvaLoopStatusIcon,{status:evaTaskRecord(row.id)?.status,size:14}):evaForwardIcon(row.sourceId==='ai'&&row.type!=='chat'?'bot':row.parentId?'corner-down-right':'users',{size:14}),
+      renderActor: (id,event) => {
+        if (!id) return null;
+        const sender=event?.message?.sender;
+        const identity = evaResolveTaskIdentity(id)||(sender?{...sender,type:sender.ai?'agent':'member'}:null);
+        if (!identity) return null;
+        const person = {...identity, id};
+        return h(React.Fragment, null, h(EvaLoopIdentityAvatar, {person, size: 20}), h(EvaLoopIdentityName, {person}));
+      },
+    }), []);
+    return h(evaForms.ActivityPage, {key: actor, store, storage: window.localStorage,
+      selectedKey: params.get('context'), selectedEventId: params.get('event'), onSelect: select,
+      ...rowRenderers,
+      renderDetail: (row,event) => {
+        if(row.sourceId==='chat')return h(EvaActivityChatDetail,{row,event,onSelect:select});
+        if(row.sourceId==='ai')return h(EvaAITeamPage,{
+          key:row.identityId,activitySelection:{identityId:row.identityId,sessionId:row.sessionId===row.identityId?null:row.sessionId},activityMessageId:event?.messageId,
+          onActivitySelect:selection=>{
+            const target=evaActivityAICatalog(actor).find(item=>item.identityId===selection.identityId&&item.sessionId===(selection.sessionId||selection.identityId));
+            select(target?JSON.stringify(['ai','',target.id]):null);
+          }
+        });
+        if (row.type !== 'task' || !evaTaskRecord(row.id)) return null;
+        const close = () => select(null);
+        const value = {close, toggle: () => {
+          evaTaskNavigation().open(h(IssueDetailPage, {issueId: row.id, onChanged: () => {}}));
+          evaTaskNavigation().toggle();
+        }, openProject: (project, issue) => navigate(evaTaskLinkUrl(project.id, issue.id).split('#')[1])};
+        return h(evaTaskDetailContext().Provider, {value}, h(IssueDetailPage, {
+          key: row.id, issueId: row.id, focusEventId:event?.commentId||event?.activityId, presentation: 'page', onClose: () => {close(); return false;},
+          onChanged: () => WKApp$1.mittBus.emit('wk:loop-issues-refresh')
+        }));
+      }
+    });
+  }
   // Task identity owns data scope. Opening an overlay never changes the source workspace.
   function evaTaskRecord(id) {
     const store=evaMembers().store,actor=store.actorId();
@@ -1536,7 +1706,7 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视�
     source=root.__evaCut(source,'onClick:Ct?undefined:Qa,icon:evaBreadcrumbProject',
       'onClick:evaTaskDetail&&evaBreadcrumbProject?()=>evaTaskDetail.openProject(evaBreadcrumbProject,xt):undefined,icon:evaBreadcrumbProject','点击项目路径才进入所属项目，归档项目仍可查看');
     source=root.__evaCut(source,'Qa=()=>{const Wi=currentWorkspaceSlug();Wi&&evaRestoreFleetProjectRoute(Wi),ut?.()!==!1&&WKApp$1.routeRight.pop()}',
-      'Qa=()=>{if(evaTaskDetail){evaTaskNavigation().close();return}ut?.()!==!1&&WKApp$1.routeRight.pop()}','关闭任务返回来源，不修改来源项目路由');
+      'Qa=()=>{if(evaTaskDetail){(evaTaskDetail.close||evaTaskNavigation().close)();return}ut?.()!==!1&&WKApp$1.routeRight.pop()}','关闭任务返回来源，不修改来源项目路由');
     source=root.__evaCut(source,'Ea=ki=>{const Wi=currentWorkspaceSlug(),no=issuesOf().find(ls=>ls.id===ki);if(!no||ki===xt.id)return;Wi&&no.identifier&&replaceFleetIssueDeepLink(Wi,no.identifier),WKApp$1.routeRight.pop(),WKApp$1.routeRight.push(React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,onClose:ut,breadcrumbViewport:evaBreadcrumbViewport.current}))}',
       'Ea=ki=>{if(ki===xt.id)return;evaTaskNavigation().open(React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,breadcrumbViewport:evaBreadcrumbViewport.current}),true)}','父子任务原位替换，保留抽屉与全屏状态');
     source=root.__evaCut(source,'onClick:()=>{var el=document.querySelector(".collab-route-right.eva-route-drawer");el&&el.classList.toggle("eva-drawer-expanded")}',
@@ -1601,6 +1771,24 @@ function IssuePage({defaultScope:rt,defaultView:ct,viewKey:ut}={}){`,'表格视�
       'React.createElement(CommentComposer,{ref:Da,projectId:evaTaskRecord(rt)?.workspace_id,candidates:sa','任务评论使用所属项目提及');
     source=root.__evaCut(source,'React.createElement(CommentComposer,{ref:jt,candidates:pt',
       'React.createElement(CommentComposer,{ref:jt,projectId:evaTaskRecord(mt)?.workspace_id,candidates:pt','任务评论回复使用所属项目提及');
-    return [evaTaskRecord,evaTaskRowsFor,evaTaskProjectFor,evaTaskDetailContext,evaTaskNavigation,EvaTaskDetailHost,EvaProjectArchiveNotice,EvaProjectArchiveDialog,EvaProjectArchiveCard,evaDeleteArchivedProject,EvaProjectDeleteDialog,EvaArchivedProjectsSettings,evaCreateProjectResolver].map(fn=>fn.toString()).join('\n')+'\n'+source;
+    source=root.__evaCut(source,'sourceUrl:gt,breadcrumbViewport:evaInheritedBreadcrumb}',
+      'sourceUrl:gt,breadcrumbViewport:evaInheritedBreadcrumb,focusEventId:evaFocusEventId}', '任务详情接收原事件定位参数');
+    source=root.__evaCut(source,'const evaTaskDetail=reactExports.useContext(evaTaskDetailContext()),evaBreadcrumbViewport=',
+      'const evaEventHost=reactExports.useRef(null),evaTaskDetail=reactExports.useContext(evaTaskDetailContext()),evaBreadcrumbViewport=', '定位仅访问本任务详情宿主');
+    source=root.__evaCut(source,';if(aa&&!xt)return React.createElement',
+      ';reactExports.useLayoutEffect(()=>{if(!evaFocusEventId||!evaEventHost.current)return;const node=Array.from(evaEventHost.current.querySelectorAll("[data-eva-task-event]")).find(item=>item.dataset.evaTaskEvent===evaFocusEventId);node?.scrollIntoView({block:"center"});},[evaFocusEventId,xt,Nt,ir]);if(aa&&!xt)return React.createElement', '原评论与动态加载后定位，无额外页面或状态源');
+    source=root.__evaCut(source,'return React.createElement("div",{className:`loop-idp${Ct?',
+      'return React.createElement("div",{ref:evaEventHost,className:`loop-idp${Ct?', '任务详情绑定自身定位宿主');
+    source=root.__evaCut(source,'key:ki.id,className:`loop-cmt__row${Wi?" is-root":""}`',
+      'key:ki.id,"data-eva-task-event":ki.id,className:`loop-cmt__row${Wi?" is-root":""}${ki.id===evaFocusEventId?" eva-message-source-highlight":""}`', '原评论及回复提供稳定定位锚点');
+    source=root.__evaCut(source,'key:no.id,className:"loop-acts__item"',
+      'key:no.id,"data-eva-task-event":no.id,className:"loop-acts__item"+(no.id===evaFocusEventId?" eva-message-source-highlight":"")', '原任务动态提供稳定定位锚点');
+    source=root.__evaCut(source,'const Wi=yi(ki.id);return',
+      'const Wi=yi(ki.id)||ki.entries.some(entry=>entry.id===evaFocusEventId);return', '被定位的动态组展开');
+    source=root.__evaCut(source,'ki.entries.length>8&&!evaOlderActivityIds.has(ki.id)?',
+      'ki.entries.length>8&&!evaOlderActivityIds.has(ki.id)&&!ki.entries.some(entry=>entry.id===evaFocusEventId)?', '定位历史动态时呈现其所属组');
+    source=root.__evaCut(source,'if(ki.a&&prev?.a&&prev.a.action===ki.a.action',
+      'if(ki.a&&prev?.a&&ki.a.id!==evaFocusEventId&&prev.a.id!==evaFocusEventId&&prev.a.action===ki.a.action', '被定位的源事件保留独立锚点');
+    return [evaActivityTaskSource,evaActivityTeamCatalog,evaActivityChatSource,EvaActivityChatDetail,evaActivityAICatalog,evaActivityAISource,evaActivityPreviewText,evaActivityStore,EvaActivityPage,evaTaskRecord,evaTaskRowsFor,evaTaskProjectFor,evaTaskDetailContext,evaTaskNavigation,EvaTaskDetailHost,EvaProjectArchiveNotice,EvaProjectArchiveDialog,EvaProjectArchiveCard,evaDeleteArchivedProject,EvaProjectDeleteDialog,EvaArchivedProjectsSettings,evaCreateProjectResolver].map(fn=>fn.toString()).join('\n')+'\n'+source;
   });
 })(window);

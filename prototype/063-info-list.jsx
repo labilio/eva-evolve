@@ -11,3 +11,6 @@ export function InfoList({items=[]}) {
    main={<><div className="eva-info-list-title" style={infoListText.title}>{title}</div>
     {description != null && description !== '' && <div className="eva-info-list-description" style={infoListText.description}>{description}</div>}</>}/>} />;
 }
+
+// Native list export for rich business rows; consumes the shared Semi theme.
+export {default as List} from '@douyinfe/semi-ui/lib/es/list';

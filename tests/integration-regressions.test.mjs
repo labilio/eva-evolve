@@ -20,7 +20,7 @@ test('AI 小队包含个人助理且保留分身员工', () => {
   const snapshot={identities:[{id:'old',role:'assistant'},{id:'p',role:'persona'},{id:'e',role:'employee'}]};
   const ids=vm.runInNewContext(`(${match[1]}).map(i=>i.id).join(',')`,{snapshot});
   assert.equal(ids,'old,p,e');
-  const body=source.slice(source.indexOf('function EvaAITeamPage()'),source.indexOf('\n    const cut',source.indexOf('function EvaAITeamPage()')));
+  const body=source.slice(source.indexOf('function EvaAITeamPage('),source.indexOf('\n    const cut',source.indexOf('function EvaAITeamPage(')));
   assert.doesNotMatch(body,/open\('connect'\)|store\.connectAssistant\(/);
   assert.match(body,/roleGroup\('assistant','个人助理'/);
   assert.match(body,/requestedIdentityId/);

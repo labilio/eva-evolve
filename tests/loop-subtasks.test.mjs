@@ -204,7 +204,7 @@ test('任务详情通过完整 Semi 面包屑原位切换详情',()=>{
   assert.ok(runtime.includes('...evaBreadcrumbIssues.map(issue=>'));
   assert.equal(runtime.includes('evaBreadcrumbHasHiddenAncestors'),false);
   assert.ok(runtime.includes('evaTaskNavigation().open(React.createElement(IssueDetailPage,{key:ki,issueId:ki,onChanged:ct,breadcrumbViewport:evaBreadcrumbViewport.current}),true)'));
-  assert.ok(runtime.includes('Qa=()=>{if(evaTaskDetail){evaTaskNavigation().close();return}'));
+  assert.ok(runtime.includes('Qa=()=>{if(evaTaskDetail){(evaTaskDetail.close||evaTaskNavigation().close)();return}'), '嵌入详情委托来源关闭，抽屉沿用原关闭控制器');
   assert.equal(runtime.includes('replaceFleetIssueDeepLink(Wi,no.identifier)'),false,'层级切换不再修改来源路由');
   assert.ok(runtime.includes('React.createElement(EvaIssueDetailSubtasks,{key:xt.id,rootIssue:xt,onOpen:Ea,readOnly:Ct'));
   assert.ok(runtime.includes('parentIssueId:evaChildParent?.id||rt'));

@@ -36,17 +36,45 @@
       cats: [], messages: {}, threadMessages: Object.fromEntries(threads.map(t => [t.id, messages(t.short_id)])),
       scopeNameOf: {}};
   };
-  window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, replySnapshot, source: threadSource});
+  window.EvaAIPrivateConversations = Object.freeze({group: privateGroup, threadRecord, replySnapshot, source: threadSource, notifications: notificationEvents, markNotifications: markNotificationEvents, normalizeMessageIds});
   const STORAGE_KEY = 'eva:ai-team:v2';
   const copy = value => JSON.parse(JSON.stringify(value));
   const incomingMessageCount = session => Array.isArray(session?.messages) ? session.messages.filter(message => message?.sender?.ai === true && !['self', 'u-wangyilin'].includes(message.sender.uid)).length : 0;
   const normalizeReadState = (session, markExistingRead = false) => {
+    normalizeMessageIds(session);
     const total = incomingMessageCount(session);
     if (!Number.isInteger(session.readAiMessageCount) || session.readAiMessageCount < 0) session.readAiMessageCount = markExistingRead ? total : 0;
     session.readAiMessageCount = Math.min(session.readAiMessageCount, total);
     return session;
   };
-  const unreadCountOf = session => Math.max(session?.markedUnread ? 1 : 0, incomingMessageCount(session) - (Number.isInteger(session?.readAiMessageCount) ? session.readAiMessageCount : 0));
+  // Notification reads live on the original conversation, alongside its legacy
+  // count. IDs preserve non-contiguous reads and arrivals during a bulk action.
+  function normalizeMessageIds(session) {
+    (session?.messages || []).forEach((message,index)=>{if(!message.id)message.id=session.id+':message:'+index;});
+  }
+  function notificationEvents(session) {
+    if(!session)return [];
+    const incoming=(session.messages||[]).filter(message=>message?.sender?.ai===true&&!['self','u-wangyilin'].includes(message.sender.uid));
+    const readIds=Array.isArray(session.notificationReadIds)?new Set(session.notificationReadIds):null;
+    const result=incoming.map((message,index)=>({id:message.id,message,unread:readIds?!readIds.has(message.id):index>=(session.readAiMessageCount||0)}));
+    if(session.markedUnread&&result.length&&!result.some(event=>event.unread))result.at(-1).unread=true;
+    return result;
+  }
+  function markNotificationEvents(session,ids,read=true) {
+    if(!session)throw new Error('找不到会话');
+    normalizeMessageIds(session);
+    const events=notificationEvents(session),chosen=new Set(ids);
+    const readIds=new Set(events.filter(event=>!event.unread).map(event=>event.id));
+    let changed=false;
+    for(const event of events)if(chosen.has(event.id)){
+      if(readIds.has(event.id)!==read)changed=true;
+      read?readIds.add(event.id):readIds.delete(event.id);
+    }
+    if(!changed&&Array.isArray(session.notificationReadIds)&&!session.markedUnread)return false;
+    session.notificationReadIds=[...readIds];session.readAiMessageCount=readIds.size;
+    delete session.markedUnread;return true;
+  }
+  const unreadCountOf = session => Math.max(session?.markedUnread ? 1 : 0, notificationEvents(session).filter(event=>event.unread).length);
   function freeze(value) {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
       Object.values(value).forEach(freeze);
@@ -519,15 +547,14 @@
       delete state.drafts[sessionId];
       publish();
     }
+    function notifications(sessionId) {return notificationEvents(state.sessions.find(item=>item.id===sessionId)).map(event=>copy(event));}
+    function markNotifications(sessionId,ids,read=true) {
+      const changed=markNotificationEvents(state.sessions.find(item=>item.id===sessionId),ids,read);
+      if(changed)publish();return changed;
+    }
     function markRead(sessionId) {
-      const session = state.sessions.find(item => item.id === sessionId);
-      if (!session) return false;
-      const total = incomingMessageCount(session);
-      if (session.readAiMessageCount === total && !session.markedUnread) return false;
-      delete session.markedUnread;
-      session.readAiMessageCount = total;
-      publish();
-      return true;
+      if(!state.sessions.some(item=>item.id===sessionId))return false;
+      return markNotifications(sessionId,notifications(sessionId).map(event=>event.id),true);
     }
     function markUnread(sessionId) { const session=state.sessions.find(s=>s.id===sessionId);if(!session||session.markedUnread)return false;session.markedUnread=true;publish();return true; }
     function unreadCount(sessionId) {
@@ -583,7 +610,7 @@
       if(!session)return false;
       const time=now();session.messages.push(...copy(messages).map(message=>({...message,time,sender:{...message.sender,uid:'self',name:'我',color:message.sender?.color||'#1563EB',ai:false}})));session.updatedAt=time;publish();return true;
     }
-    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, markRead, markUnread, unreadCount, hasUnread, setSessionFlag, deleteSession });
+    return Object.freeze({ getSnapshot: () => snapshot, subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); }, connectAssistant, createPersona, personaName, syncPersona, savePersona, saveLocalAssistant, setAssistantAvatar, setLocalOnline, setDraft, createThread, renameThread, sendMessage, receiveForwarded, notifications, markNotifications, markRead, markUnread, unreadCount, hasUnread, setSessionFlag, deleteSession });
   }
   // “我的 AI”中的默认群“我的 AI 小队”动态包含所有 AI；自定义 AI 小队保存创建时的成员快照。
   function createTeamGroupStore(options = {}) {
@@ -594,6 +621,7 @@
       threads:Array.isArray(record.threads) ? record.threads : [], collaborationStoriesV1:!!record.collaborationStoriesV1, taskReferenceStoriesV1:!!record.taskReferenceStoriesV1,
       readAiMessageCount:Number.isInteger(record.readAiMessageCount) ? record.readAiMessageCount : undefined,
       teamUnreadNotificationsV1:!!record.teamUnreadNotificationsV1,
+      ...(Array.isArray(record.notificationReadIds)?{notificationReadIds:record.notificationReadIds.filter(id=>typeof id==='string')}:{ }), markedUnread:!!record.markedUnread,
       createdAt:record.createdAt || new Date().toISOString(), updatedAt:record.updatedAt || record.createdAt || new Date().toISOString()});
     let storage, state = {schemaVersion:2, groups:[blankGroup()]}, revision = 0, serial = 0;
     const listeners = new Set();
@@ -693,11 +721,12 @@
         return groups.some(group=>unreadCountOf(group)>0||group.threads.some(thread=>!thread.deleted&&unreadCountOf(thread)>0));
       },
       markUnread(groupId,channelId) {const current=target(groupId,channelId);if(current.markedUnread)return false;current.markedUnread=true;publish();return true;},
+      notifications(groupId,channelId) {return notificationEvents(target(groupId,channelId)).map(event=>copy(event));},
+      markNotifications(groupId,channelId,ids,read=true) {const changed=markNotificationEvents(target(groupId,channelId),ids,read);if(changed)publish();return changed;},
       markRead(groupId, channelId) {
-        const current=target(groupId,channelId),total=incomingMessageCount(current);
-        if(current.readAiMessageCount===total&&!current.markedUnread)return false;
-        delete current.markedUnread;
-        current.readAiMessageCount=total;publish();return true;
+        const current=target(groupId,channelId);
+        const changed=markNotificationEvents(current,notificationEvents(current).map(event=>event.id),true);
+        if(changed)publish();return changed;
       },
       source(groupOrMembers, membersOrThread, threadMaybe) {
         const {groupId,members,selectedThreadId}=argsForSource(groupOrMembers,membersOrThread,threadMaybe),group=groupById(groupId),all=normalizeMembers(members);
@@ -749,7 +778,7 @@
             const time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),messageId='team-group:'+Date.now()+':'+current.messages.length;
             current.messages.push({id:messageId,createdAt:new Date().toISOString(),kind:'text',sender:{uid:'u-wangyilin',name:'王宜林',avatar:window.__EVA_CURRENT_USER_PORTRAIT},time,text,mentions,mentionsVersion:1,...(replyTo?{replyTo}:{})});
             unique.filter(member=>member.kind!=='human'&&mentions.some(m=>m.uid===member.id||m.uid==='ai')).forEach(member=>current.messages.push({id:messageId+':'+member.id,createdAt:new Date().toISOString(),kind:'text',sender:{uid:member.id,name:member.name,ai:true,identityAppearance:member.identityAppearance},time,text:'【原型】已收到你的请求，当前未调用真实服务。'}));
-            current.readAiMessageCount=incomingMessageCount(current);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
+            markNotificationEvents(current,notificationEvents(current).map(event=>event.id),true);current.draft='';current.updated_at=new Date().toISOString();group.updatedAt=current.updated_at;publish();return true;}
         };
       }
     });

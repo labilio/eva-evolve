@@ -882,14 +882,50 @@
       "description": "任务订阅唯一持久状态，手动取消优先于自动参与事件。"
     },
     {
-      "order": 111,
+      "tag": "style",
+      "name": "activity-page",
+      "file": "prototype/064-activity-page.css",
+      "role": "prototype",
+      "order": 111
+    },
+    {
+      "order": 112,
+      "tag": "script",
+      "name": "activity-store",
+      "file": "prototype/064-activity-store.js",
+      "role": "prototype",
+      "description": "统一工作收件箱聚合及账号级清除元数据；业务和已读由原来源持有。"
+    },
+    {
+      "order": 113,
+      "tag": "script",
+      "name": "activity-task-source",
+      "file": "prototype/064-activity-task-source.js",
+      "role": "prototype"
+    },
+    {
+      "tag": "script",
+      "name": "activity-chat-source",
+      "file": "prototype/064-activity-chat-source.js",
+      "role": "prototype",
+      "order": 114
+    },
+    {
+      "tag": "script",
+      "name": "activity-ai-source",
+      "file": "prototype/064-activity-ai-source.js",
+      "role": "prototype",
+      "order": 115
+    },
+    {
+      "order": 116,
       "tag": "script",
       "name": "loop-task-components",
       "file": "prototype/062-loop-task-components.js",
       "role": "prototype"
     },
     {
-      "order": 112,
+      "order": 117,
       "tag": "script",
       "name": "loop-table-view",
       "file": "prototype/062-loop-table-view.js",
@@ -897,28 +933,28 @@
       "role": "prototype"
     },
     {
-      "order": 113,
+      "order": 118,
       "tag": "script",
       "name": "task-time",
       "file": "prototype/063-task-time.js",
       "role": "prototype"
     },
     {
-      "order": 114,
+      "order": 119,
       "tag": "style",
       "name": "loop-gantt-view",
       "file": "prototype/062-loop-gantt-view.css",
       "role": "prototype"
     },
     {
-      "order": 115,
+      "order": 120,
       "tag": "script",
       "name": "loop-gantt-view",
       "file": "prototype/062-loop-gantt-view.js",
       "role": "prototype"
     },
     {
-      "order": 116,
+      "order": 121,
       "tag": "script",
       "name": "tooltip-adapter",
       "file": "prototype/062-tooltip-adapter.js",
@@ -926,7 +962,7 @@
       "role": "prototype"
     },
     {
-      "order": 117,
+      "order": 122,
       "tag": "script",
       "name": "shared-semi-forms",
       "file": "prototype/063-forms-entry.jsx",
@@ -935,7 +971,7 @@
       "description": "统一原生 Semi Form 配置与提交 Hook，由 tools/build-forms.mjs 构建；复用运行时 React。"
     },
     {
-      "order": 118,
+      "order": 123,
       "tag": "script",
       "name": "063-forms",
       "file": "prototype/063-forms.jsx",
@@ -943,7 +979,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 119,
+      "order": 124,
       "tag": "script",
       "name": "063-form-policy",
       "file": "prototype/063-form-policy.js",
@@ -951,7 +987,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 120,
+      "order": 125,
       "tag": "script",
       "name": "063-personal-folder-form",
       "file": "prototype/063-personal-folder-form.jsx",
@@ -959,7 +995,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 121,
+      "order": 126,
       "tag": "script",
       "name": "063-personal-rail-form",
       "file": "prototype/063-personal-rail-form.jsx",
@@ -967,7 +1003,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 122,
+      "order": 127,
       "tag": "script",
       "name": "063-file-form",
       "file": "prototype/063-file-form.jsx",
@@ -975,7 +1011,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 123,
+      "order": 128,
       "tag": "link",
       "name": "dialog-layout",
       "file": "prototype/063-dialog.css",
@@ -983,7 +1019,7 @@
       "bytes": 1888
     },
     {
-      "order": 124,
+      "order": 129,
       "tag": "script",
       "name": "shared-dialog",
       "file": "prototype/063-dialog.jsx",
@@ -991,7 +1027,7 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 125,
+      "order": 130,
       "tag": "script",
       "name": "063-dialog-theme",
       "file": "prototype/063-dialog-theme.js",
@@ -999,12 +1035,20 @@
       "output": "vendor/eva-forms.module.js"
     },
     {
-      "order": 126,
+      "order": 131,
       "tag": "script",
       "name": "063-dialog-focus",
       "file": "prototype/063-dialog-focus.jsx",
       "role": "build-input",
       "output": "vendor/eva-forms.module.js"
+    },
+    {
+      "tag": "script",
+      "name": "activity-page-component",
+      "file": "prototype/064-activity-page.jsx",
+      "role": "build-input",
+      "output": "vendor/eva-forms.module.js",
+      "order": 132
     }
   ]
 }

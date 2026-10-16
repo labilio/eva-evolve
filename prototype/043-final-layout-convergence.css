@@ -11,7 +11,8 @@
   body.eva-message-hierarchy-ready .eva-msg .ch-list,
   .collab-body > .ch-layout > .ch-list,
   .eva-personal-sider-panel,
-  .eva-ai-team__sidebar {
+  .eva-ai-team__sidebar,
+  .eva-activity__rail {
     position: relative;
     box-sizing: border-box;
     width: var(--eva-conversation-rail-current);

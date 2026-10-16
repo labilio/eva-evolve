@@ -56,7 +56,7 @@
   document.addEventListener('pointerdown', function (event) {
     var handle = event.target.closest && event.target.closest('[data-eva-conversation-rail-resizer]');
     if (!handle || event.button !== 0) return;
-    var rail = handle.closest('.ch-list, .eva-personal-sider-panel, .eva-ai-team__sidebar');
+    var rail = handle.closest('.ch-list, .eva-personal-sider-panel, .eva-ai-team__sidebar, .eva-activity__rail');
     if (!rail) return;
     event.preventDefault();
     activeConversationRailDrag = { pointerId: event.pointerId, startX: event.clientX, startWidth: rail.getBoundingClientRect().width };

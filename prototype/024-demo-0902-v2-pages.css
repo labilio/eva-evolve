@@ -43,37 +43,9 @@
   .eva-ui-btn--primary:hover { background: #6510da; }
   .eva-ui-btn svg, .eva-feature-page svg, .eva-project-detail-page svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* GDS adaptation: a business board keeps its five workflow columns;
-     horizontal scrolling belongs to the board, never the whole window. */
-  [data-eva-page="workboard"] .eva-feature-body { padding: 24px; }
-  [data-eva-page="workboard"] .eva-ui-btn { height: 32px; gap: 8px; padding: 0 12px; border-radius: var(--eva-radius-control); font: 14px/22px var(--eva-font-sans); }
-  [data-eva-page="workboard"] .eva-ui-btn--primary { background: var(--eva-action-primary-solid); border-color: var(--eva-action-primary-solid); color: var(--eva-action-primary-solid-text); }
-  [data-eva-page="workboard"] .eva-ui-btn--primary:hover { background: color-mix(in srgb, var(--eva-action-primary), black 6%); }
-  [data-eva-page="workboard"] :is(button, input, [tabindex]):focus-visible { outline: 2px solid var(--eva-action-primary); outline-offset: 2px; }
-  [data-eva-page="workboard"] svg { width: 16px; height: 16px; flex-shrink: 0; stroke-width: 1.5; }
-  .eva-board-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
-  .eva-board-topline .eva-feature-intro { margin: 0; font: 14px/22px var(--eva-font-sans); color: var(--eva-text-secondary); }
-  .eva-board-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
-  .eva-board-stat { box-sizing: border-box; min-height: 112px; padding: 16px; border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-panel); background: var(--eva-surface-primary); }
-  .eva-board-stat span { display: flex; align-items: center; gap: 8px; color: var(--eva-text-secondary-accessible); font: 12px/16px var(--eva-font-sans); }
-  .eva-board-stat strong { display: block; margin-top: 16px; color: var(--eva-text-primary); font: var(--eva-fw-medium) 24px/32px var(--eva-font-sans); }
-  .eva-board-filter { padding: 16px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-subtle); }
-  .eva-board-filter__row { display: grid; grid-template-columns: minmax(260px, 2fr) repeat(3, minmax(100px, 1fr)); gap: 12px; }
   .eva-faux-field { display: flex; min-width: 0; height: 36px; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--eva-border-subtle); border-radius: var(--eva-radius-control); background: var(--eva-surface-primary); color: var(--eva-text-secondary); font: 14px/22px var(--eva-font-sans); white-space: nowrap; overflow: hidden; }
   .eva-faux-field--muted { color: var(--eva-text-secondary-accessible); }
   .eva-faux-field__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .eva-board-check { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-top: 8px; color: var(--eva-text-secondary); font: 14px/22px var(--eva-font-sans); }
-  .eva-board-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 16px 0 8px; scrollbar-gutter: stable; }
-  .eva-board-columns { display: grid; width: max-content; min-width: 100%; grid-template-columns: repeat(5, minmax(240px, 1fr)); gap: 12px; }
-  .eva-board-column { box-sizing: border-box; min-height: 320px; padding: 12px; border: 1px solid var(--eva-border-faint); border-radius: var(--eva-radius-panel); background: var(--eva-surface-subtle); }
-  .eva-board-column__head { display: flex; align-items: center; gap: 8px; min-height: 24px; font: var(--eva-fw-medium) 14px/22px var(--eva-font-sans); }
-  .eva-board-column__dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; }
-  .eva-board-column--todo .eva-board-column__dot { background: #2ea7e8; }
-  .eva-board-column--planned .eva-board-column__dot { background: #8b18ef; }
-  .eva-board-column--ready .eva-board-column__dot { background: #18b978; }
-  .eva-board-column__count { margin-left: auto; padding: 2px 8px; border-radius: var(--eva-radius-chip); background: var(--eva-surface-primary); color: var(--eva-text-secondary-accessible); font: 12px/16px var(--eva-font-sans); }
-  .eva-board-column__empty { display: grid; min-height: 252px; margin-top: 12px; place-items: center; color: var(--eva-text-secondary-accessible); font: 14px/22px var(--eva-font-sans); }
-  @media (max-width: 900px) { .eva-board-filter__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   .eva-auto-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
   .eva-auto-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--eva-rail-divider); }
@@ -129,6 +101,5 @@
   .eva-project-group-card span { color: var(--eva-text-muted); font-size: 12px; }
 
   @media (max-width: 1100px) {
-    .eva-board-stats { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
     .eva-auto-template-grid { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
   }

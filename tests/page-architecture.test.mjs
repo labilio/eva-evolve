@@ -496,7 +496,7 @@ test('我的 AI 位于个人导航并以共享编辑弹窗创建个人助理', (
   const creator = read('prototype/047-digital-employees.js');
   const runtime = createPatchedRuntime().source;
 
-  assert.match(sider, /EVA_PERSONAL_NAV=Object\.freeze\(\["new-chat","my-ai","workboard","automation","connection-center"\]\)/);
+  assert.match(sider, /EVA_PERSONAL_NAV=Object\.freeze\(\["workboard","new-chat","my-ai","automation","connection-center"\]\)/);
   assert.match(sider, /EVA_TEAM_NAV=Object\.freeze\(\["messages","projects","contacts","drive","sites"\]\)/);
   assert.match(sider, /rt==="\/messages"&&ut\.get\("evaIM"\)==="my-ai"\)return"personal"/);
   assert.match(runtime, /LABEL\$1="我的消息",SiderMessagesEntry=/);
@@ -595,7 +595,9 @@ test('一级页面只挂入路由宿主，不再追加到 document.body', () => 
   assert.doesNotMatch(source, /stopImmediatePropagation\(\)/);
   assert.match(createPatchedRuntime().source, /path:"\/contacts",element:React\.createElement\(EvaContactsPage,null\)/);
   assert.doesNotMatch(source, /__evaNativePages\.register\(['"]contacts['"]/);
-  for (const pageId of ['drive', 'workboard', 'connection-center', 'personal']) {
+  assert.doesNotMatch(source, /__evaNativePages\.register\(['"]workboard['"]/);
+  assert.match(createPatchedRuntime().source, /if\(ct==="工作板"\)return React\.createElement\(EvaActivityPage,null\)/);
+  for (const pageId of ['drive', 'connection-center', 'personal']) {
     assert.match(source, new RegExp(`__evaNativePages\\.register\\(['"]${pageId}['"]`));
   }
 });
