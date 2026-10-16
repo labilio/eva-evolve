@@ -183,6 +183,9 @@ test('层级、看板、分组、列表和详情均接入统一父子任务运�
   assert.match(taskStyles,/\.loop-list__assignee\s*\{\s*grid-column:\s*6/);
   assert.match(taskStyles,/\.loop-list__row\.is-subtask \.eva-loop-list__task::before/);
   assert.match(taskStyles,/\.eva-issue-relation__track > span\s*\{[\s\S]*background:\s*var\(--eva-action-primary\)/);
+  assert.ok(runtime.includes('className:"eva-issue-hierarchy__head","aria-hidden":!0},React.createElement("span",null,"任务"),React.createElement("span",null,"截止日期")'));
+  assert.equal(runtime.includes('className:"eva-issue-hierarchy__progress"'),false);
+  assert.doesNotMatch(taskStyles,/\.eva-issue-hierarchy__progress/);
   assert.match(taskStyles,/\.eva-issue-hierarchy__due\s*\{[\s\S]*white-space:\s*nowrap/);
 });
 

@@ -68,6 +68,10 @@ test('Edge：详情只显示直接子任务，任务树进度、编辑、逐级�
   await page.getByRole('menuitem',{name:'层级',exact:true}).click();
   const hierarchy=page.getByRole('tree',{name:'任务层级'});
   await hierarchy.waitFor();
+  const hierarchyHeader=hierarchy.locator('.eva-issue-hierarchy__head');
+  assert.doesNotMatch(await hierarchyHeader.innerText(),/进度/);
+  assert.equal(await hierarchy.locator('.eva-issue-hierarchy__progress').count(),0);
+  assert.match(await hierarchyHeader.innerText(),/任务\s+截止日期\s+负责人\s+优先级/);
   for(const identifier of ['SC-111','SC-112','SC-113']){
    const row=hierarchy.getByRole('treeitem').filter({has:page.locator('.eva-issue-hierarchy__id',{hasText:identifier})});
    await row.getByRole('button',{name:'展开子任务',exact:true}).click();
