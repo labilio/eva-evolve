@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {createServer} from '../../tools/serve.mjs';
+import {fileURLToPath} from 'node:url';
+import {settleMotion} from '../helpers/settle-motion.mjs';
+
+test('Edge：分析独立范围、默认本人、选择其他成员与记忆、共享详情',async()=>{
+ const server=createServer(fileURLToPath(new URL('../../dist',import.meta.url)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch(process.platform==='darwin'?{channel:'msedge'}:{});
+ try{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(`http://127.0.0.1:${server.address().port}/#/collab?evaProject=prod&evaTab=tasks`);
+  const trigger=page.getByRole('button',{name:'任务分析',exact:true}),dialog=page.getByRole('dialog',{name:'任务分析',exact:true});
+  await trigger.click();await dialog.waitFor();await settleMotion(page);
+  assert.equal(await dialog.getByRole('button',{name:'按负责人',exact:true}).getAttribute('aria-pressed'),'true');
+  assert.match(await dialog.innerText(),/我负责的任务/);
+  const mine=Number(await dialog.locator('[data-stat=total]').innerText());
+  await dialog.getByRole('button',{name:'整个项目',exact:true}).click();
+  const total=Number(await dialog.locator('[data-stat=total]').innerText());
+  assert.ok(total>mine&&mine>0);
+  const counts=await dialog.locator('.eva-task-analytics__count').allTextContents();
+  assert.equal(counts.reduce((sum,n)=>sum+Number(n),0),total);
+  assert.match(await dialog.innerText(),/供应链运营协同 · 当前项目的全部任务/);
+  assert.equal(await dialog.locator('.eva-task-analytics__task').count(),Number(await dialog.locator('[data-stat=overdue]').innerText()));
+  const task=dialog.locator('.eva-task-analytics__task').first();
+  const identifier=await task.locator('.eva-task-analytics__task-id').innerText();
+  await task.click();await dialog.waitFor({state:'hidden'});
+  const detail=page.getByRole('dialog',{name:'任务详情',exact:true});await detail.waitFor();await settleMotion(page);
+  assert.ok((await detail.innerText()).includes(identifier));
+  await detail.getByRole('button',{name:'关闭任务详情',exact:true}).click();await detail.waitFor({state:'hidden'});
+  await page.getByRole('button',{name:'我负责的',exact:true}).click();
+  await trigger.click();await dialog.waitFor();await settleMotion(page);
+  assert.equal(Number(await dialog.locator('[data-stat=total]').innerText()),total,'列表筛选不缩小整个项目统计');
+  await dialog.getByRole('button',{name:'按负责人',exact:true}).click();
+  assert.equal(Number(await dialog.locator('[data-stat=total]').innerText()),mine);
+  await dialog.locator('.loop-assignee-trigger').click();
+  await page.getByRole('menuitem',{name:'林晓',exact:true}).click();
+  await page.getByRole('menuitem',{name:'林晓',exact:true}).waitFor({state:'hidden'});
+  assert.match(await dialog.innerText(),/林晓负责的任务/);
+  const other=Number(await dialog.locator('[data-stat=total]').innerText());
+  assert.ok(other>0&&other<total);
+  await dialog.locator('.loop-assignee-trigger').click();
+  await page.getByRole('textbox',{name:'搜索',exact:true}).fill('没有这位负责人');
+  await page.keyboard.press('Escape');
+  assert.equal(await dialog.isVisible(),true,'关闭人员菜单不关闭分析');
+  await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});await settleMotion(page);
+  assert.equal(await trigger.evaluate(node=>node===document.activeElement),true);
+  await page.locator('.eva-task-view-menu').click();await page.locator('.eva-task-enum-menu:visible').getByText('甘特图',{exact:true}).click();
+  await trigger.click();await dialog.waitFor();
+  assert.equal(Number(await dialog.locator('[data-stat=total]').innerText()),other);
+  assert.match(await dialog.innerText(),/林晓负责的任务/);
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+});

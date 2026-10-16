@@ -479,7 +479,7 @@
           ],
           [
             'React.createElement(Button,{className:"eva-task-inbox",theme:"borderless",type:"tertiary",icon:React.createElement(EvaInboxIcon,{size:18}),"aria-label":"未读任务"},React.createElement(EvaProjectUnreadTasks,{projectId:currentSpaceId()}))',
-            'React.createElement(EvaTaskInboxPopover,null)'
+            'React.createElement("div",{className:"eva-task-tools",role:"group","aria-label":"任务工具"},React.createElement(evaForms.TaskToolTip,{content:"任务收件箱"},React.createElement(EvaTaskInboxPopover,null)),React.createElement(evaForms.TaskAnalytics,{key:currentSpaceId()+":"+Qr,getIssues:()=>issuesOf(currentSpaceId()),projectName:evaCurrentTaskProject()?.name||"当前项目",actorId:Qr,candidates:evaFilterCandidates.assignees,renderAssignee:props=>React.createElement(AssigneePicker,{...props,size:"default",types:["member"],allowClear:false,candidates:evaFilterCandidates.assignees}),loading:jt,statuses:ISSUE_STATUS_ORDER.map(value=>({value,label:pt("loop.status."+value),color:ISSUE_STATUS_HEX[value]})),onOpen:xa}))'
           ],
           [
             'className:"eva-task-inbox-popover__body"},"我还没想好这里放什么"',

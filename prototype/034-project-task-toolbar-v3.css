@@ -66,6 +66,7 @@
     outline-offset: 2px;
   }
 
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-analytics-button,
   .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox {
     position: relative;
     box-sizing: border-box;
@@ -78,11 +79,13 @@
     color: var(--gds-color-text-secondary);
   }
 
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-analytics-button:hover,
   .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox:hover {
     background: var(--gds-color-surface-primary);
     color: var(--gds-color-text-primary);
   }
 
+  .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-analytics-button:focus-visible,
   .loop-page__toolbar:has(.eva-task-quick-chips) .semi-button.eva-task-inbox:focus-visible {
     outline: var(--gds-border-focus) solid var(--gds-color-border-focus);
     outline-offset: 2px;
@@ -797,3 +800,26 @@ body .semi-dropdown-wrapper .eva-task-assignee-menu .semi-dropdown-item-active:i
 .eva-task-preview__dates{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
 .eva-task-preview__dates dt{color:var(--semi-color-text-2)}
 .eva-task-preview__dates dd{margin:0;text-align:right}
+
+/* Project utilities share geometry; views and creation remain separate groups. */
+.eva-task-tools,.eva-task-tool-trigger{display:inline-flex;align-items:center;flex:none}
+.eva-task-tools{gap:var(--eva-space-2)}
+.eva-task-analytics__scope{margin:0;color:var(--semi-color-text-0);overflow-wrap:anywhere}
+.eva-task-analytics__note{margin:var(--eva-space-2) 0;color:var(--semi-color-text-2);font-size:12px}
+.eva-task-analytics__summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--eva-space-4);margin:var(--eva-space-5) 0;padding:var(--eva-space-4) 0;border-block:1px solid var(--semi-color-border)}
+.eva-task-analytics__summary dt{color:var(--semi-color-text-2)}
+.eva-task-analytics__summary dd{margin:var(--eva-space-2) 0 0;font-size:24px;font-weight:var(--eva-fw-semibold);font-variant-numeric:tabular-nums}
+.eva-task-analytics .has-overdue{color:var(--semi-color-danger)}
+.eva-task-analytics h3{font:inherit;font-weight:var(--eva-fw-semibold);margin:var(--eva-space-5) 0 var(--eva-space-3)}
+.eva-task-analytics__states{display:grid;gap:var(--eva-space-2)}
+.eva-task-analytics__state{display:grid;grid-template-columns:64px minmax(0,1fr) 40px;align-items:center;gap:var(--eva-space-3)}
+.eva-task-analytics__count{text-align:right;font-variant-numeric:tabular-nums}
+.eva-task-analytics__overdue{max-height:240px;overflow:auto}
+.eva-task-analytics .semi-button.eva-task-analytics__task{width:100%;height:auto;min-height:36px;padding:var(--eva-space-2);justify-content:flex-start;text-align:left}
+.eva-task-analytics__task .semi-button-content{display:flex;width:100%;gap:var(--eva-space-2);min-width:0;align-items:baseline}
+.eva-task-analytics__task-id,.eva-task-analytics__task time{color:var(--semi-color-text-2);flex:none;font-variant-numeric:tabular-nums}
+.eva-task-analytics__task-name{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.eva-task-analytics__empty{padding:var(--eva-space-4) 0;color:var(--semi-color-text-2)}
+
+.eva-task-analytics__controls{display:flex;align-items:center;flex-wrap:wrap;gap:var(--eva-space-3);margin-bottom:var(--eva-space-4)}
+.eva-task-analytics__assignee{min-width:0;max-width:100%;display:flex;align-items:center}

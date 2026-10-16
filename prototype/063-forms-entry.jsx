@@ -46,3 +46,5 @@ export {captureDialogEscape} from './063-dialog-focus.jsx';
 export {default as TextArea} from '@douyinfe/semi-ui/lib/es/input/textarea';
 
 export {Progress} from './063-progress.jsx';
+
+export {TaskAnalytics,TaskToolTip} from './063-task-analytics.jsx';
